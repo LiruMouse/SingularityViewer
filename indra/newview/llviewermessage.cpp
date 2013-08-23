@@ -2662,6 +2662,11 @@ static bool xantispam_lookup_selectively(std::vector<xantispam_request>& blackca
 
 	if(!cache_only)
 	{
+		// clear caches first because they can be prefilled on demand through
+		// transparent lookups, depending on what requests have been processed
+		// before ending up here
+		blackcache.clear();
+		whitecache.clear();
 		xantispam_prefill_cache(blackcache, false);
 		xantispam_prefill_cache(whitecache, true);
 		cache_only = true;
