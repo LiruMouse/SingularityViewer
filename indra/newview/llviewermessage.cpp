@@ -2860,6 +2860,7 @@ static bool xantispam_silent(const xantispam_request *request, std::vector<xanti
 // + various dialogs can be suppressed selectively
 // + internal text editor can import and export files
 // + the external editor can be started from the internal one
+// + and some more ...
 //
 // These features are implemented by intercepting requests and making
 // decisions about what to do by checking volatile and persistent
@@ -2880,6 +2881,9 @@ static bool xantispam_silent(const xantispam_request *request, std::vector<xanti
 // rules, they may have a problem with some background and silent
 // rules being dropped from the caches.  There are some ways to solve
 // this problem if that becomes necessary.
+//
+// policy: requests pass when rules and queries are disabled or when a
+//         decision making logic is disabled
 //
 // Please direct questions and suggestions about xantispam to
 // lee@yun.yagibdah.de.
@@ -3017,10 +3021,13 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 			args["TYPE"] = filtertype;
 			LLNotificationsUtil::add("xantispamNblk", args);
 		}
+
 		// When no rules are enabled, false must be returned
-		// to let the request pass. (change after commit)
+		// to let the request pass.
 		//
-		return true;
+		// Unfortunately, this requires another setting to disable xantispam
+		// for the purpose of is_spam_filtered().
+		return false;
 	}
 
 	// prevent flooding --- blocking the request may not be the right
@@ -3205,6 +3212,8 @@ void xantispam_buttons(const int action)
 		gSavedSettings.setBOOL("AntiSpamEnabled", 1);
 		gSavedSettings.setBOOL("EnableGestureSounds", 0);
 
+		gSavedSettings.setBOOL("AntiSpamXtendedInterceptsDialogs", 0);
+
 		gSavedSettings.setBOOL("AntiSpamXtendedPersistent", 1);
 		gSavedSettings.setBOOL("AntiSpamXtendedQueries", 1);
 		gSavedSettings.setBOOL("AntiSpamXtendedVolatile", 1);
@@ -3276,6 +3285,11 @@ bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_own
 	if (antispam_not_friend && is_friend)
 		return false;
 
+	// allow en-/disable of xantispam for the purpose of the follwing checks
+	// Without this, xantispam would pass the requests in case there aren't any rules,
+	// effectively disabling these checks.
+	static LLCachedControl<bool> use_xantispam(gSavedSettings,"AntiSpamXtendedInterceptsDialogs");
+
 	// Second, check if this dialog type is even being filtered
 	switch(dialog)
 	{
@@ -3303,52 +3317,54 @@ bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_own
 		// A rule specifying a type of "Group" will match any of
 		// "GroupNoticesNonRequested", "GroupInvites",
 		// "GroupNoticesRequested" and the like.
-
-		return xantispam_check(from_id, "GroupNoticesNonRequested", from_name);
+		if(use_xantispam) return xantispam_check(from_id, "GroupNoticesNonRequested", from_name);
 		break;
 	case IM_BUSY_AUTO_RESPONSE:
-		return xantispam_check(from_id, "AutoResponseIsBusy", from_name);
+		if(use_xantispam) return xantispam_check(from_id, "AutoResponseIsBusy", from_name);
 		break;
 	case IM_GROUP_NOTICE_REQUESTED:
 	        if (!gSavedSettings.getBOOL("AntiSpamGroupNotices")) return false;
-		return xantispam_check(from_id, "GroupNoticesRequested", from_name);
+		if(use_xantispam) return xantispam_check(from_id, "GroupNoticesRequested", from_name);
 		break;
 	case IM_GROUP_INVITATION:
 	        if (!gSavedSettings.getBOOL("AntiSpamGroupInvites")) return false;
-		return xantispam_check(from_id, "GroupInvites", from_name);
+		if(use_xantispam) return xantispam_check(from_id, "GroupInvites", from_name);
 		break;
 	case IM_INVENTORY_OFFERED:
-		return xantispam_check(from_id, "ItemOffersNonTask", from_name);
+		if(use_xantispam) return xantispam_check(from_id, "ItemOffersNonTask", from_name);
 		break;
 	case IM_TASK_INVENTORY_OFFERED:
 		if (!gSavedSettings.getBOOL("AntiSpamItemOffers")) return false;
 
-		// Go by intentory handling rules when any origins are configured for it.
-		// This is needed for non-relaxed mode.
-		if(xantispam_check(":", "&-InventoryHandleDistinctly", "[internal lookup]"))
+		if(use_xantispam)
 		{
-			return xantispam_check(from_id, "ItemOffersFromTask", from_name);
-		}
-		else
-		{
-			return false;
+			// Go by intentory handling rules when any origins are configured for it.
+			// This is needed for non-relaxed mode.
+			if(xantispam_check(":", "&-InventoryHandleDistinctly", "[internal lookup]"))
+			{
+				return xantispam_check(from_id, "ItemOffersFromTask", from_name);
+			}
+			else
+			{
+				return false;
+			}
 		}
 		break;
 	case IM_FROM_TASK_AS_ALERT:
 		if (!gSavedSettings.getBOOL("AntiSpamAlerts")) return false;
-		return xantispam_check(from_id, "Alerts", from_name);
+		if(use_xantispam) return xantispam_check(from_id, "Alerts", from_name);
 		break;
 	case IM_LURE_USER:
 		if (!gSavedSettings.getBOOL("AntiSpamTeleports")) return false;
-		return xantispam_check(from_id, "TeleportOffers", from_name);
+		if(use_xantispam) return xantispam_check(from_id, "TeleportOffers", from_name);
 		break;
 	case IM_TELEPORT_REQUEST:
 		if (!gSavedSettings.getBOOL("AntiSpamTeleportRequests")) return false;
-		return xantispam_check(from_id, "TeleportRequests", from_name);
+		if(use_xantispam) return xantispam_check(from_id, "TeleportRequests", from_name);
 		break;
 	case IM_FRIENDSHIP_OFFERED:
 		if (!gSavedSettings.getBOOL("AntiSpamFriendshipOffers")) return false;
-		return xantispam_check(from_id, "FriendshipOffers", from_name);
+		if(use_xantispam) return xantispam_check(from_id, "FriendshipOffers", from_name);
 		break;
 	case IM_COUNT:
 		// Bit of a hack, we should never get here unless we
@@ -3368,7 +3384,7 @@ bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_own
 		//
 		// /Ratany
 		if (!gSavedSettings.getBOOL("AntiSpamScripts")) return false;
-		return xantispam_check(from_id, "DialogsFromTask", from_name);
+		if(use_xantispam) return xantispam_check(from_id, "DialogsFromTask", from_name);
 		break;
 	default:
 		return false;
