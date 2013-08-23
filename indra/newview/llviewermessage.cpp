@@ -3098,6 +3098,52 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 		}
 	}
 
+	// handle busy and afk situations gracefully
+	bool reenable_queries_busy = false;
+	if(gAgent.getBusy())
+	{
+		xantispam_request config;
+		config.from = gAgentID.asString();
+		config.type = "&-ConfigQueriesWhenBUSY";  // the default is: no queries when busy
+		if(!xantispam_backgnd(&config, whitecache, blackcache, "[config]"))
+		{
+			gSavedSettings.setBOOL("AntiSpamXtendedQueries", false);
+			reenable_queries_busy = true;
+		}
+	}
+	else
+	{
+		if(reenable_queries_busy)
+		{
+			gSavedSettings.setBOOL("AntiSpamXtendedQueries", true);
+			reenable_queries_busy = false;
+		}
+	}
+
+	static bool reenable_queries_afk = false;
+	if(!reenable_queries_busy)
+	{
+		if(gAgent.getAFK())
+		{
+			xantispam_request config;
+			config.from = gAgentID.asString();
+			config.type = "&-ConfigNoQueriesWhenAFK";
+			if(!xantispam_backgnd(&config, whitecache, blackcache, "[config]"))
+			{
+				gSavedSettings.setBOOL("AntiSpamXtendedQueries", false);
+				reenable_queries_afk = true;
+			}
+		}
+		else
+		{
+			if(reenable_queries_afk)
+			{
+				gSavedSettings.setBOOL("AntiSpamXtendedQueries", true);
+				reenable_queries_afk = false;
+			}
+		}
+	}
+
 	// either the voliatile caches or the user will decide this request
 	xantispam_blackwhite bw = xantispam_notify(&request, XANTISPAM_QUERYUSER, from_name);
 
