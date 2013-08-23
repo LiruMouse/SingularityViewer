@@ -1681,40 +1681,6 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 
 
 // xantispam
-//
-// Informational:
-// Filenames for IM logs are hopefully fixed now.  Conversion my be desired:
-//
-// #/bin/sh
-// #
-// # modify filenames of sl IM logs
-// # (c) lee@yun.yagibadh.de 2013-08-15
-// #
-//
-//
-// SEDSC=~/script/mangle-filenames-sl.sed
-// # the sed script is:
-// # s/ \.txt/\.txt/g
-// # s/ /_/g
-//
-//
-// for i in *
-// do
-//     N=$(echo $i | sed -f $SEDSC)
-//
-//     if [ "$i" != "$N" ]; then
-// 	if [ -a "$N" ]; then
-// 	    echo "file $N already exists, NOT renaming"
-// 	else
-// 	    mv -v "$i" "$N"
-// 	fi
-// #    else
-// #	echo "$i unchanged"
-//     fi
-// done
-//
-// exit 0
-
 // (Start reading below, at xantispam_check().)
 
 #include <llprocesslauncher.h>
@@ -1735,32 +1701,20 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 #define XANTISPAM_ADDBLACK	     "XAAdd2Black:"
 #define XANTISPAM_ADDWHITE	     "XAAdd2White:"
 
-// path is configurable
+// filename is configurable
 #define XANTISPAM_WHITELISTFILE	     "xantispam-whitelist.org"
 #define XANTISPAM_BLACKLISTFILE	     "xantispam-blacklist.org"
 
-// Do not let the caches grow indefinitely.  Caches are handled FILO,
-// with most recent entries at the end.	 Most recent entries are
+// Max number of entries each cache can hold.  Caches are handled
+// FILO, with most recent entries at the end.  Most recent entries are
 // assumed to be the most likely ones to be looked up (again), so
 // cache lookups start at the end of the caches.
 //
-// If I'm not mistaken, 64k cache entries add up to a total of about
-// 23MB memory usage when all five caches are full.
-//
 #define XANTISPAM_CACHE_CAPACITY 65535
-// XANTISPAM_CACHE_CAPACITY / XANTISPAM_THRESHOLD defines how many
-// entries to remove when the cache flows over and how many to add
-// when pre-filling
+// XANTISPAM_THRESHOLD defines how many entries to remove when the
+// cache flows over
 #define XANTISPAM_THRESHOLD 600
 //
-// Do not allow more than XANTISPAM_MAXDEPTH requests to prevent
-// flooding the user with requests in case they are coming in too
-// fast.  Even if the user won't mind, each open request eats a bit of
-// memory while open, so there must be a limit.	 When the limit is
-// reached, the value of the relevant filter setting is returned right
-// away.  A limit of 3--7 is probably enough.  Make this configurable?
-#define XANTISPAM_MAXDEPTH 7
-
 #define XANTISPAM_CLEARCACHE_RQSTRING "XAClearCache"
 #define XANTISPAM_SPECIAL_ADDBLACK     32
 #define XANTISPAM_SPECIAL_ADDWHITE     33
@@ -1775,6 +1729,7 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 #define XANTISPAM_EDIT_WHITELIST	23
 
 
+// structure to help decision making when queries are generated
 typedef struct
 {
 	bool isblacklisted;
@@ -1796,7 +1751,7 @@ void xantispam_buttons(const int);
 
 
 // read from a file until either the buffer is full, the line ends
-// with \n, or the whole file has been read
+// with '\n', or the whole file has been read
 //
 static int xantispam_read_line(LLFILE *src, std::string& line, std::size_t max)
 {
@@ -1814,8 +1769,9 @@ static int xantispam_read_line(LLFILE *src, std::string& line, std::size_t max)
 
 
 // Convert a line read from a blacklist or whitelist file into a
-// request.  This request is called a rule; requests are matched
-// against the rule.  Just the data type is the same as for requests.
+// request.  This request is called a rule (because it's in a file);
+// requests are matched against the rule.  The data type is the same
+// as for requests.
 //
 // Returns false on success.
 //
@@ -1838,12 +1794,14 @@ static bool xantispam_syntaxofline(const std::string& line)
 	return false;
 }
 //
-// this actually reads an emacs org-mode table, skipping lines
-// starting with "|-" and not with '|', removing commentary
+// This transforms a line from an emacs org-mode table into an
+// xantispam_request structure.  Whitespace is stripped, lines
+// starting with "|-" and not with '|' are skipped, comments are
+// removed and the syntax is checked.
 //
 static bool xantispam_line2request(std::string& line, xantispam_request *request)
 {
-	// ignore comments
+	// ignore emtpy lines and comments
 	if(line.empty())
 	{
 		LL_DEBUGS("xantispam") << "skipping empty line: " << line << LL_ENDL;
@@ -1884,11 +1842,11 @@ static bool xantispam_line2request(std::string& line, xantispam_request *request
 // See if a rule matches a request and return true when they match.
 //
 // Order does matter because the rule must be searched within the
-// request rather than the request within the rule: Request can have
+// request rather than the request within the rule: Requests can have
 // additional data appended to the type, like the name of an object.
-// This allows rules using the additional information, for example the
-// rule "::greeter" to block dialogs from anything that has 'greeter'
-// somewhere in its name.
+// This allows rules using the additional information, for example for
+// the rule "::greeter", to block dialogs from anything that has
+// 'greeter' somewhere in its name.
 //
 // The colon is used for a wildcard that matches anything.  This is
 // especially useful for blocking requests with particular filter
@@ -1990,10 +1948,14 @@ static bool xantispam_filelookup(bool type, const bool prefill, const xantispam_
 	return ret;
 }
 
-
+// cache lookup functions: two different functions here rather than
+// one that does both depending on a flag, for better performance
+//
 // Look up a request in a blacklist or whitelist cache, return false
 // if the request is on cache, else return true --- searches backwards
 // because most recent elements are expected to be at end of cache.
+//
+// Compares "normal" (forward): search rule within request.
 //
 static bool xantispam_cachelookup(const std::vector<xantispam_request>& cache, const xantispam_request *data)
 {
@@ -2009,11 +1971,11 @@ static bool xantispam_cachelookup(const std::vector<xantispam_request>& cache, c
 	return true;
 }
 
-
 // Look up a request in a blacklist or whitelist cache, return false
 // if the request is on cache, else return true --- searches backwards
 // because most recent elements are expected to be at end of cache.
-// Compares inversed!
+//
+// Compares inversed (backward): search request within the rule.
 //
 static xantispam_request xantispam_inverse_cachelookup(const std::vector<xantispam_request>& cache, const xantispam_request *data, bool *found)
 {
@@ -2036,6 +1998,18 @@ static xantispam_request xantispam_inverse_cachelookup(const std::vector<xantisp
 
 
 // handle lookups and cache pre-filling transparently
+//
+// "Transparently" means that when a rule is not found on cache, it is
+// looked up in the corresponding file without making a difference for
+// the calling function.  Lookups on background and silent requests
+// should not use this because for every rule that isn't cached, a
+// file lookup is performed (and a stupid number of file lookups can
+// result).
+//
+// This is a bit awkward considering xantispam_lookup_selectively()
+// which prefills the caches once.  Yet the file lookup is only
+// performed when the rule is not found on cache, and when the cache
+// already has been prefilled, it shall be found.
 //
 static bool xantispam_transparentlookup(std::vector<xantispam_request>& cache, const xantispam_request *search, const bool type)
 {
@@ -2085,6 +2059,12 @@ static bool xantispam_transparentlookup(std::vector<xantispam_request>& cache, c
 
 
 // prefill a cache
+//
+// This is different from prefilling on demand through
+// xantispam_filelookup() in that it makes an estimation about where
+// to actually start reading depending on the number of lines in the
+// file.  This should only be called once, after that only on user
+// demand.
 //
 static void xantispam_prefill_cache(std::vector<xantispam_request>& cache, const bool type)
 {
@@ -2847,32 +2827,42 @@ static bool xantispam_silent(const xantispam_request *request, std::vector<xanti
 
 // (Start reading from here.)
 //
-// white- and blacklist implementation for NACL_Antispam sub-options
+// + chat logging can be distinguished by resident/friend/group
+// + chat logging can be disabled selectively
+// + media filtering can consider full URLs including the port
+// + external programs can be started for a number of events
+// + friend online notifications can be shown selectively
+// + sound for new chat sessions can be suppressed selectively
+// + chat history can be displayed in external editor or any program
+// + autoresponses can be sent/disabled distinctively
+// + automatically accepting inventory items can be selective
+// + various dialogs can be suppressed selectively
+// + internal text editor can import and export files
+// + the external editor can be started from the internal one
 //
-// Persistent rules are stored in files, one entry per line.  Each
-// entry can contain multiple options.	There is a whitelist and a
-// blacklist; both have the same format:
+// These features are implemented by intercepting requests and making
+// decisions about what to do by checking volatile and persistent
+// rules, each of which are optionally used or not.  In case a
+// decision cannot be made from existing rules, the user is queried
+// for a decision unless queries are disabled.
 //
-// UUID <type> [type] [type] ... [timestamp]
-// for example:
-// 2c75aa8f-8780-4bbd-a5c1-75e773802284: AntiSpamScripts AntiSpamItemOffers
+// Persistent rules are stored in tables in emacs org-mode files.  A
+// blacklist and a whitelist is being used.  The design allows for a
+// virtually unlimited number of persistent rules and employs
+// overenginered caching of the rules to avoid performance issues.
 //
-// Lines starting with # are ignored.  Entries are read until either a
-// '#' or a '[' is found.  The colon after the UUID is mandatory.
-// Timestamps are not mandatory; if they appear, they must be enclosed
-// in brackets ('[' and ']').
+// However, different types of rules are used for different types of
+// requests: ordinary requests, background requests and silent
+// requests.  Since background and silent rules can be looked up
+// rather frequently, they are looked up in files only once and from
+// thereon, in the caches.  In case a user has a great number of
+// rules, they may have a problem with some background and silent
+// rules being dropped from the caches.  There are some ways to solve
+// this problem if that becomes necessary.
 //
-// Basically, the entries (UUID and filter-type) are handled as
-// strings as they are: Rules that use additional/different filter
-// types can be implemented without changes to the xantispam code.
-// Rules that do not use UUIDs to assign filter types do require an
-// adjustment in xantispam_line2request() if they need to be read from
-// files.
+// Please direct questions and suggestions about xantispam to
+// lee@yun.yagibdah.de.
 //
-// Caches are overengineered for performance.  Please direct questions
-// and suggestions about xantispam to lee@yun.yagibdah.de.
-
-
 bool xantispam_check(const std::string& fromstr, const std::string& filtertype, const std::string& from_name)
 {
 	// cache these for better performance
@@ -3227,7 +3217,6 @@ void xantispam_buttons(const int action)
 #undef XANTISPAM_EDIT_BLACKLIST
 #undef XANTISPAM_EDIT_WHITELIST
 #undef XANTISPAM_ENABLE
-#undef XANTISPAM_MAXDEPTH
 #undef XANTISPAM_NOP
 #undef XANTISPAM_PERMBLACK
 #undef XANTISPAM_PERMWHITE
