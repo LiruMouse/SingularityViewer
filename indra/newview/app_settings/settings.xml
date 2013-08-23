@@ -1396,32 +1396,10 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <string />
     </map>
-    <key>AntiSpamXtendedBackgndRq</key>
-    <map>
-      <key>Comment</key>
-      <string>When true, XAntiSpam requests of the Background category are decided by rules, otherwise they always pass.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
     <key>AntiSpamXtendedInterceptsDialogs</key>
     <map>
       <key>Comment</key>
       <string>When enabled, XAntiSpam can intercept a number of dialogs. This should be enabled when you want to use XAntiSpam, and you should enable XAntiSpam rules.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
-    <key>AntiSpamXtendedSilentRq</key>
-    <map>
-      <key>Comment</key>
-      <string>When true, XAntiSpam requests of the Silent category are decided by rules, otherwise they always pass.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

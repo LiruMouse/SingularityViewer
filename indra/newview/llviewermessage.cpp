@@ -2891,12 +2891,10 @@ static bool xantispam_silent(const xantispam_request *request, std::vector<xanti
 bool xantispam_check(const std::string& fromstr, const std::string& filtertype, const std::string& from_name)
 {
 	// cache these for better performance
-	static LLCachedControl<bool> use_backgnd(gSavedSettings, "AntiSpamXtendedBackgndRq");
 	static LLCachedControl<bool> use_notify(gSavedSettings, "AntiSpamNotify");
 	static LLCachedControl<bool> use_persistent(gSavedSettings, "AntiSpamXtendedPersistent");
 	static LLCachedControl<bool> use_queries(gSavedSettings, "AntiSpamXtendedQueries");
 	static LLCachedControl<bool> use_relaxed(gSavedSettings, "AntiSpamXtendedRelaxed");
-	static LLCachedControl<bool> use_silent(gSavedSettings, "AntiSpamXtendedSilentRq");
 	static LLCachedControl<bool> use_volatile(gSavedSettings, "AntiSpamXtendedVolatile");
 
 	// persistent caches here, filled from rules files
@@ -2911,15 +2909,7 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 
 	// background and silent requests have their own handlers
 	bool request_is_backgnd = (filtertype.find("&-") == 0);
-	if(request_is_backgnd && !use_backgnd)
-	{
-		return false;
-	}
 	bool request_is_silent = (filtertype.at(0) == '!');
-	if(request_is_silent && !use_silent)
-	{
-		return false;
-	}
 
 	// handle special cases here
 	if(!request_is_silent && !request_is_backgnd && (fromstr == gAgentID.asString()))
@@ -3218,8 +3208,6 @@ void xantispam_buttons(const int action)
 		gSavedSettings.setBOOL("AntiSpamXtendedQueries", 1);
 		gSavedSettings.setBOOL("AntiSpamXtendedVolatile", 1);
 		gSavedSettings.setBOOL("AntiSpamXtendedRelaxed", 1);
-		gSavedSettings.setBOOL("AntiSpamXtendedBackgndRq", 1);
-		gSavedSettings.setBOOL("AntiSpamXtendedSilentRq", 1);
 		gSavedSettings.setBOOL("NotifyRecievesFocus", 0);
 
 		xantispam_make_listheader(gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + XANTISPAM_WHITELISTFILE);
