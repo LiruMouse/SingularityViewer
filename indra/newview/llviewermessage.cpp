@@ -2009,7 +2009,8 @@ static xantispam_request xantispam_inverse_cachelookup(const std::vector<xantisp
 // This is a bit awkward considering xantispam_lookup_selectively()
 // which prefills the caches once.  Yet the file lookup is only
 // performed when the rule is not found on cache, and when the cache
-// already has been prefilled, it shall be found.
+// already has been prefilled, it shall be found and a file lookup is
+// averted.
 //
 static bool xantispam_transparentlookup(std::vector<xantispam_request>& cache, const xantispam_request *search, const bool type)
 {
@@ -2063,8 +2064,11 @@ static bool xantispam_transparentlookup(std::vector<xantispam_request>& cache, c
 // This is different from prefilling on demand through
 // xantispam_filelookup() in that it makes an estimation about where
 // to actually start reading depending on the number of lines in the
-// file.  This should only be called once, after that only on user
-// demand.
+// file.  This is so as to put only the (supposedly) most recent rules
+// into the cache, i. e. the ones at the end of the file.
+//
+// This should only be called once, after that only on user demand.
+// Clear the cache before calling this to avoid dupes!
 //
 static void xantispam_prefill_cache(std::vector<xantispam_request>& cache, const bool type)
 {
@@ -2113,7 +2117,7 @@ static void xantispam_prefill_cache(std::vector<xantispam_request>& cache, const
 			{
 				// Not checking for dupes here because it's about 120+ times as fast
 				// without.  Still checking for overflow since someone might manage to
-				// append another 5 billion entries to the files while the caches are
+				// append another 5 billion entries to the file while the cache is
 				// still being filled :)
 				if(cache.size() > XANTISPAM_CACHE_CAPACITY)
 				{
@@ -2129,7 +2133,8 @@ static void xantispam_prefill_cache(std::vector<xantispam_request>& cache, const
 	llinfos << "cache now holds " << cache.size() << " entries (~" <<  cache.size() * 100 / XANTISPAM_CACHE_CAPACITY << "%)"<< llendl;
 }
 
-
+// make a cute timestamp
+//
 static std::string xantispam_get_timestamp(void)
 {
 	char timestamp[32];
@@ -2147,6 +2152,9 @@ static std::string xantispam_get_timestamp(void)
 }
 
 
+// When the white or blacklist doesn't exist yet, create a header with
+// some information for users who edit it.
+//
 // There must be a better way to do this.  There should be more
 // information in the header.
 //
@@ -2176,9 +2184,10 @@ static void xantispam_make_listheader(const std::string& filename)
 
 
 // Append a new rule entry to a whitelist or blacklist file.  Each
-// entry in the lists has a timestamp to allow cleanups.  Cleanups
-// will either have to be an external thing (like a perl script) or a
-// background task if built-in.
+// entry in the lists has a timestamp to allow cleanups.  Hopefully,
+// cleanups won't be neeeded because with black- and whitelisting and
+// by making use of wildcards and object names in rules, the number of
+// required rules can be kept small.
 //
 static void xantispam_make_listentry(const bool type, const xantispam_request *data, const std::string& from_name)
 {
@@ -2312,7 +2321,10 @@ static void xantispam_notify_cb(const LLSD& notification, const LLSD& response, 
 	xantispam_notify(&data, XANTISPAM_UNNOTIFY, from_name);
 }
 
-
+// Deal with volatiles rules: When persistent rules didn't lead to a
+// decision, examine the volatile rules.  In case they don't render a
+// decision, query the user.
+//
 static xantispam_blackwhite xantispam_notify(const xantispam_request *data, const int action, const std::string& from_name)
 {
 	// cache these for better performance
@@ -2444,7 +2456,8 @@ static xantispam_blackwhite xantispam_notify(const xantispam_request *data, cons
 
 
 // For instances of extreme spamming just block.  This is decided by
-// how many calls there have been over a period of time.
+// how many calls there have been over a period of time (calls per 10
+// seconds).
 //
 static bool xantispam_callspersec(void)
 {
@@ -2508,6 +2521,9 @@ static bool xantispam_callspersec(void)
 
 // a process launcher that picks what to launch from a rule
 // Return false on error, otherwise true, even on dryrun.
+//
+// A dryrun sets up to start the external process and informs the user
+// what would be run without actually running it.
 //
 static bool xantispam_process_launcher(const std::string& rule, const std::string& info)
 {
@@ -2780,7 +2796,6 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 			llwarns << "syntax error (unexpected number of arguments) in request: [" << request->from << "]{" << request->type << "}" << llendl;
 			return false;  // probably better accept in this case
 		}
-
 	}
 
 	// For the rules that don't do someting special, return the result of the lookup.
@@ -2829,6 +2844,7 @@ static bool xantispam_silent(const xantispam_request *request, std::vector<xanti
 	llwarns << "denying unprocessable silent request: [" << request->from << "]{" << request->type << "}" << llendl;
 	return true;
 }
+
 
 // (Start reading from here.)
 //
@@ -2879,17 +2895,17 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 	static LLCachedControl<bool> use_silent(gSavedSettings, "AntiSpamXtendedSilentRq");
 	static LLCachedControl<bool> use_volatile(gSavedSettings, "AntiSpamXtendedVolatile");
 
-	// persistent request caches here, filled from rules files when file
-	// lookups are done
+	// persistent caches here, filled from rules files
 	static std::vector<xantispam_request> blackcache;
 	static std::vector<xantispam_request> whitecache;
 	// Use a volatile cache for undecided requests.	 This saves both cache
 	// and file lookups when it is already known that a request is
-	// undecided.
+	// undecided.  It is filled from decisions made by the user.
 	static std::vector<xantispam_request> undeccache;
 
+	// llinfos << "XA-RQ-log: [" << fromstr << "]{" << filtertype << "}'" << from_name << "', backgnd: " << (request_is_backgnd ? "Yes" : "No") << llendl;
 
-	//  always pass these request types when not enabled
+	// background and silent requests have their own handlers
 	bool request_is_backgnd = (filtertype.find("&-") == 0);
 	if(request_is_backgnd && !use_backgnd)
 	{
@@ -2901,9 +2917,7 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 		return false;
 	}
 
-	// llinfos << "XA-RQ-log: [" << fromstr << "]{" << filtertype << "}'" << from_name << "', backgnd: " << (request_is_backgnd ? "Yes" : "No") << llendl;
-
-	// blacklisting yourself can be confusing + handle special cases here
+	// handle special cases here
 	if(!request_is_silent && !request_is_backgnd && (fromstr == gAgentID.asString()))
 	{
 		// handle special calls
@@ -2958,7 +2972,7 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 			break;
 		case XANTISPAM_SPECIAL_INVALID:
 		{
-			// Users may wonder why some requests always pass.
+			// Users may wonder why some requests always pass.  policy: They cannot block themselves.
 			LLSD args;
 			args["UUID"] = fromstr + " (" + from_name + ")";
 			LLNotificationsUtil::add("xantispamNselfblk", args);
@@ -2991,7 +3005,7 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 			}
 		}
 		return false;
-	}  // request from self + special
+	}  // special requests
 
 	if(!use_persistent && !use_volatile && !use_queries)
 	{
@@ -3003,12 +3017,14 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 			args["TYPE"] = filtertype;
 			LLNotificationsUtil::add("xantispamNblk", args);
 		}
-		// When no rules are enabled, the original filter must not be
-		// bypassed.
+		// When no rules are enabled, false must be returned
+		// to let the request pass. (change after commit)
+		//
 		return true;
 	}
 
-	// prevent flooding
+	// prevent flooding --- blocking the request may not be the right
+	// thing in all cases, but it is the most secure thing to do
 	if(xantispam_callspersec())
 	{
 		return true;
@@ -3026,13 +3042,13 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 
 	if(use_persistent)
 	{
-		// filter types starting with "&-" do not generate notifications
+		// policy: background requests do not generate queries
 		if(request_is_backgnd)
 		{
-			// handle those differently
 			return xantispam_backgnd(&request, whitecache, blackcache, from_name);
 		}
 
+		// policy: silent requests do not generate notifications
 		if(request_is_silent)
 		{
 			return xantispam_silent(&request, whitecache, blackcache, from_name);
@@ -3044,7 +3060,7 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 			if(!xantispam_transparentlookup(blackcache, &long_request, false))
 			{
 				LL_DEBUGS("xantispam") << "is blacklisted" << LL_ENDL;
-				// notify about what happened
+				// yes, notify about what happened
 				if(use_notify && !request_is_silent)
 				{
 					LLSD args;
@@ -3074,7 +3090,7 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 		}
 	}
 
-	if(request_is_backgnd)
+	if(request_is_backgnd)  // policy: background requests do not generate queries
 	{
 		// undecided, must pass because it's not mandatory to have any rules,
 		// and background requests must not generate queries
@@ -3116,6 +3132,7 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 
 
 #if 0
+// used to generate lots of rules for testing
 static void xantispam_generate_test_entries(void)
 {
 	int cnt = 0;
