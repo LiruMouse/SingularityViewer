@@ -3034,23 +3034,34 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 	xantispam_request request, long_request;
 	request.from = long_request.from = fromstr;
 	request.type = filtertype;
+
+	// policy: background requests do not generate queries
+	// policy: handle background requests always by rules
+	//         Without exisiting rules, this results in
+	//         background requests being denied, which
+	//         effictively results in the same behaviour
+	//         as would result without xantispam.
+	if(request_is_backgnd)
+	{
+		return xantispam_backgnd(&request, whitecache, blackcache, from_name);
+	}
+
+	// policy: silent requests do not generate notifications
+	// policy: handle silent requests always by rules
+	//         Without exisiting rules, this results in
+	//         silent requests being denied, which
+	//         effictively results in the same behaviour
+	//         as would result without xantispam.
+	if(request_is_silent)
+	{
+		return xantispam_silent(&request, whitecache, blackcache, from_name);
+	}
+
 	// long_request provides using rules like ":: greeter"
 	long_request.type = filtertype + stripped_name;
 
 	if(use_persistent)
 	{
-		// policy: background requests do not generate queries
-		if(request_is_backgnd)
-		{
-			return xantispam_backgnd(&request, whitecache, blackcache, from_name);
-		}
-
-		// policy: silent requests do not generate notifications
-		if(request_is_silent)
-		{
-			return xantispam_silent(&request, whitecache, blackcache, from_name);
-		}
-
 		if(xantispam_cachelookup(undeccache, &request) )
 		{
 			// The request undecided. Is it blacklisted?
@@ -3058,7 +3069,7 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 			{
 				LL_DEBUGS("xantispam") << "is blacklisted" << LL_ENDL;
 				// yes, notify about what happened
-				if(use_notify && !request_is_silent)
+				if(use_notify)
 				{
 					LLSD args;
 					args["SOURCE"] = fromstr + " (" + from_name + ")";
@@ -3087,19 +3098,12 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 		}
 	}
 
-	if(request_is_backgnd)  // policy: background requests do not generate queries
-	{
-		// undecided, must pass because it's not mandatory to have any rules,
-		// and background requests must not generate queries
-		return false;
-	}
-
 	// either the voliatile caches or the user will decide this request
 	xantispam_blackwhite bw = xantispam_notify(&request, XANTISPAM_QUERYUSER, from_name);
 
 	if(bw.isblacklisted) {
 		// notify about what happened
-		if(use_notify && !request_is_silent)
+		if(use_notify)
 		{
 			LLSD args;
 			args["SOURCE"] = fromstr + " (" + from_name + ")";
@@ -3116,7 +3120,7 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 		return false;
 	}
 
-	if(use_notify && !request_is_silent)
+	if(use_notify)
 	{
 		// notify about what happened
 		LLSD args;
