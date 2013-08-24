@@ -526,6 +526,7 @@ void LLIMMgr::addMessage(
 	if (LLVOAvatar* from_avatar = find_avatar_from_object(target_id)) from_avatar->mIdleTimer.reset(); // Not idle, message sent to somewhere
 
 	// create IM window as necessary
+	std::string name = from;
 	if(!floater)
 	{
 		if (gIMMgr->getIgnoreGroupListCount() > 0 && gAgent.isInGroup(session_id))
@@ -552,7 +553,6 @@ void LLIMMgr::addMessage(
 			}
 		}
 
-		std::string name = from;
 		if(!session_name.empty() && session_name.size()>1)
 		{
 			name = session_name;
@@ -651,9 +651,13 @@ void LLIMMgr::addMessage(
 			chat_floater->setFloaterFlashing(previouslyActiveFloater, TRUE);
 		}
 
-		//notify of a new IM
-		notifyNewIM();
-		mIMUnreadCount++;
+		// only show the button and count if wanted
+		if(!(xantispam_check(other_participant_id.asString(), "&-IMCountingButton", name) && !xantispam_check(other_participant_id.asString(), "&-IMNoCountingButton", name)))
+		{
+			//notify of a new IM
+			notifyNewIM();
+			mIMUnreadCount++;
+		}
 	}
 }
 
