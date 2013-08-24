@@ -558,11 +558,24 @@ void LLIMMgr::addMessage(
 			name = session_name;
 		}
 
+		// shorten the tab by shortening the name --- useful for bottom tabs
+		bool xa_add_info = false;
+		std::string xa_short_name;
+		if(xantispam_check(other_participant_id.asString(), "&-IMLongTab", name) && !xantispam_check(other_participant_id.asString(), "&-IMShortTab", name))
+		{
+			xa_short_name = name.substr(0, 2);
+			xa_add_info = true;
+		}
+		else
+		{
+			xa_short_name = name;
+		}
 		
 		floater = createFloater(
 			new_session_id,
 			other_participant_id,
-			name,
+			xa_short_name,
+//			name,
 			dialog,
 			FALSE);
 
@@ -584,6 +597,12 @@ void LLIMMgr::addMessage(
 			//<< "*** position: " << position << std::endl;
 
 			floater->addHistoryLine(bonus_info.str(), gSavedSettings.getColor4("SystemChatColor"));
+		}
+
+		// give an info what the long name is when the name was shortened
+		if(xa_add_info)
+		{
+			floater->addHistoryLine("--- long session name: " + name + " ---", gSavedSettings.getColor4("SystemChatColor"));
 		}
 
 		// see if sound or program execution is desired on new sessions
@@ -749,13 +768,33 @@ LLUUID LLIMMgr::addSession(
 		LLDynamicArray<LLUUID> ids;
 		ids.put(other_participant_id);
 
+		// shorten the tab by shortening the name --- useful for bottom tabs
+		bool xa_add_info = false;
+		std::string xa_short_name;
+		if(xantispam_check(other_participant_id.asString(), "&-IMLongTab", name) && !xantispam_check(other_participant_id.asString(), "&-IMShortTab", name))
+		{
+			xa_short_name = name.substr(0, 2);
+			xa_add_info = true;
+		}
+		else
+		{
+			xa_short_name = name;
+		}
+
 		floater = createFloater(
 			session_id,
 			other_participant_id,
-			name,
+			xa_short_name,
+//			name,
 			ids,
 			dialog,
 			TRUE);
+
+		// give an info what the long name is when the name was shortened
+		if(xa_add_info)
+		{
+			floater->addHistoryLine("--- long session name: " + name + " ---", gSavedSettings.getColor4("SystemChatColor"));
+		}
 
 		noteOfflineUsers(floater, ids);
 		LLFloaterChatterBox::showInstance(session_id);
