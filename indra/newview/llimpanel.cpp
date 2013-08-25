@@ -957,7 +957,7 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 		}
 	}
 
-	if (!isInVisibleChain())
+	if (!isInVisibleChain() || (!hasFocus() && getParent() == gFloaterView))
 	{
 		mNumUnreadMessages++;
 	}
@@ -1839,6 +1839,7 @@ BOOL LLFloaterIMPanel::focusFirstItem(BOOL prefer_text_fields, BOOL focus_flash 
 
 void LLFloaterIMPanel::onFocusReceived()
 {
+	mNumUnreadMessages = 0;
 	if (getVisible() && mInputEditor->getVisible())
 	{
 		setInputFocus(true);
