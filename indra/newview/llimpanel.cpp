@@ -917,8 +917,11 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 				// use a distinguished name for the log file?
 				if(!xantispam_check(from, "&-IMLogDistinct", label))
 				{
-					bool is_friend = ((source == gAgentID) || LLAvatarActions::isFriend(source));
-					filename = (is_friend ? "friend_" : "resident_") + filename;
+					// hmm ...
+					bool source_is_self = (source == gAgentID);
+					bool source_is_friend = source_is_self ? false : LLAvatarActions::isFriend(source);
+					bool log_friend = (source_is_self && source_is_friend) ? true : source_is_friend;
+					filename = (log_friend ? "friend_" : "resident_") + filename;
 				}
 			}
 			else
