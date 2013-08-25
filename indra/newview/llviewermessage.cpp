@@ -2720,11 +2720,14 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 	// # &-IMLogDistinct
 	// # &-IMLogHistoryExternal
 	// # &-IMLogHistoryExternal![parameter_1!parameter_2!...!parameter_N][!%s]
+	// # &-IMLongOrShortTab (merges &-IMLongTab and &-IMShortTab into a single request)
+	// # &-IMLongOrShortTabOrder?Short
 	// # &-IMNewSessionNoSnd
 	// # &-IMSendNoAutoresponses
 	// # &-InventoryHandleAccept?AcceptInventory?[type]
 	// # &-StatusFriendIsOffline
 	// # &-StatusFriendIsOnline
+
 
 	bool hasrule = xantispam_lookup_selectively(blackcache, whitecache, request, true);
 
@@ -2797,6 +2800,45 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 			return false;  // probably better accept in this case
 		}
 	}
+
+	// wrapper for merged request: The request is merged in that it avoids
+	// having to make two calls to xantispam_check() to get a result
+	// Return false when a short tab is wanted.
+	if(request->type == "&-IMLongOrShortTab")
+	{
+		xantispam_request longtab, shorttab;
+		shorttab.from = longtab.from = request->from;
+		shorttab.type = "&-IMShortTab";
+
+		// Is a short tab wanted?
+		bool want_short = !xantispam_lookup_selectively(blackcache, whitecache, &shorttab, true);
+		if(!want_short)
+		{
+			// The default behaviour is long tabs, and no further ado is needed
+			// when a short tab isn't wanted anyway.
+			return true;
+		}
+
+		// A short tab is MAYBE wanted.  Is there a rule demanding long tabs?
+		longtab.type = "&-IMLongTab";
+		bool want_long = !xantispam_lookup_selectively(blackcache, whitecache, &longtab, true);
+		if(!want_long)
+		{
+			// nothing demands long tabs
+			return false;
+		}
+
+		// Now both long and short tabs are demanded.  Which shall win?
+		longtab.type = "&-IMLongOrShortTabOrder?Short";
+		bool short_tabs_win = !xantispam_lookup_selectively(blackcache, whitecache, &longtab, true);
+		return !short_tabs_win;
+
+		// After all, this is probably what users want when they wildcard all
+		// tabs to short and excempt someone from this rule.  Should they want
+		// it the other way round, they can still change order.
+	}
+
+	
 
 	// For the rules that don't do someting special, return the result of the lookup.
 	return hasrule;
