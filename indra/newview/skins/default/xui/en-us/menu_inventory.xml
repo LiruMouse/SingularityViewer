@@ -39,6 +39,9 @@
 	     mouse_opaque="true" name="Empty Lost And Found" width="128">
 		<on_click filter="" function="Inventory.EmptyLostAndFound" userdata="rename" />
 	</menu_item_call>
+	<menu_item_call label="Open in New Window" name="Open Folder In New Window">
+		<on_click function="Inventory.DoToSelected" userdata="open_in_new_window"/>
+	</menu_item_call>
 	<menu_item_call bottom_delta="-18" height="18" label="New Folder" left="0" mouse_opaque="true"
 	     name="New Folder" width="128">
 		<on_click filter="" function="Inventory.DoCreate" userdata="category" />
@@ -257,6 +260,9 @@
 	     mouse_opaque="true" name="Teleport To Landmark" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="about" />
 	</menu_item_call>
+	<menu_item_call label="Show On Map" name="Show On Map">
+		<on_click function="Inventory.DoToSelected" userdata="show_on_map"/>
+	</menu_item_call>
 	<menu_item_separator name="Animation Separator" />
 	<menu_item_call bottom_delta="-18" height="18" label="Play in World" left="0"
 	     mouse_opaque="true" name="Animation Play" width="128">
@@ -290,6 +296,10 @@
 	<menu_item_call bottom_delta="-18" height="18" label="Deactivate" left="0" mouse_opaque="true"
 	     name="Deactivate" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="deactivate" />
+	</menu_item_call>
+	<menu_item_separator name="Texture Separator"/>
+	<menu_item_call label="Save As" name="Save As">
+		<on_click function="Inventory.DoToSelected" userdata="save_as"/>
 	</menu_item_call>
 	<menu_item_separator name="Wearable And Object Separator" />
 	<menu_item_call bottom_delta="-18" height="18" label="Wear" left="0" mouse_opaque="true"
