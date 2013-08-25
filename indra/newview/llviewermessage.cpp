@@ -2717,7 +2717,7 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 	// # &-ExecOnNewGRSession!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
 	// # &-ExecOnNewIMSession!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
 	// # &-GRNewSessionNoSnd
-	// # &-IMLogDistinct
+	// # // &-IMLogDistinct DISABLED
 	// # &-IMLogHistoryExternal
 	// # &-IMLogHistoryExternal![parameter_1!parameter_2!...!parameter_N][!%s]
 	// # &-IMNewSessionNoSnd

@@ -471,10 +471,10 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 		std::string filename(label);
 		if(!isGroupSessionType())
 		{
-			if(!xantispam_check(mOtherParticipantUUID.asString(), "&-IMLogDistinct", label))
-			{
-				filename = (LLAvatarActions::isFriend(mOtherParticipantUUID) ? "friend_" : "resident_") + filename;
-			}
+			// if(!xantispam_check(mOtherParticipantUUID.asString(), "&-IMLogDistinct", label))
+			// {
+			// 	filename = (LLAvatarActions::isFriend(mOtherParticipantUUID) ? "friend_" : "resident_") + filename;
+			// }
 		}
 		else
 		{
@@ -915,14 +915,14 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 			if(xantispam_check(from, "&-IMLogDontSave", label))
 			{
 				// use a distinguished name for the log file?
-				if(!xantispam_check(from, "&-IMLogDistinct", label))
-				{
-					// hmm ...
-					bool source_is_self = (source == gAgentID);
-					bool source_is_friend = source_is_self ? false : LLAvatarActions::isFriend(source);
-					bool log_friend = (source_is_self && source_is_friend) ? true : source_is_friend;
-					filename = (log_friend ? "friend_" : "resident_") + filename;
-				}
+				// if(!xantispam_check(from, "&-IMLogDistinct", label))
+				// {
+				// 	// hmm ...
+				// 	bool source_is_self = (source == gAgentID);
+				// 	bool source_is_friend = source_is_self ? false : LLAvatarActions::isFriend(source);
+				// 	bool log_friend = (source_is_self && source_is_friend) ? true : source_is_friend;
+				// 	filename = (log_friend ? "friend_" : "resident_") + filename;
+				// }
 			}
 			else
 			{
@@ -1166,10 +1166,10 @@ void LLFloaterIMPanel::onClickHistory()
 		std::string filename = label;
 		if(!isGroupSessionType())
 		{
-			if(!xantispam_check(mOtherParticipantUUID.asString(), "&-IMLogDistinct", label))
-			{
-				filename = (LLAvatarActions::isFriend(mOtherParticipantUUID) ? "friend_" : "resident_") + filename;
-			}
+			// if(!xantispam_check(mOtherParticipantUUID.asString(), "&-IMLogDistinct", label))
+			// {
+			// 	filename = (LLAvatarActions::isFriend(mOtherParticipantUUID) ? "friend_" : "resident_") + filename;
+			// }
 		}
 		else
 		{
