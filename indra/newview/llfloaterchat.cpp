@@ -650,10 +650,23 @@ void LLFloaterChat::onClickToggleActiveSpeakers(void* userdata)
 	//self->childSetVisible("active_speakers_panel", !self->childIsVisible("active_speakers_panel"));
 }
 
+extern bool xantispam_check(const std::string&, const std::string&, const std::string&);
+
 // static
 void LLFloaterChat::onClickChatHistoryOpen(void* userdata)
 {
+	// see if the user wants full history file in external
+	// editor, which is what I always expected to happen
+	// from a button like this ...
+	// This is a request from self, so:
+	if(!xantispam_check(gAgentID.asString(), "&-IMLogHistoryExternal", LLLogChat::makeLogFileName("chat")))
+	{
+		// ... and if so, this starts the external editor with the log, hence return
+		return;
+	}
+
 	std::string command("\"" + LLLogChat::makeLogFileName("chat") + "\"");
+	// This command thing does apparently nothing on Linux and Mac.
 	gViewerWindow->getWindow()->ShellEx(command);
 
 	llinfos << command << llendl;
