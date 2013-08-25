@@ -2878,7 +2878,6 @@ static bool xantispam_silent(const xantispam_request *request, std::vector<xanti
 			}
 		}
 		// order is inversed: deny if blacklisted, otherwise decide by whitelist only
-		llinfos << "order inversed" << llendl;
 		bool iswhite = !xantispam_lookup_selectively(blackcache, whitecache, request, true);
 		return isblack ? !isblack : !iswhite;
 	}
