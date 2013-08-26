@@ -558,25 +558,10 @@ void LLIMMgr::addMessage(
 			name = session_name;
 		}
 
-		// shorten the tab by shortening the name --- useful for horizantal tabs
-		// this is a merged request
-		bool xa_add_info = false;
-		std::string xa_short_name;
-		if(xantispam_check(other_participant_id.asString(), "&-IMLongOrShortTab", name))
-		{
-			xa_short_name = name;
-		}
-		else
-		{
-			xa_short_name = name.substr(0, 2);
-			xa_add_info = true;
-		}
-		
 		floater = createFloater(
 			new_session_id,
 			other_participant_id,
-			xa_short_name,
-//			name,
+			name,
 			dialog,
 			FALSE);
 
@@ -598,12 +583,6 @@ void LLIMMgr::addMessage(
 			//<< "*** position: " << position << std::endl;
 
 			floater->addHistoryLine(bonus_info.str(), gSavedSettings.getColor4("SystemChatColor"));
-		}
-
-		// give an info what the long name is when the name was shortened
-		if(xa_add_info)
-		{
-			floater->addHistoryLine("--- long name: " + name + " ---", gSavedSettings.getColor4("SystemChatColor"));
 		}
 
 		// see if sound or program execution is desired on new sessions
@@ -773,34 +752,13 @@ LLUUID LLIMMgr::addSession(
 		LLDynamicArray<LLUUID> ids;
 		ids.put(other_participant_id);
 
-		// shorten the tab by shortening the name --- useful for horizontal tabs
-		// this is a merged request
-		bool xa_add_info = false;
-		std::string xa_short_name;
-		if(xantispam_check(other_participant_id.asString(), "&-IMLongOrShortTab", name))
-		{
-			xa_short_name = name;
-		}
-		else
-		{
-			xa_short_name = name.substr(0, 2);
-			xa_add_info = true;
-		}
-
 		floater = createFloater(
 			session_id,
 			other_participant_id,
-			xa_short_name,
-//			name,
+			name,
 			ids,
 			dialog,
 			TRUE);
-
-		// give an info what the long name is when the name was shortened
-		if(xa_add_info)
-		{
-			floater->addHistoryLine("--- long name: " + name + " ---", gSavedSettings.getColor4("SystemChatColor"));
-		}
 
 		noteOfflineUsers(floater, ids);
 		LLFloaterChatterBox::showInstance(session_id);
@@ -1256,7 +1214,20 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 													 other_participant_id,
 													 dialog);
 	LLTabContainer::eInsertionPoint i_pt = user_initiated ? LLTabContainer::RIGHT_OF_CURRENT : LLTabContainer::END;
-	LLFloaterChatterBox::getInstance(LLSD())->addFloater(floater, FALSE, i_pt);
+
+	// shorten the tab by shortening the name --- useful for horizantal tabs
+	// this is a merged request for xantispam_check()
+	std::string xa_name(session_label);
+	LLStringUtil::trim(xa_name);
+	if(xantispam_check(other_participant_id.asString(), "&-IMLongOrShortTab", xa_name))
+	{
+		LLFloaterChatterBox::getInstance(LLSD())->addFloater(floater, FALSE, i_pt);
+	}
+	else
+	{
+		LLFloaterChatterBox::getInstance(LLSD())->addFloaterSmallTab(floater, FALSE, 16, i_pt);
+	}
+
 	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
 	if (tear_off)
 	{
@@ -1301,7 +1272,20 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 													 ids,
 													 dialog);
 	LLTabContainer::eInsertionPoint i_pt = user_initiated ? LLTabContainer::RIGHT_OF_CURRENT : LLTabContainer::END;
-	LLFloaterChatterBox::getInstance(LLSD())->addFloater(floater, FALSE, i_pt);
+
+	// shorten the tab by shortening the name --- useful for horizantal tabs
+	// this is a merged request for xantispam_check()
+	std::string xa_name(session_label);
+	LLStringUtil::trim(xa_name);
+	if(xantispam_check(other_participant_id.asString(), "&-IMLongOrShortTab", xa_name))
+	{
+		LLFloaterChatterBox::getInstance(LLSD())->addFloater(floater, FALSE, i_pt);
+	}
+	else
+	{
+		LLFloaterChatterBox::getInstance(LLSD())->addFloaterSmallTab(floater, FALSE, 16, i_pt);
+	}
+
 	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
 	if (tear_off)
 	{

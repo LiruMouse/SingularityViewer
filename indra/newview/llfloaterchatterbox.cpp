@@ -258,9 +258,9 @@ void LLFloaterChatterBox::removeFloater(LLFloater* floaterp)
 	LLMultiFloater::removeFloater(floaterp);
 }
 
-void LLFloaterChatterBox::addFloater(LLFloater* floaterp, 
-									BOOL select_added_floater, 
-									LLTabContainer::eInsertionPoint insertion_point)
+void LLFloaterChatterBox::addFloater(LLFloater* floaterp,
+				     BOOL select_added_floater,
+				     LLTabContainer::eInsertionPoint insertion_point)
 {
 	S32 num_locked_tabs = mTabContainer->getNumLockedTabs();
 
@@ -311,6 +311,65 @@ void LLFloaterChatterBox::addFloater(LLFloater* floaterp,
 		mTabContainer->setTabImage(floaterp, "active_voice_tab.tga");	
 	}
 }
+
+
+void LLFloaterChatterBox::addFloaterSmallTab(LLFloater* floaterp,
+					     BOOL select_added_floater, S32 tabwidth,
+					     LLTabContainer::eInsertionPoint insertion_point)
+{
+	S32 num_locked_tabs = mTabContainer->getNumLockedTabs();
+
+	// already here
+	if (floaterp->getHost() == this) return;
+
+	// limit the tab width
+	mTabContainer->setMaxTabWidth(tabwidth);
+
+	// make sure my friends and chat history both locked when re-attaching chat history
+	if (floaterp->getName() == "chat floater")
+	{
+		mTabContainer->unlockTabs();
+		// add chat history as second tab if contact window is present, first tab otherwise
+		if (findChild<LLView>("floater_my_friends"))
+		{
+			// assuming contacts window is first tab, select it
+			mTabContainer->selectFirstTab();
+			// and add ourselves after
+			LLMultiFloater::addFloater(floaterp, select_added_floater, LLTabContainer::RIGHT_OF_CURRENT);
+		}
+		else
+		{
+			LLMultiFloater::addFloater(floaterp, select_added_floater, LLTabContainer::START);
+		}
+
+		// make sure first two tabs are now locked
+		mTabContainer->lockTabs(num_locked_tabs + 1);
+		gSavedSettings.setBOOL("ChatHistoryTornOff", FALSE);
+		floaterp->childSetVisible("chat_layout_panel", true);
+		floaterp->setCanClose(FALSE);
+	}
+	else if (floaterp->getName() == "floater_my_friends")
+	{
+		mTabContainer->unlockTabs();
+		// add contacts window as first tab
+		LLMultiFloater::addFloater(floaterp, select_added_floater, LLTabContainer::START);
+		// make sure first two tabs are now locked
+		mTabContainer->lockTabs(num_locked_tabs + 1);
+		gSavedSettings.setBOOL("ContactsTornOff", FALSE);
+		floaterp->setCanClose(FALSE);
+	}
+	else
+	{
+		LLMultiFloater::addFloater(floaterp, select_added_floater, insertion_point);
+	}
+
+	// make sure active voice icon shows up for new tab
+	if (floaterp == mActiveVoiceFloater)
+	{
+		mTabContainer->setTabImage(floaterp, "active_voice_tab.tga");	
+	}
+}
+
 
 //static 
 LLFloater* LLFloaterChatterBox::getCurrentVoiceFloater()

@@ -56,8 +56,11 @@ public:
 
 	/*virtual*/ void removeFloater(LLFloater* floaterp);
 	/*virtual*/ void addFloater(LLFloater* floaterp, 
-								BOOL select_added_floater, 
-								LLTabContainer::eInsertionPoint insertion_point = LLTabContainer::END);
+				    BOOL select_added_floater,
+				    LLTabContainer::eInsertionPoint insertion_point = LLTabContainer::END);
+	void addFloaterSmallTab(LLFloater* floaterp,
+				BOOL select_added_floater, S32 tabwidth,
+				LLTabContainer::eInsertionPoint insertion_point = LLTabContainer::END);
 
 	static LLFloater* getCurrentVoiceFloater();
 	
