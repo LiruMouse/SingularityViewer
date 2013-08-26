@@ -2806,12 +2806,12 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 	// Return false when a short tab is wanted.
 	if(request->type == "&-IMLongOrShortTab")
 	{
-		xantispam_request longtab, shorttab;
-		shorttab.from = longtab.from = request->from;
-		shorttab.type = "&-IMShortTab";
+		xantispam_request longtab;
+		longtab.from = request->from;
+		longtab.type = "&-IMShortTab";
 
 		// Is a short tab wanted?
-		bool want_short = !xantispam_lookup_selectively(blackcache, whitecache, &shorttab, true);
+		bool want_short = !xantispam_lookup_selectively(blackcache, whitecache, &longtab, true);
 		if(!want_short)
 		{
 			// The default behaviour is long tabs, and no further ado is needed
@@ -2830,15 +2830,13 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 
 		// Now both long and short tabs are demanded.  Which shall win?
 		longtab.type = "&-IMLongOrShortTabOrder?Short";
-		bool short_tabs_win = !xantispam_lookup_selectively(blackcache, whitecache, &longtab, true);
-		return !short_tabs_win;
+		bool short_tabs_lose = xantispam_lookup_selectively(blackcache, whitecache, &longtab, true);
+		return short_tabs_lose;
 
 		// After all, this is probably what users want when they wildcard all
 		// tabs to short and excempt someone from this rule.  Should they want
 		// it the other way round, they can still change order.
 	}
-
-	
 
 	// For the rules that don't do someting special, return the result of the lookup.
 	return hasrule;
