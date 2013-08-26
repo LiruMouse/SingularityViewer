@@ -267,10 +267,6 @@ void LLFloaterChatterBox::addFloater(LLFloater* floaterp,
 	// already here
 	if (floaterp->getHost() == this) return;
 
-	// unlimit the tab width
-	// from ./indra/llui/lltabcontainer.cpp:const S32 TABCNTR_TAB_MAX_WIDTH = 150;
-	mTabContainer->setMaxTabWidth(150);
-
 	// make sure my friends and chat history both locked when re-attaching chat history
 	if (floaterp->getName() == "chat floater")
 	{
@@ -326,7 +322,7 @@ void LLFloaterChatterBox::addFloaterSmallTab(LLFloater* floaterp,
 	// already here
 	if (floaterp->getHost() == this) return;
 
-	// limit the tab width
+	// set the tab width
 	mTabContainer->setMaxTabWidth(tabwidth);
 
 	// make sure my friends and chat history both locked when re-attaching chat history

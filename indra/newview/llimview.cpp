@@ -1221,7 +1221,8 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 	LLStringUtil::trim(xa_name);
 	if(xantispam_check(other_participant_id.asString(), "&-IMLongOrShortTab", xa_name))
 	{
-		LLFloaterChatterBox::getInstance(LLSD())->addFloater(floater, FALSE, i_pt);
+		// from ./indra/llui/lltabcontainer.cpp:const S32 TABCNTR_TAB_MAX_WIDTH = 150;
+		LLFloaterChatterBox::getInstance(LLSD())->addFloaterSmallTab(floater, FALSE, 150, i_pt);
 	}
 	else
 	{
@@ -1279,7 +1280,8 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 	LLStringUtil::trim(xa_name);
 	if(xantispam_check(other_participant_id.asString(), "&-IMLongOrShortTab", xa_name))
 	{
-		LLFloaterChatterBox::getInstance(LLSD())->addFloater(floater, FALSE, i_pt);
+		// from ./indra/llui/lltabcontainer.cpp:const S32 TABCNTR_TAB_MAX_WIDTH = 150;
+		LLFloaterChatterBox::getInstance(LLSD())->addFloaterSmallTab(floater, FALSE, 150, i_pt);
 	}
 	else
 	{
