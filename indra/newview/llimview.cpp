@@ -1226,7 +1226,7 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 	}
 	else
 	{
-		LLFloaterChatterBox::getInstance(LLSD())->addFloaterSmallTab(floater, FALSE, 16, i_pt);
+		LLFloaterChatterBox::getInstance(LLSD())->addFloaterSmallTab(floater, FALSE, gSavedSettings.getU32("AntiSpamXtendedMaxTabLength"), i_pt);
 	}
 
 	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
@@ -1285,7 +1285,7 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 	}
 	else
 	{
-		LLFloaterChatterBox::getInstance(LLSD())->addFloaterSmallTab(floater, FALSE, 16, i_pt);
+		LLFloaterChatterBox::getInstance(LLSD())->addFloaterSmallTab(floater, FALSE, gSavedSettings.getU32("AntiSpamXtendedMaxTabLength"), i_pt);
 	}
 
 	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
