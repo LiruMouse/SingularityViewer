@@ -3036,7 +3036,7 @@ Do you wish to export anyway?<usetemplate name="okcancelbuttons" yestext="Procee
    icon="notify_caution_icon.tga"
    name="xantispam"
    type="alert">
-XantiSpam hat einen Dialog abgefangen:
+XantiSpam hat ein Ereignis abgefangen:
 
 
 Typ:
@@ -3048,7 +3048,7 @@ Von:
 
 Dauerhaufte and flüchtige XAntiSpam Regeln sind abgeschaltet, Rückfragen sind angeschaltet.
 
-Wenn Sie XAntiSpam Regeln anschalten, können Sie mittels der Rückfragen diesen SPAM Filter 'trainieren'. Das bedeutet, daß Sie Dialoge von bestimmten Einwohnern und Objekten individuell erlauben oder verbieten können. Sobald das 'Training' abgeschlossen ist, können Sie die Rückfragen abschalten und empfangen dann nur Dialoge, die Sie tatsächlich empfangen wollen. Wenn Sie die Regeln nicht anschalten und die Rückfragen abschalten, dann macht der XAntiSpam Filter gar nichts.
+Wenn Sie XAntiSpam Regeln anschalten, können Sie Sie Ereignisse von bestimmten Einwohnern und Objekten ablehnen oder erlauben und Einstellungen vornehmen, jeweils auf individueller Basis.
 
 Was möchten Sie tun?
    <form name="form">
@@ -3072,7 +3072,7 @@ Was möchten Sie tun?
    icon="notifytip.tga"
    name="xantispamNadvfull"
    type="notifytip">
-XAntiSpam hat entdeckt, daß der [TYPE]-Zwischenspeicher während des automatischen Vorbefüllens einen Schwellwert seines Fassungsvermögens erreicht hat. Es wird empfohlen, die dauerhaften Zwischenspeicher absichtlich vorzubefüllen, um möglicherweise eine Leistungsverbesserung zu erreichen.
+XAntiSpam hat entdeckt, daß der [TYPE]-Zwischenspeicher während des automatischen Vorbefüllens einen Schwellwert seines Fassungsvermögens erreicht hat. Es wird empfohlen, entweder die Anzahl der dauerhaften Regeln zu verringern oder das Fassungsvermögen des Zwischenspeichers zu vergrößern.
   </notification>
 
 
@@ -3080,7 +3080,7 @@ XAntiSpam hat entdeckt, daß der [TYPE]-Zwischenspeicher während des automatisc
    icon="notifytip.tga"
    name="xantispamNblk"
    type="notifytip">
-XAntiSpam: Blockiere [TYPE] from [SOURCE] gemäß der Regeln
+XAntiSpam: lehne [TYPE] from [SOURCE] gemäß der Regeln ab
   </notification>
 
 
@@ -3088,7 +3088,7 @@ XAntiSpam: Blockiere [TYPE] from [SOURCE] gemäß der Regeln
    icon="notify_caution_icon.tga"
    name="xantispamNclrcache"
    type="notifytip">
-XAntiSpam: Zwischenspeicher vom Tpy '[TYPE]' wurden geleert.
+XAntiSpam: Zwischenspeicher vom Typ '[TYPE]' wurden geleert.
   </notification>
 
 
@@ -3120,7 +3120,7 @@ XAntiSpam: fehlende Programmangabe oder leerer Befehl in [RULE]
    icon="notify_caution_icon.tga"
    name="xantispamNtimeout"
    type="notifytip">
-XAntiSpam: Eingehender SPAM ([CALLS]) überschreitet den Schwellenwert für die letzten zehn Sekunden ([MAXCALLS]), blockiere ohne Bearbeitung. Diese Info ist abgeschaltet, solange die Überflutung andauert.
+XAntiSpam: Die Anzahl der Aufrufe ([CALLS]) überschreitet den Schwellenwert für die maximale Anzahl von Aufrufen innerhalb von zehn Sekunden ([MAXCALLS]). Ereignisse werden ohne Regelbearbeitung abgelehnt. Diese Info ist abgeschaltet, solange die Überflutung andauert.
   </notification>
 
 
@@ -3128,7 +3128,7 @@ XAntiSpam: Eingehender SPAM ([CALLS]) überschreitet den Schwellenwert für die 
    icon="notifytip.tga"
    name="xantispamNselfblk"
    type="notifytip">
-XAntiSpam: Dialoge von [UUID] übergehen die Regeln, da es Ihre eigene UUID ist.
+XAntiSpam: Ereignisse von [UUID] werden nicht abgelehnt, da es Ihre eigene UUID ist.
   </notification>
 
 
@@ -3136,7 +3136,7 @@ XAntiSpam: Dialoge von [UUID] übergehen die Regeln, da es Ihre eigene UUID ist.
    icon="notify_caution_icon.tga"
    name="xantispamPersistent"
    type="alert">
-XantiSpam hat einen Dialog abgefangen:
+XantiSpam hat ein Ereignis abgefangen:
 
 
 Typ:
@@ -3146,7 +3146,7 @@ Von:
     [FROM]
 
 
-Sie können derartige Dialoge zukünftig automatisch erlauben oder ablehnen lassen mittels dauerhafter XAntiSpam Regeln. "Blacklist" und "Whitelist" sind dauerhaft und ändern sich nur, wenn Sie die Dateien mit den Regeln ändern. Sie können zeitweilige XAntiSpam Regeln anschalten, die nur für eine Sitzung erhalten bleiben.
+Sie können derartige Ereignisse zukünftig automatisch erlauben oder ablehnen lassen mittels dauerhafter XAntiSpam Regeln. "Blacklist" und "Whitelist" sind dauerhaft und ändern sich nur, wenn Sie die Dateien mit den Regeln ändern. Sie können zeitweilige XAntiSpam Regeln anschalten, die nur für eine Sitzung erhalten bleiben.
 
 Was möchten Sie tun?
    <form name="form">
@@ -3170,7 +3170,7 @@ Was möchten Sie tun?
    icon="notify_caution_icon.tga"
    name="xantispamVolatile"
    type="alert">
-XantiSpam hat einen Dialog abgefangen:
+XantiSpam hat ein Ereignis abgefangen:
 
 
 Typ:
@@ -3180,7 +3180,7 @@ Von:
     [FROM]
 
 
-Mittels zeitweiliger XAntiSpam Regeln können Sie derartige Dialoge zukünftig automatisch erlauben oder ablehnen. "Erlauben" und "Ablehnen" bleiben nur während einer Sitzung erhalten. Sie können dauerhafte Regeln anschalten, die erhalten bleiben bis Sie die Dateien mit den Regeln ändern.
+Mittels zeitweiliger XAntiSpam Regeln können Sie derartige Ereignisse zukünftig automatisch erlauben oder ablehnen. "Erlauben" und "Ablehnen" gelten nur für diese Sitzung. Sie können dauerhafte Regeln anschalten, die erhalten bleiben, bis Sie die Dateien mit den Regeln ändern.
 
 Was möchten Sie tun?
    <form name="form">
@@ -3204,7 +3204,7 @@ Was möchten Sie tun?
    icon="notify_caution_icon.tga"
    name="xantispamVolatilePersistent"
    type="alert">
-XantiSpam hat einen Dialog abgefangen:
+XantiSpam hat ein Ereignis abgefangen:
 
 
 Typ:
@@ -3214,7 +3214,7 @@ Von:
     [FROM]
 
 
-Mittels dauerhafter oder zeitweiliger XAntiSpam Regeln können Sie derartige Dialoge zukünftig automatisch erlauben oder ablehnen. "Erlauben" und "Ablehnen" bleiben nur während einer Sitzung erhalten. "Blacklist" und "Whitelist" sind dauerhaft und ändern sich nur, wenn Sie die Dateien mit den Regeln ändern.
+Mittels dauerhafter oder zeitweiliger XAntiSpam Regeln können Sie derartige Ereignisse zukünftig automatisch erlauben oder ablehnen. "Erlauben" und "Ablehnen" gelten nur für diese Sitzung. "Blacklist" und "Whitelist" sind dauerhaft und ändern sich nur, wenn Sie die Dateien mit den Regeln ändern.
 
 Was möchten Sie tun?
    <form name="form">

@@ -9786,7 +9786,7 @@ Object successfully exported to: [FILENAME]
    icon="notify_caution_icon.tga"
    name="xantispam"
    type="alert">
-XAntiSpam has intercepted a dialog:
+XAntiSpam has intercepted an event:
 
 
 Type:
@@ -9798,7 +9798,7 @@ From:
 
 Persistent and volatile XAntiSpam rules are disabled; queries are enabled.
 
-When you enable XAntiSpam rules, queries allow you to 'train' this SPAM filter. This means that you can deny and allow dialogs from particular residents and objects on an individial basis. Once 'training' is completed, you can disable the queries to receive only those dialogs you actually want to receive. When you do not enable rules and disable the queries, the XAntiSpam filter does nothing.
+When you enable XAntiSpam rules, you can deny and allow events from particular residents and objects and make settings on an individial basis.
 
 What would you like to do?
    <form name="form">
@@ -9822,7 +9822,7 @@ What would you like to do?
    icon="notifytip.tga"
    name="xantispamNadvfull"
    type="notifytip">
-XAntiSpam has detected that the [TYPE] cache reached a capacity threshold during automatic pre-filling. It is recommended to explicitly pre-fill the persistent XAntiSpam Caches as it might increase performance.
+XAntiSpam has detected that the [TYPE] cache reached a capacity threshold during automatic pre-filling. It is recommended to either reduce the number of persistent XAntiSpam rules or to increase the cache capacity.
   </notification>
 
 
@@ -9830,7 +9830,7 @@ XAntiSpam has detected that the [TYPE] cache reached a capacity threshold during
    icon="notifytip.tga"
    name="xantispamNblk"
    type="notifytip">
-XAntiSpam: Blocked [TYPE] from [SOURCE] according to rules
+XAntiSpam: denied [TYPE] from [SOURCE] according to rules
   </notification>
 
 
@@ -9870,7 +9870,7 @@ XAntiSpam: missing executable or empty command in rule [RULE]
    icon="notify_caution_icon.tga"
    name="xantispamNtimeout"
    type="notifytip">
-XAntiSpam: Incoming SPAM ([CALLS]) exceeds threshold for the last ten seconds ([MAXCALLS]), blocking without processing. This info is disabled while the flooding continues.
+XAntiSpam: The number of calls ([CALLS]) exceeds the threshold for the maximum number of calls within ten seconds ([MAXCALLS]). Events are denyed without processing rules. This info is disabled while the flooding continues.
   </notification>
 
 
@@ -9878,7 +9878,7 @@ XAntiSpam: Incoming SPAM ([CALLS]) exceeds threshold for the last ten seconds ([
    icon="notifytip.tga"
    name="xantispamNselfblk"
    type="notifytip">
-XAntiSpam: Dialogs from [UUID] overcome rules because this is your own UUID.
+XAntiSpam: Events from [UUID] are not denied because this is your own UUID.
   </notification>
 
 
@@ -9886,7 +9886,7 @@ XAntiSpam: Dialogs from [UUID] overcome rules because this is your own UUID.
    icon="notify_caution_icon.tga"
    name="xantispamPersistent"
    type="alert">
-XAntiSpam has intercepted a dialog:
+XAntiSpam has intercepted an event:
 
 
 Type:
@@ -9896,7 +9896,7 @@ From:
     [FROM]
 
 
-You can have such dialogs automatically allowed or denied in the future through persistent XAntiSpam rules. "Blacklist" and "Whitelist" apply until you change the corresponding rule in a rule file. You can enable the volatile XAntiSpam rules which apply only for a session.
+You can have such events automatically allowed or denied in the future through persistent XAntiSpam rules. "Blacklist" and "Whitelist" apply until you change the corresponding rule in a rule file. You can enable the volatile XAntiSpam rules which apply only for a session.
 
 What would you like to do?
    <form name="form">
@@ -9920,7 +9920,7 @@ What would you like to do?
    icon="notify_caution_icon.tga"
    name="xantispamVolatile"
    type="alert">
-XAntiSpam has intercepted a dialog:
+XAntiSpam has intercepted an event:
 
 
 Type:
@@ -9930,7 +9930,7 @@ From:
     [FROM]
 
 
-You can have such dialogs automatically allowed or denied in the future through volatile XAntiSpam rules. "Allow" and "Deny" apply only for this session. You can enable the persistent XAntiSpam rules which apply until you change the corresponding rule in a rule file.
+You can have such events automatically allowed or denied in the future through volatile XAntiSpam rules. "Allow" and "Deny" apply only for this session. You can enable the persistent XAntiSpam rules which apply until you change the corresponding rule in a rule file.
 
 What would you like to do?
    <form name="form">
@@ -9954,7 +9954,7 @@ What would you like to do?
    icon="notify_caution_icon.tga"
    name="xantispamVolatilePersistent"
    type="alert">
-XAntiSpam has intercepted a dialog:
+XAntiSpam has intercepted an event:
 
 
 Type:
@@ -9964,7 +9964,7 @@ From:
     [FROM]
 
 
-You can have such dialogs automatically allowed or denied in the future through persistent or volatile XAntiSpam rules. "Allow" and "Deny" apply only for this session. "Blacklist" and "Whitelist" apply until you change the corresponding rule in a rule file.
+You can have such events automatically allowed or denied in the future through persistent or volatile XAntiSpam rules. "Allow" and "Deny" apply only for this session. "Blacklist" and "Whitelist" apply until you change the corresponding rule in a rule file.
 
 What would you like to do?
    <form name="form">
