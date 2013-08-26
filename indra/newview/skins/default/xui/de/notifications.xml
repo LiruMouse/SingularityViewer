@@ -3118,6 +3118,14 @@ XAntiSpam: fehlende Programmangabe oder leerer Befehl in [RULE]
 
   <notification
    icon="notify_caution_icon.tga"
+   name="xantispamNfillcache"
+   type="notifytip">
+XAntiSpam: Der Zwischenspeicher des Typs '[TYPE]' wurde vorbefüllt. [ENTRIES] Regel(n) belegt/belegen [PERCENTAGE] Prozent des Fassungsvermögens.
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
    name="xantispamNtimeout"
    type="notifytip">
 XAntiSpam: Die Anzahl der Aufrufe ([CALLS]) überschreitet den Schwellenwert für die maximale Anzahl von Aufrufen innerhalb von zehn Sekunden ([MAXCALLS]). Ereignisse werden ohne Regelbearbeitung abgelehnt. Diese Info ist abgeschaltet, solange die Überflutung andauert.

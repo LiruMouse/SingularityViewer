@@ -2130,7 +2130,15 @@ static void xantispam_prefill_cache(std::vector<xantispam_request>& cache, const
 		}
 		fclose(f);
 	}
-	llinfos << "cache now holds " << cache.size() << " entries (~" <<  cache.size() * 100 / XANTISPAM_CACHE_CAPACITY << "%)"<< llendl;
+
+	if(gSavedSettings.getBOOL("AntiSpamNotify"))
+	{
+		LLSD args;
+		args["TYPE"] = (type ? "Whitelist" : "Blacklist");
+		args["ENTRIES"] = boost::lexical_cast<std::string>(cache.size());
+		args["PERCENTAGE"] = boost::lexical_cast<std::string>(cache.size() * 100 / XANTISPAM_CACHE_CAPACITY);
+		LLNotificationsUtil::add("xantispamNfillcache", args);
+	}
 }
 
 // make a cute timestamp

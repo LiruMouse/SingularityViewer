@@ -9868,6 +9868,14 @@ XAntiSpam: missing executable or empty command in rule [RULE]
 
   <notification
    icon="notify_caution_icon.tga"
+   name="xantispamNfillcache"
+   type="notifytip">
+XAntiSpam: The [TYPE]-cache has been prefilled. [ENTRIES] rule(s) occupies/occupy about [PERCENTAGE] percent of its capacity.
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
    name="xantispamNtimeout"
    type="notifytip">
 XAntiSpam: The number of calls ([CALLS]) exceeds the threshold for the maximum number of calls within ten seconds ([MAXCALLS]). Events are denyed without processing rules. This info is disabled while the flooding continues.
