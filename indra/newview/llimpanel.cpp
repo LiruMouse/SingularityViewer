@@ -1187,7 +1187,7 @@ void LLFloaterIMPanel::onClickHistory()
 		// see if the user wants full history file in external
 		// editor, which is what I always expected to happen
 		// from a button like this ...
-		if(!xantispam_check(mOtherParticipantUUID.asString(), "&-IMLogHistoryExternal", filename))
+		if(!xantispam_check(filename, "&-IMLogHistoryExternal", filename))
 		{
 			// ... and if so, this starts the external editor with the log, hence return
 			return;

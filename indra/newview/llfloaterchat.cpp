@@ -658,14 +658,14 @@ void LLFloaterChat::onClickChatHistoryOpen(void* userdata)
 	// see if the user wants full history file in external
 	// editor, which is what I always expected to happen
 	// from a button like this ...
-	// This is a request from self, so:
-	if(!xantispam_check(gAgentID.asString(), "&-IMLogHistoryExternal", LLLogChat::makeLogFileName("chat")))
+	std::string filename = LLLogChat::makeLogFileName("chat");
+	if(!xantispam_check(filename, "&-IMLogHistoryExternal", filename))
 	{
 		// ... and if so, this starts the external editor with the log, hence return
 		return;
 	}
 
-	std::string command("\"" + LLLogChat::makeLogFileName("chat") + "\"");
+	std::string command("\"" + filename + "\"");
 	// This command thing does apparently nothing on Linux and Mac.
 	gViewerWindow->getWindow()->ShellEx(command);
 
