@@ -761,15 +761,9 @@ bool LLViewerParcelMedia::allowedMedia(std::string media_url)
 
 	// for blocking particular ports, like below
 	// I wonder who wrote this filterstuff ...
-	std::string stripped_url(media_url);
-	boost::algorithm::replace_all(stripped_url, ":", ";");
-	// in case this ever uses IPv6:
-	std::string stripped_ip(ip);
-	boost::algorithm::replace_all(stripped_ip, ":", ";");
-
-	if(!xantispam_check(stripped_url, "&-DomainHandleMediaURLs", stripped_ip))
+	if(!xantispam_check(media_url, "&-DomainHandleMediaURLs", ip))
 	{
-		bool xantispam_denied = xantispam_check(stripped_url, "PlayFromMediaURL", stripped_ip);
+		bool xantispam_denied = xantispam_check(media_url, "PlayFromMediaURL", ip);
 		if(xantispam_denied)
 		{
 			if(!sDeniedMedia.count(domain))
@@ -888,15 +882,9 @@ void LLViewerParcelMedia::filterMedia(LLParcel* parcel, U32 type)
 	// [Ratany:] inserting
 	// This can be handled by xantispam if xantispam has a rule telling it to do so.
 	// It allows blocking particular ports rather than only domain/ip.
-	std::string stripped_url(media_url);
-	boost::algorithm::replace_all(stripped_url, ":", ";");
-	// in case this ever uses IPv6:
-	std::string stripped_ip(ip);
-	boost::algorithm::replace_all(stripped_ip, ":", ";");
-
-	if(!xantispam_check(stripped_url, "&-DomainHandleMediaURLs", stripped_ip))
+	if(!xantispam_check(media_url, "&-DomainHandleMediaURLs", ip))
 	{
-		bool xantispam_denied = xantispam_check(stripped_url, "PlayFromMediaURL", stripped_ip);
+		bool xantispam_denied = xantispam_check(media_url, "PlayFromMediaURL", ip);
 		if(xantispam_denied)
 		{
 			if(!sDeniedMedia.count(domain))

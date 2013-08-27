@@ -3242,8 +3242,8 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 	{
 		// notify about what happened
 		LLSD args;
-		args["SOURCE"] = long_request.from + " (" + from_name + ")";
-		args["TYPE"] = long_request.type;
+		args["SOURCE"] = request.from + " (" + from_name + ")";
+		args["TYPE"] = request.type;
 		LLNotificationsUtil::add("xantispamNblk", args);
 	}
 	return true;

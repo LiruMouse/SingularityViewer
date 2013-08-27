@@ -466,9 +466,7 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 	if ( gSavedPerAccountSettings.getBOOL("LogShowHistory") )
 	{
 		// [Ratany:] Check for distinction
-		std::string label(mSessionLabel);
-		boost::algorithm::trim(label);
-		std::string filename(label);
+		std::string filename(mSessionLabel);
 		if(!isGroupSessionType())
 		{
 			// if(!xantispam_check(mOtherParticipantUUID.asString(), "&-IMLogDistinct", label))
@@ -478,11 +476,9 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 		}
 		else
 		{
-			std::string origin(label);
-			origin.erase(std::remove_if(origin.begin(), origin.end(), isspace), origin.end());
-			if(!xantispam_check(origin, "&-GRLogDistinct", label))
+			if(!xantispam_check(filename, "&-GRLogDistinct", mSessionLabel))
 			{
-				filename = "nonagent_" + filename;
+				filename = "nonagent_" + mSessionLabel;
 			}
 		}
 		LLLogChat::loadHistory(filename, 		// [/Ratany]
@@ -931,13 +927,11 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 		}
 		else // for group sessions
 		{
-			std::string origin(label);
-			origin.erase(std::remove_if(origin.begin(), origin.end(), isspace), origin.end());
-			if(xantispam_check(origin, "&-GRLogDontSave", label))
+			if(xantispam_check(label, "&-GRLogDontSave", label))
 			{
-				if(!xantispam_check(origin, "&-GRLogDistinct", label))
+				if(!xantispam_check(label, "&-GRLogDistinct", label))
 				{
-					filename = "nonagent_" + filename;
+					filename = "nonagent_" + label;
 				}
 			}
 			else
@@ -1173,12 +1167,10 @@ void LLFloaterIMPanel::onClickHistory()
 		}
 		else
 		{
-			// needs the group name without spaces as origin for distinction here
-			std::string origin = label;
-			origin.erase(std::remove_if(origin.begin(), origin.end(), isspace), origin.end());
-			if(!xantispam_check(origin, "&-GRLogDistinct", label))
+			// needs the group name as origin for distinction here
+			if(!xantispam_check(label, "&-GRLogDistinct", label))
 			{
-				filename = "nonagent_" + filename;
+				filename = "nonagent_" + label;
 			}
 		}
 
