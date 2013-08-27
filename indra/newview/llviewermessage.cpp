@@ -1768,6 +1768,23 @@ static int xantispam_read_line(LLFILE *src, std::string& line, std::size_t max)
 }
 
 
+// requests fed to xantispam_check() must go to through this syntax
+// transformation
+//
+void xantispam_apply_syntax(xantispam_request *rq)
+{
+	// strip whitespace
+	rq->from.erase(std::remove_if(rq->from.begin(), rq->from.end(), isspace), rq->from.end());
+
+	// replace ":" with ";"
+	boost::algorithm::replace_all(rq->from, ":", ";");
+
+	// same for request type
+	rq->type.erase(std::remove_if(rq->type.begin(), rq->type.end(), isspace), rq->type.end());
+	boost::algorithm::replace_all(rq->type, ":", ";");
+}
+
+
 // Convert a line read from a blacklist or whitelist file into a
 // request.  This request is called a rule (because it's in a file);
 // requests are matched against the rule.  The data type is the same
@@ -2964,6 +2981,9 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 		// handle special calls
 		xantispam_request clean;
 		int action = xantispam_split_special(filtertype, &clean);
+		// strip whitespace and replace ":" with ";"
+		xantispam_apply_syntax(&clean);
+
 		switch(action)
 		{
 		case XANTISPAM_SPECIAL_ADDBLACK:
@@ -3075,12 +3095,11 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 	}
 
 	// finally, handle a request
-	std::string stripped_name = from_name;
-	stripped_name.erase(std::remove_if(stripped_name.begin(), stripped_name.end(), isspace), stripped_name.end());
-	std::transform(stripped_name.begin(), stripped_name.end(), stripped_name.begin(), ::tolower);
-	xantispam_request request, long_request;
-	request.from = long_request.from = fromstr;
+	xantispam_request request;
+	request.from = fromstr;
 	request.type = filtertype;
+	// strip whitespace and replace ":" with ";"
+	xantispam_apply_syntax(&request);
 
 	// policy: background requests do not generate queries
 	// policy: handle background requests always by rules
@@ -3105,7 +3124,13 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 	}
 
 	// long_request provides using rules like ":: greeter"
-	long_request.type = filtertype + stripped_name;
+	std::string stripped_name = from_name;
+	std::transform(stripped_name.begin(), stripped_name.end(), stripped_name.begin(), ::tolower);
+	xantispam_request long_request;
+	long_request.from = request.from;
+	long_request.type = request.type + stripped_name;
+	// strip whitespace and replace ":" with ";"
+	xantispam_apply_syntax(&long_request);
 
 	if(use_persistent)
 	{
@@ -3119,8 +3144,8 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 				if(use_notify)
 				{
 					LLSD args;
-					args["SOURCE"] = fromstr + " (" + from_name + ")";
-					args["TYPE"] = filtertype;
+					args["SOURCE"] = long_request.from + " (" + from_name + ")";
+					args["TYPE"] = long_request.type;
 					LLNotificationsUtil::add("xantispamNblk", args);
 				}
 				return true;
@@ -3199,8 +3224,8 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 		if(use_notify)
 		{
 			LLSD args;
-			args["SOURCE"] = fromstr + " (" + from_name + ")";
-			args["TYPE"] = filtertype;
+			args["SOURCE"] = request.from + " (" + from_name + ")";
+			args["TYPE"] = request.type;
 			LLNotificationsUtil::add("xantispamNblk", args);
 		}
 		return true;
@@ -3217,8 +3242,8 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 	{
 		// notify about what happened
 		LLSD args;
-		args["SOURCE"] = fromstr + " (" + from_name + ")";
-		args["TYPE"] = filtertype;
+		args["SOURCE"] = long_request.from + " (" + from_name + ")";
+		args["TYPE"] = long_request.type;
 		LLNotificationsUtil::add("xantispamNblk", args);
 	}
 	return true;
