@@ -3450,7 +3450,7 @@ bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_own
 		{
 			// Go by intentory handling rules when any origins are configured for it.
 			// This is needed for non-relaxed mode.
-			if(xantispam_check(":", "&-InventoryHandleDistinctly", "[internal lookup]"))
+			if(xantispam_check(gAgentID.asString(), "&-InventoryHandleDistinctly", "[config]"))
 			{
 				return xantispam_check(from_id, "ItemOffersFromTask", from_name);
 			}
@@ -3648,7 +3648,6 @@ void inventory_offer_handler(LLOfferInfo* info)
 
 	// xantispam ...
 	std::string xa_origin_string = (origin == AGENT) ? info->mFromID.asString() : (origin_name_found ? origin_name : (origin == GROUP) ? "[apparently-originating-from-groupID(" + info->mFromID.asString() + ")]" : "[apparently-originating-from-object-owned-by-agentID(" + info->mFromID.asString() + ")]");
-	xa_origin_string.erase(std::remove_if(xa_origin_string.begin(), xa_origin_string.end(), isspace), xa_origin_string.end());
 	xa_origin_string.erase(std::remove_if(xa_origin_string.begin(), xa_origin_string.end(), boost::algorithm::is_any_of("?:")), xa_origin_string.end());
 
 	if(xantispam_check(xa_origin_string, "&-InventoryHandleDistinctly", assettype))
