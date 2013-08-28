@@ -2756,18 +2756,18 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 	// # &-StatusFriendIsOnline
 
 
-	bool hasrule = xantispam_lookup_selectively(blackcache, whitecache, request, true);
-
 	if(!request->type.find("&-ExecFriendIsOnline!") || !request->type.find("&-ExecFriendIsOffline!") || !request->type.find("&-ExecOnEachIM!") || !request->type.find("&-ExecOnEachGS!") || !request->type.find("&-ExecOnNewIMSession!") || !request->type.find("&-ExecOnNewGRSession!") || !request->type.find("&-IMLogHistoryExternal!"))
 	{
 		// this requires an inverse lookup because the request must be found
 		// within the rule
-		xantispam_request result = xantispam_inverse_cachelookup(whitecache, request, &hasrule);
-		if(!hasrule)
+		bool result_invalid;
+		xantispam_request result = xantispam_inverse_cachelookup(whitecache, request, &result_invalid);
+		if(!result_invalid)
 		{
 			// llinfos << "rule found on inverse lookup: [" << result.from << "]{" << result.type << "}" << llendl;
 			return !xantispam_process_launcher(result.type, info);
 		}
+		return true;
 	}
 
 	// second case of hybrid "&-IMLogHistoryExternal": use default editor to show history
@@ -2866,7 +2866,7 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 	}
 
 	// For the rules that don't do someting special, return the result of the lookup.
-	return hasrule;
+	return xantispam_lookup_selectively(blackcache, whitecache, request, true);
 }
 
 
