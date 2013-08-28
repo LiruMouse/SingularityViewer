@@ -3072,15 +3072,6 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 
 	if(!use_persistent && !use_volatile && !use_queries)
 	{
-		// notify about what happened
-		if(!request_is_backgnd && !request_is_silent && use_notify)
-		{
-			LLSD args;
-			args["SOURCE"] = fromstr + " (" + from_name + ")";
-			args["TYPE"] = filtertype;
-			LLNotificationsUtil::add("xantispamNblk", args);
-		}
-
 		// When no rules are enabled, false must be returned
 		// to let the request pass.
 		//
