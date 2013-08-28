@@ -1886,9 +1886,11 @@ static bool xantispam_compare_requests(const xantispam_request *rule, const xant
 {
 	LL_DEBUGS("xantispam") << "comparing rule [" << rule->from << "]{" << rule->type << "} with [" << request->from << "]{" << request->type << "}" << LL_ENDL;
 
-	bool frommatch = xantispam_wildcardmatch(rule->from, request->from, false);
-	bool typematch = xantispam_wildcardmatch(rule->type, request->type, true);
-	return (frommatch && typematch);
+	if(!xantispam_wildcardmatch(rule->from, request->from, false))
+	{
+		return false;
+	}
+	return xantispam_wildcardmatch(rule->type, request->type, true);
 }
 
 
