@@ -2874,9 +2874,7 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 //
 // The main reason to handle them here is that it is not reasonably
 // possible to allow only some online status notifications to be shown
-// in non-relaxed mode.  They would all have to be blacklisted, or
-// queries would have to be turned off, for them not to generate
-// queries.
+// in non-relaxed mode.
 //
 static bool xantispam_silent(const xantispam_request *request, std::vector<xantispam_request>& whitecache, std::vector<xantispam_request>& blackcache, const std::string& info)
 {
@@ -3102,7 +3100,14 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 	//         as would result without xantispam.
 	if(request_is_backgnd)
 	{
-		return xantispam_backgnd(&request, whitecache, blackcache, from_name);
+		if(use_persistent)
+		{
+			return xantispam_backgnd(&request, whitecache, blackcache, from_name);
+		}
+		else
+		{
+			return true;
+		}
 	}
 
 	// policy: silent requests do not generate notifications
@@ -3113,7 +3118,14 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 	//         as would result without xantispam.
 	if(request_is_silent)
 	{
-		return xantispam_silent(&request, whitecache, blackcache, from_name);
+		if(use_persistent)
+		{
+			return xantispam_silent(&request, whitecache, blackcache, from_name);
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	// long_request provides using rules like ":: greeter"
