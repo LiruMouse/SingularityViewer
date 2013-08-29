@@ -3094,6 +3094,14 @@ XAntiSpam: Zwischenspeicher vom Typ '[TYPE]' wurden geleert.
 
   <notification
    icon="notify_caution_icon.tga"
+   name="xantispamNdebug"
+   type="notifytip">
+XAntiSpam Fehlerbehebungsinfo: [[FROM]]{[TYPE]}([INFO])
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
    name="xantispamNexecIllegal"
    type="notifytip">
 XAntiSpam: Keine anderen Programme als aufgeführt in AntiSpamXtendedAllowedExecutables dürfen via XAntiSpam Regeln ausgeführt werden, und '[EXECUTABLE]' ist nicht aufgeführt.

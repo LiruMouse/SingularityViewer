@@ -2959,6 +2959,7 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 	static LLCachedControl<bool> use_persistent(gSavedSettings, "AntiSpamXtendedPersistent");
 	static LLCachedControl<bool> use_queries(gSavedSettings, "AntiSpamXtendedQueries");
 	static LLCachedControl<bool> use_relaxed(gSavedSettings, "AntiSpamXtendedRelaxed");
+	static LLCachedControl<bool> use_debug(gSavedSettings, "AntiSpamXtendedDebug");
 	static LLCachedControl<bool> use_volatile(gSavedSettings, "AntiSpamXtendedVolatile");
 
 	// persistent caches here, filled from rules files
@@ -3091,6 +3092,16 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 	request.type = filtertype;
 	// strip whitespace and replace ":" with ";"
 	xantispam_apply_syntax(&request);
+
+	// show a debug notification if wanted
+	if(use_debug)
+	{
+		LLSD args;
+		args["FROM"] = request.from;
+		args["TYPE"] = request.type;
+		args["INFO"] = from_name;
+		LLNotificationsUtil::add("xantispamNdebug", args);
+	}
 
 	// policy: background requests do not generate queries
 	// policy: handle background requests always by rules

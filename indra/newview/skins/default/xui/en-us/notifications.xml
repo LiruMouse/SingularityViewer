@@ -9844,6 +9844,14 @@ XAntiSpam: [TYPE] caches have been emptied.
 
   <notification
    icon="notify_caution_icon.tga"
+   name="xantispamNdebug"
+   type="notifytip">
+XAntiSpam debug info: [[FROM]]{[TYPE]}([INFO])
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
    name="xantispamNexecIllegal"
    type="notifytip">
 XAntiSpam: No other executables than listed in AntiSpamXtendedAllowedExecutables are allowed to be run via XAntiSpam rules, and '[EXECUTABLE]' is not listed.
