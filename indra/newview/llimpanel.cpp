@@ -33,50 +33,31 @@
 
 #include "llimpanel.h"
 
-#include "indra_constants.h"
-#include "llfocusmgr.h"
-#include "llfontgl.h"
-#include "llrect.h"
-#include "llerror.h"
-#include "llstring.h"
-#include "message.h"
-#include "lltextbox.h"
-#include "llnotificationsutil.h"
-
+#include "ascentkeyword.h"
 #include "llagent.h"
 #include "llavataractions.h"
+#include "llavatarnamecache.h"
 #include "llbutton.h"
-#include "llcallingcard.h"
-#include "llchat.h"
-#include "llconsole.h"
-#include "llgroupactions.h"
+#include "llcombobox.h"
 #include "llfloaterchat.h"
+#include "llfloaterinventory.h"
+#include "llgroupactions.h"
+#include "llhttpclient.h"
 #include "llimview.h"
 #include "llinventory.h"
 #include "llinventoryfunctions.h"
-#include "llfloaterinventory.h"
-#include "llcheckboxctrl.h"
-#include "llkeyboard.h"
 #include "lllineeditor.h"
-#include "llnotify.h"
+#include "llmutelist.h"
+#include "llnotificationsutil.h"
 #include "llparticipantlist.h"
-#include "llresmgr.h"
 #include "llspeakers.h"
+#include "llstylemap.h"
 #include "lltrans.h"
-#include "lltabcontainer.h"
-#include "llviewertexteditor.h"
-#include "llviewermessage.h"
-#include "llviewerstats.h"
-#include "llviewercontrol.h"
 #include "lluictrlfactory.h"
+#include "llviewertexteditor.h"
+#include "llviewerstats.h"
 #include "llviewerwindow.h"
 #include "llvoicechannel.h"
-#include "lllogchat.h"
-#include "llweb.h"
-#include "llhttpclient.h"
-#include "llmutelist.h"
-#include "llstylemap.h"
-#include "ascentkeyword.h"
 
 #include "boost/algorithm/string.hpp"
 
@@ -568,6 +549,7 @@ BOOL LLFloaterIMPanel::postBuild()
 
 	if (checkRequirements())
 	{
+		mDing = false;
 		mRPMode = false;
 
 		mInputEditor = getChild<LLLineEditor>("chat_editor");
@@ -580,16 +562,20 @@ BOOL LLFloaterIMPanel::postBuild()
 		mInputEditor->setReplaceNewlinesWithSpaces( FALSE );
 		mInputEditor->setPassDelete( TRUE );
 
-		if (LLUICtrl* ctrl = findChild<LLUICtrl>("instant_message_flyout"))
+		if (LLComboBox* flyout = findChild<LLComboBox>("instant_message_flyout"))
 		{
-			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onFlyoutCommit, this, _2));
+			flyout->setCommitCallback(boost::bind(&LLFloaterIMPanel::onFlyoutCommit, this, flyout, _2));
+			flyout->add(getString("ding off"), 6);
+			flyout->add(getString("rp mode off"), 7);
 		}
+		if (LLUICtrl* ctrl = findChild<LLUICtrl>("tp_btn"))
+			ctrl->setCommitCallback(boost::bind(static_cast<void(*)(const LLUUID&)>(LLAvatarActions::offerTeleport), mOtherParticipantUUID));
+		if (LLUICtrl* ctrl = findChild<LLUICtrl>("pay_btn"))
+			ctrl->setCommitCallback(boost::bind(LLAvatarActions::pay, mOtherParticipantUUID));
 		if (LLButton* btn = findChild<LLButton>("group_info_btn"))
 			btn->setCommitCallback(boost::bind(LLGroupActions::show, mSessionUUID));
 		if (LLUICtrl* ctrl = findChild<LLUICtrl>("history_btn"))
 			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickHistory, this));
-		if (LLUICtrl* ctrl = findChild<LLUICtrl>("rp_mode"))
-			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onRPMode, this, _2));
 
 		getChild<LLButton>("start_call_btn")->setCommitCallback(boost::bind(&LLIMMgr::startCall, gIMMgr, mSessionUUID, LLVoiceChannel::OUTGOING_CALL));
 		getChild<LLButton>("end_call_btn")->setCommitCallback(boost::bind(&LLIMMgr::endCall, gIMMgr, mSessionUUID));
@@ -815,6 +801,13 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 			{
 				incolor = mKeywordsColor;
 			}
+		}
+
+		if (mDing && (!hasFocus() || !gFocusMgr.getAppHasFocus()))
+		{
+			static const LLCachedControl<std::string> ding("LiruNewMessageSound");
+			static const LLCachedControl<std::string> dong("LiruNewMessageSoundForSystemMessages");
+			LLUI::sAudioCallback(LLUUID(source.notNull() ? ding : dong));
 		}
 	}
 
@@ -1128,13 +1121,7 @@ void LLFloaterIMPanel::onTabClick(void* userdata)
 	self->setInputFocus(TRUE);
 }
 
-
-void LLFloaterIMPanel::onRPMode(const LLSD& value)
-{
-	mRPMode = value.asBoolean();
-}
-
-void LLFloaterIMPanel::onFlyoutCommit(const LLSD& value)
+void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 {
 	if (value.isUndefined())
 	{
@@ -1148,6 +1135,30 @@ void LLFloaterIMPanel::onFlyoutCommit(const LLSD& value)
 	else if (option == 3) LLAvatarActions::teleportRequest(mOtherParticipantUUID);
 	else if (option == 4) LLAvatarActions::pay(mOtherParticipantUUID);
 	else if (option == 5) LLAvatarActions::inviteToGroup(mOtherParticipantUUID);
+	else if (option >= 6) // Options that change labels need to stay in order at the end
+	{
+		std::string ding_label(mDing ? getString("ding on") : getString("ding off"));
+		std::string rp_label(mRPMode ? getString("rp mode on") : getString("rp mode off"));
+		// First remove them all
+		flyout->remove(ding_label);
+		flyout->remove(rp_label);
+
+		// Toggle as requested, adjust the strings
+		if (option == 6)
+		{
+			mDing = !mDing;
+			ding_label = mDing ? getString("ding on") : getString("ding off");
+		}
+		else if (option == 7)
+		{
+			mRPMode = !mRPMode;
+			rp_label = mRPMode ? getString("rp mode on") : getString("rp mode off");
+		}
+
+		// Last add them back
+		flyout->add(ding_label, 6);
+		flyout->add(rp_label, 7);
+	}
 }
 
 void LLFloaterIMPanel::onClickHistory()
