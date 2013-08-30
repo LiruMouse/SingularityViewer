@@ -2735,6 +2735,7 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 	//
 	// Types:
 	//
+	// # &-ConfigInverseOrderForAcceptInventory (internal, generated here)
 	// # &-ConfigInverseOrderForSilent
 	// # &-DomainHandleMediaURLs
 	// # &-ExecFriendIsOffline!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
@@ -2744,7 +2745,6 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 	// # &-ExecOnNewGRSession!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
 	// # &-ExecOnNewIMSession!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
 	// # &-GRNewSessionNoSnd
-	// # // &-IMLogDistinct DISABLED
 	// # &-IMLogHistoryExternal
 	// # &-IMLogHistoryExternal![parameter_1!parameter_2!...!parameter_N][!%s]
 	// # &-IMLongOrShortTab (merges &-IMLongTab and &-IMShortTab into a single request)
@@ -2754,6 +2754,7 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 	// # &-InventoryHandleAccept?AcceptInventory?[type]
 	// # &-StatusFriendIsOffline
 	// # &-StatusFriendIsOnline
+	// # // &-IMLogDistinct DISABLED
 
 
 	if(!request->type.find("&-ExecFriendIsOnline!") || !request->type.find("&-ExecFriendIsOffline!") || !request->type.find("&-ExecOnEachIM!") || !request->type.find("&-ExecOnEachGS!") || !request->type.find("&-ExecOnNewIMSession!") || !request->type.find("&-ExecOnNewGRSession!") || !request->type.find("&-IMLogHistoryExternal!"))
@@ -2801,19 +2802,41 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 			}
 			if(elements[1] == "AcceptInventory")
 			{
-				// allow wildcard for type
+				// the order might have been changed to "deny all, except for whitelisted"
 				xantispam_request bw;
 				bw.from = request->from;
+				bw.type = "&-ConfigInverseOrderForAcceptInventory";
+				bool order_inversed = !xantispam_cachelookup(whitecache, &bw);
+
+				// allow wildcard for type of inventory item
 				bw.type = "AcceptInventory?ANY";
-				if(!xantispam_cachelookup(blackcache, &bw))
+
+				if(order_inversed)
 				{
-					return true;  // deny inventory item if all types are blacklisted
+					// when the order is inversed, accept if whitelisted, otherwise deny
+					// first look up with wildcarded inventory type ...
+					if(!xantispam_cachelookup(whitecache, &bw))
+					{
+						return false;  // accept inventory item if all types are whitelisted
+					}
+					// ... and if that didn't render a decision, look up whith the particular type
+					bw.type = "AcceptInventory?" + elements[2];
+					return xantispam_transparentlookup(whitecache, &bw, true);  // this breaks policy
 				}
-				if(!xantispam_cachelookup(whitecache, &bw))
+				else
 				{
-					return false;  // accept inventory item if all types are whitelisted
+					// first look up with wildcarded inventory type ...
+					if(!xantispam_cachelookup(blackcache, &bw))
+					{
+						return true;  // deny inventory item if all types are blacklisted
+					}
+					if(!xantispam_cachelookup(whitecache, &bw))
+					{
+						return false;  // accept inventory item if all types are whitelisted
+					}
+					// ... and if that didn't render a decision, look up whith the particular type
+					return xantispam_check(request->from, "AcceptInventory?" + elements[2], info);
 				}
-				return xantispam_check(request->from, "AcceptInventory?" + elements[2], info);
 			}
 			else
 			{
