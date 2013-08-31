@@ -168,6 +168,13 @@ public:
 	static void context_selectall(void* data);
 
 	// [Ratany]
+	static void context_use_big_font(void *data);
+	static void context_use_bold_font(void *data);
+	static void context_use_default_font(void *data);
+	static void context_use_huge_font(void *data);
+	static void context_use_monospace_font(void *data);
+	static void context_use_small_font(void *data);
+
 	static bool run_external_editor(const std::string filename);
 	static void context_saveandedit(void *data);
 	static void context_start_external(void *data);

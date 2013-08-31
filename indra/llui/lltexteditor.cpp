@@ -369,6 +369,13 @@ LLTextEditor::LLTextEditor(
 	menu->addChild(new LLMenuItemCallGL("Save contents and Edit ...", context_saveandedit, NULL, this));
 	menu->addChild(new LLMenuItemCallGL("Replace contents from File ...", context_loadfile, NULL, this));
 	menu->addChild(new LLMenuItemCallGL("Start external Editor", context_start_external, NULL, this));
+	menu->addSeparator();
+	menu->addChild(new LLMenuItemCallGL("Use big Font", context_use_big_font, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Use bold Font", context_use_bold_font, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Use default Font", context_use_default_font, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Use huge Font", context_use_huge_font, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Use monospace Font", context_use_monospace_font, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Use small Font", context_use_small_font, NULL, this));
 	// [/Ratany]
 	menu->addSeparator();
 	menu->setCanTearOff(FALSE);
@@ -399,6 +406,37 @@ void LLTextEditor::context_copy(void* data)
 
 
 // [Ratany]
+void LLTextEditor::context_use_big_font(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mGLFont = LLFontGL::getFontSansSerifBig();
+}
+void LLTextEditor::context_use_bold_font(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mGLFont = LLFontGL::getFontSansSerifBold();
+}
+void LLTextEditor::context_use_default_font(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mGLFont = LLFontGL::getFontSansSerif();
+}
+void LLTextEditor::context_use_huge_font(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mGLFont = LLFontGL::getFontSansSerifHuge();
+}
+void LLTextEditor::context_use_monospace_font(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mGLFont = LLFontGL::getFontMonospace();
+}
+void LLTextEditor::context_use_small_font(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mGLFont = LLFontGL::getFontSansSerifSmall();
+}
+
 bool LLTextEditor::run_external_editor(const std::string filename)
 {
 	LLExternalEditor e;
