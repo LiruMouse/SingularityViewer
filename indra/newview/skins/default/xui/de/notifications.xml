@@ -3033,42 +3033,6 @@ Do you wish to export anyway?<usetemplate name="okcancelbuttons" yestext="Procee
 
 
   <notification
-   icon="notify_caution_icon.tga"
-   name="xantispam"
-   type="alert">
-XantiSpam hat ein Ereignis abgefangen:
-
-
-Typ:
-    [TYPE]
-
-Von:
-    [FROM]
-
-
-Dauerhaufte and flüchtige XAntiSpam Regeln sind abgeschaltet, Rückfragen sind angeschaltet.
-
-Wenn Sie XAntiSpam Regeln anschalten, können Sie Sie Ereignisse von bestimmten Einwohnern und Objekten ablehnen oder erlauben und Einstellungen vornehmen, jeweils auf individueller Basis.
-
-Was möchten Sie tun?
-   <form name="form">
-     <button
-	 index="2"
-	 name="Nothing"
-	 text="Nichts"/>
-     <button
-	 index="6"
-	 name="EnableXAntiSpam"
-	 text="XAntiSpam Anschalten"/>
-     <button
-	 index="7"
-	 name="EnableXAntiSpam"
-	 text="Rückfragen Abschalten"/>
-   </form>
-  </notification>
-
-
-  <notification
    icon="notifytip.tga"
    name="xantispamNadvfull"
    type="notifytip">
@@ -3145,74 +3109,6 @@ XAntiSpam: Die Anzahl der Aufrufe ([CALLS]) überschreitet den Schwellenwert fü
    name="xantispamNselfblk"
    type="notifytip">
 XAntiSpam: Ereignisse von [UUID] werden nicht abgelehnt, da es Ihre eigene UUID ist.
-  </notification>
-
-
-  <notification
-   icon="notify_caution_icon.tga"
-   name="xantispamPersistent"
-   type="alert">
-XantiSpam hat ein Ereignis abgefangen:
-
-
-Typ:
-    [TYPE]
-
-Von:
-    [FROM]
-
-
-Sie können derartige Ereignisse zukünftig automatisch erlauben oder ablehnen lassen mittels dauerhafter XAntiSpam Regeln. "Blacklist" und "Whitelist" sind dauerhaft und ändern sich nur, wenn Sie die Dateien mit den Regeln ändern. Sie können zeitweilige XAntiSpam Regeln anschalten, die nur für eine Sitzung erhalten bleiben.
-
-Was möchten Sie tun?
-   <form name="form">
-     <button
-	 index="2"
-	 name="Nothing"
-	 text="Nothing"/>
-     <button
-	 index="0"
-	 name="PermanentlyBlacklist"
-	 text="Blacklist"/>
-     <button
-	 index="1"
-	 name="PermanentlyWhitelist"
-	 text="Whitelist"/>
-   </form>
-  </notification>
-
-
-  <notification
-   icon="notify_caution_icon.tga"
-   name="xantispamVolatile"
-   type="alert">
-XantiSpam hat ein Ereignis abgefangen:
-
-
-Typ:
-    [TYPE]
-
-Von:
-    [FROM]
-
-
-Mittels zeitweiliger XAntiSpam Regeln können Sie derartige Ereignisse zukünftig automatisch erlauben oder ablehnen. "Erlauben" und "Ablehnen" gelten nur für diese Sitzung. Sie können dauerhafte Regeln anschalten, die erhalten bleiben, bis Sie die Dateien mit den Regeln ändern.
-
-Was möchten Sie tun?
-   <form name="form">
-     <button
-	 index="2"
-	 name="Nothing"
-	 text="Nichts"/>
-     <button
-	 index="3"
-	 name="TemporarilyBlacklist"
-	 text="Ablehnen"/>
-     <button
-	 index="4"
-	 name="TemporarilyWhitelist"
-	 text="Erlauben"/>
-   </form>
   </notification>
 
 
