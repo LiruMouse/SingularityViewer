@@ -2356,9 +2356,7 @@ static xantispam_blackwhite xantispam_notify(const xantispam_request *data, cons
 {
 	// cache these for better performance
 	static LLCachedControl<bool> use_notify(gSavedSettings, "AntiSpamNotify");
-	static LLCachedControl<bool> use_persistent(gSavedSettings, "AntiSpamXtendedPersistent");
 	static LLCachedControl<bool> use_queries(gSavedSettings, "AntiSpamXtendedQueries");
-	static LLCachedControl<bool> use_volatile(gSavedSettings, "AntiSpamXtendedVolatile");
 
 	// volatile request caches here, filled from answers to user requests
 	static std::vector<xantispam_request> whitecache;
@@ -2374,40 +2372,25 @@ static xantispam_blackwhite xantispam_notify(const xantispam_request *data, cons
 	{
 	case XANTISPAM_QUERYUSER:
 		// Order is "deny", "allow", same as persistent rules.
-		if(use_volatile)
+		if(!xantispam_cachelookup(blackcache, data))
 		{
-			if(!xantispam_cachelookup(blackcache, data))
-			{
-				// deny when blacklisted
-				ret.isblacklisted = true;
-				return ret;
-			}
-			// check cache if whitelisted
-			ret.iswhitelisted = !xantispam_cachelookup(whitecache, data);
+			// deny when blacklisted
+			ret.isblacklisted = true;
+			return ret;
 		}
+
+		// check cache if whitelisted
+		ret.iswhitelisted = !xantispam_cachelookup(whitecache, data);
 		if(!ret.iswhitelisted && use_queries)
 		{
 			if(xantispam_cachelookup(notificationcache, data))
 			{
 				// ask when undecided
-
-				// Depending on what is enabled, different notifications are
-				// used.  First figure out which one to use.
-				std::string whichnotification("xantispam");
-				if(use_volatile)
-				{
-					whichnotification += "Volatile";
-				}
-				if(use_persistent)
-				{
-					whichnotification += "Persistent";
-				}
-
 				LL_DEBUGS("xantispam") << "adding notification" << LL_ENDL;
 				LLSD args;
 				args["FROM"] = data->from + " (" + from_name + ")";
 				args["TYPE"] = data->type;
-				LLNotificationsUtil::add(whichnotification, args, LLSD(), boost::bind(&xantispam_notify_cb, _1, _2, *data, from_name));
+				LLNotificationsUtil::add("xantispamVolatilePersistent", args, LLSD(), boost::bind(&xantispam_notify_cb, _1, _2, *data, from_name));
 				LL_DEBUGS("xantispam") << "done adding notification" << LL_ENDL;
 
 				// keep track of what was notified about
@@ -2449,19 +2432,17 @@ static xantispam_blackwhite xantispam_notify(const xantispam_request *data, cons
 		ret.isblacklisted = true;
 		break;
 	case XANTISPAM_CLEARCACHE:
-		if(use_volatile) {
-			llinfos << "clearing entries from volatile blackcache: " << blackcache.size() << llendl;
-			llinfos << "clearing entries from volatile whitecache: " << whitecache.size() << llendl;
-			llinfos << "clearing entries from notifications cache: " << notificationcache.size() << llendl;
-			whitecache.clear();
-			blackcache.clear();
-			notificationcache.clear();
-			if(use_notify)
-			{
-				LLSD args;
-				args["TYPE"] = "Volatile";
-				LLNotificationsUtil::add("xantispamNclrcache", args);
-			}
+		llinfos << "clearing entries from volatile blackcache: " << blackcache.size() << llendl;
+		llinfos << "clearing entries from volatile whitecache: " << whitecache.size() << llendl;
+		llinfos << "clearing entries from notifications cache: " << notificationcache.size() << llendl;
+		whitecache.clear();
+		blackcache.clear();
+		notificationcache.clear();
+		if(use_notify)
+		{
+			LLSD args;
+			args["TYPE"] = "Volatile";
+			LLNotificationsUtil::add("xantispamNclrcache", args);
 		}
 		break;
 	case XANTISPAM_UNNOTIFY:
@@ -2977,13 +2958,19 @@ static bool xantispam_silent(const xantispam_request *request, std::vector<xanti
 //
 bool xantispam_check(const std::string& fromstr, const std::string& filtertype, const std::string& from_name)
 {
+	// is xantispam enabled?
+	static LLCachedControl<bool> use_xantispam(gSavedSettings,"AntiSpamXtendedEnabled");
+	if(!use_xantispam)
+	{
+		// consistently return true when xantispam is disabled
+		return true;
+	}
+
 	// cache these for better performance
 	static LLCachedControl<bool> use_notify(gSavedSettings, "AntiSpamNotify");
-	static LLCachedControl<bool> use_persistent(gSavedSettings, "AntiSpamXtendedPersistent");
 	static LLCachedControl<bool> use_queries(gSavedSettings, "AntiSpamXtendedQueries");
 	static LLCachedControl<bool> use_relaxed(gSavedSettings, "AntiSpamXtendedRelaxed");
 	static LLCachedControl<bool> use_debug(gSavedSettings, "AntiSpamXtendedDebug");
-	static LLCachedControl<bool> use_volatile(gSavedSettings, "AntiSpamXtendedVolatile");
 
 	// persistent caches here, filled from rules files
 	static std::vector<xantispam_request> blackcache;
@@ -3031,28 +3018,25 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 			}
 			break;
 		case XANTISPAM_SPECIAL_CLEARCACHE:
-			if(use_persistent)
+			// special call to clear the persistent caches
+			llinfos << "clearing entries from blackcache: " << blackcache.size() << llendl;
+			llinfos << "clearing entries from whitecache: " << whitecache.size() << llendl;
+			blackcache.clear();
+			whitecache.clear();
+			// the undecided cache must be cleared as well because there could be
+			// requests on it that have become decided through changes to the
+			// files
+			llinfos << "clearing entries from undeccache: " << undeccache.size() << llendl;
+			undeccache.clear();
+			if(use_notify)
 			{
-				// special call to clear the persistent caches
-				llinfos << "clearing entries from blackcache: " << blackcache.size() << llendl;
-				llinfos << "clearing entries from whitecache: " << whitecache.size() << llendl;
-				blackcache.clear();
-				whitecache.clear();
-				// the undecided cache must be cleared as well because there could be
-				// requests on it that have become decided through changes to the
-				// files
-				llinfos << "clearing entries from undeccache: " << undeccache.size() << llendl;
-				undeccache.clear();
-				if(use_notify)
-				{
-					LLSD args;
-					args["TYPE"] = "Persistent and Volatile-Undecided";
-					LLNotificationsUtil::add("xantispamNclrcache", args);
-				}
-				xantispam_prefill_cache(blackcache, false);
-				xantispam_prefill_cache(whitecache, true);
-				llinfos << "persistent caches prefilled" << llendl;
+				LLSD args;
+				args["TYPE"] = "Persistent and Volatile-Undecided";
+				LLNotificationsUtil::add("xantispamNclrcache", args);
 			}
+			xantispam_prefill_cache(blackcache, false);
+			xantispam_prefill_cache(whitecache, true);
+			llinfos << "persistent caches prefilled" << llendl;
 			return false;
 			break;
 		case XANTISPAM_SPECIAL_INVALID:
@@ -3092,16 +3076,6 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 		return false;
 	}  // special requests
 
-	if(!use_persistent && !use_volatile && !use_queries)
-	{
-		// When no rules are enabled, false must be returned
-		// to let the request pass.
-		//
-		// Unfortunately, this requires another setting to disable xantispam
-		// for the purpose of is_spam_filtered().
-		return false;
-	}
-
 	// prevent flooding --- blocking the request may not be the right
 	// thing in all cases, but it is the most secure thing to do
 	if(xantispam_callspersec())
@@ -3134,14 +3108,7 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 	//         as would result without xantispam.
 	if(request_is_backgnd)
 	{
-		if(use_persistent)
-		{
-			return xantispam_backgnd(&request, whitecache, blackcache, from_name);
-		}
-		else
-		{
-			return true;
-		}
+		return xantispam_backgnd(&request, whitecache, blackcache, from_name);
 	}
 
 	// policy: silent requests do not generate notifications
@@ -3152,14 +3119,7 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 	//         as would result without xantispam.
 	if(request_is_silent)
 	{
-		if(use_persistent)
-		{
-			return xantispam_silent(&request, whitecache, blackcache, from_name);
-		}
-		else
-		{
-			return false;
-		}
+		return xantispam_silent(&request, whitecache, blackcache, from_name);
 	}
 
 	// long_request provides using rules like ":: greeter"
@@ -3171,42 +3131,39 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 	// strip whitespace and replace ":" with ";"
 	xantispam_apply_syntax(&long_request);
 
-	if(use_persistent)
+	if(xantispam_cachelookup(undeccache, &request) )
 	{
-		if(xantispam_cachelookup(undeccache, &request) )
+		// The request undecided. Is it blacklisted?
+		if(!xantispam_transparentlookup(blackcache, &long_request, false))
 		{
-			// The request undecided. Is it blacklisted?
-			if(!xantispam_transparentlookup(blackcache, &long_request, false))
+			LL_DEBUGS("xantispam") << "is blacklisted" << LL_ENDL;
+			// yes, notify about what happened
+			if(use_notify)
 			{
-				LL_DEBUGS("xantispam") << "is blacklisted" << LL_ENDL;
-				// yes, notify about what happened
-				if(use_notify)
-				{
-					LLSD args;
-					args["SOURCE"] = long_request.from + " (" + from_name + ")";
-					args["TYPE"] = long_request.type;
-					LLNotificationsUtil::add("xantispamNblk", args);
-				}
-				return true;
+				LLSD args;
+				args["SOURCE"] = long_request.from + " (" + from_name + ")";
+				args["TYPE"] = long_request.type;
+				LLNotificationsUtil::add("xantispamNblk", args);
 			}
-
-			LL_DEBUGS("xantispam") << "is not blacklisted" << LL_ENDL;
-			// The request is not blacklisted.  Is it whitelisted?
-			if(!xantispam_transparentlookup(whitecache, &long_request, true))
-			{
-				LL_DEBUGS("xantispam") << "filelookup whitelist returned" << LL_ENDL;
-				return false;
-			}
-
-			LL_DEBUGS("xantispam") << "is not whitelisted" << LL_ENDL;
-			// the request is still undecided, so put it on the undecided cache
-			if(undeccache.size() > XANTISPAM_CACHE_CAPACITY)
-			{
-				undeccache.erase(undeccache.begin(), undeccache.begin() + XANTISPAM_CACHE_CAPACITY / XANTISPAM_THRESHOLD + 1);
-			}
-			undeccache.push_back(request);
-			LL_DEBUGS("xantispam") << "Request put on undecided cache directly: [" << request.from << "]{" << request.type << "}" << LL_ENDL;
+			return true;
 		}
+
+		LL_DEBUGS("xantispam") << "is not blacklisted" << LL_ENDL;
+		// The request is not blacklisted.  Is it whitelisted?
+		if(!xantispam_transparentlookup(whitecache, &long_request, true))
+		{
+			LL_DEBUGS("xantispam") << "filelookup whitelist returned" << LL_ENDL;
+			return false;
+		}
+
+		LL_DEBUGS("xantispam") << "is not whitelisted" << LL_ENDL;
+		// the request is still undecided, so put it on the undecided cache
+		if(undeccache.size() > XANTISPAM_CACHE_CAPACITY)
+		{
+			undeccache.erase(undeccache.begin(), undeccache.begin() + XANTISPAM_CACHE_CAPACITY / XANTISPAM_THRESHOLD + 1);
+		}
+		undeccache.push_back(request);
+		LL_DEBUGS("xantispam") << "Request put on undecided cache directly: [" << request.from << "]{" << request.type << "}" << LL_ENDL;
 	}
 
 	// handle busy and afk situations gracefully
@@ -3363,7 +3320,7 @@ void xantispam_buttons(const int action)
 		gSavedSettings.setBOOL("AntiSpamEnabled", 1);
 		gSavedSettings.setBOOL("EnableGestureSounds", 0);
 
-		gSavedSettings.setBOOL("AntiSpamXtendedInterceptsDialogs", 0);
+		gSavedSettings.setBOOL("AntiSpamXtendedEnabled", 1);
 
 		gSavedSettings.setBOOL("AntiSpamXtendedPersistent", 1);
 		gSavedSettings.setBOOL("AntiSpamXtendedQueries", 1);
@@ -3434,86 +3391,127 @@ bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_own
 	if (antispam_not_friend && is_friend)
 		return false;
 
-	// allow en-/disable of xantispam for the purpose of the follwing checks
+	static LLCachedControl<bool> alerts(gSavedSettings, "AntiSpamAlerts");
+	static LLCachedControl<bool> friendship_offers(gSavedSettings, "AntiSpamFriendshipOffers");
+	static LLCachedControl<bool> group_invites(gSavedSettings, "AntiSpamGroupInvites");
+	static LLCachedControl<bool> group_notices(gSavedSettings, "AntiSpamGroupNotices");
+	static LLCachedControl<bool> item_offers(gSavedSettings, "AntiSpamItemOffers");
+	static LLCachedControl<bool> scripts(gSavedSettings, "AntiSpamScripts");
+	static LLCachedControl<bool> teleport_offers(gSavedSettings, "AntiSpamTeleports");
+	static LLCachedControl<bool> teleport_requests(gSavedSettings, "AntiSpamTeleportRequests");
+
+	// allow to en-/disable xantispam
 	// Without this, xantispam would pass the requests in case there aren't any rules,
 	// effectively disabling these checks.
-	static LLCachedControl<bool> use_xantispam(gSavedSettings,"AntiSpamXtendedInterceptsDialogs");
+	static LLCachedControl<bool> use_xantispam(gSavedSettings,"AntiSpamXtendedEnabled");
 
 	// Second, check if this dialog type is even being filtered
 	switch(dialog)
 	{
 	case IM_GROUP_NOTICE:
-
-		// Note:
-		// xantispam_check(from_id, <TYPE>, from_name)
-		//
-		// <TYPE> can be any std::string.  It must not contain a colon (':')
-		// and must not be a string that is considered as a special-request.
-		// It must not contain whitespace.
-		//
-		// The from_name parameter is relevant for filtering.
-		// It is displayed to the user as information and put into the rules
-		// files as comment.  The user can manually create rules
-		// using names, being matched case insensitively, with whitespace stripped.
-		//
-		// The from_id parameter should be a UUID as string (LLUUID
-		// foo.asString()).  Some other string can be used as long as it is
-		// sufficient to uniquly identify something that shall be filtered
-		// when xantispam_line2request() is adjusted to allow other
-		// characters.  It must not contain a colon.
-		//
-		// For matching, rule types are searched for within the request type:
-		// A rule specifying a type of "Group" will match any of
-		// "GroupNoticesNonRequested", "GroupInvites",
-		// "GroupNoticesRequested" and the like.
-		if(use_xantispam) return xantispam_check(from_id, "GroupNoticesNonRequested", from_name);
-		break;
-	case IM_BUSY_AUTO_RESPONSE:
-		if(use_xantispam) return xantispam_check(from_id, "AutoResponseIsBusy", from_name);
-		break;
-	case IM_GROUP_NOTICE_REQUESTED:
-	        if (!gSavedSettings.getBOOL("AntiSpamGroupNotices")) return false;
-		if(use_xantispam) return xantispam_check(from_id, "GroupNoticesRequested", from_name);
-		break;
-	case IM_GROUP_INVITATION:
-	        if (!gSavedSettings.getBOOL("AntiSpamGroupInvites")) return false;
-		if(use_xantispam) return xantispam_check(from_id, "GroupInvites", from_name);
-		break;
-	case IM_INVENTORY_OFFERED:
-		if(use_xantispam) return xantispam_check(from_id, "ItemOffersNonTask", from_name);
-		break;
-	case IM_TASK_INVENTORY_OFFERED:
-		if (!gSavedSettings.getBOOL("AntiSpamItemOffers")) return false;
-
+		if (!group_notices)
+		{
+			return false;
+		}
 		if(use_xantispam)
 		{
-			// Go by intentory handling rules when any origins are configured for it.
-			// This is needed for non-relaxed mode.
-			if(xantispam_check(gAgentID.asString(), "&-InventoryHandleDistinctly", "[config]"))
+			return xantispam_check(from_id, "GroupNoticesNonRequested", from_name);
+		}
+		break;
+	case IM_BUSY_AUTO_RESPONSE:
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "AutoResponseIsBusy", from_name);
+		}
+		return false;
+		break;
+	case IM_GROUP_NOTICE_REQUESTED:
+	        if (!group_notices)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "GroupNoticesRequested", from_name);
+		}
+		break;
+	case IM_GROUP_INVITATION:
+	        if (!group_invites)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "GroupInvites", from_name);
+		}
+		break;
+	case IM_INVENTORY_OFFERED:
+		if (!item_offers)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			if(!xantispam_check(from_id, "&-InventoryHandleDistinctly", from_name))
 			{
-				return xantispam_check(from_id, "ItemOffersFromTask", from_name);
+				return false; // filter by type of item in inventory_offer_handler()
 			}
-			else
+			return xantispam_check(from_id, "ItemOffersNonTask", from_name);
+		}
+		break;
+	case IM_TASK_INVENTORY_OFFERED:
+		if (!item_offers)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			if(!xantispam_check(from_id, "&-InventoryHandleDistinctly", from_name))
 			{
-				return false;
+				return false; // filter by type of item in inventory_offer_handler()
 			}
+			return xantispam_check(from_id, "ItemOffersFromTask", from_name);
 		}
 		break;
 	case IM_FROM_TASK_AS_ALERT:
-		if (!gSavedSettings.getBOOL("AntiSpamAlerts")) return false;
-		if(use_xantispam) return xantispam_check(from_id, "Alerts", from_name);
+		if (!alerts)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "Alerts", from_name);
+		}
 		break;
 	case IM_LURE_USER:
-		if (!gSavedSettings.getBOOL("AntiSpamTeleports")) return false;
-		if(use_xantispam) return xantispam_check(from_id, "TeleportOffers", from_name);
+		if (!teleport_offers)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "TeleportOffers", from_name);
+		}
 		break;
 	case IM_TELEPORT_REQUEST:
-		if (!gSavedSettings.getBOOL("AntiSpamTeleportRequests")) return false;
-		if(use_xantispam) return xantispam_check(from_id, "TeleportRequests", from_name);
+		if (!teleport_requests)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "TeleportRequests", from_name);
+		}
 		break;
 	case IM_FRIENDSHIP_OFFERED:
-		if (!gSavedSettings.getBOOL("AntiSpamFriendshipOffers")) return false;
-		if(use_xantispam) return xantispam_check(from_id, "FriendshipOffers", from_name);
+		if (!friendship_offers)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "FriendshipOffers", from_name);
+		}
 		break;
 	case IM_COUNT:
 		// Bit of a hack, we should never get here unless we
@@ -3532,10 +3530,17 @@ bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_own
 		// llinstantmessage.h.
 		//
 		// /Ratany
-		if (!gSavedSettings.getBOOL("AntiSpamScripts")) return false;
-		if(use_xantispam) return xantispam_check(from_id, "DialogsFromTask", from_name);
+		if (!scripts)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "DialogsFromTask", from_name);
+		}
 		break;
 	default:
+		// LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "Something has passed filtering without your knowledge."));
 		return false;
 	}
 
@@ -3555,7 +3560,7 @@ bool inventory_offer_handler_answer_available(LLOfferInfo *info)
 	if (LLMuteList::getInstance()->isMuted(info->mFromID, info->mFromName))
 	{
 		info->forceResponse(IOR_MUTE);
-		return true ;
+		return true;
 	}
 
 	// If the user wants to, accept all offers of any kind
@@ -3581,6 +3586,7 @@ bool inventory_offer_handler_answer_available(LLOfferInfo *info)
 		info->forceResponse(IOR_DECLINE);
 		return true;
 	}
+
 	return false;
 }
 
@@ -3686,7 +3692,7 @@ void inventory_offer_handler(LLOfferInfo* info)
 	}
 
 	// xantispam ...
-	std::string xa_origin_string = (origin == AGENT) ? info->mFromID.asString() : (origin_name_found ? origin_name : (origin == GROUP) ? "[apparently-originating-from-groupID(" + info->mFromID.asString() + ")]" : "[apparently-originating-from-object-owned-by-agentID(" + info->mFromID.asString() + ")]");
+	std::string xa_origin_string = (origin == AGENT) ? info->mFromID.asString() : (origin_name_found ? origin_name : (origin == GROUP) ? "<apparently-originating-from-groupID(" + info->mFromID.asString() + ")>" : "<apparently-originating-from-object-owned-by-agentID(" + info->mFromID.asString() + ")>");
 	xa_origin_string.erase(std::remove_if(xa_origin_string.begin(), xa_origin_string.end(), boost::algorithm::is_any_of("?:")), xa_origin_string.end());
 
 	if(xantispam_check(xa_origin_string, "&-InventoryHandleDistinctly", assettype))

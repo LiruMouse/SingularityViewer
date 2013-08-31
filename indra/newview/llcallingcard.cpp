@@ -747,31 +747,20 @@ static void on_avatar_name_cache_notify(const LLUUID& agent_id,
 	LLNotificationPtr notification;
 	std::string notifyMsg = (online ? name + " is online" : name + " is offline");
 
-	// [Ratany:] Note: request types starting with '!' do not trigger xantispam notifications
-	//
-	// Logic here is: When whitelisted do show, otherwise apply rules as usual.
-	// This allows to blacklist all online notifications except for those friends whom they
-	// are whitelisted for.
-	//
-	// Note: Order does matter: If looking up "&-ExecFriendIs.*" causes a file lookup because the
-	// the cache is flowing over, the next lookup for "&-StatusFriendIs.*" has a chance to be faster
-	// because such a rule is, with some likeliness, now cached.  Otherwise, the notification should
-	// be sent before something might be executed.
+	// [Ratany:]
+	// check if something needs to be executed
 	xantispam_check(agent_id.asString(), (online ? "&-ExecFriendIsOnline!" : "&-ExecFriendIsOffline!"), notifyMsg);
-	bool show = !xantispam_check(agent_id.asString(), (online ? "&-StatusFriendIsOnline" : "&-StatusFriendIsOffline"), name);
-	if(!show)
-	{
-		show = !xantispam_check(agent_id.asString(), (online ? "!StatusFriendIsOnline" : "!StatusFriendIsOffline"), name);
-	}
-	if(show)
+
+	// request types starting with '!' do not trigger xantispam notifications
+	if(xantispam_check(agent_id.asString(), (online ? "!StatusFriendIsOnline" : "!StatusFriendIsOffline"), name))
 	{
 		// Popup a notify box with online status of this agent
 		notification = LLNotificationsUtil::add(online ? "FriendOnline" : "FriendOffline", args, payload);
 		notifyMsg = notification->getMessage();
 	}
 
-	// If there's an open IM session with this agent, send a notification there too,
-	// even when the pop-up has been blocked by xantispam. [/Ratany]
+	// If there's an open IM session with this agent, add a status message
+	// even when the notification has been blocked by xantispam. [/Ratany]
 	LLUUID session_id = LLIMMgr::computeSessionID(IM_NOTHING_SPECIAL, agent_id);
 	LLFloaterIMPanel *floater = gIMMgr->findFloaterBySession(session_id);
 	if (floater && !notifyMsg.empty())

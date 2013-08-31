@@ -1477,10 +1477,10 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
-    <key>AntiSpamXtendedInterceptsDialogs</key>
+    <key>AntiSpamXtendedEnabled</key>
     <map>
       <key>Comment</key>
-      <string>When enabled, XAntiSpam can intercept a number of dialogs. This should be enabled when you want to use XAntiSpam, and you should enable XAntiSpam rules.</string>
+      <string>When false, XAntiSpam is disabled.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

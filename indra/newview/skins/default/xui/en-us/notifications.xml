@@ -9783,42 +9783,6 @@ Object successfully exported to: [FILENAME]
 
 
   <notification
-   icon="notify_caution_icon.tga"
-   name="xantispam"
-   type="alert">
-XAntiSpam has intercepted an event:
-
-
-Type:
-    [TYPE]
-
-From:
-    [FROM]
-
-
-Persistent and volatile XAntiSpam rules are disabled; queries are enabled.
-
-When you enable XAntiSpam rules, you can deny and allow events from particular residents and objects and make settings on an individial basis.
-
-What would you like to do?
-   <form name="form">
-     <button
-	 index="2"
-	 name="Nothing"
-	 text="Nothing"/>
-     <button
-	 index="6"
-	 name="EnableXAntiSpam"
-	 text="Enable XAntiSpam"/>
-     <button
-	 index="7"
-	 name="EnableXAntiSpam"
-	 text="Disable Queries"/>
-   </form>
-  </notification>
-
-
-  <notification
    icon="notifytip.tga"
    name="xantispamNadvfull"
    type="notifytip">
@@ -9895,74 +9859,6 @@ XAntiSpam: The number of calls ([CALLS]) exceeds the threshold for the maximum n
    name="xantispamNselfblk"
    type="notifytip">
 XAntiSpam: Events from [UUID] are not denied because this is your own UUID.
-  </notification>
-
-
-  <notification
-   icon="notify_caution_icon.tga"
-   name="xantispamPersistent"
-   type="alert">
-XAntiSpam has intercepted an event:
-
-
-Type:
-    [TYPE]
-
-From:
-    [FROM]
-
-
-You can have such events automatically allowed or denied in the future through persistent XAntiSpam rules. "Blacklist" and "Whitelist" apply until you change the corresponding rule in a rule file. You can enable the volatile XAntiSpam rules which apply only for a session.
-
-What would you like to do?
-   <form name="form">
-     <button
-	 index="2"
-	 name="Nothing"
-	 text="Nothing"/>
-     <button
-	 index="0"
-	 name="PermanentlyBlacklist"
-	 text="Blacklist"/>
-     <button
-	 index="1"
-	 name="PermanentlyWhitelist"
-	 text="Whitelist"/>
-   </form>
-  </notification>
-
-
-  <notification
-   icon="notify_caution_icon.tga"
-   name="xantispamVolatile"
-   type="alert">
-XAntiSpam has intercepted an event:
-
-
-Type:
-    [TYPE]
-
-From:
-    [FROM]
-
-
-You can have such events automatically allowed or denied in the future through volatile XAntiSpam rules. "Allow" and "Deny" apply only for this session. You can enable the persistent XAntiSpam rules which apply until you change the corresponding rule in a rule file.
-
-What would you like to do?
-   <form name="form">
-     <button
-	 index="2"
-	 name="Nothing"
-	 text="Nothing"/>
-     <button
-	 index="3"
-	 name="TemporarilyBlacklist"
-	 text="Deny"/>
-     <button
-	 index="4"
-	 name="TemporarilyWhitelist"
-	 text="Allow"/>
-   </form>
   </notification>
 
 
