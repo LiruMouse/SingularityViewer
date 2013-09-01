@@ -376,6 +376,9 @@ LLTextEditor::LLTextEditor(
 	menu->addChild(new LLMenuItemCallGL("Use huge Font", context_use_huge_font, NULL, this));
 	menu->addChild(new LLMenuItemCallGL("Use monospace Font", context_use_monospace_font, NULL, this));
 	menu->addChild(new LLMenuItemCallGL("Use small Font", context_use_small_font, NULL, this));
+	menu->addSeparator();
+	menu->addChild(new LLMenuItemCallGL("Toggle line numbers", context_toggle_line_numbers, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Toggle scroll bar", context_toggle_scrollbar, NULL, this));
 	// [/Ratany]
 	menu->addSeparator();
 	menu->setCanTearOff(FALSE);
@@ -406,6 +409,18 @@ void LLTextEditor::context_copy(void* data)
 
 
 // [Ratany]
+void LLTextEditor::context_toggle_line_numbers(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mShowLineNumbers = !line->mShowLineNumbers;
+	line->draw();
+}
+void LLTextEditor::context_toggle_scrollbar(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mScrollbar->setVisible(!line->mScrollbar->getVisible());
+	line->draw();
+}
 void LLTextEditor::context_use_big_font(void *data)
 {
 	LLTextEditor* line = (LLTextEditor*)data;
