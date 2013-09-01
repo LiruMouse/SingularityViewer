@@ -339,7 +339,7 @@ LLTextEditor::LLTextEditor(
 	mScrollbar->setFollowsTop();
 	mScrollbar->setFollowsBottom();
 	mScrollbar->setEnabled( TRUE );
-	mScrollbar->setVisible( TRUE );
+	mScrollbar->setVisible(gSavedSettings.getBOOL("EditorHasScrollbar"));
 	mScrollbar->setOnScrollEndCallback(mOnScrollEndCallback, mOnScrollEndData);
 	addChild(mScrollbar);
 
