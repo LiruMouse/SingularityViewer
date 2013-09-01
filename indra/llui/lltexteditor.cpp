@@ -410,31 +410,37 @@ void LLTextEditor::context_use_big_font(void *data)
 {
 	LLTextEditor* line = (LLTextEditor*)data;
 	line->mGLFont = LLFontGL::getFontSansSerifBig();
+	line->reshape(line->getRect().getWidth(), line->getRect().getHeight(), true);
 }
 void LLTextEditor::context_use_bold_font(void *data)
 {
 	LLTextEditor* line = (LLTextEditor*)data;
 	line->mGLFont = LLFontGL::getFontSansSerifBold();
+	line->reshape(line->getRect().getWidth(), line->getRect().getHeight(), true);
 }
 void LLTextEditor::context_use_default_font(void *data)
 {
 	LLTextEditor* line = (LLTextEditor*)data;
 	line->mGLFont = LLFontGL::getFontSansSerif();
+	line->reshape(line->getRect().getWidth(), line->getRect().getHeight(), true);
 }
 void LLTextEditor::context_use_huge_font(void *data)
 {
 	LLTextEditor* line = (LLTextEditor*)data;
 	line->mGLFont = LLFontGL::getFontSansSerifHuge();
+	line->reshape(line->getRect().getWidth(), line->getRect().getHeight(), true);
 }
 void LLTextEditor::context_use_monospace_font(void *data)
 {
 	LLTextEditor* line = (LLTextEditor*)data;
 	line->mGLFont = LLFontGL::getFontMonospace();
+	line->reshape(line->getRect().getWidth(), line->getRect().getHeight(), true);
 }
 void LLTextEditor::context_use_small_font(void *data)
 {
 	LLTextEditor* line = (LLTextEditor*)data;
 	line->mGLFont = LLFontGL::getFontSansSerifSmall();
+	line->reshape(line->getRect().getWidth(), line->getRect().getHeight(), true);
 }
 
 bool LLTextEditor::run_external_editor(const std::string filename)
