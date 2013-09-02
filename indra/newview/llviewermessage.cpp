@@ -2869,7 +2869,7 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 		// it the other way round, they can still change order.
 	}
 
-	// For the rules that don't do someting special, return the result of the lookup.
+	// For the rules that don't do something special, return the result of the lookup.
 	return xantispam_lookup_selectively(blackcache, whitecache, request, true);
 }
 
