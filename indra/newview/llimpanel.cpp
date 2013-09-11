@@ -944,13 +944,13 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 		}
 	}
 
-	if (!isInVisibleChain() || (!hasFocus() && getParent() == gFloaterView))
-	{
-		mNumUnreadMessages++;
-	}
-
 	if (source.notNull())
 	{
+		if (!isInVisibleChain() || (!hasFocus() && getParent() == gFloaterView))
+		{
+			mNumUnreadMessages++;
+		}
+
 		mSpeakers->speakerChatted(source);
 		mSpeakers->setSpeakerTyping(source, FALSE);
 	}
