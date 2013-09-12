@@ -3927,6 +3927,9 @@ bool LLAgent::teleportCore(bool is_local)
 	// </edit>
 	gAgentCamera.resetView(FALSE);
 
+	// take keyboard focus away (particularly from inventory panel)
+	gFocusMgr.setKeyboardFocus(NULL);
+
 	// local logic
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_TELEPORT_COUNT);
 	if (is_local)
