@@ -623,6 +623,9 @@ public:
 				child->insert(data);
 			}
 		}
+// Singu note: now that we allow wider range in octree, discard them here
+// if they fall out of range
+#if 0
 		else 
 		{
 			//it's not in here, give it to the root
@@ -641,6 +644,7 @@ public:
 				node->insert(data);
 			}
 		}
+#endif
 
 		return false;
 	}
@@ -1010,7 +1014,7 @@ public:
 		}
 		
 		LLVector4a MAX_MAG;
-		MAX_MAG.splat(32767.f * 256.f); // Singu note: SVC-2941 FIRE-11593 maximum increased to 32768 sims across from 4096
+		MAX_MAG.splat(2048.f * 2048.f); // Singu note: SVC-2941 FIRE-11593 (original range was 1024 * 1024)
 
 		const LLVector4a& v = data->getPositionGroup();
 
