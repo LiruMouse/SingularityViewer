@@ -147,11 +147,22 @@ void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogL
 	}
 	else
 	{
-		static const LLCachedControl<U32> lines("LogShowHistoryLines", 32);
+		static const LLCachedControl<U32> lines("LogShowHistoryLines");
 		std::string line;
-		for (U32 i = 0; i < lines && getline(ifstr, line); ++i)
+		if(lines)
 		{
-			callback(LOG_LINE, line, userdata);
+			for (U32 i = 0; i < lines && getline(ifstr, line); ++i)
+			{
+				callback(LOG_LINE, line, userdata);
+			}
+		}
+		else
+		{
+			// load whole file when lines is 0
+			while(getline(ifstr, line))
+			{
+				callback(LOG_LINE, line, userdata);
+			}
 		}
 		callback(LOG_END,LLStringUtil::null,userdata);
 	}
