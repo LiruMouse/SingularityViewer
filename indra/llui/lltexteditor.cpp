@@ -610,6 +610,7 @@ void LLTextEditor::context_loadfile_picked(void *data, AIFilePicker* filepicker)
 	}
 	else
 	{
+		line->clear();
 		line->setText(content);
 	}
 }
