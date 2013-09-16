@@ -379,6 +379,8 @@ LLTextEditor::LLTextEditor(
 	menu->addSeparator();
 	menu->addChild(new LLMenuItemCallGL("Toggle line numbers", context_toggle_line_numbers, NULL, this));
 	menu->addChild(new LLMenuItemCallGL("Toggle scroll bar", context_toggle_scrollbar, NULL, this));
+	menu->addSeparator();
+	menu->addChild(new LLMenuItemCallGL("Delete all contents from this editor!", context_empty_buffer, NULL, this));
 	// [/Ratany]
 	menu->addSeparator();
 	menu->setCanTearOff(FALSE);
@@ -409,6 +411,12 @@ void LLTextEditor::context_copy(void* data)
 
 
 // [Ratany]
+void LLTextEditor::context_empty_buffer(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->clear();
+	line->draw();
+}
 void LLTextEditor::context_toggle_line_numbers(void *data)
 {
 	LLTextEditor* line = (LLTextEditor*)data;

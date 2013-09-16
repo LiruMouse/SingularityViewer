@@ -168,6 +168,7 @@ public:
 	static void context_selectall(void* data);
 
 	// [Ratany]
+	static void context_empty_buffer(void *data);
 	static void context_toggle_line_numbers(void *data);
 	static void context_toggle_scrollbar(void *data);
 	static void context_use_big_font(void *data);
