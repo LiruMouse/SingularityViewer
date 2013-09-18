@@ -136,77 +136,106 @@ void LLLogChat::saveHistory(std::string const& filename, std::string line)
 
 static long const LOG_RECALL_BUFSIZ = 2048;
 
-void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogLineType, std::string, void*), void* userdata)
+long LLLogChat::computeFileposition(LLFILE *fptr, U32 lines)
 {
-	bool filename_empty = filename.empty();
-	if (filename_empty)
+	// Set pos to point to the last byte of the file, if any.
+	if(fseek(fptr, 0, SEEK_END))
 	{
-		llwarns << "filename is empty!" << llendl;
+		return -1;
 	}
-	else while(1)	// So we can use break.
+	long pos = ftell(fptr);
+	if(pos == -1)
 	{
-		// The number of lines to return.
-		static const LLCachedControl<U32> lines("LogShowHistoryLines", 32);
-		if (lines == 0) break;
+		return -1;
+	}
 
-		// Open the log file.
-		LLFILE* fptr = LLFile::fopen(makeLogFileName(filename), "rb");
-		if (!fptr) break;
+	llinfos << "starting at end-pos: " << pos << llendl;
 
-		// Set pos to point to the last character of the file, if any.
-		if (fseek(fptr, 0, SEEK_END)) break;
-		long pos = ftell(fptr) - 1;
-		if (pos < 0) break;
+	char buffer[LOG_RECALL_BUFSIZ];
+	std::size_t nlines = 0;
+	std::size_t linepos = 0;
+	while((pos > 0) && (nlines < lines))
+	{
+		// reposition file pointer to before pos
+		size_t size = llmin(LOG_RECALL_BUFSIZ, pos);
+		pos -= size;
 
-		char buffer[LOG_RECALL_BUFSIZ];
-		bool error = false;
-		int nlines = 0;
-		while (pos > 0 && nlines < lines)
+		fseek(fptr, pos, SEEK_SET);
+		if(fread(buffer, 1, size, fptr) != size)
 		{
-			// Read the LOG_RECALL_BUFSIZ characters before pos.
-			size_t size = llmin(LOG_RECALL_BUFSIZ, pos);
-			pos -= size;
-			fseek(fptr, pos, SEEK_SET);
-			size_t len = fread(buffer, 1, size, fptr);
-			error = len != size;
-			if (error) break;
-			// Count the number of newlines in it and set pos to the beginning of the first line to return when we found enough.
-			for (char const* p = buffer + size - 1; p >= buffer; --p)
+			return -1;
+		}
+
+		// Count the number of newlines in the buffer and set
+		// pos to the beginning of the first line to return
+		// when we found enough.
+		for (char const* p = buffer + size - 1; p >= buffer; --p)
+		{
+			if (*p == '\n')
 			{
-				if (*p == '\n')
+				nlines++;
+				if(nlines > lines)
 				{
-					if (++nlines == lines)
-					{
-						pos += p - buffer + 1;
-						break;
-					}
+					linepos = pos + p - buffer + 1;
+					llinfos << "linepos: " << linepos << ", lines: " << nlines << llendl;
+					return linepos;
 				}
 			}
 		}
-		if (error)
-		{
-			fclose(fptr);
-			break;
-		}
+	}
 
+	// maybe there aren't so many lines in the file
+	return linepos;
+}
+
+
+void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogLineType, std::string, void*), void* userdata)
+{
+	// The number of lines to read.
+	U32 lines = gSavedSettings.getU32("LogShowHistoryLines");
+
+	if(!lines || filename.empty())
+	{
+		callback(LOG_EMPTY, LLStringUtil::null, userdata);
+		return;
+	}
+
+	// Open the log file.
+	// reading in binary mode might disable newline conversions
+	LLFILE* fptr = LLFile::fopen(makeLogFileName(filename), "r");
+	if (!fptr)
+	{
+		callback(LOG_EMPTY, LLStringUtil::null, userdata);
+		return;
+	}
+
+	long pos = computeFileposition(fptr, lines);
+	if(pos < 0)
+	{
+		callback(LOG_EMPTY, LLStringUtil::null, userdata);
+	}
+	else
+	{
 		// Set the file pointer at the first line to return.
 		fseek(fptr, pos, SEEK_SET);
 
 		// Read lines from the file one by one until we reach the end of the file.
-		while (fgets(buffer, LOG_RECALL_BUFSIZ, fptr))
+		char buffer[LOG_RECALL_BUFSIZ];
+		while(fgets(buffer, LOG_RECALL_BUFSIZ, fptr) == buffer)
 		{
-		  size_t len = strlen(buffer);
-		  if (buffer[len - 1] == '\n')	// In case the log file doesn't end on a new-line (is that even possible?)
-		  {
-			  buffer[len - 1] = '\0';
-		  }
-		  callback(LOG_LINE, buffer, userdata);
+			size_t len = strlen(buffer);
+			if(len > 0)
+			{
+				// fgets() does null-terminate the buffer on success
+				// overwrite a possible EOF
+				buffer[len - 1] = '\n';
+			}
+
+			callback(LOG_LINE, buffer, userdata);
 		}
-
-		fclose(fptr);
 		callback(LOG_END, LLStringUtil::null, userdata);
-		return;
 	}
-	callback(LOG_EMPTY, LLStringUtil::null, userdata);
-}
 
+	clearerr(fptr);
+	fclose(fptr);
+}

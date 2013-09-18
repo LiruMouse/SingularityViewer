@@ -48,6 +48,7 @@ public:
 	static std::string timestamp(bool withdate = false);
 	static std::string makeLogFileName(std::string filename);
 	static void saveHistory(std::string const& filename, std::string line);
+	static long computeFileposition(LLFILE *fptr, U32 lines);
 	static void loadHistory(std::string const& filename, 
 		                    void (*callback)(ELogLineType,std::string,void*), 
 							void* userdata);
