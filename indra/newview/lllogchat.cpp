@@ -39,6 +39,8 @@
 
 #include "boost/algorithm/string.hpp"
 
+extern bool xantispam_check(const std::string&, const std::string&, const std::string&);
+
 
 //static
 std::string LLLogChat::makeLogFileName(std::string filename)
@@ -147,9 +149,13 @@ void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogL
 	}
 	else
 	{
-		static const LLCachedControl<U32> lines("LogShowHistoryLines");
+		static const LLCachedControl<U32> lines("LogShowHistoryLines", 32);
 		std::string line;
-		if(lines)
+		// load as many lines as specified if it's local chat
+		// or if full history is not wanted (local chat log
+		// tends to be large enough to cause a performance
+		// impact)
+		if((filename.find("chat") == 0) || xantispam_check(filename, "&-IM/GRLogFullHistory", filename))
 		{
 			for (U32 i = 0; i < lines && getline(ifstr, line); ++i)
 			{
@@ -158,7 +164,6 @@ void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogL
 		}
 		else
 		{
-			// load whole file when lines is 0
 			while(getline(ifstr, line))
 			{
 				callback(LOG_LINE, line, userdata);

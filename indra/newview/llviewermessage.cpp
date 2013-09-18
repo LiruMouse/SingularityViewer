@@ -2726,6 +2726,7 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 	// # &-ExecOnNewGRSession!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
 	// # &-ExecOnNewIMSession!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
 	// # &-GRNewSessionNoSnd
+	// # &-IM/GRLogFullHistory
 	// # &-IMLogHistoryExternal
 	// # &-IMLogHistoryExternal![parameter_1!parameter_2!...!parameter_N][!%s]
 	// # &-IMLongOrShortTab (merges &-IMLongTab and &-IMShortTab into a single request)
@@ -2735,6 +2736,7 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 	// # &-InventoryHandleAccept?AcceptInventory?[type]
 	// # &-StatusFriendIsOffline
 	// # &-StatusFriendIsOnline
+	//
 	// # // &-IMLogDistinct DISABLED
 
 
