@@ -181,7 +181,6 @@ void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogL
 						break;
 					}
 				}
->>>>>>> ae388359592ad7a73b5aaac6b73469169bf4410d
 			}
 		}
 		if (error)
