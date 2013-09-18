@@ -202,7 +202,7 @@ void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogL
 
 	// Open the log file.
 	// reading in binary mode might disable newline conversions
-	LLFILE* fptr = LLFile::fopen(makeLogFileName(filename), "r");
+	LLFILE* fptr = LLFile::fopen(makeLogFileName(filename), "rb");
 	if (!fptr)
 	{
 		callback(LOG_EMPTY, LLStringUtil::null, userdata);
