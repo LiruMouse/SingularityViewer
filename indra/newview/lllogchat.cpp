@@ -149,12 +149,10 @@ long LLLogChat::computeFileposition(LLFILE *fptr, U32 lines)
 		return -1;
 	}
 
-	llinfos << "starting at end-pos: " << pos << llendl;
-
 	char buffer[LOG_RECALL_BUFSIZ];
 	std::size_t nlines = 0;
 	std::size_t linepos = 0;
-	while((pos > 0) && (nlines < lines))
+	while(pos > 0)
 	{
 		// reposition file pointer to before pos
 		size_t size = llmin(LOG_RECALL_BUFSIZ, pos);
@@ -174,10 +172,9 @@ long LLLogChat::computeFileposition(LLFILE *fptr, U32 lines)
 			if (*p == '\n')
 			{
 				nlines++;
+				linepos = pos + p - buffer + 1;
 				if(nlines > lines)
 				{
-					linepos = pos + p - buffer + 1;
-					llinfos << "linepos: " << linepos << ", lines: " << nlines << llendl;
 					return linepos;
 				}
 			}
@@ -210,7 +207,7 @@ void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogL
 	}
 
 	long pos = 0;
-	if(xantispam_check(filename, "&-IM/GRLogFullHistory", filename))
+	if(filename == "chat" || xantispam_check(filename, "&-IM/GRLogFullHistory", filename))
 	{
 		pos = computeFileposition(fptr, lines);
 	}
@@ -222,11 +219,8 @@ void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogL
 	else
 	{
 		// Set the file pointer at the first line to read.
-	llinfos << "setting to pos: " << pos << llendl;
 		if(!fseek(fptr, pos, SEEK_SET))
 		{
-	llinfos << "is at pos: " << ftell(fptr) << llendl;
-	std::size_t nread = 0;
 			// Read lines from the file one by one until we reach the end of the file.
 			char buffer[LOG_RECALL_BUFSIZ];
 			while(fgets(buffer, LOG_RECALL_BUFSIZ, fptr) == buffer)
@@ -235,16 +229,12 @@ void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogL
 				if(len > 0)
 				{
 					// fgets() does null-terminate the buffer on success
-					// overwrite a possible EOF
-					buffer[len - 1] = '\n';
+					// overwrite '\n' and a possible EOF; '\n' is appended by callback()
+					buffer[len - 1] = '\0';
+					callback(LOG_LINE, buffer, userdata);
 				}
-
-				callback(LOG_LINE, buffer, userdata);
-				nread++;
-				llinfos << "line: " << buffer << llendl;
 			}
 			callback(LOG_END, LLStringUtil::null, userdata);
-	llinfos << "lines read: " << nread << llendl;
 		}
 		else
 		{
