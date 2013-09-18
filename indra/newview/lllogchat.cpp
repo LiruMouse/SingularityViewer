@@ -209,31 +209,47 @@ void LLLogChat::loadHistory(std::string const& filename , void (*callback)(ELogL
 		return;
 	}
 
-	long pos = computeFileposition(fptr, lines);
+	long pos = 0;
+	if(xantispam_check(filename, "&-IM/GRLogFullHistory", filename))
+	{
+		pos = computeFileposition(fptr, lines);
+	}
+
 	if(pos < 0)
 	{
 		callback(LOG_EMPTY, LLStringUtil::null, userdata);
 	}
 	else
 	{
-		// Set the file pointer at the first line to return.
-		fseek(fptr, pos, SEEK_SET);
-
-		// Read lines from the file one by one until we reach the end of the file.
-		char buffer[LOG_RECALL_BUFSIZ];
-		while(fgets(buffer, LOG_RECALL_BUFSIZ, fptr) == buffer)
+		// Set the file pointer at the first line to read.
+	llinfos << "setting to pos: " << pos << llendl;
+		if(!fseek(fptr, pos, SEEK_SET))
 		{
-			size_t len = strlen(buffer);
-			if(len > 0)
+	llinfos << "is at pos: " << ftell(fptr) << llendl;
+	std::size_t nread = 0;
+			// Read lines from the file one by one until we reach the end of the file.
+			char buffer[LOG_RECALL_BUFSIZ];
+			while(fgets(buffer, LOG_RECALL_BUFSIZ, fptr) == buffer)
 			{
-				// fgets() does null-terminate the buffer on success
-				// overwrite a possible EOF
-				buffer[len - 1] = '\n';
-			}
+				size_t len = strlen(buffer);
+				if(len > 0)
+				{
+					// fgets() does null-terminate the buffer on success
+					// overwrite a possible EOF
+					buffer[len - 1] = '\n';
+				}
 
-			callback(LOG_LINE, buffer, userdata);
+				callback(LOG_LINE, buffer, userdata);
+				nread++;
+				llinfos << "line: " << buffer << llendl;
+			}
+			callback(LOG_END, LLStringUtil::null, userdata);
+	llinfos << "lines read: " << nread << llendl;
 		}
-		callback(LOG_END, LLStringUtil::null, userdata);
+		else
+		{
+			callback(LOG_EMPTY, LLStringUtil::null, userdata);
+		}
 	}
 
 	clearerr(fptr);
