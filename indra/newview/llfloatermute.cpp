@@ -246,12 +246,17 @@ void LLFloaterMute::refreshMuteList()
 			entry_id.generate(boost::lexical_cast<std::string>( count++ ));
 		mMuteDict.insert(std::make_pair(entry_id,*it));
 		element.value = entry_id;
-		element.name = display_name + " (" + it->mID.asString() + ")";
+		element.name = display_name;
 
 		LLScrollListCell::Params name_column;
 		name_column.column = "name";
 		name_column.type = "text";
 		name_column.value = "";
+
+		LLScrollListCell::Params uuid_column;
+		uuid_column.column = "UUID";
+		uuid_column.type = "text";
+		uuid_column.value = it->mID.asString();
 
 		LLScrollListCell::Params icon_column;
 		icon_column.column = "icon";
@@ -280,6 +285,7 @@ void LLFloaterMute::refreshMuteList()
 		}
 		element.columns.add(icon_column);
 		element.columns.add(name_column);
+		element.columns.add(uuid_column);
 		mMuteList->addNameItemRow(element);
 	}
 	mMuteList->updateSort();
