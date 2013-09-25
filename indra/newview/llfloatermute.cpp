@@ -246,7 +246,7 @@ void LLFloaterMute::refreshMuteList()
 			entry_id.generate(boost::lexical_cast<std::string>( count++ ));
 		mMuteDict.insert(std::make_pair(entry_id,*it));
 		element.value = entry_id;
-		element.name = display_name;
+		element.name = display_name + " (" + entry_id.asString() + ")";
 
 		LLScrollListCell::Params name_column;
 		name_column.column = "name";
