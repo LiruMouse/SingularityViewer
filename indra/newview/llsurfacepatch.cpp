@@ -304,6 +304,12 @@ void LLSurfacePatch::calcNormal(const U32 x, const U32 y, const U32 stride)
 				if (!ppatches[i][j]->getNeighborPatch(SOUTH))
 				{
 					poffsets[i][j][1] = 0;
+				}
+				else
+				{
+// <FS:CR> Aurora Sim
+					ppatches[i][j] = ppatches[i][j]->getNeighborPatch(SOUTH);
+					poffsets[i][j][1] += patch_width;
 					poffsets[i][j][2] = ppatches[i][j]->getSurface()->getGridsPerEdge();
 // </FS>CR> Aurora Sim
 				}
@@ -875,6 +881,7 @@ void LLSurfacePatch::setOriginGlobal(const LLVector3d &origin_global)
 void LLSurfacePatch::connectNeighbor(LLSurfacePatch *neighbor_patchp, const U32 direction)
 {
 	llassert(neighbor_patchp);
+	if (!neighbor_patchp) return;
 	mNormalsInvalid[direction] = TRUE;
 	neighbor_patchp->mNormalsInvalid[gDirOpposite[direction]] = TRUE;
 
