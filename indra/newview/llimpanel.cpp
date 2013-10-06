@@ -41,6 +41,7 @@
 #include "llcombobox.h"
 #include "llfloaterchat.h"
 #include "llfloaterinventory.h"
+#include "llfloaterwebcontent.h" // For web browser display of logs
 #include "llgroupactions.h"
 #include "llhttpclient.h"
 #include "llimview.h"
@@ -1161,6 +1162,16 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 	}
 }
 
+void show_log_browser(const std::string& name, const std::string& id)
+{
+	LLFloaterWebContent::Params p;
+	p.url("file:///" + LLLogChat::makeLogFileName(name));
+	p.id(id);
+	p.show_chrome(false);
+	p.trusted_content(true);
+	LLFloaterWebContent::showInstance("log", p); // If we passed id instead of "log", there would be no control over how many log browsers opened at once.
+}
+
 void LLFloaterIMPanel::onClickHistory()
 {
 	if (mOtherParticipantUUID.notNull())
@@ -1198,11 +1209,9 @@ void LLFloaterIMPanel::onClickHistory()
 		// [/Ratany]
 
 		// [Ansariel: Display name support]
-		//std::string command("\"" + LLLogChat::makeLogFileName(getTitle()) + "\"");
-		// [Ratany: This command thing does apparently nothing. /Ratany]
-		std::string command("\"" + filename + "\"");
+		//show_log_browser(getTitle(), mOtherParticipantUUID.asString());
+		show_log_browser(mSessionLabel, mOtherParticipantUUID.asString());
 		// [/Ansariel: Display name support]
-		gViewerWindow->getWindow()->ShellEx(command);
 	}
 }
 

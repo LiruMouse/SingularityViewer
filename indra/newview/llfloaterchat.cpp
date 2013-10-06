@@ -650,7 +650,10 @@ void LLFloaterChat::onClickToggleActiveSpeakers(void* userdata)
 	//self->childSetVisible("active_speakers_panel", !self->childIsVisible("active_speakers_panel"));
 }
 
+
 extern bool xantispam_check(const std::string&, const std::string&, const std::string&);
+
+void show_log_browser(const std::string& name = "chat", const std::string& id = "chat");
 
 // static
 void LLFloaterChat::onClickChatHistoryOpen(void* userdata)
@@ -665,11 +668,7 @@ void LLFloaterChat::onClickChatHistoryOpen(void* userdata)
 		return;
 	}
 
-	std::string command("\"" + filename + "\"");
-	// This command thing does apparently nothing on Linux and Mac.
-	gViewerWindow->getWindow()->ShellEx(command);
-
-	llinfos << command << llendl;
+	show_log_browser();
 }
 
 //static 

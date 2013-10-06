@@ -134,6 +134,7 @@ void LLLogChat::saveHistory(std::string const& filename, std::string line)
 	}
 }
 
+
 static long const LOG_RECALL_BUFSIZ = 2048;
 
 long LLLogChat::computeFileposition(LLFILE *fptr, U32 lines)
@@ -167,7 +168,7 @@ long LLLogChat::computeFileposition(LLFILE *fptr, U32 lines)
 		// Count the number of newlines in the buffer and set
 		// pos to the beginning of the first line to return
 		// when we found enough.
-		for (char const* p = buffer + size - 1; p >= buffer; --p)
+		for(char const* p = buffer + size - 1; p >= buffer; --p)
 		{
 			if (*p == '\n')
 			{
