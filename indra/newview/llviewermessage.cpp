@@ -1603,6 +1603,33 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		}	// end switch (mIM)
 		break;
 
+	case -2: // decline silently
+	{
+		LLStringUtil::format_map_t args;
+		args["[DESC]"] = mDesc;
+		args["[NAME]"] = mFromName;
+		LLFloaterChat::addChatHistory(LLTrans::getString("InvOfferDeclineSilent", args));
+	}
+	break;
+	case -1: // accept silently
+	{
+		LLOpenAgentOffer* open_agent_offer = new LLOpenAgentOffer(mObjectID, from_string);
+		open_agent_offer->startFetch();
+		if(catp || (itemp && itemp->isFinished()))
+		{
+			open_agent_offer->done();
+		}
+		else
+		{
+			opener = open_agent_offer;
+		}
+		LLStringUtil::format_map_t args;
+		args["[DESC]"] = mDesc;
+		args["[NAME]"] = mFromName;
+		LLFloaterChat::addChatHistory(LLTrans::getString("InvOfferAcceptSilent", args));
+	}
+	break;
+	
 	case IOR_BUSY:
 		//Busy falls through to decline.  Says to make busy message.
 		busy=TRUE;
@@ -4781,7 +4808,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 
 		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIMFROM)) )
 		{
-			switch (pIMFloater->mSessionType)
+			switch (pIMFloater->getSessionType())
 			{
 				case LLFloaterIMPanel::GROUP_SESSION:	// Group chat
 					if ( (from_id != gAgent.getID()) && (!gRlvHandler.canReceiveIM(session_id)) )
@@ -7175,8 +7202,6 @@ void process_preload_sound(LLMessageSystem *msg, void **user_data)
 	LLAudioSource *sourcep = objectp->getAudioSource(owner_id);
 	if (!sourcep) return;
 	
-	LLAudioData *datap = gAudiop->getAudioData(sound_id);
-
 	// Note that I don't actually do any loading of the
 	// audio data into a buffer at this point, as it won't actually
 	// help us out.
@@ -7185,8 +7210,8 @@ void process_preload_sound(LLMessageSystem *msg, void **user_data)
 	LLVector3d pos_global = objectp->getPositionGlobal();
 	if (gAgent.canAccessMaturityAtGlobal(pos_global))
 	{
-		// Add audioData starts a transfer internally.
-		sourcep->addAudioData(datap, FALSE);
+		// Preload starts a transfer internally.
+		sourcep->preload(sound_id);
 	}
 }
 
