@@ -514,32 +514,12 @@ void LLIMMgr::addMessage(
 
 	if (!gIMMgr->getFloaterOpen() && floater->getParent() != gFloaterView)
 	{
-<<<<<<< HEAD
-		//if the IM window is not open and the floater is not visible (i.e. not torn off)
-		LLFloater* previouslyActiveFloater = chat_floater->getActiveFloater();
-
-		// select the newly added floater (or the floater with the new line added to it).
-		// it should be there.
-		chat_floater->selectFloater(floater);
-
-		//there was a previously unseen IM, make that old tab flashing
-		//it is assumed that the most recently unseen IM tab is the one current selected/active
-		if ( previouslyActiveFloater && getIMReceived() )
-		{
-			chat_floater->setFloaterFlashing(previouslyActiveFloater, TRUE);
-		}
-
 		// only show the button and count if wanted
 		if(!(xantispam_check(other_participant_id.asString(), "&-IMCountingButton", name) && !xantispam_check(other_participant_id.asString(), "&-IMNoCountingButton", name)))
 		{
-			//notify of a new IM
-			notifyNewIM();
+			// If the chat floater is closed and not torn off) notify of a new IM
 			mIMUnreadCount++;
 		}
-=======
-		// If the chat floater is closed and not torn off) notify of a new IM
-		mIMUnreadCount++;
->>>>>>> cb12a35102279afb3a0cac016c0652dace6db8c6
 	}
 }
 
@@ -1071,67 +1051,7 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 	const LLUUID& session_id,
 	const LLUUID& other_participant_id,
 	const std::string& session_label,
-<<<<<<< HEAD
-	EInstantMessage dialog,
-	BOOL user_initiated)
-{
-	if (session_id.isNull())
-	{
-		llwarns << "Creating LLFloaterIMPanel with null session ID" << llendl;
-	}
-
-	llinfos << "LLIMMgr::createFloater: from " << other_participant_id 
-			<< " in session " << session_id << llendl;
-	LLFloaterIMPanel* floater = new LLFloaterIMPanel(session_label,
-													 session_id,
-													 other_participant_id,
-													 dialog);
-	LLTabContainer::eInsertionPoint i_pt = user_initiated ? LLTabContainer::RIGHT_OF_CURRENT : LLTabContainer::END;
-
-	// shorten the tab by shortening the name --- useful for horizantal tabs
-	// this is a merged request for xantispam_check()
-	std::string xa_name(session_label);
-	LLStringUtil::trim(xa_name);
-	if(xantispam_check(other_participant_id.asString(), "&-IMLongOrShortTab", xa_name))
-	{
-		// from ./indra/llui/lltabcontainer.cpp:const S32 TABCNTR_TAB_MAX_WIDTH = 150;
-		LLFloaterChatterBox::getInstance(LLSD())->addFloaterSmallTab(floater, FALSE, 150, i_pt);
-	}
-	else
-	{
-		LLFloaterChatterBox::getInstance(LLSD())->addFloaterSmallTab(floater, FALSE, gSavedSettings.getU32("AntiSpamXtendedMaxTabLength"), i_pt);
-	}
-
-	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
-	if (tear_off)
-	{
-		LLFloaterChatterBox::getInstance(LLSD())->removeFloater(floater); // removal sets up relationship for re-attach
-		gFloaterView->addChild(floater); // reparent to floater view
-		LLFloater* focused_floater = gFloaterView->getFocusedFloater(); // obtain the focused floater
-		floater->open(); // make the new chat floater appear
-		static LLCachedControl<bool> minimize("OtherChatsTornOffAndMinimized");
-		if (focused_floater != NULL) // there was a focused floater
-		{
-			floater->setMinimized(minimize); // so minimize this one, for now, if desired
-			focused_floater->setFocus(true); // and work around focus being removed by focusing on the last
-		}
-		else if (minimize)
-		{
-			floater->setFocus(false); // work around focus being granted to new floater
-			floater->setMinimized(true);
-		}
-	}
-	mFloaters.insert(floater->getHandle());
-	return floater;
-}
-
-LLFloaterIMPanel* LLIMMgr::createFloater(
-	const LLUUID& session_id,
-	const LLUUID& other_participant_id,
-	const std::string& session_label,
-=======
 	const EInstantMessage& dialog,
->>>>>>> cb12a35102279afb3a0cac016c0652dace6db8c6
 	const LLDynamicArray<LLUUID>& ids,
 	bool user_initiated)
 {

@@ -133,6 +133,10 @@ public:
 		const std::string& error_string);
 	void showSessionForceClose(const std::string& reason);
 
+	// [Ratany: needed for some checks for xantispam]
+	bool isGroupSessionType() const { return mSessionType == GROUP_SESSION;}
+	// [/Ratany]
+
 	static bool onConfirmForceCloseError(const LLSD& notification, const LLSD& response);
 
 	// LLIMModel Functionality

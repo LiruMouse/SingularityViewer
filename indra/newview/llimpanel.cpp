@@ -378,9 +378,9 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 		}
 		else
 		{
-			if(!xantispam_check(filename, "&-GRLogDistinct", mSessionLabel))
+			if(!xantispam_check(filename, "&-GRLogDistinct", mLogLabel))
 			{
-				filename = "nonagent_" + mSessionLabel;
+				filename = "nonagent_" + mLogLabel;
 			}
 		}
 		LLLogChat::loadHistory(filename,
@@ -805,7 +805,7 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 		histstr = show_name + utf8msg;
 
 	// [Ratany:]
-	std::string label(mSessionLabel);
+	std::string label(mLogLabel);
 	boost::algorithm::trim(label);
 	std::string from = ((source == gAgentID) ? mOtherParticipantUUID.asString() : source.asString());
 	if(!isGroupSessionType() && (source != gAgentID))
@@ -821,7 +821,7 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 	if (log_to_file
 		&& gSavedPerAccountSettings.getBOOL("LogInstantMessages") ) 
 	{
-		std::string filename((mLogLabel);
+		std::string filename(mLogLabel);
 		bool dont_log = false;
 		// Optionally distinguish the log files by friends, non-friends and groups:
 		if(!isGroupSessionType())
@@ -1096,7 +1096,7 @@ void LLFloaterIMPanel::onClickHistory()
 	if (mOtherParticipantUUID.notNull())
 	{
 		// [Ratany:] Check for distinction friend/resident
-		std::string label = mSessionLabel;
+		std::string label = mLogLabel;
 		boost::algorithm::trim(label);
 		std::string filename = label;
 		if(!isGroupSessionType())
