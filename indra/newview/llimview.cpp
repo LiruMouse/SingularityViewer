@@ -457,8 +457,10 @@ void LLIMMgr::addMessage(
 	if(!floater)
 	{
 		// Return now if we're blocking this group's chat
-		if (getIgnoreGroup(session_id) && gAgent.isInGroup(session_id))
+		if((getIgnoreGroup(session_id) && gAgent.isInGroup(session_id)) || gSavedSettings.getBOOL("RtyNoNewGroupChats"))
+		{
 			return;
+		}
 
 		std::string name = (session_name.size() > 1) ? session_name : from;
 

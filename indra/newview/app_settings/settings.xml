@@ -1723,6 +1723,17 @@ This should be as low as possible, but too low may break functionality</string>
         <key>Value</key>
         <integer>100</integer>
     </map>
+    <key>RtyNoNewGroupChats</key>
+    <map>
+        <key>Comment</key>
+	<string>When enabled, newly incoming group-chat sessions will be ignored.</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>Boolean</string>
+        <key>Value</key>
+        <integer>0</integer>
+    </map>
     <!-- Vanilla SL settings that are now optionally Account-Specific -->
     <key>AgentChatColor</key>
     <map>
