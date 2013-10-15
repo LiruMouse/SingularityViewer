@@ -1723,10 +1723,10 @@ This should be as low as possible, but too low may break functionality</string>
         <key>Value</key>
         <integer>100</integer>
     </map>
-    <key>RtyNoNewGroupChats</key>
+    <key>RtyInvertIgnoreGroupChat</key>
     <map>
         <key>Comment</key>
-	<string>When enabled, newly incoming group-chat sessions will be ignored.</string>
+	<string>When enabled, newly incoming group-chat sessions will be ignored if the chat for the group is enabled (inverses the meaning of the checkboxes in the group list).</string>
         <key>Persist</key>
         <integer>1</integer>
         <key>Type</key>
