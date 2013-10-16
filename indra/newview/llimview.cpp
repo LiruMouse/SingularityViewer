@@ -457,7 +457,8 @@ void LLIMMgr::addMessage(
 	if(!floater)
 	{
 		// Return now if we're blocking this group's chat.  Ignoring can be inversed.
-		bool ignore = (getIgnoreGroup(session_id) && gAgent.isInGroup(session_id));
+		bool hasgroup = gAgent.isInGroup(session_id);
+		bool ignore = (getIgnoreGroup(session_id) && hasgroup);
 		if(gSavedSettings.getBOOL("RtyInvertIgnoreGroupChat"))
 		{
 			ignore = !ignore;
@@ -469,7 +470,8 @@ void LLIMMgr::addMessage(
 
 		std::string name = (session_name.size() > 1) ? session_name : from;
 
-		floater = createFloater(new_session_id, other_participant_id, name, dialog);
+		// if this is a group session, append the floater at the right
+		floater = createFloater(new_session_id, other_participant_id, name, dialog, !hasgroup);
 
 		// When we get a new IM, and if you are a god, display a bit
 		// of information about the source. This is to help liaisons
