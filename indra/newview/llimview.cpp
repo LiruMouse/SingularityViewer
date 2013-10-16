@@ -456,8 +456,13 @@ void LLIMMgr::addMessage(
 	std::string name = from;
 	if(!floater)
 	{
-		// Return now if we're blocking this group's chat unless the ignoring is inversed
-		if(getIgnoreGroup(session_id) && gAgent.isInGroup(session_id) && !gSavedSettings.getBOOL("RtyInvertIgnoreGroupChat"))
+		// Return now if we're blocking this group's chat.  Ignoring can be inversed.
+		bool ignore = (getIgnoreGroup(session_id) && gAgent.isInGroup(session_id));
+		if(gSavedSettings.getBOOL("RtyInvertIgnoreGroupChat"))
+		{
+			ignore = !ignore;
+		}
+		if(ignore)
 		{
 			return;
 		}
