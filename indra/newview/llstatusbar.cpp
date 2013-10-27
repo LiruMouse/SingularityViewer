@@ -323,6 +323,8 @@ void LLStatusBar::refresh()
 
 	// Singu Note: Use system's time if the user desires, otherwise use server time
 	static const LLCachedControl<bool> show_local_time("LiruLocalTime");
+	static const LLCachedControl<std::string> short_time_format("ShortTimeFormat");
+	static const LLCachedControl<std::string> long_date_format("LongDateFormat");
 
 	// Get current UTC time, adjusted for the user's clock
 	// being off.
@@ -335,8 +337,12 @@ void LLStatusBar::refresh()
 	// it's daylight savings time there.
 	internal_time = show_local_time ? std::localtime(&utc_time) : utc_to_pacific_time(utc_time, gPacificDaylightTime);
 
+	// have this here because there are two, potentially different, dates if both
+	// times are displayed
+	std::string date;
+
 	std::string t;
-	timeStructToFormattedString(internal_time, gSavedSettings.getString("ShortTimeFormat"), t);
+	timeStructToFormattedString(internal_time, short_time_format, t);
 	if (show_local_time)
 	{
 		static const std::string local(" " + getString("Local"));
@@ -350,10 +356,28 @@ void LLStatusBar::refresh()
 	{
 		t += " PST";
 	}
-	mTextTime->setText(t);
 
-	std::string date;
-	timeStructToFormattedString(internal_time, gSavedSettings.getString("LongDateFormat"), date);
+	// first the date from whatever is selected for display
+	timeStructToFormattedString(internal_time, long_date_format, date);
+
+	// show both clocks if wanted
+	static const LLCachedControl<bool> show_both_times("RtyShowBothTimes");
+	if(show_both_times)
+	{
+		internal_time = std::localtime(&utc_time);
+
+		std::string second_t;
+		timeStructToFormattedString(internal_time, short_time_format, second_t);
+		// unfortunately, this is a rather short field :(
+		t = second_t + "/" + t;
+
+		std::string second_date;
+		// add the second date if displayed
+		timeStructToFormattedString(internal_time, long_date_format, second_date);
+		date = second_date + "\n/" + date;
+	}
+
+	mTextTime->setText(t);
 	mTextTime->setToolTip(date);
 
 	LLRect r;
