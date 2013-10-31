@@ -200,7 +200,7 @@ inline void ll_memcpy_nonaliased_aligned_16(char* __restrict dst, const char* __
 	assert((bytes % sizeof(F32))== 0); 
 	ll_assert_aligned(src,16);
 	ll_assert_aligned(dst,16);
-	assert((src < dst) ? ((src + bytes) < dst) : ((dst + bytes) < src));
+	assert((src < dst) ? ((src + bytes) <= dst) : ((dst + bytes) <= src));
 	assert(bytes%16==0);
 
 	char* end = dst + bytes;
@@ -661,14 +661,6 @@ void  LLPrivateMemoryPoolTester::operator delete[](void* addr)
 	sPool->free(addr) ;
 }
 #endif
-#endif
-
-LL_COMMON_API void ll_assert_aligned_func(uintptr_t ptr,U32 alignment);
-
-#ifdef SHOW_ASSERT
-#define ll_assert_aligned(ptr,alignment) ll_assert_aligned_func(reinterpret_cast<uintptr_t>(ptr),((U32)alignment))
-#else
-#define ll_assert_aligned(ptr,alignment)
 #endif
 
 //EVENTUALLY REMOVE THESE:
