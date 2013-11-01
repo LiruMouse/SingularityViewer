@@ -8532,7 +8532,7 @@ Can't move object '[OBJECT_NAME]' to
   <notification
    icon="alertmodal.tga"
    name="CantMoveObjectParcelPerms"
-   type="notify">
+   type="notifytip">
    <tag>fail</tag>
 Can't move object '[OBJECT_NAME]' to
 [OBJ_POSITION] in region [REGION_NAME] because your objects are not allowed on this parcel.
