@@ -660,7 +660,7 @@ void LLToolGrab::handleHoverActive(S32 x, S32 y, MASK mask)
 			{
 				if (gAgentCamera.getFocusOnAvatar())
 				{
-					gAgent.yaw(rotate_angle);
+//					gAgent.yaw(rotate_angle);
 				}
 				else
 				{
@@ -671,7 +671,7 @@ void LLToolGrab::handleHoverActive(S32 x, S32 y, MASK mask)
 			{
 				if (gAgentCamera.getFocusOnAvatar())
 				{
-					gAgent.yaw(-rotate_angle);
+//					gAgent.yaw(-rotate_angle);
 				}
 				else
 				{
