@@ -508,8 +508,8 @@ BOOL LLFloaterIMPanel::postBuild()
 		if (LLUICtrl* ctrl = findChild<LLUICtrl>("history_btn"))
 			ctrl->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickHistory, this));
 
-		getChild<LLButton>("start_call_btn")->setCommitCallback(boost::bind(&LLIMMgr::startCall, gIMMgr, mSessionUUID, LLVoiceChannel::OUTGOING_CALL));
-		getChild<LLButton>("end_call_btn")->setCommitCallback(boost::bind(&LLIMMgr::endCall, gIMMgr, mSessionUUID));
+		getChild<LLButton>("start_call_btn")->setCommitCallback(boost::bind(&LLIMMgr::startCall, gIMMgr, boost::ref(mSessionUUID), LLVoiceChannel::OUTGOING_CALL));
+		getChild<LLButton>("end_call_btn")->setCommitCallback(boost::bind(&LLIMMgr::endCall, gIMMgr, boost::ref(mSessionUUID)));
 		getChild<LLButton>("send_btn")->setCommitCallback(boost::bind(&LLFloaterIMPanel::onSendMsg,this));
 		if (LLButton* btn = findChild<LLButton>("toggle_active_speakers_btn"))
 			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickToggleActiveSpeakers, this, _2));
@@ -527,7 +527,7 @@ BOOL LLFloaterIMPanel::postBuild()
 			mSpeakerPanel->refreshSpeakers();
 		}
 
-		if (mDialog == IM_NOTHING_SPECIAL)
+		if (mSessionType == P2P_SESSION)
 		{
 			getChild<LLUICtrl>("mute_btn")->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickMuteVoice, this));
 			getChild<LLUICtrl>("speaker_volume")->setCommitCallback(boost::bind(&LLVoiceClient::setUserVolume, LLVoiceClient::getInstance(), mOtherParticipantUUID, _2));
@@ -943,7 +943,7 @@ BOOL LLFloaterIMPanel::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 								  std::string& tooltip_msg)
 {
 
-	if (mDialog == IM_NOTHING_SPECIAL)
+	if (mSessionType == P2P_SESSION)
 	{
 		LLToolDragAndDrop::handleGiveDragAndDrop(mOtherParticipantUUID, mSessionUUID, drop,
 												 cargo_type, cargo_data, accept);
@@ -974,28 +974,23 @@ BOOL LLFloaterIMPanel::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 
 BOOL LLFloaterIMPanel::dropCallingCard(LLInventoryItem* item, BOOL drop)
 {
-	BOOL rv = isInviteAllowed();
-	if(rv && item && item->getCreatorUUID().notNull())
+	if (item && item->getCreatorUUID().notNull())
 	{
-		if(drop)
+		if (drop)
 		{
 			LLDynamicArray<LLUUID> ids;
 			ids.put(item->getCreatorUUID());
 			inviteToSession(ids);
 		}
+		return true;
 	}
-	else
-	{
-		// set to false if creator uuid is null.
-		rv = FALSE;
-	}
-	return rv;
+	// return false if creator uuid is null.
+	return false;
 }
 
 BOOL LLFloaterIMPanel::dropCategory(LLInventoryCategory* category, BOOL drop)
 {
-	BOOL rv = isInviteAllowed();
-	if(rv && category)
+	if (category)
 	{
 		LLInventoryModel::cat_array_t cats;
 		LLInventoryModel::item_array_t items;
@@ -1008,7 +1003,7 @@ BOOL LLFloaterIMPanel::dropCategory(LLInventoryCategory* category, BOOL drop)
 		S32 count = items.count();
 		if(count == 0)
 		{
-			rv = FALSE;
+			return false;
 		}
 		else if(drop)
 		{
@@ -1020,14 +1015,12 @@ BOOL LLFloaterIMPanel::dropCategory(LLInventoryCategory* category, BOOL drop)
 			inviteToSession(ids);
 		}
 	}
-	return rv;
+	return true;
 }
 
 bool LLFloaterIMPanel::isInviteAllowed() const
 {
-
-	return ( (IM_SESSION_CONFERENCE_START == mDialog) 
-			 || (IM_SESSION_INVITE == mDialog) );
+	return mSessionType == ADHOC_SESSION;
 }
 
 void LLFloaterIMPanel::removeDynamics(LLComboBox* flyout)
@@ -1078,11 +1071,13 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 
 void show_log_browser(const std::string& name, const std::string& id)
 {
+#if LL_WINDOWS // Singu TODO: Other platforms?
 	if (gSavedSettings.getBOOL("LiruLegacyLogLaunch"))
 	{
 		gViewerWindow->getWindow()->ShellEx("\"" + LLLogChat::makeLogFileName(name) + "\"");
 		return;
 	}
+#endif
 	LLFloaterWebContent::Params p;
 	p.url("file:///" + LLLogChat::makeLogFileName(name));
 	p.id(id);
@@ -1258,7 +1253,7 @@ bool convert_roleplay_text(std::string& text); // Returns true if text is an act
 void LLFloaterIMPanel::onSendMsg()
 {
 	if (!gAgent.isGodlike() 
-		&& (mDialog == IM_NOTHING_SPECIAL)
+		&& (mSessionType == P2P_SESSION)
 		&& mOtherParticipantUUID.isNull())
 	{
 		llinfos << "Cannot send IM to everyone unless you're a god." << llendl;
@@ -1371,7 +1366,7 @@ void LLFloaterIMPanel::onSendMsg()
 				}
 
 				// local echo
-				if((mDialog == IM_NOTHING_SPECIAL) && 
+				if((mSessionType == P2P_SESSION) &&
 				   (mOtherParticipantUUID.notNull()))
 				{
 					std::string name;
@@ -1503,7 +1498,7 @@ void LLFloaterIMPanel::sendTypingState(bool typing)
 		return;
 	// Don't want to send typing indicators to multiple people, potentially too
 	// much network traffic.  Only send in person-to-person IMs.
-	if (mDialog != IM_NOTHING_SPECIAL) return;
+	if (mSessionType == P2P_SESSION) return;
 
 	std::string name;
 	gAgent.buildFullname(name);

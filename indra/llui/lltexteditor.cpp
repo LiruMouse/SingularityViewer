@@ -2727,6 +2727,10 @@ BOOL LLTextEditor::handleSpecialKey(const KEY key, const MASK mask, BOOL* return
 		{
 			removeWord(false);
 		}
+		else
+		{
+			handled = false;
+		}
 		break;
 
 	case KEY_RETURN:
