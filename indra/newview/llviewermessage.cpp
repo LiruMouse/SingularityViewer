@@ -1708,7 +1708,6 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 	return false;
 }
 
-<<<<<<< HEAD
 
 // xantispam
 // (Start reading below, at xantispam_check().)
@@ -3401,7 +3400,6 @@ void xantispam_buttons(const int action)
 #undef XANTISPAM_WHITELISTFILE
 
 
-void script_msg_api(const std::string& msg);
 bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_owned_by_me, std::string from_id, const std::string from_name)
 {
   // Ratany: Lirusaito: Checking the bypasses after the filters may have
@@ -3581,6 +3579,8 @@ bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_own
 	return true;
 }
 
+
+void script_msg_api(const std::string& msg);
 bool inventory_offer_handler_answer_available(LLOfferInfo *info)
 {
 	// NaCl - Antispam Registry
