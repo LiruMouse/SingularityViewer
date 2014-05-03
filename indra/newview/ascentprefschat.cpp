@@ -37,6 +37,7 @@
 #include "llagent.h"
 #include "llcolorswatch.h"
 #include "llcombobox.h"
+#include "llfloaterautoreplacesettings.h"
 #include "llradiogroup.h"
 #include "lluictrlfactory.h"
 #include "llviewercontrol.h"
@@ -104,6 +105,7 @@ LLPrefsAscentChat::LLPrefsAscentChat()
 	getChild<LLUICtrl>("xantispam_BtnEnable")->setCommitCallback(boost::bind(xantispam_buttons, 6));
         //
 
+	getChild<LLUICtrl>("autoreplace")->setCommitCallback(boost::bind(LLFloaterAutoReplaceSettings::showInstance, LLSD()));
 	getChild<LLUICtrl>("KeywordsOn")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitKeywords, this, _1));
 	getChild<LLUICtrl>("KeywordsList")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitKeywords, this, _1));
 	getChild<LLUICtrl>("KeywordsSound")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitKeywords, this, _1));

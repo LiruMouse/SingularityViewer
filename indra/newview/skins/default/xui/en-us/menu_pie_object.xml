@@ -1,145 +1,149 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <pie_menu name="Object Pie">
-  <menu_item_call enabled="false" label="Edit" mouse_opaque="true" name="Edit...">
-    <on_click function="Object.Edit" />
-    <on_enable function="EnableEdit" />
-  </menu_item_call>
-  <menu_item_call enabled="false" label="Take Copy" mouse_opaque="true" name="Take Copy">
-    <on_click function="Tools.TakeCopy" />
-    <on_enable function="Tools.EnableTakeCopy" />
-  </menu_item_call>
-  <menu_item_call enabled="false" label="Touch" mouse_opaque="true" name="Object Touch">
-    <on_click function="Object.Touch" />
-    <on_enable function="Object.EnableTouch" userdata="Touch" name="EnableTouch"/>
-  </menu_item_call>
-  <menu_item_call enabled="false" label="Take" mouse_opaque="true" name="Pie Object Take">
-    <on_click function="Tools.BuyOrTake" />
-    <on_enable function="Tools.EnableBuyOrTake" userdata="Buy,Take" name="EnableBuyOrTake"/>
-  </menu_item_call>
-  <menu_item_call enabled="true" label="Reload" mouse_opaque="true" name="Reload Textures">
-    <on_click function="Object.ReloadTextures" />
-  </menu_item_call>
-  <menu_item_call enabled="false" label="Delete" mouse_opaque="true" name="Delete">
-    <on_click function="Object.Delete" />
-    <on_enable function="Object.EnableDelete" />
-  </menu_item_call>
-  <menu_item_call enabled="false" label="Build" mouse_opaque="true" name="Create">
-    <on_click function="Object.Build" />
-    <on_enable function="EnableEdit" />
-  </menu_item_call>
-  <menu_item_call enabled="false" label="Sit Here" mouse_opaque="true" name="Object Sit">
-    <on_click function="Object.SitOrStand" />
-    <on_enable function="Object.EnableSitOrStand" userdata="Sit Here,Stand Up" name="EnableSitOrStand"/>
-  </menu_item_call>
-  <pie_menu more="true" label="More" name="More">
-    <pie_menu more="true" label="More" name="Rate Menu">
-      <menu_item_separator />
-      <pie_menu label="Tools" name="Rate Menu">
-	<pie_menu label="Attach HUD" name="Object Attach HUD" />
-	<pie_menu label="Attach" name="Object Attach" />
-	<menu_item_call enabled="false" label="Return Object" mouse_opaque="true" name="Return...">
-	  <on_click function="Object.Return" />
-	  <on_enable function="Object.EnableReturn" />
+	<menu_item_call enabled="false" label="Open" mouse_opaque="true" name="Open">
+		<on_click function="Object.Open" />
+		<on_enable function="Object.EnableOpen" />
 	</menu_item_call>
-	<menu_item_call enabled="false" label="Wear" mouse_opaque="true" name="Wear">
-	  <on_click function="Object.AttachToAvatar" />
-	  <on_enable function="Object.EnableWear" />
+	<menu_item_call enabled="false" label="Create" mouse_opaque="true" name="Create">
+		<on_click function="Object.Build" />
+		<on_enable function="EnableEdit" />
 	</menu_item_call>
-	<menu_item_call enabled="false" label="Destroy" mouse_opaque="true" name="Destroy">
-	  <on_click function="Object.Destroy" />
-	  <on_enable function="Object.EnableDestroy" />
+	<menu_item_call enabled="false" label="Touch" mouse_opaque="true" name="Object Touch">
+		<on_click function="Object.Touch" />
+		<on_enable function="Object.EnableTouch" userdata="Touch" name="EnableTouch"/>
 	</menu_item_call>
-	<menu_item_call enabled="false" label="Mute" mouse_opaque="true" name="Object Mute">
-	  <on_click function="Object.Mute" />
-	  <on_enable function="Object.EnableMute" />
+	<menu_item_call enabled="false" label="Sit Here" mouse_opaque="true" name="Object Sit">
+		<on_click function="Object.SitOrStand" />
+		<on_enable function="Object.EnableSitOrStand" userdata="Sit Here,Stand Up" name="EnableSitOrStand"/>
 	</menu_item_call>
-	<menu_item_call enabled="true" label="Inspect" mouse_opaque="true" name="Object Inspect">
-	  <on_click function="Object.Inspect" />
-	  <on_enable function="Object.EnableInspect" />
+	<menu_item_call enabled="false" label="Take" mouse_opaque="true" name="Pie Object Take">
+		<on_click function="Tools.BuyOrTake" />
+		<on_enable function="Tools.EnableBuyOrTake" userdata="Buy,Take" name="EnableBuyOrTake"/>
 	</menu_item_call>
-	<menu_item_call enabled="true" label="Derender" mouse_opaque="true" name="Derender">
-	  <on_click function="Object.DERENDER" />
+	<menu_item_call enabled="false" label="Pay..." mouse_opaque="true" name="Pay...">
+		<on_click function="PayObject" />
+		<on_enable function="EnablePayObject" />
 	</menu_item_call>
-	<menu_item_call enabled="false" label="Report..." mouse_opaque="true"
-			name="Report Abuse...">
-	  <on_click function="Object.ReportAbuse" />
-	  <on_enable function="Object.EnableReportAbuse" />
+	<pie_menu more="true" label="More" name="More">
+		<menu_item_call enabled="false" label="Delete" mouse_opaque="true" name="Delete">
+			<on_click function="Object.Delete" />
+			<on_enable function="Object.EnableDelete" />
+		</menu_item_call>
+		<menu_item_call enabled="false" label="Wear" mouse_opaque="true" name="Wear">
+			<on_click function="Object.AttachToAvatar" />
+			<on_enable function="Object.EnableWear" />
+		</menu_item_call>
+		<menu_item_call enabled="false" label="Take Copy" mouse_opaque="true" name="Take Copy">
+			<on_click function="Tools.TakeCopy" />
+			<on_enable function="Tools.EnableTakeCopy" />
+		</menu_item_call>
+		<pie_menu label="Attach HUD" name="Object Attach HUD" />
+		<pie_menu label="Attach" name="Object Attach" />
+		<menu_item_call enabled="false" label="Return..." mouse_opaque="true" name="Return...">
+			<on_click function="Object.Return" />
+			<on_enable function="Object.EnableReturn" />
+		</menu_item_call>
+		<pie_menu more="true" label="More" name="Rate Menu">
+			<pie_menu label="Export" name="Export Menu">
+				<menu_item_call label="XML" mouse_opaque="true" name="XML">
+					<on_click function="Object.Export" />
+					<on_enable function="Object.EnableExport" />
+				</menu_item_call>
+				<menu_item_call label="OBJ..." mouse_opaque="true" name="Save OBJ...">
+					<on_click function="Object.SaveAsOBJ" />
+					<on_enable function="Object.EnableExport" />
+				</menu_item_call>
+				<menu_item_call label="DAE..." mouse_opaque="true" name="Save DAE...">
+					<on_click function="Object.SaveAsDAE" />
+					<on_enable function="Object.EnableExport" />
+				</menu_item_call>
+			</pie_menu>
+			<pie_menu label="Tools" name="Rate Menu">
+				<menu_item_call enabled="false" label="Destroy" mouse_opaque="true" name="Destroy">
+					<on_click function="Object.Destroy" />
+					<on_enable function="Object.EnableDestroy" />
+				</menu_item_call>
+				<menu_item_call enabled="false" label="Explode" mouse_opaque="true" name="Explode">
+					<on_click function="Object.Explode" />
+					<on_enable function="Object.EnableExplode" />
+				</menu_item_call>
+				<menu_item_call enabled="true" hidden="false" label="Measure" mouse_opaque="true" name="Measure">
+					<on_click function="Object.Measure" />
+				</menu_item_call>
+				<menu_item_call enabled="true" hidden="false" label="Data" mouse_opaque="true" name="Data">
+					<on_click function="Object.Data" />
+				</menu_item_call>
+				<menu_item_separator />
+				<menu_item_separator />
+				<menu_item_separator />
+        <menu_item_call enabled="true" label="Reload" mouse_opaque="true" name="Reload Textures">
+          <on_click function="Object.ReloadTextures" />
+        </menu_item_call>
+			</pie_menu>
+			<menu_item_call enabled="false" label="Mute" mouse_opaque="true" name="Object Mute">
+				<on_click function="Object.Mute" />
+				<on_enable function="Object.EnableMute" />
+			</menu_item_call>
+			<menu_item_call enabled="true" label="Inspect" mouse_opaque="true" name="Object Inspect">
+				<on_click function="ShowFloater" userdata="inspect" />
+				<on_enable function="Object.EnableInspect" />
+			</menu_item_call>
+			<menu_item_call enabled="true" label="Derender" mouse_opaque="true" name="Derender">
+				<on_click function="Object.DERENDER" />
+			</menu_item_call>
+			<menu_item_call enabled="false" label="Report..." mouse_opaque="true"
+			     name="Report Abuse...">
+				<on_click function="Object.ReportAbuse" />
+				<on_enable function="Object.EnableReportAbuse" />
+			</menu_item_call>
+            <pie_menu more="true" label="Pathfinding" name="PF Menu">
+              <menu_item_call label="Show in linksets" name="show_in_linksets">
+                <on_click function="Pathfinding.Linksets.Select" />
+                <on_enable function="EnableSelectInPathfindingLinksets"/>
+              </menu_item_call>
+              <menu_item_call label="Show in characters" name="show_in_characters">
+                <on_click function="Pathfinding.Characters.Select" />
+                <on_enable function="EnableSelectInPathfindingCharacters"/>
+              </menu_item_call>
+            </pie_menu>
+            <pie_menu label="Scripts" name="ScriptsMenu">
+              <menu_item_call mouse_opaque="true" label="Make Mono" name="CompileMono">
+                <on_click function="Tools.SelectedScriptAction" userdata="compile mono" />
+                <on_enable function="EditableSelectedMono" />
+              </menu_item_call>
+              <menu_item_call mouse_opaque="true" label="Make LSL" name="CompileLSL">
+                <on_click function="Tools.SelectedScriptAction" userdata="compile lsl" />
+                <on_enable function="EditableSelected" />
+              </menu_item_call>
+              <menu_item_call mouse_opaque="true" label="Reset" name="Reset Scripts">
+                <on_click function="Tools.SelectedScriptAction" userdata="reset" />
+                <on_enable function="EditableSelected" />
+              </menu_item_call>
+              <menu_item_call mouse_opaque="true" label="Start" name="Object Set Scripts to Running">
+                <on_click function="Tools.SelectedScriptAction" userdata="start" />
+                <on_enable function="EditableSelected" />
+              </menu_item_call>
+              <menu_item_call mouse_opaque="true" label="Stop" name="Object Set Scripts to Not Running">
+                <on_click function="Tools.SelectedScriptAction" userdata="stop" />
+                <on_enable function="EditableSelected" />
+              </menu_item_call>
+              <menu_item_call mouse_opaque="true" label="Remove" name="Remove Scripts From Selection">
+                <on_click function="Tools.ScriptDelete" />
+                <on_enable function="Tools.EnableScriptDelete" />
+              </menu_item_call>
+              <menu_item_call mouse_opaque="true" label="Count" name="ScriptCount">
+                <on_click function="Object.ScriptCount" />
+                <on_visible function="Object.VisibleScriptCount" />
+              </menu_item_call>
+            </pie_menu>
+		</pie_menu>
+		<menu_item_call enabled="false" label="Buy..." mouse_opaque="true" name="Buy...">
+			<on_click function="Object.Buy" />
+			<on_enable function="Object.EnableBuy" />
+		</menu_item_call>
+	</pie_menu>
+	<menu_item_call enabled="false" label="Edit..." mouse_opaque="true" name="Edit...">
+		<on_click function="Object.Edit" />
+		<on_enable function="EnableEdit" />
 	</menu_item_call>
-	<menu_item_call enabled="false" label="Explode" mouse_opaque="true" name="Explode">
-	  <on_click function="Object.Explode" />
-	  <on_enable function="Object.EnableExplode" />
-	</menu_item_call>
-	<menu_item_call enabled="true" hidden="false" label="Measure" mouse_opaque="true" name="Measure">
-	  <on_click function="Object.Measure" />
-	</menu_item_call>
-	<menu_item_call enabled="true" hidden="false" label="Data" mouse_opaque="true" name="Data">
-	  <on_click function="Object.Data" />
-	</menu_item_call>
-        <menu_item_call label="Export" mouse_opaque="true" name="Export">
-          <on_click function="Object.Export" />
-          <on_enable function="Object.EnableExport" />
-        </menu_item_call>
-        <menu_item_call label="Save OBJ..." mouse_opaque="true" name="Save OBJ...">
-          <on_click function="Object.SaveAsOBJ" />
-          <on_enable function="Object.EnableExport" />
-        </menu_item_call>
-        <menu_item_call label="Save DAE..." mouse_opaque="true" name="Save DAE...">
-          <on_click function="Object.SaveAsDAE" />
-          <on_enable function="Object.EnableExport" />
-        </menu_item_call>
-      </pie_menu>
-      <pie_menu more="true" label="Pathfinding" name="PF Menu">
-        <menu_item_call label="Show in linksets" name="show_in_linksets">
-          <on_click function="Pathfinding.Linksets.Select" />
-          <on_enable function="EnableSelectInPathfindingLinksets"/>
-        </menu_item_call>
-        <menu_item_call label="Show in characters" name="show_in_characters">
-          <on_click function="Pathfinding.Characters.Select" />
-          <on_enable function="EnableSelectInPathfindingCharacters"/>
-        </menu_item_call>
-      </pie_menu>
-      <pie_menu label="Scripts" name="ScriptsMenu">
-        <menu_item_call mouse_opaque="true" label="Make Mono" name="CompileMono">
-          <on_click function="Tools.SelectedScriptAction" userdata="compile mono" />
-          <on_enable function="EditableSelectedMono" />
-        </menu_item_call>
-        <menu_item_call mouse_opaque="true" label="Make LSL" name="CompileLSL">
-          <on_click function="Tools.SelectedScriptAction" userdata="compile lsl" />
-          <on_enable function="EditableSelected" />
-        </menu_item_call>
-        <menu_item_call mouse_opaque="true" label="Reset" name="Reset Scripts">
-          <on_click function="Tools.SelectedScriptAction" userdata="reset" />
-          <on_enable function="EditableSelected" />
-        </menu_item_call>
-        <menu_item_call mouse_opaque="true" label="Start" name="Object Set Scripts to Running">
-          <on_click function="Tools.SelectedScriptAction" userdata="start" />
-          <on_enable function="EditableSelected" />
-        </menu_item_call>
-        <menu_item_call mouse_opaque="true" label="Stop" name="Object Set Scripts to Not Running">
-          <on_click function="Tools.SelectedScriptAction" userdata="stop" />
-          <on_enable function="EditableSelected" />
-        </menu_item_call>
-        <menu_item_call mouse_opaque="true" label="Remove" name="Remove Scripts From Selection">
-          <on_click function="Tools.ScriptDelete" />
-          <on_enable function="Tools.EnableScriptDelete" />
-        </menu_item_call>
-        <menu_item_call mouse_opaque="true" label="Count" name="ScriptCount">
-          <on_click function="Object.ScriptCount" />
-          <on_visible function="Object.VisibleScriptCount" />
-        </menu_item_call>
-      </pie_menu>
-    </pie_menu>
-    <menu_item_call enabled="false" label="Open" mouse_opaque="true" name="Open">
-      <on_click function="Object.Open" />
-      <on_enable function="Object.EnableOpen" />
-    </menu_item_call>
-    <menu_item_call enabled="false" label="Pay..." mouse_opaque="true" name="Pay...">
-      <on_click function="PayObject" />
-      <on_enable function="EnablePayObject" />
-    </menu_item_call>
-    <menu_item_call enabled="false" label="Buy..." mouse_opaque="true" name="Buy...">
-      <on_click function="Object.Buy" />
-      <on_enable function="Object.EnableBuy" />
-    </menu_item_call>
-  </pie_menu>
 </pie_menu>
