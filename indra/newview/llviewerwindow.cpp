@@ -259,7 +259,7 @@ extern void toggle_debug_menus(void*);
 // LLDebugText
 //
 
-extern std::map<LLGLuint, std::list<std::pair<std::string,std::string> > > sTextureMaskMap;
+//extern std::map<LLGLuint, std::list<std::pair<std::string,std::string> > > sTextureMaskMap;
 
 class LLDebugText
 {
@@ -356,7 +356,7 @@ public:
 						LLViewerTexture* imagep = obj->getTEImage(te);
 						if(imagep && imagep != (LLViewerTexture*)LLViewerFetchedTexture::sDefaultImagep.get())
 						{
-							LLGLuint tex = imagep->getTexName();
+							/*LLGLuint tex = imagep->getTexName();
 							std::map<LLGLuint, std::list<std::pair<std::string,std::string> > >::iterator it = sTextureMaskMap.find(tex);
 							if(it != sTextureMaskMap.end())
 							{
@@ -365,7 +365,7 @@ public:
 								{
 									addText(xpos, ypos, llformat(" %s: %s", it2->first.c_str(), it2->second.c_str())); ypos += y_inc;
 								}
-							}
+							}*/
 							static const LLCachedControl<bool> use_rmse_auto_mask("SHUseRMSEAutoMask",false);
 							static const LLCachedControl<F32> auto_mask_max_rmse("SHAutoMaskMaxRMSE",.09f);
 							addText(xpos, ypos, llformat("Mask: %s", imagep->getIsAlphaMask(use_rmse_auto_mask ? auto_mask_max_rmse : -1.f) ? "TRUE":"FALSE")); ypos += y_inc;
@@ -1641,10 +1641,6 @@ LLViewerWindow::LLViewerWindow(
 	resetSnapshotLoc();
 
 	S32 vsync_mode = gSavedSettings.getS32("SHRenderVsyncMode");
-	if(vsync_mode == -1 && !gGLManager.mHasAdaptiveVsync)
-	{
-		vsync_mode = 0; //Disable vsync if adaptive is desired yet isn't supported.
-	}
 
 	// create window
 	mWindow = LLWindowManager::createWindow(this,
@@ -1654,7 +1650,7 @@ LLViewerWindow::LLViewerWindow(
 		vsync_mode,
 		!gNoRender,
 		ignore_pixel_depth,
-		gSavedSettings.getBOOL("RenderUseFBO") ? 0 : gSavedSettings.getU32("RenderFSAASamples")); //don't use window level anti-aliasing if FBOs are enabled
+		LLRenderTarget::sUseFBO ? 0 : gSavedSettings.getU32("RenderFSAASamples")); //don't use window level anti-aliasing if FBOs are enabled
 
 	if (!LLViewerShaderMgr::sInitialized)
 	{ //immediately initialize shaders
@@ -5500,7 +5496,7 @@ BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, 
 		return TRUE;
 	}
 
-	U32 fsaa = gSavedSettings.getU32("RenderFSAASamples");
+	U32 fsaa = LLRenderTarget::sUseFBO ? 0 : gSavedSettings.getU32("RenderFSAASamples"); //don't use window level anti-aliasing if FBOs are enabled
 	U32 old_fsaa = mWindow->getFSAASamples();
 
 	// going from windowed to windowed
@@ -5512,7 +5508,7 @@ BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, 
 			mWindow->setSize(size);
 		}
 
-		if (fsaa == old_fsaa && vsync_mode == mWindow->getFSAASamples())
+		if (fsaa == old_fsaa && vsync_mode == mWindow->getVsyncMode())
 		{
 			return TRUE;
 		}

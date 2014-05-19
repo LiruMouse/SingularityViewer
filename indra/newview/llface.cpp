@@ -166,6 +166,8 @@ void LLFace::init(LLDrawable* drawablep, LLViewerObject* objp)
 	mBoundingSphereRadius = 0.0f ;
 
 	mHasMedia = FALSE ;
+
+	mShinyInAlpha = false;
 }
 
 void LLFace::destroy()
@@ -452,7 +454,7 @@ U16 LLFace::getGeometryAvatar(
 						LLStrider<LLVector3> &normals,
 						LLStrider<LLVector2> &tex_coords,
 						LLStrider<F32>		 &vertex_weights,
-						LLStrider<LLVector4> &clothing_weights)
+						LLStrider<LLVector4a> &clothing_weights)
 {
 	if (mVertexBuffer.notNull())
 	{
@@ -1143,11 +1145,11 @@ void LLFace::cacheFaceInVRAM(const LLVolumeFace& vf)
 
 	if (vf.mWeights)
 	{
-		LLStrider<LLVector4> f_wght;
+		LLStrider<LLVector4a> f_wght;
 		buff->getWeight4Strider(f_wght);
 		for (U32 i = 0; i < (U32)vf.mNumVertices; ++i)
 		{
-			(*f_wght++).set(vf.mWeights[i].getF32ptr());
+			(*f_wght++) = vf.mWeights[i];
 		}
 	}
 
@@ -1253,7 +1255,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	LLStrider<LLColor4U> colors;
 	LLStrider<LLVector3> tangent;
 	LLStrider<U16> indicesp;
-	LLStrider<LLVector4> wght;
+	LLStrider<LLVector4a> wght;
 
 	BOOL full_rebuild = force_rebuild || mDrawablep->isState(LLDrawable::REBUILD_VOLUME);
 	
@@ -1298,53 +1300,9 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	if (rebuild_color)	// FALSE if tep == NULL
 	{ //decide if shiny goes in alpha channel of color
 
-		static const LLCachedControl<bool> alt_batching("SHAltBatching",true);
-		if (tep && 
-			((!alt_batching && getPoolType() != LLDrawPool::POOL_ALPHA) ||
-			(alt_batching && getPoolType() != LLDrawPool::POOL_ALPHA &&
-			getPoolType() != LLDrawPool::POOL_ALPHA_MASK &&
-			getPoolType() != LLDrawPool::POOL_FULLBRIGHT_ALPHA_MASK &&					// <--- alpha channel MUST contain transparency, not shiny
-			(getPoolType() != LLDrawPool::POOL_SIMPLE || LLPipeline::sRenderDeferred))))	// Impostor pass for simple uses alpha masking. Need to be opaque.
+		if(mShinyInAlpha)
 		{
-			LLMaterial* mat = tep->getMaterialParams().get();
-						
-			bool shiny_in_alpha = alt_batching ? true : false;
-			
-			if(alt_batching)
-			{
-			if (LLPipeline::sRenderDeferred)
-			{ //store shiny in alpha if we don't have a specular map
-				if  (getPoolType() == LLDrawPool::POOL_MATERIALS && mat->getSpecularID().notNull())
-				{
-					shiny_in_alpha = false;
-				}
-			}
-			}
-			else
-			{
-			if (LLPipeline::sRenderDeferred)
-			{
-				if  (!mat || mat->getSpecularID().isNull())
-				{
-					shiny_in_alpha = true;
-				}
-			}
-			else
-			{
-				if (!mat || mat->getDiffuseAlphaMode() != LLMaterial::DIFFUSE_ALPHA_MODE_MASK)
-				{
-					shiny_in_alpha = true;
-				}
-			}
-			}
-
-			if(getPoolType() == LLDrawPool::POOL_FULLBRIGHT)
-			{
-				color.mV[3] = 1.f; //Simple fullbright reads alpha for fog contrib, not shiny/transparency, so since opaque, force to 1.
-			}
-			else if (shiny_in_alpha)
-			{
-				GLfloat alpha[4] =
+			GLfloat alpha[4] =
 				{
 					0.00f,
 					0.25f,
@@ -1352,9 +1310,9 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 					0.75f
 				};
 			
-				llassert(tep->getShiny() <= 3);
-				color.mV[3] = U8 (alpha[tep->getShiny()] * 255);
-			}
+			llassert(tep->getShiny() <= 3);
+
+			color.mV[3] = U8 (alpha[tep->getShiny()] * 255);
 		}
 	}
 
@@ -2126,8 +2084,10 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		{
 			LLFastTimer t(FTM_FACE_GEOM_WEIGHTS);
 			mVertexBuffer->getWeight4Strider(wght, mGeomIndex, mGeomCount, map_range);
-			F32* weights = (F32*) wght.get();
-			LLVector4a::memcpyNonAliased16(weights, (F32*) vf.mWeights, num_vertices*4*sizeof(F32));
+			for(S32 i=0;i<num_vertices;++i)
+			{
+				*(wght++) = vf.mWeights[i];
+			}
 			if (map_range)
 			{
 				mVertexBuffer->flush();
