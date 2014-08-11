@@ -125,7 +125,7 @@ if (LINUX)
       -D_REENTRANT
       -fexceptions
       -fno-math-errno
-#      -fno-strict-aliasing
+      -fno-strict-aliasing
       -fsigned-char
       -fvisibility=hidden
 #      -g
