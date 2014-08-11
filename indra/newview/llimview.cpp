@@ -449,15 +449,13 @@ void LLIMMgr::addMessage(
 	if (LLVOAvatar* from_avatar = find_avatar_from_object(target_id)) from_avatar->mIdleTimer.reset(); // Not idle, message sent to somewhere
 
 	// create IM window as necessary
-	std::string name = from;
+	std::string name = (session_name.size() > 1) ? session_name : from;
 	if(!floater)
 	{
-               // Return now if we're blocking this group's chat or conferences
-               if (gAgent.isInGroup(session_id) ? getIgnoreGroup(session_id) : dialog != IM_NOTHING_SPECIAL && dialog != IM_SESSION_P2P_INVITE && gSavedSettings.getBOOL("LiruBlockConferences"))
+		// Return now if we're blocking this group's chat or conferences
+		bool hasgroup = gAgent.isInGroup(session_id);
+		if (hasgroup ? getIgnoreGroup(session_id) : dialog != IM_NOTHING_SPECIAL && dialog != IM_SESSION_P2P_INVITE && gSavedSettings.getBOOL("LiruBlockConferences"))
 			return;
-		}
-
-		std::string name = (session_name.size() > 1) ? session_name : from;
 
 		// if this is a group session, append the floater at the right
 		floater = createFloater(new_session_id, other_participant_id, name, dialog, hasgroup);
