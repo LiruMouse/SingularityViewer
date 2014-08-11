@@ -274,6 +274,7 @@ void LLPrefsAscentChat::refreshValues()
 	mOneLineGroupButt               = gSavedSettings.getBOOL("UseConciseGroupChatButtons");
 	mOneLineConfButt                = gSavedSettings.getBOOL("UseConciseConferenceButtons");
 	mOnlyComm                       = gSavedSettings.getBOOL("CommunicateSpecificShortcut");
+	mLegacyEndScroll                = gSavedSettings.getBOOL("LiruLegacyScrollToEnd");
 	mItalicizeActions               = gSavedSettings.getBOOL("LiruItalicizeActions");
 	mLegacyLogLaunch                = gSavedSettings.getBOOL("LiruLegacyLogLaunch");
 	mFriendNames                    = gSavedSettings.getS32("FriendNameSystem");
@@ -509,6 +510,7 @@ void LLPrefsAscentChat::cancel()
 	gSavedSettings.setBOOL("UseConciseGroupChatButtons",           mOneLineGroupButt);
 	gSavedSettings.setBOOL("UseConciseConferenceButtons",          mOneLineConfButt);
 	gSavedSettings.setBOOL("CommunicateSpecificShortcut",          mOnlyComm);
+	gSavedSettings.setBOOL("LiruLegacyScrollToEnd",                mLegacyEndScroll);
 	gSavedSettings.setBOOL("LiruItalicizeActions",                 mItalicizeActions);
 	gSavedSettings.setBOOL("LiruLegacyLogLaunch",                  mLegacyLogLaunch);
 	gSavedSettings.setS32("FriendNameSystem",                      mFriendNames);

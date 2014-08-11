@@ -452,15 +452,8 @@ void LLIMMgr::addMessage(
 	std::string name = from;
 	if(!floater)
 	{
-		// Return now if we're blocking this group's chat.  Ignoring can be inversed.
-		bool ignore = getIgnoreGroup(session_id);
-		if(gSavedSettings.getBOOL("RtyInvertIgnoreGroupChat"))
-		{
-			ignore = !ignore;
-		}
-		bool hasgroup = gAgent.isInGroup(session_id);
-		if(hasgroup && ignore)
-		{
+               // Return now if we're blocking this group's chat or conferences
+               if (gAgent.isInGroup(session_id) ? getIgnoreGroup(session_id) : dialog != IM_NOTHING_SPECIAL && dialog != IM_SESSION_P2P_INVITE && gSavedSettings.getBOOL("LiruBlockConferences"))
 			return;
 		}
 
@@ -1459,6 +1452,17 @@ public:
 };
 
 
+void leave_group_chat(const LLUUID& from_id, const LLUUID& session_id)
+{
+	// Tell the server we've left group chat
+	std::string name;
+	gAgent.buildFullname(name);
+	pack_instant_message(gMessageSystem, gAgentID, false, gAgentSessionID, from_id,
+		name, LLStringUtil::null, IM_ONLINE, IM_SESSION_LEAVE, session_id);
+	gAgent.sendReliableMessage();
+	gIMMgr->removeSession(session_id);
+}
+
 class LLViewerChatterBoxInvitation : public LLHTTPNode
 {
 public:
@@ -1571,13 +1575,7 @@ public:
 			{
 				if (gIMMgr->getIgnoreGroup(session_id))
 				{
-					// Tell the server we've left group chat
-					std::string name;
-					gAgent.buildFullname(name);
-					pack_instant_message(gMessageSystem, gAgentID, false, gAgent.getSessionID(), from_id,
-						name, LLStringUtil::null, IM_ONLINE, IM_SESSION_LEAVE, session_id);
-					gAgent.sendReliableMessage();
-					gIMMgr->removeSession(session_id);
+					leave_group_chat(from_id, session_id);
 					return;
 				}
 				else if (gSavedSettings.getBOOL("OptionShowGroupNameInChatIM"))
@@ -1591,6 +1589,11 @@ public:
 			}
 			else
 			{
+				if (from_id != session_id && gSavedSettings.getBOOL("LiruBlockConferences")) // from and session are equal for IMs only.
+				{
+					leave_group_chat(from_id, session_id);
+					return;
+				}
 				prepend_msg = std::string("IM: ");
 			}
 			chat.mText = prepend_msg + name + separator_string + saved + message.substr(message_offset);

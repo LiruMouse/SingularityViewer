@@ -214,8 +214,8 @@ LLObjectSelectionHandle LLToolSelect::handleObjectSelection(const LLPickInfo& pi
 			// restore the zoom to the previously stored values.
 			LLSelectMgr::getInstance()->setAgentHUDZoom(target_zoom, current_zoom);
 		}
-#if 0
-		if (!gAgentCamera.getFocusOnAvatar() &&										// if camera not glued to avatar
+
+		if (gSavedSettings.getBOOL("RightClickTurnsAvatar") && !gAgentCamera.getFocusOnAvatar() &&										// if camera not glued to avatar
 			LLVOAvatar::findAvatarFromAttachment(object) != gAgentAvatarp &&	// and it's not one of your attachments
 			object != gAgentAvatarp)									// and it's not you
 		{
@@ -233,7 +233,7 @@ LLObjectSelectionHandle LLToolSelect::handleObjectSelection(const LLPickInfo& pi
 				gAgent.startAutoPilotGlobal(gAgent.getPositionGlobal(), "", &target_rot, NULL, NULL, 1.f, SELECTION_ROTATION_TRESHOLD);
 			}
 		}
-#endif
+
 		if (temp_select)
 		{
 			if (!already_selected)

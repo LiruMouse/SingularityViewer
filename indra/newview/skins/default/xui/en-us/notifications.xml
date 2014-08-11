@@ -695,13 +695,6 @@ Go to the [SECOND_LIFE] web site for more information on partnering?
 
   <notification
    icon="alertmodal.tga"
-   name="ClickUploadHelpPermissions"
-   type="alertmodal">
-Your default permissions may not work in older regions.
-  </notification>
-
-  <notification
-   icon="alertmodal.tga"
    name="ClickWebProfileHelpAvatar"
    type="alertmodal">
 If this Resident has set a web profile URL then you can:
@@ -3237,10 +3230,10 @@ Visit the [SECOND_LIFE] Public Issue Tracker, where you can report bugs and othe
    icon="alertmodal.tga"
    name="WebLaunchSinguIssue"
    type="alertmodal">
-Visit the Singularity Issue Tracker, to report bugs and issues with Singularity Viewer.
+Visit the [SHORT_APP_NAME] Issue Tracker, to report bugs and issues with [SHORT_APP_NAME] Viewer.
 Please be sure that your report won't be a duplicate of an existing one.
     <usetemplate
-     ignoretext="When launching web browser to view Singularity Issue Tracker"
+     ignoretext="When launching web browser to view [SHORT_APP_NAME] Issue Tracker"
      name="okcancelignore"
      notext="Cancel"
      yestext="Go to page"/>
@@ -6798,6 +6791,16 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
 
   <notification
    icon="notify.tga"
+   name="TeleportOfferSent"
+   log_to_im="true"
+   log_to_chat="false"
+   show_toast="false"
+   type="notifytip">
+    Teleport offer sent to [TO_NAME]
+  </notification>
+
+  <notification
+   icon="notify.tga"
    name="TeleportRequest"
    type="notify">
 [NAME] is requesting to be teleported to your location.
@@ -9740,6 +9743,17 @@ An internal error prevented us from properly updating your viewer.  The L$ balan
 Cannot create large prims that intersect other players.  Please re-try when other players have moved.
   </notification>
 
+  <notification
+   icon="alertmodal.tga"
+   name="DefaultObjectPermissions"
+   type="alert">
+There was a problem saving the default permissions due to the following reason: [REASON].  Please try setting the default permissions later.
+   <tag>fail</tag>
+   <usetemplate
+     name="okbutton"
+     yestext="OK"/>
+  </notification>
+
 
 <!-- Singularity Specific notifications should go below here, alphabetically -->
 <!-- Singu Note: RLVa notifications come first here -->
@@ -9765,6 +9779,17 @@ AntiSpam: Blocked [SOURCE] for spamming [TYPE]s [AMOUNT] times in [TIME] seconds
 AntiSpam: Blocked newline flood from [SOURCE] (over [AMOUNT] newlines).
   </notification>
 
+
+  <notification
+   icon="alertmodal.tga"
+   name="ConfirmDeleteUser"
+   type="alertmodal">
+Are you sure you want to delete the selected user?
+    <usetemplate
+     name="okcancelbuttonscanceldefault"
+     yestext="Yes"
+     notext="No"/>
+  </notification>
 
   <notification
    icon="alertmodal.tga"

@@ -240,6 +240,7 @@ set(viewer_SOURCE_FILES
     llfloaternamedesc.cpp
     llfloaternotificationsconsole.cpp
     llfloaterobjectiminfo.cpp
+    llfloaterobjectweights.cpp
     llfloateropenobject.cpp
     llfloateroutbox.cpp
     llfloaterparcel.cpp
@@ -762,6 +763,7 @@ set(viewer_HEADER_FILES
     llfloaternamedesc.h
     llfloaternotificationsconsole.h
     llfloaterobjectiminfo.h
+    llfloaterobjectweights.h
     llfloateropenobject.h
     llfloateroutbox.h
     llfloaterparcel.h
@@ -1798,7 +1800,7 @@ if (PACKAGE)
   if (LINUX)
     list(APPEND SYMBOL_SEARCH_DIRS "${CMAKE_CURRENT_BINARY_DIR}/packaged")
     set(VIEWER_SYMBOL_FILE "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/secondlife-symbols-linux.tar.bz2")
-    set(VIEWER_EXE_GLOBS "singularity-do-not-run-directly SLPlugin")
+    set(VIEWER_EXE_GLOBS "${VIEWER_BRANDING_ID}-do-not-run-directly SLPlugin")
     set(VIEWER_LIB_GLOB "*${CMAKE_SHARED_MODULE_SUFFIX}*")
     set(VIEWER_COPY_MANIFEST copy_l_viewer_manifest)
   endif (LINUX)

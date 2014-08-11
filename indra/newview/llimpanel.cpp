@@ -353,6 +353,7 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 	case IM_SESSION_P2P_INVITE:
 		mVoiceChannel = new LLVoiceChannelP2P(mSessionUUID, mLogLabel, mOtherParticipantUUID);
 		LLAvatarTracker::instance().addParticularFriendObserver(mOtherParticipantUUID, this);
+		mDing = gSavedSettings.getBOOL("LiruNewMessageSoundIMsOn");
 		break;
 	default:
 		llwarns << "Unknown session type" << llendl;
@@ -1139,7 +1140,8 @@ void LLFloaterIMPanel::onClickToggleActiveSpeakers(const LLSD& value)
 
 void LLFloaterIMPanel::onInputEditorFocusReceived()
 {
-	mHistoryEditor->setCursorAndScrollToEnd();
+	if (gSavedSettings.getBOOL("LiruLegacyScrollToEnd"))
+		mHistoryEditor->setCursorAndScrollToEnd();
 }
 
 void LLFloaterIMPanel::onInputEditorKeystroke(LLLineEditor* caller)
