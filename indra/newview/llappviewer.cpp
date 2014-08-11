@@ -3289,8 +3289,9 @@ bool LLAppViewer::initCache()
 	const S64 MAX_CACHE_SIZE = 9984ll * MB;
 	const S64 MAX_VFS_SIZE = 1024 * MB; // 1 GB
 
-	S64 cache_size = (S64)MAX_CACHE_SIZE; // (S64)(gSavedSettings.getU32("CacheSize")) * MB;
-	cache_size = llclamp(cache_size, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
+	// S64 cache_size = (S64)(gSavedSettings.getU32("CacheSize")) * MB;
+	// cache_size = llclamp(cache_size, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
+	S64 cache_size = MAX_CACHE_SIZE;
 
 	S64 texture_cache_size = ((cache_size * 8) / 10);
 	S64 vfs_size = cache_size - texture_cache_size;

@@ -140,7 +140,7 @@ if (LINUX)
       -ffinite-math-only
       -fno-signed-zeros
       -fcx-limited-range
-#      -funroll-loops
+      -funroll-loops
        -frename-registers
       -ftracer
       -fvariable-expansion-in-unroller
