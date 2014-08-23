@@ -78,8 +78,6 @@
 
   <notification name="MediaBlocked">Media/audio URL verweigern f&#xFC;r [DOMAIN]</notification>
 
-  <notification name="MediaListed">Media/audio URLs f&#xFC;r [DOMAIN] jetzt [LISTED] im Mediafilter</notification>
-
   <notification name="MediaBlocked">Media/audio URL verweigern f&#xFC;r [DOMAIN]</notification>
   
   <notification name="MissingAlert" label="Unbekannter Warnhinweis">Ihre Version von Second Life kann den gerade empfangenen Warnhinweis nicht anzeigen.

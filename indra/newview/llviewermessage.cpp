@@ -2746,7 +2746,7 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 	//
 	// # &-ConfigInverseOrderForAcceptInventory (internal, generated here)
 	// # &-ConfigInverseOrderForSilent
-	// # &-DomainHandleMediaURLs
+	// # REMOVED due to changes in media filter: &-DomainHandleMediaURLs, PlayFromMediaURL
 	// # &-ExecFriendIsOffline!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
 	// # &-ExecFriendIsOnline!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
 	// # &-ExecOnEachGS!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]

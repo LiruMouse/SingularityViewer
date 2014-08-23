@@ -181,13 +181,6 @@ You may choose to allow or deny the corresponding domain or in-world scripted ob
   </notification>
 
     <notification
-   icon="alert.tga"
-   name="MediaListed"
-   type="alert">
-Media/audio URLs for [DOMAIN] now [LISTED] for media filter.
-  </notification>
-
-    <notification
    icon="alertmodal.tga"
    name="AddToMediaList"
    type="alertmodal">
