@@ -70,21 +70,21 @@
   </template>
 
   <notification name="MediaAlert">Der Besitzer der Parzelle m&#xF6;chte Ihren Viewer anweisen die folgende [TYPE] URL zu laden:[URL]Sie k&#xF6;nnen die korrespondierende Dom&#xE4;ne oder In-Welt Objekt-Skript-Server erlauben oder ablehnen."Erlauben" und "Verweigern" gelten nur f&#xFC;r die aktuelle Sitzung, w&#xE4;hrend "Immer sperren" bzw. "Immer erlauben" dann immer gelten.<form name="form">
-    <button name="Allow" text="erlauben"/>
-	<button name="Deny" text="verbieten"/>
-	<button name="Blacklist" text="Blacklist"/>
-	<button name="Whitelist" text="Immer erlauben"/>
-   </form></notification>
+  <button name="Allow" text="erlauben"/>
+  <button name="Deny" text="verbieten"/>
+  <button name="Blacklist" text="Blacklist"/>
+  <button name="Whitelist" text="Immer erlauben"/>
+  </form></notification>
+
+  <notification name="MediaBlocked">Media/audio URL verweigern f&#xFC;r [DOMAIN]</notification>
 
   <notification name="MediaListed">Media/audio URLs f&#xFC;r [DOMAIN] jetzt [LISTED] im Mediafilter</notification>
 
-  <notification name="MediaBlocked">Media/audio URL verweigern f&#xFC;r [DOMAIN] durch Mediafilter</notification>
-
-  <notification name="MediaFiltersCleared">Die Medienfilter sind gel&#xF6;scht worden</notification>
-
+  <notification name="MediaBlocked">Media/audio URL verweigern f&#xFC;r [DOMAIN]</notification>
+  
   <notification name="MissingAlert" label="Unbekannter Warnhinweis">Ihre Version von Second Life kann den gerade empfangenen Warnhinweis nicht anzeigen.
 
-Fehlerdetails: Der Warnhinweis &#x201E;[_NAME]&#x201C; wurde in notifications.xml nicht gefunden.<usetemplate name="okbutton" yestext="OK"/></notification>
+  Fehlerdetails: Der Warnhinweis &#x201E;[_NAME]&#x201C; wurde in notifications.xml nicht gefunden.<usetemplate name="okbutton" yestext="OK"/></notification>
 
   <notification name="FloaterNotFound">Floater-Fehler: Folgende Steuerelemente wurden nicht gefunden:
 

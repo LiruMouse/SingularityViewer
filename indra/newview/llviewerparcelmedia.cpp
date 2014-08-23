@@ -49,11 +49,11 @@
 #include "llviewerwindow.h"
 #include "llfirstuse.h"
 #include "llpluginclassmedia.h"
+#include "llmediafilter.h"
 #include "llnotify.h"
 #include "llsdserialize.h"
 #include "llaudioengine.h"
 #include "lloverlaybar.h"
-#include "slfloatermediafilter.h"
 #include "llstreamingaudio.h"
 
 #include <boost/algorithm/string/replace.hpp>
@@ -64,12 +64,7 @@
 S32 LLViewerParcelMedia::sMediaParcelLocalID = 0;
 LLUUID LLViewerParcelMedia::sMediaRegionID;
 viewer_media_t LLViewerParcelMedia::sMediaImpl;
-bool LLViewerParcelMedia::sIsUserAction = false;
-bool LLViewerParcelMedia::sMediaFilterListLoaded = false;
-LLSD LLViewerParcelMedia::sMediaFilterList;
-std::set<std::string> LLViewerParcelMedia::sMediaQueries;
-std::set<std::string> LLViewerParcelMedia::sAllowedMedia;
-std::set<std::string> LLViewerParcelMedia::sDeniedMedia;
+F32 LLViewerParcelMedia::sMediaCommandTime = 0;
 
 // Local functions
 bool callback_play_media(const LLSD& notification, const LLSD& response, LLParcel* parcel);
@@ -154,7 +149,15 @@ void LLViewerParcelMedia::update(LLParcel* parcel)
 				// Only play if the media types are the same.
 				if(sMediaImpl->getMimeType() == parcel->getMediaType())
 				{
-					play(parcel);
+					if (gSavedSettings.getU32("MediaFilterEnable"))
+					{
+						LL_DEBUGS("MediaFilter") << "Filtering media URL: " << parcel->getMediaURL() << LL_ENDL;
+						LLMediaFilter::getInstance()->filterMediaUrl(parcel);
+					}
+					else
+					{
+						play(parcel);
+					}
 				}
 
 				else
@@ -190,7 +193,7 @@ void LLViewerParcelMedia::update(LLParcel* parcel)
 }
 
 // static
-void LLViewerParcelMedia::play(LLParcel* parcel, bool filter)
+void LLViewerParcelMedia::play(LLParcel* parcel)
 {
 	// lldebugs << "LLViewerParcelMedia::play" << llendl;
 
@@ -407,13 +410,27 @@ void LLViewerParcelMedia::processParcelMediaCommandMessage( LLMessageSystem *msg
 		// stop
 		if( command == PARCEL_MEDIA_COMMAND_STOP )
 		{
-			stop();
+			if (!LLMediaFilter::getInstance()->isAlertActive())
+			{
+				stop();
+			}
+			else
+			{
+				LLMediaFilter::getInstance()->setQueuedMediaCommand(PARCEL_MEDIA_COMMAND_STOP);
+			}
 		}
 		else
 		// pause
 		if( command == PARCEL_MEDIA_COMMAND_PAUSE )
 		{
-			pause();
+			if (!LLMediaFilter::getInstance()->isAlertActive())
+			{
+				pause();
+			}
+			else
+			{
+				LLMediaFilter::getInstance()->setQueuedMediaCommand(PARCEL_MEDIA_COMMAND_PAUSE);
+			}
 		}
 		else
 		// play
@@ -427,14 +444,29 @@ void LLViewerParcelMedia::processParcelMediaCommandMessage( LLMessageSystem *msg
 			else
 			{
 				LLParcel *parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
-				play(parcel);
+				if (gSavedSettings.getU32("MediaFilterEnable"))
+				{
+					LL_DEBUGS("MediaFilter") << "PARCEL_MEDIA_COMMAND_PLAY: Filtering media URL: " << parcel->getMediaURL() << LL_ENDL;
+					LLMediaFilter::getInstance()->filterMediaUrl(parcel);
+				}
+				else
+				{
+					play(parcel);
+				}
 			}
 		}
 		else
 		// unload
 		if( command == PARCEL_MEDIA_COMMAND_UNLOAD )
 		{
-			stop();
+			if (!LLMediaFilter::getInstance()->isAlertActive())
+			{
+				stop();
+			}
+			else
+			{
+				LLMediaFilter::getInstance()->setQueuedMediaCommand(PARCEL_MEDIA_COMMAND_UNLOAD);
+			}
 		}
 	}
 
@@ -443,9 +475,25 @@ void LLViewerParcelMedia::processParcelMediaCommandMessage( LLMessageSystem *msg
 		if(sMediaImpl.isNull())
 		{
 			LLParcel *parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
-			play(parcel);
+			if (gSavedSettings.getU32("MediaFilterEnable"))
+			{
+				LL_DEBUGS("MediaFilter") << "PARCEL_MEDIA_COMMAND_TIME: Filtering media URL: " << parcel->getMediaURL() << LL_ENDL;
+				LLMediaFilter::getInstance()->filterMediaUrl(parcel);
+			}
+			else
+			{
+				play(parcel);
+			}
 		}
+	}
+	if (!LLMediaFilter::getInstance()->isAlertActive())
+	{
 		seek(time);
+	}
+	else
+	{
+		LLMediaFilter::getInstance()->setQueuedMediaCommand(PARCEL_MEDIA_COMMAND_TIME);
+		sMediaCommandTime = time;
 	}
 }
 
@@ -500,7 +548,18 @@ void LLViewerParcelMedia::processParcelMediaUpdate( LLMessageSystem *msg, void *
 			parcel->setMediaAutoScale(media_auto_scale);
 			parcel->setMediaLoop(media_loop);
 
-			play(parcel);
+			if (sMediaImpl.notNull())
+			{
+				if (gSavedSettings.getU32("MediaFilterEnable"))
+				{
+					LL_DEBUGS("MediaFilter") << "Parcel media changed. Filtering media URL: " << parcel->getMediaURL() << LL_ENDL;
+					LLMediaFilter::getInstance()->filterMediaUrl(parcel);
+				}
+				else
+				{
+					play(parcel);
+				}
+			}
 		}
 	}
 }
@@ -631,37 +690,37 @@ void LLViewerParcelMedia::handleMediaEvent(LLPluginClassMedia* self, EMediaEvent
 		case MEDIA_EVENT_CLOSE_REQUEST:
 		{
 			LL_DEBUGS("Media") <<  "Media event:  MEDIA_EVENT_CLOSE_REQUEST" << LL_ENDL;
-		};
+		}
 		break;
 		
 		case MEDIA_EVENT_PICK_FILE_REQUEST:
 		{
 			LL_DEBUGS("Media") <<  "Media event:  MEDIA_EVENT_PICK_FILE_REQUEST" << LL_ENDL;
-		};
+		}
 		break;
 
 		case MEDIA_EVENT_GEOMETRY_CHANGE:
 		{
-			LL_DEBUGS("Media") << "Media event:  MEDIA_EVENT_GEOMETRY_CHANGE" << LL_ENDL;
-		};
+			LL_DEBUGS("Media") << "Media event:  MEDIA_EVENT_GEOMETRY_CHANGE, uuid is " << self->getClickUUID() << LL_ENDL;
+		}
 		break;
 
 		case MEDIA_EVENT_AUTH_REQUEST:
 		{
-			LL_DEBUGS("Media") <<  "Media event:  MEDIA_EVENT_AUTH_REQUEST" << LL_ENDL;
-		};
+			LL_DEBUGS("Media") <<  "Media event:  MEDIA_EVENT_AUTH_REQUEST, url " << self->getAuthURL() << ", realm " << self->getAuthRealm() << LL_ENDL;
+		}
 		break;
 
 		case MEDIA_EVENT_LINK_HOVERED:
 		{
-			LL_DEBUGS("Media") <<  "Media event:  MEDIA_EVENT_LINK_HOVERED" << LL_ENDL;
+			LL_DEBUGS("Media") <<  "Media event:  MEDIA_EVENT_LINK_HOVERED, hover text is: " << self->getHoverText() << LL_ENDL;
 		};
 		break;
 
 		default:
 		{
 			LL_WARNS("Media") <<  "Media event:  unknown event type" << LL_ENDL;
-		};
+		}
 	};
 }
 
@@ -671,7 +730,14 @@ bool callback_play_media(const LLSD& notification, const LLSD& response, LLParce
 	if (option == 0)
 	{
 		gSavedSettings.setBOOL("AudioStreamingMedia", TRUE);
-		LLViewerParcelMedia::play(parcel);
+		if (gSavedSettings.getU32("MediaFilterEnable"))
+		{
+			LLMediaFilter::getInstance()->filterMediaUrl(parcel);
+		}
+		else
+		{
+			LLViewerParcelMedia::play(parcel);
+		}
 	}
 	else
 	{
