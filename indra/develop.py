@@ -169,7 +169,7 @@ class PlatformSetup(object):
             raise
 
     def parse_build_opts(self, arguments):
-        opts, targets = getopt.getopt(arguments, 'o:', ['option='])
+        opts, targets = getopt.getopt(arguments, 'D:o:', ['option='])
         build_opts = []
         for o, a in opts:
             if o in ('-o', '--option'):
@@ -612,15 +612,15 @@ class WindowsSetup(PlatformSetup):
         if environment == '':
             environment = self.find_visual_studio_express()
             if environment == '':
-				environment = self.find_visual_studio_express_single()
-				if environment == '':
-					print >> sys.stderr, "Something went very wrong during build stage, could not find a Visual Studio?"
-				else:
-					build_dirs=self.build_dirs()
-					print >> sys.stderr, "\nSolution generation complete, it can can now be found in:", build_dirs[0]    
-					print >> sys.stderr, "\nAs you are using an Express Visual Studio, the build step cannot be automated"
-					print >> sys.stderr, "\nPlease see https://wiki.secondlife.com/wiki/Microsoft_Visual_Studio#Extra_steps_for_Visual_Studio_Express_editions for Visual Studio Express specific information"
-					exit(0)
+                environment = self.find_visual_studio_express_single()
+                if environment == '':
+                    print >> sys.stderr, "Something went very wrong during build stage, could not find a Visual Studio?"
+                else:
+                    build_dirs=self.build_dirs()
+                    print >> sys.stderr, "\nSolution generation complete, it can can now be found in:", build_dirs[0]    
+                    print >> sys.stderr, "\nAs you are using an Express Visual Studio, the build step cannot be automated"
+                    print >> sys.stderr, "\nPlease see https://wiki.secondlife.com/wiki/Microsoft_Visual_Studio#Extra_steps_for_Visual_Studio_Express_editions for Visual Studio Express specific information"
+                    exit(0)
     
         # devenv.com is CLI friendly, devenv.exe... not so much.
         return ('"%sdevenv.com" %s.sln /build %s' % 
@@ -628,7 +628,7 @@ class WindowsSetup(PlatformSetup):
 
     def run(self, command, name=None):
         '''Run a program.  If the program fails, raise an exception.'''
-        ret = os.system(command)
+        ret = os.system(command.encode('utf-8'))
         if ret:
             if name is None:
                 name = command.split(None, 1)[0]
@@ -662,7 +662,7 @@ class WindowsSetup(PlatformSetup):
                           os.path.join(build_dir,'Singularity.sln') +
                           ' --config ' + self.build_type +
                           ' --startup secondlife-bin')
-            print 'Running %r in %r' % (vstool_cmd, getcwd())
+            print 'Running vstool %r in %r' % (vstool_cmd, getcwd())
             self.run(vstool_cmd)        
             print >> open(stamp, 'w'), self.build_type
         
@@ -676,11 +676,11 @@ class WindowsSetup(PlatformSetup):
                 if targets:
                     for t in targets:
                         cmd = '%s /project %s %s' % (build_cmd, t, ' '.join(opts))
-                        print 'Running %r in %r' % (cmd, d)
+                        print 'Running build(targets) %r in %r' % (cmd, d)
                         self.run(cmd)
                 else:
                     cmd = '%s %s' % (build_cmd, ' '.join(opts))
-                    print 'Running %r in %r' % (cmd, d)
+                    print 'Running build %r in %r' % (cmd, d)
                     self.run(cmd)
             finally:
                 os.chdir(cwd)
