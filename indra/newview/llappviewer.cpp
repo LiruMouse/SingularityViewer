@@ -3312,7 +3312,7 @@ bool LLAppViewer::initCache()
 	// Init the texture cache
 	// Allocate 80% of the cache size for textures
 	const S32 MB = 1024 * 1024;
-	const S64 MIN_CACHE_SIZE = 64 * MB;
+	// const S64 MIN_CACHE_SIZE = 64 * MB;
 	const S64 MAX_CACHE_SIZE = 9984ll * MB;
 	const S64 MAX_VFS_SIZE = 1024 * MB; // 1 GB
 
