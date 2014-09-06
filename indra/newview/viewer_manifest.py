@@ -358,11 +358,11 @@ class WindowsManifest(ViewerManifest):
             if installed_dir != out_path:
                 if install:
                     out_path = installed_dir
-                    result += 'SetOutPath ' + out_path + '\n'
+                    result += 'SetOutPath "' + out_path + '"\n'
             if install:
                 result += 'File "' + pkg_file + '"\n'
             else:
-                result += 'Delete ' + wpath(os.path.join('$INSTDIR', rel_file)) + '\n'
+                result += 'Delete "' + wpath(os.path.join('$INSTDIR', rel_file)) + '"\n'
 
         # at the end of a delete, just rmdir all the directories
         if not install:
@@ -762,11 +762,7 @@ class LinuxManifest(ViewerManifest):
             else:
                 installer_name += '_' + self.channel_oneword().upper()
 
-        if self.args['buildtype'].lower() in ['release', 'releasesse2']:
-            print "* Going strip-crazy on the packaged binaries, since this is a RELEASE build"
-            # makes some small assumptions about our packaged dir structure
-            self.run_command("find %(d)r/bin %(d)r/lib* -type f | xargs -d '\n' --no-run-if-empty strip --strip-unneeded" % {'d': self.get_dst_prefix()} )
-            self.run_command("find %(d)r/bin %(d)r/lib* -type f -not -name \\*.so | xargs -d '\n' --no-run-if-empty strip -s" % {'d': self.get_dst_prefix()} )
+        self.strip_binaries()
 
         # Fix access permissions
         self.run_command("""
@@ -797,6 +793,12 @@ class LinuxManifest(ViewerManifest):
                 'dst': self.get_dst_prefix(),
                 'inst': self.build_path_of(installer_name)})
 
+    def strip_binaries(self):
+        if self.args['buildtype'].lower() in ['release', 'releasesse2']:
+            print "* Going strip-crazy on the packaged binaries, since this is a RELEASE build"
+            # makes some small assumptions about our packaged dir structure
+            self.run_command("find %(d)r/bin %(d)r/lib* -type f | xargs -d '\n' --no-run-if-empty strip --strip-unneeded" % {'d': self.get_dst_prefix()} )
+            self.run_command("find %(d)r/bin %(d)r/lib* -type f -not -name \\*.so | xargs -d '\n' --no-run-if-empty strip -s" % {'d': self.get_dst_prefix()} )
 
 class Linux_i686Manifest(LinuxManifest):
     def construct(self):
