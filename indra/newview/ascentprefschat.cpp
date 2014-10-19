@@ -238,7 +238,7 @@ void LLPrefsAscentChat::refreshValues()
     mSecondsInLog                   = gSavedSettings.getBOOL("SecondsInLog");
 
     std::string format = gSavedSettings.getString("ShortTimeFormat");
-    if (format.find("%p") == -1)
+    if (format.find("%p") == std::string::npos)
     {
         mTimeFormat = 0;
     }
@@ -248,7 +248,7 @@ void LLPrefsAscentChat::refreshValues()
     }
 
     format = gSavedSettings.getString("ShortDateFormat");
-    if (format.find("%m/%d/%") != -1)
+    if (format.find("%m/%d/%") != std::string::npos)
     {
         mDateFormat = 2;
     }
