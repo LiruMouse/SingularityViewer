@@ -346,7 +346,7 @@ void LLStatusBar::refresh()
 	internal_time = show_local_time ? std::localtime(&utc_time) : utc_to_pacific_time(utc_time, gPacificDaylightTime);
 
 	std::string t;
-	timeStructToFormattedString(internal_time, short_time_fmt, t);
+	timeStructToFormattedString(internal_time, short_time_format, t);
 	if (show_local_time)
 	{
 		static const std::string local(" " + getString("Local"));
@@ -362,7 +362,7 @@ void LLStatusBar::refresh()
 	}
 
 	std::string date;
-	timeStructToFormattedString(internal_time, long_date_fmt, date);
+	timeStructToFormattedString(internal_time, long_date_format, date);
 
 	// show both clocks if wanted
 	if(show_both_times)
