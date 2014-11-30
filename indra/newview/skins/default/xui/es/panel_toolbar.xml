@@ -278,6 +278,9 @@
 		<layout_panel name="panelabout">
 			<button label="Acerca de [SHORT_APP_NAME]" name="about_btn"/>
 		</layout_panel>
+		<layout_panel name="panelquit" >
+			<button label="Salir" name="quit_btn"/>
+		</layout_panel>
 		<layout_panel name="paneltoolbarprefs">
 			<button label="Conf. Botones" name="change_buttons_btn"/>
 		</layout_panel>

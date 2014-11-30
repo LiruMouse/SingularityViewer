@@ -122,53 +122,27 @@ BOOL LLImagePNG::encode(const LLImageRaw* raw_image, F32 encode_time)
 	// Image logical size
 	setSize(raw_image->getWidth(), raw_image->getHeight(), raw_image->getComponents());
 
+	// Temporary buffer to hold the encoded image. Note: the final image
+	// size should be much smaller due to compression.
 	U32 bufferSize = getWidth() * getHeight() * getComponents() + 1024;
-
-	//New implementation
-	allocateData(bufferSize); //Set to largest possible size.
-	if(isBufferInvalid()) //Checking
-	{
-		setLastError("LLImagePNG::encode failed allocateData");
-		return FALSE;
-	}
-
- 	// Delegate actual encoding work to wrapper
- 	LLPngWrapper pngWrapper;
-	if (! pngWrapper.writePng(raw_image, getData()))
-	{
-		setLastError(pngWrapper.getErrorMessage());
-		deleteData();
- 		return FALSE;
- 	}
-
-	// Resize internal buffer.
-	if(!reallocateData(pngWrapper.getFinalSize())) //Shrink. Returns NULL on failure.
-	{
-		setLastError("LLImagePNG::encode failed reallocateData");
-		deleteData();
-		return FALSE;
-	}
-	return TRUE;
-
-
-    /*U8* mTmpWriteBuffer = new U8[ bufferSize ];
+    U8* tmpWriteBuffer = new U8[ bufferSize ];
 
 	// Delegate actual encoding work to wrapper
 	LLPngWrapper pngWrapper;
-	if (! pngWrapper.writePng(raw_image, mTmpWriteBuffer))
+	if (! pngWrapper.writePng(raw_image, tmpWriteBuffer))
 	{
 		setLastError(pngWrapper.getErrorMessage());
-		delete[] mTmpWriteBuffer; 
+		delete[] tmpWriteBuffer;
 		return FALSE;
 	}
 
 	// Resize internal buffer and copy from temp
 	U32 encodedSize = pngWrapper.getFinalSize();
 	allocateData(encodedSize);
-	memcpy(getData(), mTmpWriteBuffer, encodedSize);
+	memcpy(getData(), tmpWriteBuffer, encodedSize);
 
-	delete[] mTmpWriteBuffer;
+	delete[] tmpWriteBuffer;
 
-	return TRUE;*/
+	return TRUE;
 }
 

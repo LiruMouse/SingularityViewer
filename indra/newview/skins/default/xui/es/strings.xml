@@ -4144,6 +4144,7 @@ Si continuas recibiendo este mensaje, contacta con [SUPPORT_SITE].
 	<string name="conference-title">Chat grupal</string>
 	<string name="inventory_item_offered-im">Ofrecido un Ítem de Inventario</string>
 	<string name="inventory_item_offered_rlv">Ítem de Inventario ofrecido a [NAME]</string>	
+	<string name="share_alert">Arrastra los ítems hacia aquí desde el inventario</string>
 
 	<string name="only_user_message">eres el único usuario en esta sesión.</string>
 	<string name="offline_message">[NAME] está desconectado.</string>

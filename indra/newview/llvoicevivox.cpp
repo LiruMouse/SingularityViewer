@@ -848,7 +848,11 @@ void LLVivoxVoiceClient::stateMachine()
 						std::string args, cmd;
 
 						std::string loglevel = gSavedSettings.getString("VivoxDebugLevel");
+// Singu Note: omit shutdown timeout for Linux, as we are using 2.x version of the SDK there
+// Singu TODO: Remove this when the Vivox SDK 4.x is working on Linux
+#ifndef LL_LINUX
 						std::string shutdown_timeout = gSavedSettings.getString("VivoxShutdownTimeout");
+#endif
 						if(loglevel.empty())
 						{
 							loglevel = "0";	// turn logging off completely
@@ -870,11 +874,15 @@ void LLVivoxVoiceClient::stateMachine()
 						}
 						args += "logfolder";
 						
+// Singu Note: omit shutdown timeout for Linux, as we are using 2.x version of the SDK there
+// Singu TODO: Remove this when the Vivox SDK 4.x is working on Linux
+#ifndef LL_LINUX
 						if(!shutdown_timeout.empty())
 						{
 							args += " -st ";
 							args += shutdown_timeout;
 						}
+#endif
 
 						// If we allow multiple instances of the viewer to start the voicedaemon
 						if (gSavedSettings.getBOOL("VoiceMultiInstance"))

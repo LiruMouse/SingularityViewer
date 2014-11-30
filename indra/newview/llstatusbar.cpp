@@ -92,6 +92,7 @@
 #include <iomanip>
 
 #include "hippogridmanager.h"
+#include "lfsimfeaturehandler.h"
 
 // [RLVa:KB]
 #include "rlvactions.h"
@@ -118,20 +119,11 @@ const F32 ICON_TIMER_EXPIRY		= 3.f; // How long the balance and health icons sho
 const F32 ICON_FLASH_FREQUENCY	= 2.f;
 const S32 TEXT_HEIGHT = 18;
 
-static void onClickParcelInfo(void*);
-static void onClickBalance(void*);
-static void onClickBuyCurrency(void*);
-static void onClickHealth(void*);
-static void onClickFly(void*);
-static void onClickPush(void*);
-static void onClickVoice(void*);
-static void onClickBuild(void*);
-static void onClickPFDirty(void*);
-static void onClickPFDisabled(void*);
-static void onClickSeeAV(void*);
-static void onClickScripts(void*);
-static void onClickBuyLand(void*);
-static void onClickScriptDebug(void*);
+static void onClickParcelInfo();
+static bool rebakeRegionCallback(const LLSD& n, const LLSD& r);
+static void pf_dirty_click() { LLNotificationsUtil::add("PathfindingDirty", LLSD(), LLSD(), rebakeRegionCallback); }
+static void onClickScripts();
+static void onClickSearch(const std::string& query);
 
 std::vector<std::string> LLStatusBar::sDays;
 std::vector<std::string> LLStatusBar::sMonths;
@@ -206,33 +198,48 @@ mIsNavMeshDirty(false)
 	if (!mUPCSupported)
 		mTextUPC->setVisible(false);
 
-	childSetAction("scriptout", onClickScriptDebug, this);
-	childSetAction("health", onClickHealth, this);
-	childSetAction("no_fly", onClickFly, this);
-	childSetAction("buyland", onClickBuyLand, this );
-	childSetAction("buycurrency", onClickBuyCurrency, this );
-	childSetAction("no_build", onClickBuild, this );
-	childSetAction("pf_dirty", onClickPFDirty, this);
-	childSetAction("pf_disabled", onClickPFDisabled, this);
-	childSetAction("status_SeeAV", onClickSeeAV, this );
-	childSetAction("no_scripts", onClickScripts, this );
-	childSetAction("restrictpush", onClickPush, this );
-	childSetAction("status_no_voice", onClickVoice, this );
+	mScriptOut = getChild<LLUICtrl>("scriptout");
+	mScriptOut->setCommitCallback(boost::bind(LLFloaterScriptDebug::show, LLUUID::null));
+	mHealthV = getChild<LLUICtrl>("health");
+	mHealthV->setCommitCallback(boost::bind(LLNotificationsUtil::add, "NotSafe"));
+	mNoFly = getChild<LLUICtrl>("no_fly");
+	mNoFly->setCommitCallback(boost::bind(LLNotificationsUtil::add, "NoFly"));
+	mBuyLand = getChild<LLUICtrl>("buyland");
+	mBuyLand->setCommitCallback(boost::bind(&LLViewerParcelMgr::startBuyLand, boost::bind(LLViewerParcelMgr::getInstance), 0));
+	mBuyCurrency = getChild<LLUICtrl>("buycurrency");
+	mBuyCurrency->setCommitCallback(boost::bind(LLFloaterBuyCurrency::buyCurrency));
+	mNoBuild = getChild<LLUICtrl>("no_build");
+	mNoBuild->setCommitCallback(boost::bind(LLNotificationsUtil::add, "NoBuild"));
+	mPFDirty = getChild<LLUICtrl>("pf_dirty");
+	mPFDirty->setCommitCallback(boost::bind(pf_dirty_click));
+	mPFDisabled = getChild<LLUICtrl>("pf_disabled");
+	mPFDisabled->setCommitCallback(boost::bind(LLNotificationsUtil::add, "DynamicPathfindingDisabled"));
+	mStatusSeeAV = getChild<LLUICtrl>("status_SeeAV");
+	mStatusSeeAV->setCommitCallback(boost::bind(LLNotificationsUtil::add, "SeeAvatars"));
+	mNoScripts = getChild<LLUICtrl>("no_scripts");
+	mNoScripts->setCommitCallback(boost::bind(onClickScripts));
+	mRestrictPush = getChild<LLUICtrl>("restrictpush");
+	mRestrictPush->setCommitCallback(boost::bind(LLNotificationsUtil::add, "PushRestricted"));
+	mStatusNoVoice = getChild<LLUICtrl>("status_no_voice");
+	mStatusNoVoice->setCommitCallback(boost::bind(LLNotificationsUtil::add, "NoVoice"));
 
-	childSetCommitCallback("search_editor", onCommitSearch, this);
-	childSetAction("search_btn", onClickSearch, this);
+	mSearchEditor = getChild<LLUICtrl>("search_editor");
+	mSearchEditor->setCommitCallback(boost::bind(onClickSearch, _2));
+	mSearchBtn = getChild<LLUICtrl>("search_btn");
+	mSearchBtn->setCommitCallback(boost::bind(onClickSearch, boost::bind(&LLView::getValue, mSearchEditor)));
 
-	childSetVisible("search_editor", gSavedSettings.getBOOL("ShowSearchBar"));
-	childSetVisible("search_btn", gSavedSettings.getBOOL("ShowSearchBar"));
-	childSetVisible("menubar_search_bevel_bg", gSavedSettings.getBOOL("ShowSearchBar"));
+	bool show_search(gSavedSettings.getBOOL("ShowSearchBar"));
+	mSearchEditor->setVisible(show_search);
+	mSearchBtn->setVisible(show_search);
+	mSearchBevel = getChildView("menubar_search_bevel_bg");
+	mSearchBevel->setVisible(show_search);
 
-	childSetActionTextbox("ParcelNameText", onClickParcelInfo );
-	childSetActionTextbox("BalanceText", onClickBalance );
+	mTextParcelName->setClickedCallback(boost::bind(onClickParcelInfo));
+	mTextBalance->setClickedCallback(boost::bind(LLFloaterBuyCurrency::buyCurrency));
 
 	// TODO: Disable buying currency when connected to non-SL grids
 	// that don't support currency yet -- MC
-	LLButton* buybtn = getChild<LLButton>("buycurrency");
-	buybtn->setLabelArg("[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
+	mBuyCurrency->setLabelArg("[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 
 	mRegionCrossingSlot = gAgent.addRegionChangedCallback(boost::bind(&LLStatusBar::createNavMeshStatusListenerForCurrentRegion, this));
 	createNavMeshStatusListenerForCurrentRegion();
@@ -268,8 +275,8 @@ mIsNavMeshDirty(false)
 	mSGPacketLoss->mPerSec = FALSE;
 	addChild(mSGPacketLoss);
 
-	childSetActionTextbox("stat_btn", onClickStatGraph);
-
+	mStatBtn = getChild<LLTextBox>("stat_btn");
+	mStatBtn->setClickedCallback(boost::bind(LLFloaterLagMeter::showInstance, LLSD()));
 }
 
 LLStatusBar::~LLStatusBar()
@@ -325,6 +332,7 @@ void LLStatusBar::refresh()
 	static const LLCachedControl<bool> show_local_time("LiruLocalTime");
 	static const LLCachedControl<std::string> short_time_format("ShortTimeFormat");
 	static const LLCachedControl<std::string> long_date_format("LongDateFormat");
+	static const LLCachedControl<bool> show_both_times("RtyShowBothTimes");
 
 	// Get current UTC time, adjusted for the user's clock
 	// being off.
@@ -337,12 +345,8 @@ void LLStatusBar::refresh()
 	// it's daylight savings time there.
 	internal_time = show_local_time ? std::localtime(&utc_time) : utc_to_pacific_time(utc_time, gPacificDaylightTime);
 
-	// have this here because there are two, potentially different, dates if both
-	// times are displayed
-	std::string date;
-
 	std::string t;
-	timeStructToFormattedString(internal_time, short_time_format, t);
+	timeStructToFormattedString(internal_time, short_time_fmt, t);
 	if (show_local_time)
 	{
 		static const std::string local(" " + getString("Local"));
@@ -357,11 +361,10 @@ void LLStatusBar::refresh()
 		t += " PST";
 	}
 
-	// first the date from whatever is selected for display
-	timeStructToFormattedString(internal_time, long_date_format, date);
+	std::string date;
+	timeStructToFormattedString(internal_time, long_date_fmt, date);
 
 	// show both clocks if wanted
-	static const LLCachedControl<bool> show_both_times("RtyShowBothTimes");
 	if(show_both_times)
 	{
 		internal_time = std::localtime(&utc_time);
@@ -385,8 +388,6 @@ void LLStatusBar::refresh()
 	S32 x = MENU_RIGHT + MENU_PARCEL_SPACING;
 	S32 y = 0;
 
-	bool search_visible = gSavedSettings.getBOOL("ShowSearchBar");
-
 	// reshape menu bar to its content's width
 	if (MENU_RIGHT != gMenuBarView->getRect().getWidth())
 	{
@@ -396,40 +397,30 @@ void LLStatusBar::refresh()
 	LLViewerRegion *region = gAgent.getRegion();
 	LLParcel *parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 
-	LLRect buttonRect;
-
 	if (LLHUDIcon::iconsNearby())
 	{
-		childGetRect( "scriptout", buttonRect );
+		const LLRect& buttonRect = mScriptOut->getRect();
 		r.setOriginAndSize( x, y, buttonRect.getWidth(), buttonRect.getHeight());
-		childSetRect("scriptout",r);
-		childSetVisible("scriptout", true);
+		mScriptOut->setRect(r);
+		mScriptOut->setVisible(true);
 		x += buttonRect.getWidth();
 	}
 	else
 	{
-		childSetVisible("scriptout", false);
+		mScriptOut->setVisible(false);
 	}
 
 	if ((region && region->getAllowDamage()) ||
 		(parcel && parcel->getAllowDamage()) )
 	{
 		// set visibility based on flashing
-		if( mHealthTimer->hasExpired() )
-		{
-			childSetVisible("health", true);
-		}
-		else
-		{
-			BOOL flash = S32(mHealthTimer->getElapsedSeconds() * ICON_FLASH_FREQUENCY) & 1;
-			childSetVisible("health", flash);
-		}
+		mHealthV->setVisible(mHealthTimer->hasExpired() || S32(mHealthTimer->getElapsedSeconds() * ICON_FLASH_FREQUENCY) & 1);
 		mTextHealth->setVisible(TRUE);
 
 		// Health
-		childGetRect( "health", buttonRect );
+		const LLRect& buttonRect = mHealthV->getRect();
 		r.setOriginAndSize( x, y, buttonRect.getWidth(), buttonRect.getHeight());
-		childSetRect("health", r);
+		mHealthV->setRect(r);
 		x += buttonRect.getWidth();
 
 		const S32 health_width = S32( LLFontGL::getFontSansSerifSmall()->getWidth(std::string("100%")) );
@@ -440,7 +431,7 @@ void LLStatusBar::refresh()
 	else
 	{
 		// invisible if region doesn't allow damage
-		childSetVisible("health", false);
+		mHealthV->setVisible(false);
 		mTextHealth->setVisible(FALSE);
 	}
 
@@ -448,168 +439,134 @@ void LLStatusBar::refresh()
 		(parcel && !parcel->getAllowFly()) )
 	{
 		// No Fly Zone
-		childGetRect( "no_fly", buttonRect );
-		childSetVisible( "no_fly", true );
+		mNoFly->setVisible(true);
+		const LLRect& buttonRect(mNoFly->getRect());
 		r.setOriginAndSize( x, y, buttonRect.getWidth(), buttonRect.getHeight());
-		childSetRect( "no_fly", r );
+		mNoFly->setRect(r);
 		x += buttonRect.getWidth();
 	}
 	else
 	{
 		// Fly Zone
-		childSetVisible("no_fly", false);
+		mNoFly->setVisible(false);
 	}
 
-	BOOL no_build = parcel && !parcel->getAllowModify();
-	if (no_build)
+	if (parcel && !parcel->getAllowModify())
 	{
-		childSetVisible("no_build", TRUE);
-		childGetRect( "no_build", buttonRect );
 		// No Build Zone
+		mNoBuild->setVisible(true);
+		const LLRect& buttonRect(mNoBuild->getRect());
 		r.setOriginAndSize( x, y, buttonRect.getWidth(), buttonRect.getHeight());
-		childSetRect( "no_build", r );
+		mNoBuild->setRect(r);
 		x += buttonRect.getWidth();
 	}
 	else
 	{
-		childSetVisible("no_build", FALSE);
+		mNoBuild->setVisible(false);
 	}
 
-	BOOL no_scripts = FALSE;
-	if((region
+	if ((region
 		&& (region->getRegionFlag(REGION_FLAGS_SKIP_SCRIPTS)
 		|| region->getRegionFlag(REGION_FLAGS_ESTATE_SKIP_SCRIPTS)))
 		|| (parcel && !parcel->getAllowOtherScripts()))
 	{
-		no_scripts = TRUE;
-	}
-	if (no_scripts)
-	{
 		// No scripts
-		childSetVisible("no_scripts", TRUE);
-		childGetRect( "no_scripts", buttonRect );
+		mNoScripts->setVisible(true);
+		const LLRect& buttonRect(mNoScripts->getRect());
 		r.setOriginAndSize( x, y, buttonRect.getWidth(), buttonRect.getHeight());
-		childSetRect( "no_scripts", r );
+		mNoScripts->setRect(r);
 		x += buttonRect.getWidth();
 	}
 	else
 	{
 		// Yes scripts
-		childSetVisible("no_scripts", FALSE);
+		mNoScripts->setVisible(false);
 	}
 
-	BOOL no_region_push = (region && region->getRestrictPushObject());
-	BOOL no_push = no_region_push || (parcel && parcel->getRestrictPushObject());
-	if (no_push)
+	if ((region && region->getRestrictPushObject()) || (parcel && parcel->getRestrictPushObject()))
 	{
-		childSetVisible("restrictpush", TRUE);
-		childGetRect( "restrictpush", buttonRect );
+		mRestrictPush->setVisible(true);
+		const LLRect& buttonRect(mRestrictPush->getRect());
 		r.setOriginAndSize( x, y, buttonRect.getWidth(), buttonRect.getHeight());
-		childSetRect( "restrictpush", r );
+		mRestrictPush->setRect(r);
 		x += buttonRect.getWidth();
 	}
 	else
 	{
-		childSetVisible("restrictpush", FALSE);
+		mRestrictPush->setVisible(false);
 	}
 
-	BOOL have_voice = parcel && parcel->getParcelFlagAllowVoice(); 
-	if (have_voice)
+	if (parcel && parcel->getParcelFlagAllowVoice())
 	{
-		childSetVisible("status_no_voice", FALSE);
+		mStatusNoVoice->setVisible(false);
 	}
 	else
 	{
-		childSetVisible("status_no_voice", TRUE);
-		childGetRect( "status_no_voice", buttonRect );
+		mStatusNoVoice->setVisible(true);
+		const LLRect& buttonRect(mStatusNoVoice->getRect());
 		r.setOriginAndSize( x, y, buttonRect.getWidth(), buttonRect.getHeight());
-		childSetRect( "status_no_voice", r );
+		mStatusNoVoice->setRect(r);
 		x += buttonRect.getWidth();
 	}
 
-	bool no_see_avs = parcel && !parcel->getSeeAVs();
-	childSetVisible("status_SeeAV", no_see_avs);
-	if (no_see_avs)
+	if (parcel && !parcel->getSeeAVs())
 	{
-		childGetRect( "status_SeeAV", buttonRect );
+		mStatusSeeAV->setVisible(true);
+		const LLRect& buttonRect(mStatusSeeAV->getRect());
 		r.setOriginAndSize( x, y, buttonRect.getWidth(), buttonRect.getHeight());
-		childSetRect( "status_SeeAV", r );
+		mStatusSeeAV->setRect(r);
 		x += buttonRect.getWidth();
 	}
+	else mStatusSeeAV->setVisible(false);
 
 	if (region)
 	{
 		bool pf_disabled = !region->dynamicPathfindingEnabled();
-		getChild<LLUICtrl>("pf_dirty")->setVisible(!pf_disabled && mIsNavMeshDirty);
-		getChild<LLUICtrl>("pf_disabled")->setVisible(pf_disabled);
-		const std::string pf_icon = pf_disabled ? "pf_disabled" : mIsNavMeshDirty ? "pf_dirty" : "";
-		if (!pf_icon.empty())
+		mPFDirty->setVisible(!pf_disabled && mIsNavMeshDirty);
+		mPFDisabled->setVisible(pf_disabled);
+		if (LLView* pf_icon = pf_disabled ? mPFDisabled : mIsNavMeshDirty ? mPFDirty : NULL)
 		{
 			x += 6;
-			childGetRect(pf_icon, buttonRect);
+			const LLRect& buttonRect(pf_icon->getRect());
 			r.setOriginAndSize(x, y, buttonRect.getWidth(), buttonRect.getHeight());
-			childSetRect(pf_icon, r);
+			pf_icon->setRect(r);
 			x += buttonRect.getWidth();
 		}
 	}
 
-	BOOL canBuyLand = parcel
-		&& !parcel->isPublic()
-		&& LLViewerParcelMgr::getInstance()->canAgentBuyParcel(parcel, false);
-	childSetVisible("buyland", canBuyLand);
-	if (canBuyLand)
+	if (parcel && !parcel->isPublic() && LLViewerParcelMgr::getInstance()->canAgentBuyParcel(parcel, false))
 	{
+		mBuyLand->setVisible(true);
 		//HACK: layout tweak until this is all xml
 		x += 9;
-		childGetRect( "buyland", buttonRect );
+		const LLRect& buttonRect(mBuyLand->getRect());
 		r.setOriginAndSize( x, y, buttonRect.getWidth(), buttonRect.getHeight());
-		childSetRect( "buyland", r );
+		mBuyLand->setRect(r);
 		x += buttonRect.getWidth();
 	}
+	else mBuyLand->setVisible(false);
 
 	std::string location_name;
-	if (region)
+	if (region && parcel)
 	{
-		const LLVector3& agent_pos_region = gAgent.getPositionAgent();
-		S32 pos_x = lltrunc( agent_pos_region.mV[VX] );
-		S32 pos_y = lltrunc( agent_pos_region.mV[VY] );
-		S32 pos_z = lltrunc( agent_pos_region.mV[VZ] );
-
-		// Round the numbers based on the velocity
-		LLVector3 agent_velocity = gAgent.getVelocity();
-		F32 velocity_mag_sq = agent_velocity.magVecSquared();
-
-		const F32 FLY_CUTOFF = 6.f;		// meters/sec
-		const F32 FLY_CUTOFF_SQ = FLY_CUTOFF * FLY_CUTOFF;
-		const F32 WALK_CUTOFF = 1.5f;	// meters/sec
-		const F32 WALK_CUTOFF_SQ = WALK_CUTOFF * WALK_CUTOFF;
-
-		if (velocity_mag_sq > FLY_CUTOFF_SQ)
+// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a) | Modified: RLVa-1.0.0a
+		if (RlvActions::hasBehaviour(RLV_BHVR_SHOWLOC))
 		{
-			pos_x -= pos_x % 4;
-			pos_y -= pos_y % 4;
-		}
-		else if (velocity_mag_sq > WALK_CUTOFF_SQ)
-		{
-			pos_x -= pos_x % 2;
-			pos_y -= pos_y % 2;
-		}
-
-		if (parcel)
-		{
-			if (!LLAgentUI::buildLocationString(location_name, LLAgentUI::LOCATION_FORMAT_FULL)) 
-			{
-				location_name = "???";
-			}
+			location_name = llformat("%s (%s) - %s",
+					RlvStrings::getString(RLV_STRING_HIDDEN_REGION).c_str(), region->getSimAccessString().c_str(), 
+					RlvStrings::getString(RLV_STRING_HIDDEN).c_str());
 		}
 		else
+// [/RLVa:KB]
+		if (!LLAgentUI::buildLocationString(location_name, LLAgentUI::LOCATION_FORMAT_FULL)) 
+			location_name = "???";
+		else
 		{
-			location_name = region->getName()
-				+ llformat(" %d, %d, %d (%s)", 
-						   pos_x, pos_y, pos_z,
-						   region->getSimAccessString().c_str());
+			const std::string& grid(LFSimFeatureHandler::instance().gridName());
+			if (!grid.empty()) location_name += ", " + grid;
 		}
-		static LLCachedControl<bool> show_channel("ShowSimChannel");
+
+		static const LLCachedControl<bool> show_channel("ShowSimChannel");
 		if (show_channel && !gLastVersionChannel.empty()) location_name += " - " + gLastVersionChannel;
 	}
 	else
@@ -618,18 +575,7 @@ void LLStatusBar::refresh()
 		location_name = "(Unknown)";
 	}
 
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a) | Modified: RLVa-1.0.0a
-	if ( (region) && (RlvActions::hasBehaviour(RLV_BHVR_SHOWLOC)) )	// region == NULL if we lose our connection to the grid
-	{
-		location_name = llformat("%s (%s) - %s", 
-			RlvStrings::getString(RLV_STRING_HIDDEN_REGION).c_str(), region->getSimAccessString().c_str(), 
-			RlvStrings::getString(RLV_STRING_HIDDEN).c_str());
-	}
-// [/RLVa:KB]
-
 	mTextParcelName->setText(location_name);
-
-
 
 	// x = right edge
 	// loop through: stat graphs, search btn, search text editor, money, buy money, clock
@@ -637,51 +583,50 @@ void LLStatusBar::refresh()
 	// finally adjust parcel name rect
 
 	S32 new_right = getRect().getWidth();
+	static const LLCachedControl<bool> search_visible(gSavedSettings, "ShowSearchBar");
 	if (search_visible)
 	{
-		childGetRect("search_btn", r);
-		//r.translate( new_right - r.mRight, 0);
-		//childSetRect("search_btn", r);
-		new_right -= r.getWidth();
-
-		childGetRect("search_editor", r);
-		//r.translate( new_right - r.mRight, 0);
-		//childSetRect("search_editor", r);
-		new_right -= r.getWidth() + 6;
+		new_right -= mSearchBtn->getRect().getWidth();
+		new_right -= mSearchEditor->getRect().getWidth() + 6;
 	}
 	else
 	{
-		childGetRect("stat_btn", r);
+		r = mStatBtn->getRect();
 		r.translate( new_right - r.mRight, 0);
-		childSetRect("stat_btn", r);
+		mStatBtn->setRect(r);
 		new_right -= r.getWidth() + 6;
 	}
+
+	// Set search bar visibility
+	mSearchEditor->setVisible(search_visible);
+	mSearchBtn->setVisible(search_visible);
+	mSearchBevel->setVisible(search_visible);
+	mSGBandwidth->setVisible(! search_visible);
+	mSGPacketLoss->setVisible(! search_visible);
+	mStatBtn->setEnabled(!search_visible);
 
 	// Set rects of money, buy money, time
 	if (mUPCSupported)
 	{
-		childGetRect("UPCText", r);
+		r = mTextUPC->getRect();
 		r.translate( new_right - r.mRight, 0);
-		childSetRect("UPCText", r);
+		mTextUPC->setRect(r);
 		new_right -= r.getWidth() - 18;
 	}
 
-	childGetRect("BalanceText", r);
+	r = mTextBalance->getRect();
 	r.translate( new_right - r.mRight, 0);
-	childSetRect("BalanceText", r);
+	mTextBalance->setRect(r);
 	new_right -= r.getWidth() - 18;
 
-	childGetRect("buycurrency", r);
+	r = mBuyCurrency->getRect();
 	r.translate( new_right - r.mRight, 0);
-	childSetRect("buycurrency", r);
+	mBuyCurrency->setRect(r);
 	new_right -= r.getWidth() + 6;
 
-	childGetRect("TimeText", r);
-	// mTextTime->getTextPixelWidth();
+	r = mTextTime->getRect();
 	r.translate( new_right - r.mRight, 0);
-	childSetRect("TimeText", r);
-	// new_right -= r.getWidth() + MENU_PARCEL_SPACING;
-
+	mTextTime->setRect(r);
 
 	// Adjust region name and parcel name
 	x += 8;
@@ -689,14 +634,6 @@ void LLStatusBar::refresh()
 	const S32 PARCEL_RIGHT =  llmin(mTextTime->getRect().mLeft, mTextParcelName->getTextPixelWidth() + x + 5);
 	r.set(x+4, getRect().getHeight() - 2, PARCEL_RIGHT, 0);
 	mTextParcelName->setRect(r);
-
-	// Set search bar visibility
-	childSetVisible("search_editor", search_visible);
-	childSetVisible("search_btn", search_visible);
-	childSetVisible("menubar_search_bevel_bg", search_visible);
-	mSGBandwidth->setVisible(! search_visible);
-	mSGPacketLoss->setVisible(! search_visible);
-	childSetEnabled("stat_btn", ! search_visible);
 }
 
 void LLStatusBar::setVisibleForMouselook(bool visible)
@@ -705,9 +642,9 @@ void LLStatusBar::setVisibleForMouselook(bool visible)
 	if (mUPCSupported)
 		mTextUPC->setVisible(visible);
 	mTextTime->setVisible(visible);
-	childSetVisible("buycurrency", visible);
-	childSetVisible("search_editor", visible);
-	childSetVisible("search_btn", visible);
+	mBuyCurrency->setVisible(visible);
+	mSearchEditor->setVisible(visible);
+	mSearchBtn->setVisible(visible);
 	mSGBandwidth->setVisible(visible);
 	mSGPacketLoss->setVisible(visible);
 	setBackgroundVisible(visible);
@@ -834,51 +771,10 @@ S32 LLStatusBar::getSquareMetersLeft() const
 	return mSquareMetersCredit - mSquareMetersCommitted;
 }
 
-static void onClickParcelInfo(void* data)
+static void onClickParcelInfo()
 {
 	LLViewerParcelMgr::getInstance()->selectParcelAt(gAgent.getPositionGlobal());
-
 	LLFloaterLand::showInstance();
-}
-
-static void onClickBalance(void* data)
-{
-	onClickBuyCurrency(data);
-}
-
-static void onClickBuyCurrency(void* data)
-{
-	LLFloaterBuyCurrency::buyCurrency();
-}
-
-static void onClickHealth(void* )
-{
-	LLNotificationsUtil::add("NotSafe");
-}
-
-static void onClickScriptDebug(void*)
-{
-	LLFloaterScriptDebug::show(LLUUID::null);
-}
-
-static void onClickFly(void* )
-{
-	LLNotificationsUtil::add("NoFly");
-}
-
-static void onClickPush(void* )
-{
-	LLNotificationsUtil::add("PushRestricted");
-}
-
-static void onClickVoice(void* )
-{
-	LLNotificationsUtil::add("NoVoice");
-}
-
-static void onClickBuild(void*)
-{
-	LLNotificationsUtil::add("NoBuild");
 }
 
 static bool rebakeRegionCallback(const LLSD& n, const LLSD& r)
@@ -889,16 +785,6 @@ static bool rebakeRegionCallback(const LLSD& n, const LLSD& r)
 		return true;
 	}
 	return false;
-}
-
-static void onClickPFDirty(void*)
-{
-	LLNotificationsUtil::add("PathfindingDirty", LLSD(), LLSD(), rebakeRegionCallback);
-}
-
-static void onClickPFDisabled(void*)
-{
-	LLNotificationsUtil::add("DynamicPathfindingDisabled");
 }
 
 void LLStatusBar::createNavMeshStatusListenerForCurrentRegion()
@@ -922,12 +808,7 @@ void LLStatusBar::onNavMeshStatusChange(const LLPathfindingNavMeshStatus &pNavMe
 	refresh();
 }
 
-static void onClickSeeAV(void*)
-{
-	LLNotificationsUtil::add("SeeAvatars");
-}
-
-static void onClickScripts(void*)
+static void onClickScripts()
 {
 	LLViewerRegion* region = gAgent.getRegion();
 	if(region && region->getRegionFlag(REGION_FLAGS_ESTATE_SKIP_SCRIPTS))
@@ -942,11 +823,6 @@ static void onClickScripts(void*)
 	{
 		LLNotificationsUtil::add("NoOutsideScripts");
 	}
-}
-
-static void onClickBuyLand(void*)
-{
-	LLViewerParcelMgr::getInstance()->startBuyLand();
 }
 
 // sets the static variables necessary for the date
@@ -1012,26 +888,11 @@ void LLStatusBar::setupDate()
 	}
 }
 
-// static
-void LLStatusBar::onCommitSearch(LLUICtrl*, void* data)
+static void onClickSearch(const std::string& query)
 {
-	// committing is the same as clicking "search"
-	onClickSearch(data);
-}
-
-// static
-void LLStatusBar::onClickSearch(void* data)
-{
-	LLStatusBar* self = (LLStatusBar*)data;
 	LLFloaterSearch::SearchQuery search;
-	search.query = self->childGetText("search_editor");
+	search.query = query;
 	LLFloaterSearch::showInstance(search);
-}
-
-// static
-void LLStatusBar::onClickStatGraph(void* data)
-{
-	LLFloaterLagMeter::showInstance();
 }
 
 BOOL can_afford_transaction(S32 cost)

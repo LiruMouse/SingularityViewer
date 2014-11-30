@@ -84,6 +84,11 @@ void LFSimFeatureHandler::setSupportedFeatures()
 				has_feature_or_default(mDestinationGuideURL, extras, "destination-guide-url");
 				mMapServerURL = extras.has("map-server-url") ? extras["map-server-url"].asString() : "";
 				has_feature_or_default(mSearchURL, extras, "search-server-url");
+				if (extras.has("GridName"))
+				{
+					const std::string& grid_name(extras["GridName"]);
+					mGridName = gHippoGridManager->getConnectedGrid()->getGridName() != grid_name ? grid_name : "";
+				}
 			}
 			has_feature_or_default(mSayRange, extras, "say-range");
 			has_feature_or_default(mShoutRange, extras, "shout-range");
@@ -97,40 +102,11 @@ void LFSimFeatureHandler::setSupportedFeatures()
 				mDestinationGuideURL.reset();
 				mMapServerURL = "";
 				mSearchURL.reset();
+				mGridName.reset();
 			}
 			mSayRange.reset();
 			mShoutRange.reset();
 			mWhisperRange.reset();
 		}
 	}
-}
-
-boost::signals2::connection LFSimFeatureHandler::setSupportsExportCallback(const SignaledType<bool>::slot_t& slot)
-{
-	return mSupportsExport.connect(slot);
-}
-
-boost::signals2::connection LFSimFeatureHandler::setDestinationGuideURLCallback(const SignaledType<std::string>::slot_t& slot)
-{
-	return mDestinationGuideURL.connect(slot);
-}
-
-boost::signals2::connection LFSimFeatureHandler::setSearchURLCallback(const SignaledType<std::string>::slot_t& slot)
-{
-	return mSearchURL.connect(slot);
-}
-
-boost::signals2::connection LFSimFeatureHandler::setSayRangeCallback(const SignaledType<U32>::slot_t& slot)
-{
-	return mSayRange.connect(slot);
-}
-
-boost::signals2::connection LFSimFeatureHandler::setShoutRangeCallback(const SignaledType<U32>::slot_t& slot)
-{
-	return mShoutRange.connect(slot);
-}
-
-boost::signals2::connection LFSimFeatureHandler::setWhisperRangeCallback(const SignaledType<U32>::slot_t& slot)
-{
-	return mWhisperRange.connect(slot);
 }

@@ -33,7 +33,7 @@
 			<text name="InstructSelectFriend">
 				Elige a una persona:
 			</text>
-			<button label="Actualizar Lista" label_selected="Actualizar Lista" name="RefreshFriends"/>
+			<button label="Actualizar Lista" label_selected="Actualizar Lista" name="RefreshFriends" left_delta="15" width="100"/>
 			<scroll_list name="Friends"/>
 		</panel>
 		<!-- ========================= -->		
@@ -41,7 +41,7 @@
 			<text name="InstructSelectResident">
 				Seleccionar un residente cercano:
 			</text>
-			<button label="Actualizar Lista" label_selected="Actualizar Lista" name="Refresh"/>
+			<button label="Actualizar Lista" label_selected="Actualizar Lista" name="Refresh" left_delta="15" width="100"/>
 			<slider name="near_me_range" label="Alcance"/>
 			<text name="meters">
 				Metros
@@ -56,6 +56,6 @@
 			<line_editor name="EditUUID"/>
 		</panel>
 	</tab_container>
-	<button label="OK" label_selected="OK" name="Select"/>
-	<button label="Cancelar" label_selected="Cancelar" name="Cancel"/>
+	<button label="Aceptar" label_selected="Aceptar" name="ok_btn"/>
+	<button label="Cancelar" label_selected="Cancelar" name="cancel_btn"/>
 </floater>

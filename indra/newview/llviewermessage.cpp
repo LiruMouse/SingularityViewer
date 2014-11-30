@@ -4128,7 +4128,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	BOOL accept_im_from_only_friend = gSavedSettings.getBOOL("InstantMessagesFriendsOnly");
 
 	LLUUID computed_session_id = LLIMMgr::computeSessionID(dialog,from_id);
-	
+
 	chat.mMuted = is_muted && !is_linden;
 	chat.mFromID = from_id;
 	chat.mFromName = name;
@@ -7723,8 +7723,7 @@ void process_avatar_sit_response(LLMessageSystem *mesgsys, void **user_data)
 	// Forcing turning off flying here to prevent flying after pressing "Stand"
 	// to stand up from an object. See EXT-1655.
 	// Unless the user wants to.
-	static LLCachedControl<bool> ContinueFlying("LiruContinueFlyingOnUnsit");
-	if (!ContinueFlying)
+	if (!gSavedSettings.getBOOL("LiruContinueFlyingOnUnsit"))
 		gAgent.setFlying(FALSE);
 
 	LLViewerObject* object = gObjectList.findObject(sitObjectID);

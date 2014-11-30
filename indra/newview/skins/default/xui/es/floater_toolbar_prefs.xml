@@ -92,5 +92,6 @@
   -->
   <check_box label="Tutorial" name="tutorial_btn"/>
   <check_box label="Acerca de [SHORT_APP_NAME]" name="about_btn"/>
+  <check_box label="Salir" name="quit_btn"/>
   <check_box label="Configurar Botones" name="change_buttons_btn"/>
 </floater>

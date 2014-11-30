@@ -1458,7 +1458,7 @@ if (!DISABLE_TEMPLATE_CHECK)
 endif (!DISABLE_TEMPLATE_CHECK)
 
 set(PACKAGE OFF CACHE BOOL
-    "Add a package target that builds an installer package.")
+    "Add a package_viewer target that builds an installer package.")
 
 if (WINDOWS)
     set(release_flags "/MAPRelease/${VIEWER_BINARY_NAME}.map")
@@ -1584,7 +1584,7 @@ if (WINDOWS)
     add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit basic_plugin_filepicker winmm_shim)
 
     if (PACKAGE)
-      add_custom_target(package ALL DEPENDS ${CMAKE_CFG_INTDIR}/touched.bat)
+      add_custom_target(package_viewer ALL DEPENDS ${CMAKE_CFG_INTDIR}/touched.bat)
     endif (PACKAGE)
 endif (WINDOWS)
 
@@ -1712,8 +1712,8 @@ if (LINUX)
   add_custom_target(copy_l_viewer_manifest ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/.${product}.copy_touched)
 
   if (PACKAGE)
-    add_custom_target(package ALL DEPENDS ${product}.tar.bz2)
-    add_dependencies(package copy_l_viewer_manifest)
+    add_custom_target(package_viewer ALL DEPENDS ${product}.tar.bz2)
+    add_dependencies(package_viewer copy_l_viewer_manifest)
   endif (PACKAGE)
 endif (LINUX)
 
@@ -1762,10 +1762,10 @@ if (DARWIN)
   endif (FMODEX)
 
   if (PACKAGE)
-      add_custom_target(package ALL DEPENDS ${VIEWER_BINARY_NAME})
+      add_custom_target(package_viewer ALL DEPENDS ${VIEWER_BINARY_NAME})
 
       add_custom_command(
-        TARGET package POST_BUILD
+        TARGET package_viewer POST_BUILD
         COMMAND ${PYTHON_EXECUTABLE}
         ARGS
           ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
@@ -1779,7 +1779,7 @@ if (DARWIN)
           --grid=${GRID}
           --login_channel=${VIEWER_LOGIN_CHANNEL}
           --source=${CMAKE_CURRENT_SOURCE_DIR}
-          --touch=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/.${Product}.touched
+          --touch=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/.${product}.touched
         DEPENDS
           ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
       )
@@ -1791,7 +1791,6 @@ if (INSTALL)
 endif (INSTALL)
 
 if (PACKAGE)
-
   set(SYMBOL_SEARCH_DIRS "")
   if (WINDOWS)
     list(APPEND SYMBOL_SEARCH_DIRS "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
@@ -1844,7 +1843,7 @@ if (PACKAGE)
 
   add_custom_target(generate_breakpad_symbols DEPENDS "${VIEWER_SYMBOL_FILE}")
   add_dependencies(generate_breakpad_symbols "${VIEWER_BINARY_NAME}" "${VIEWER_COPY_MANIFEST}")
-  add_dependencies(package generate_breakpad_symbols)
+  add_dependencies(package_viewer generate_breakpad_symbols)
   endif(RELEASE_CRASH_REPORTING OR NON_RELEASE_CRASH_REPORTING)
 endif (PACKAGE)
 

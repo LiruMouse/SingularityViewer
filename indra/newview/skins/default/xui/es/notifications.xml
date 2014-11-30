@@ -110,19 +110,19 @@ Ingresa el dominio a añadir en la [LIST]:
 		Esta versión de [APP_NAME] no sabe como mostrar el mensaje de alerta que ha recibido. Por favor verifica que tienes instalada la última versión de [APP_NAME].
 
 Detalles del error: El alerta llamado &apos;[_NAME]&apos; no ha sido encontado en notifications.xml.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="FloaterNotFound">
 		Error: No se han podido encontrar los siguientes controles:
 
 [CONTROLS]
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="TutorialNotFound">
 		Actualmente, no hay un tutorial disponible.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="GenericAlert">
@@ -141,7 +141,7 @@ Detalles del error: El alerta llamado &apos;[_NAME]&apos; no ha sido encontado e
 	
 	<notification name="BadInstallation">
 		Ha ocurrido un error al actualizar [APP_NAME].  Por favor, descarga la última versión desde [APP_SITE].
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="EmptyFirstNameMessage">
@@ -158,12 +158,12 @@ Por favor, intenta nuevamente.
 		No se puede conectar a [SECOND_LIFE_GRID]. 
 &apos;[DIAGNOSTIC]&apos;
 Asegurate que tu conexión a internet funciona correctamente.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="MessageTemplateNotFound">
 		No se ha encontrado la plantilla de mensaje [PATH].
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="WearableSave">
@@ -180,7 +180,7 @@ Asegurate que tu conexión a internet funciona correctamente.
 		<unique/>
 			Una nueva carpeta ha sido creada por cada ítem que has transferido en el nivel superior de tu Buzón de Salida del Comerciante.
 	
-		<usetemplate ignoretext="Una nueva carpeta ha sido creada en el Buzón de Salida del Comerciante" name="okignore" yestext="OK"/>
+		<usetemplate ignoretext="Una nueva carpeta ha sido creada en el Buzón de Salida del Comerciante" name="okignore" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="OutboxImportComplete">
@@ -188,7 +188,7 @@ Asegurate que tu conexión a internet funciona correctamente.
 
 Todas las carpetas ha sido enviadas satisfactoriamente al Mercado en Línea.
 
-		<usetemplate ignoretext="Todas las carpetas se han enviado al Mercado en Línea" name="okignore" yestext="OK"/>
+		<usetemplate ignoretext="Todas las carpetas se han enviado al Mercado en Línea" name="okignore" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="OutboxImportHadErrors">
@@ -198,7 +198,7 @@ Ha habido errores al enviar algunas carpetas al Mercado en Línea. Estas carpeta
 
 Mira en el [registro de errores [[MARKETPLACE_IMPORTS_URL]] para mayor información.
 
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="OutboxImportFailed">
@@ -206,7 +206,7 @@ Mira en el [registro de errores [[MARKETPLACE_IMPORTS_URL]] para mayor informaci
 
 No se han enviado carpetas al Mercado en Línea debido a un error de sistema o de red. Inténtalo nuevamente más tarde.
 
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="OutboxInitFailed">
@@ -214,7 +214,7 @@ No se han enviado carpetas al Mercado en Línea debido a un error de sistema o d
 
 La inicialización con el Mercado en Línea ha fallado debido a un error de sistema o de red. Inténtalo nuevamente más tarde.
 
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>	
 
 	<notification name="MarketplaceURLChanged">
@@ -227,7 +227,7 @@ canceltext="Reiniciar" yestext="Si"/>
 
 	<notification name="MarketplaceURLGone">
 		No existe Mercado en Línea en la región a la que te has mudado.
-		<usetemplate ignoretext="URL del Mercado en Línea vacía al cambiar de región" name="okignore" yestext="OK"/>
+		<usetemplate ignoretext="URL del Mercado en Línea vacía al cambiar de región" name="okignore" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="CompileQueueSaveText">
@@ -284,7 +284,7 @@ Hubo un problema al subir la foto por la siguiente razón: [REASON]
 	<notification name="UnableToCreateGroup">
 		No se ha podido crear el grupo.
 [MESSAGE]
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="PanelGroupApply">
@@ -295,7 +295,7 @@ Hubo un problema al subir la foto por la siguiente razón: [REASON]
 	
 	<notification name="MustSpecifyGroupNoticeSubject">
 		Debes especificar un asunto para enviar un aviso al grupo.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="AddGroupOwnerWarning">
@@ -331,7 +331,7 @@ Los miembros deberán abandonar el rol por si mismos.
 
  *ADVERTENCIA*
 Todos los miembros en el rol con esta capacidad también pueden asignarla las capacidades &apos;[ACTION_NAME_2]&apos; y &apos;[ACTION_NAME_3]&apos;
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="RemoveBanAbilityWarning">
@@ -341,7 +341,7 @@ Todos los miembros en el rol con esta capacidad también pueden asignarla las ca
 Quitar esta capacidad NO quitará las capacidades &apos;[ACTION_NAME_2]&apos; ni &apos;[ACTION_NAME_3]&apos;.
 
 Si no quieres que estás capacidades estén asignadas a este rol, ¡desactívalas inmediatamente!
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="AttachmentDrop">
@@ -421,7 +421,7 @@ No tienes suficientes [CURRENCY] para unirte a este grupo.
 	
 	<notification name="LandBuyPass">
 		Por [CURRENCY][COST] puedes entrar a este terreno (&apos;[PARCEL_NAME]&apos;) durante [TIME] horas.  ¿Comprar un pase?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="SalePriceRestriction">
@@ -432,7 +432,7 @@ Por favor, elige a alguien concreto como comprador si la venta es por 0 L$.
 	<notification name="ConfirmLandSaleChange">
 		Los [LAND_SIZE] m² de terreno seleccionados se van a colocar para su venta.
 El precio de venta será de  [CURRENCY][SALE_PRICE]  y se autorizará la compra solamente a  [NAME].
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmLandSaleToAnyoneChange">
@@ -440,7 +440,7 @@ El precio de venta será de  [CURRENCY][SALE_PRICE]  y se autorizará la compra 
 
 Los [LAND_SIZE] m² de terreno seleccionados se van a poner a la venta.
 Su precio de venta será de [CURRENCY][SALE_PRICE], y se autorizará la compra a [NAME].	
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ReturnObjectsDeededToGroup">
@@ -449,14 +449,14 @@ Su precio de venta será de [CURRENCY][SALE_PRICE], y se autorizará la compra a
 *ADVERTENCIA* ¡Esto borrará los objetos no transferibles que se hayan cedido al grupo!
 
 Objetos: [N]
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ReturnObjectsOwnedByUser">
 		¿Estás seguro de que quieres devolver al inventario de &apos;[NAME]&apos; todos los objetos que sean de su propiedad en esta parcela?
 
 Objetos: [N]	
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ClickBuildConstants">
@@ -505,14 +505,14 @@ Para mayor información sobre esta característica, pulsa "Más Información".
 		<url option="1" name="url">
 			http://imprudenceviewer.org/wiki/Build_Math_Expressions
 		</url>
-		<usetemplate name="okhelpbuttons" yestext="OK" helptext="Más Información"/>
+		<usetemplate name="okhelpbuttons" yestext="Aceptar" helptext="Más Información"/>
 	</notification>	
 	
 	<notification name="ReturnObjectsOwnedBySelf">
 		¿Estás seguro de que quieres devolver a tu inventario todos los objetos de los que eres propietario en esta parcela?
 
 Objetos: [N]
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ReturnObjectsNotOwnedBySelf">
@@ -522,7 +522,7 @@ Los objetos transferibles que se hayan transferido al grupo se devolverán a sus
 *ADVERTENCIA* ¡Esto borrará los objetos no transferibles que se hayan cedido al grupo!
 
 Objetos: [N]	
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ReturnObjectsNotOwnedByUser">
@@ -532,24 +532,24 @@ Los objetos transferibles que se hayan transferido al grupo se devolverán a sus
 *ADVERTENCIA* ¡Esto borrará los objetos no transferibles que se hayan cedido al grupo!
 
 Objetos: [N]	
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ReturnAllTopObjects">
 		¿Estás seguro de que quieres devolver al inventario de su propietario todos los objetos de la lista?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="DisableAllTopObjects">
 		¿Estás seguro de que quieres desactivar todos los objetos de esta región?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ReturnObjectsNotOwnedByGroup">
 		¿Devolver a sus propietarios los objetos de esta parcela que NO estén compartidos con el grupo [NAME]?
 
 Objetos: [N]
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="UnableToDisableOutsideScripts">
@@ -563,7 +563,7 @@ Multiple faces are currently selected.
 If you continue this action, separate instances of media will be set on multiple faces of the object.
 To place the media on only one face, choose Select Face and click on the desired face of that object then click Add.
 		<tag>confirm</tag>
-		<usetemplate ignoretext="El Media será definido en las múltiples caras seleccionadas" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="El Media será definido en las múltiples caras seleccionadas" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="MustBeInParcel">
@@ -580,7 +580,7 @@ To place the media on only one face, choose Select Face and click on the desired
 	
 	<notification name="PromptMissingSubjMsg">
 		¿enviar la foto por correo electrónico con el asunto o el mensaje por defecto?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ErrorProcessingSnapshot">
@@ -645,13 +645,13 @@ Necesitas una cuenta para entrar en [SECOND_LIFE_GRID].
 Rellena tu anuncio y pulsa &apos;Publicar...&apos; para añadirlo al directorio.
 Cuando pulses Publicar, se te preguntará por un precio a pagar.
 El pagar más hará que tu anuncio aparezca más arriba en la lista, y que también aparezca más arriba cuando la gente busque por palabras clave.
-		<usetemplate ignoretext="Cuando se añade un nuevo Clasificado" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Cuando se añade un nuevo Clasificado" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="DeleteClassified">
 		¿Borrar el Anuncio Clasificado &apos;[NAME]&apos;?
 No se reembolsan las cuotas pagadas.
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="DeleteMedia">
@@ -668,12 +668,12 @@ No se reembolsan las cuotas pagadas.
 	
 	<notification name="DeleteAvatarPick">
 		¿Borrar el Destacado [PICK]?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="PromptGoToEventsPage">
 		¿Ir a la web de eventos de [SECOND_LIFE]?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="SelectProposalToView">
@@ -734,7 +734,7 @@ El Proxy Socks5 "[PROXY]" rechazó el requerimiento UDP
 	
 	<notification name="GoToAuctionPage">
 		¿Ir a la página web de [SECOND_LIFE] para ver detalles de la subasta o hacer una oferta?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="SaveChanges">
@@ -774,7 +774,7 @@ El objeto debe de haber sido borrado o estar fuera de rango.
 		No se han podido deshacer todos los cambios en tu versión del script.
 ¿Quieres cargar la última versión guardada en el servidor?
 (**Cuidado** No podrá deshacer esta operación).
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="SaveScriptFailReason">
@@ -916,7 +916,7 @@ Por favor, mueve todos los objetos a adquirir a la misma región.
 		[EXTRA]
 
 ¿Ir a [URL] para informarte sobre la compra de moneda?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="UnableToLinkObjects">
@@ -955,7 +955,7 @@ Por favor, asegúrate de que la extensión del archivo es correcta.
 	<notification name="InvalidFileExtension">
 		Extensión inválida de archivo: [EXTENSION]
 Podría ser [VALIDS]
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="CannotUploadSoundFile">
@@ -1175,7 +1175,7 @@ No se ha seleccionado una parcela.
 		Esta parcela está siendo subastada. Forzar su propiedad cancelará la subasta y, probablemente, disguste a algunos residentes que ya hayan empezado a ofertar. 
 	¿Forzar la propiedad?
 		<tag>confirm</tag>
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="CannotContentifyNothingSelected">
@@ -1234,12 +1234,6 @@ Has seleccionado varias parcelas.
 
 Inténtelo seleccionando sólo una.
 	</notification>
-	
-	<notification name="DeedToGroupFail">
-		Ha fallado la transferencia al grupo.
-    <tag>grupo</tag>
-    <tag>falló</tag>
-  </notification>	
   
 	<notification name="ParcelCanPlayMedia">
 		Esta localización puede mostrar media en streaming.
@@ -1306,7 +1300,7 @@ Selecciona una parcela completa, o divídela primero.
 Al hacerlo, la quitarás de tus posesiones de terreno, pero no recibirás ningún [CURRENCY].
 
 ¿Abandonar este terreno?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="CannotDivideLandNothingSelected">
@@ -1326,7 +1320,7 @@ Inténtalo seleccionando una parte de la parcela.
 		Dividir este terreno lo separará en dos parcelas, cada una de las cuales tendrá su propia configuración. Tras esta operación, algunas configuraciones volverán a las existentes por defecto.
 
 ¿Dividir el terreno?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="CannotDivideLandNoRegion">
@@ -1367,7 +1361,7 @@ Selecciona terreno que incluya algo de ambas parcelas.
 Deberás reconfigurar el nombre y las opciones de la nueva parcela.
 
 ¿Unir el terreno?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ShowOwnersHelp">
@@ -1384,7 +1378,7 @@ Gris = Público
 	
 	<notification name="ConfirmNotecardSave">
 		Esta nota debe guardarse antes de que se la pueda copiar o ver. ¿Guardar la nota?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmItemCopy">
@@ -1442,12 +1436,12 @@ No tienes el permiso de comprar terreno para el grupo que tienes activado actual
 	
 	<notification name="RemoveFromFriends">
 		¿Quieres quitar a [NAME] de tu lista de amigos?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="RemoveMultipleFromFriends">
 		¿Quieres quitar a varios amigos de tu lista de amigos?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 
 	<notification label="Añadir Lista de Auto Reemplazo" name="AddAutoReplaceList">
@@ -1480,21 +1474,21 @@ No tienes el permiso de comprar terreno para el grupo que tienes activado actual
 		¿Estás seguro de que quieres borrar todos los objetos con script propiedad de
 ** [AVATAR_NAME] **
 en todos los otros terrenos de este sim?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="GodDeleteAllScriptedObjectsByUser">
 		¿Está seguro de que quiere BORRAR TODOS los objetos con script propiedad de
 ** [AVATAR_NAME] **
 en TODO EL TERRENO de este sim?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="GodDeleteAllObjectsByUser">
 		¿Estás seguro de que quieres BORRAR TODOS los objetos (con script o no) propiedad de
 ** [AVATAR_NAME] **
 en TODO EL TERRENO de este sim?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="BlankClassifiedName">
@@ -1511,28 +1505,28 @@ Por favor, elige un pago mayor.
 		Al menos uno de los ítems que tiene elementos enlazados que apuntan a el. Si se elimina este tema, sus vínculos de forma permanente dejarán de funcionar. Se recomienda encarecidamente a eliminar los vínculos en primer lugar.	
 
 ¿Estás seguro de que quieres borrar estos ítems?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>	
 	
 	<notification name="ConfirmObjectDeleteLock">
 		Al menos uno de los ítems que has seleccionado está bloqueado.
 
 ¿Estás seguro de que quieres borrar estos ítems?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmObjectDeleteNoCopy">
 		Al menos uno de los ítems que has seleccionado no es copiable.
 
 ¿Estás seguro de que quieres borrar estos ítems?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmObjectDeleteNoOwn">
 		No eres el propietario de, al menos, uno de los ítems que has seleccionado.
 
 ¿Estás seguro de que quieres borrar estos ítems?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmObjectDeleteLockNoCopy">
@@ -1540,7 +1534,7 @@ Por favor, elige un pago mayor.
 Al menos un objeto no es copiable.
 
 ¿Estás seguro de que quieres borrar estos ítems?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmObjectDeleteLockNoOwn">
@@ -1548,7 +1542,7 @@ Al menos un objeto no es copiable.
 No eres propietario de, al menos, un objeto.
 
 ¿Estás seguro de que quieres borrar estos ítems?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmObjectDeleteNoCopyNoOwn">
@@ -1556,7 +1550,7 @@ No eres propietario de, al menos, un objeto.
 No eres propietario de, al menos, un objeto.
 
 ¿Estás seguro de que quieres borrar estos ítems?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmObjectDeleteLockNoCopyNoOwn">
@@ -1565,14 +1559,14 @@ Al menos un objeto no es copiable.
 No eres propietario de, al menos, un objeto.
 
 ¿Estás seguro de que quieres borrar estos ítems?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmObjectTakeLock">
 		Al menos un objeto está bloqueado.
 
 ¿Estás seguro de que quieres tomar estos ítems?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmObjectTakeNoOwn">
@@ -1580,7 +1574,7 @@ No eres propietario de, al menos, un objeto.
 Si continuas, se aplicarán los permisos marcados para el próximo propietario, y es posible que se restrinja su posibilidad de hacer modificaciones o copias.
 
 ¿Estás seguro de que quieres tomar estos ítems?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmObjectTakeLockNoOwn">
@@ -1590,7 +1584,7 @@ Si continuas, se aplicarán los permisos marcados para el próximo propietario, 
 Con todo, puedes tomar lo actualmente seleccionado.
 
 ¿Estás seguro de que quieres tomar estos ítems?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="CantBuyLandAcrossMultipleRegions">
@@ -1604,7 +1598,7 @@ Por favor, selecciona un área más pequeña y reinténtalo.
 El precio de compra de la parcela no se reembolsa al propietario. Si se vende una parcela transferida, el precio de venta se dividirá a partes iguales entre los miembros del grupo.
 
 ¿Transferir estos [AREA] m² de terreno al grupo &apos;[GROUP_NAME]&apos;?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="DeedLandToGroupWithContribution">
@@ -1614,7 +1608,7 @@ El precio de compra de la parcela no se reembolsa al propietario.
 Si se vende una parcela transferida, el precio de venta se dividirá a partes iguales entre los miembros del grupo.
 
 ¿Transferir estos [AREA] m² de terreno al grupo &apos;[GROUP_NAME]&apos;?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="DisplaySetToSafe">
@@ -1687,7 +1681,7 @@ Por favor, elige el avatar masculino o femenino. Puedes cambiar más adelante tu
 	<notification name="CantTeleportToGrid">
 		No se puede hacer teleporte a [SLURL] porque está en un grid ([GRID]) distinto al grid actual ([CURRENT_GRID]).  Por favor, cierra tu visor e intenta nuevamente.
 		<tag>fail</tag>
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="NotEnoughCurrency">
@@ -1706,7 +1700,7 @@ Por favor, elige el avatar masculino o femenino. Puedes cambiar más adelante tu
 		Esto limpiará los caches del mapa en esta región.
 Esto sólo es realmente útil para cuestiones de depuración..
 (A efectos prácticos, espere 5 minutos, y el mapa de cualquiera se actualizará después de que reinicien sesión).
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="BuyOneObjectOnly">
@@ -1716,18 +1710,18 @@ Esto sólo es realmente útil para cuestiones de depuración..
 	<notification name="OnlyCopyContentsOfSingleItem">
 		No se puede copiar a la vez los contenidos de más de un objeto.
 Por favor, selecciona sólo uno y reinténtalo.
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="KickUsersFromRegion">
 		¿Teleportar a su base a todos los residentes en esta región?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="EstateObjectReturn">
 		¿Estás seguro de que quieres devolver los objetos propiedad de
 [USER_NAME] ?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="InvalidTerrainBitDepth">
@@ -1750,7 +1744,7 @@ Cambia la textura [TEXTURE_NUM] por una imagen de 24-bit y 1024x1024 o menor, y 
 	
 	<notification name="ConfirmBakeTerrain">
 		¿Realmente quieres predeterminar el terreno actual, haciéndolo el centro de los limites para elevarlo y rebajarlo, y el terreno por defecto para la herramienta &apos;Revertir&apos;?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="MaxAllowedAgentOnRegion">
@@ -1853,27 +1847,27 @@ Esta actualización no es obligatoria, pero te sugerimos instalarla para mejorar
 	
 	<notification name="WebLaunchExternalTarget">
 		¿Abrir el navegador de tu sistema para ver este contenido?
-		<usetemplate ignoretext="Cuando se abra el navegador de tu sistema para ver una página web" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Cuando se abra el navegador de tu sistema para ver una página web" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="WebLaunchJoinNow">
 		¿Ir a www.secondlife.com para administrar tu cuenta?
-		<usetemplate ignoretext="Cuando se abra el navegador para administrar tu cuenta" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Cuando se abra el navegador para administrar tu cuenta" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="WebLaunchBugReport101">
 		Visita el wiki de [SECOND_LIFE] y aprende cómo informar correctamente de fallos.
-		<usetemplate ignoretext="Cuando se abra el navegador para ver el wiki de Informes de fallos - instrucciones" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Cuando se abra el navegador para ver el wiki de Informes de fallos - instrucciones" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="WebLaunchSecurityIssues">
 		Visita el wiki de [SECOND_LIFE] para más detalles sobre cómo informar de una cuestión de seguridad.
-		<usetemplate ignoretext="Cuando se abra el navegador para ver el wiki de cuestiones de seguridad" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Cuando se abra el navegador para ver el wiki de cuestiones de seguridad" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="WebLaunchQAWiki">
 		Visita el wiki QA de [SECOND_LIFE].
-		<usetemplate ignoretext="Cuando se abra el navegador para ver el wiki QA" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Cuando se abra el navegador para ver el wiki QA" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="WebLaunchPublicIssue">
@@ -1894,12 +1888,12 @@ Por favor, asegurate de que tu reporte no será un duplicado de uno ya existente
 	
 	<notification name="WebLaunchSupportWiki">
 		Para ver las últimas noticias e informaciones, ¿ir al Blog oficial?
-		<usetemplate ignoretext="Cuando se abra el navegador para ver el blog" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Cuando se abra el navegador para ver el blog" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="WebLaunchLSLGuide">
 		¿Quieres abrir Guía de programación para encontrar ayuda?
-		<usetemplate ignoretext="Cuando se abra el navegador para ver la Guía de programación" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Cuando se abra el navegador para ver la Guía de programación" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="WebLaunchLSLWiki">
@@ -1911,31 +1905,31 @@ Por favor, asegurate de que tu reporte no será un duplicado de uno ya existente
 		¿Estás seguro de que quieres devolver los objetos seleccionados a sus propietarios? Los objetos transferibles que se hayan cedido volverán a sus propietarios anteriores.
 
 *ADVERTENCIA* ¡Serán borrados los objetos no transferibles que estén cedidos!
-		<usetemplate ignoretext="Cuando se devuelvan los objetos a sus propietarios" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Cuando se devuelvan los objetos a sus propietarios" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="GroupLeaveConfirmMember">
 		Actualmente, eres miembro del grupo [GROUP].
 ¿Dejar el grupo?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="OwnerCannotLeaveGroup">
 		Incapaz de abandonar el grupo. No puedes dejar el grupo debido a que eres el único propietario del mismo. Por favor, designa a otro miembro para este rol antes de abandonar el grupo.
 		<tag>group</tag>
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="GroupDepartError">
 		Incapaz de abandonar el grupo: [reason].
 		<tag>reason</tag>
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="GroupDepart">
 		Has abandonado el grupo [group_name].
 		<tag>group_name</tag>
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmKick">
@@ -1945,7 +1939,7 @@ Por favor, asegurate de que tu reporte no será un duplicado de uno ya existente
 	
 	<notification name="MuteLinden">
 		Perdón, pero no puedes ignorar a un empleado de [GRID_OWNER].
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="CannotStartAuctionAlreadyForSale">
@@ -1954,29 +1948,29 @@ Por favor, asegurate de que tu reporte no será un duplicado de uno ya existente
 	
 	<notification label="Fallo al ignorar un objeto según el nombre" name="MuteByNameFailed">
 		Ya has ignorado ese nombre.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="RemoveItemWarn">
 		Aunque esté permitido, borrar contenidos puede dañar el objeto.
 ¿Quieres borrar ese ítem?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="CantOfferCallingCard">
 		En este momento, no se puede ofrecer una tarjeta de visita. Por favor, reinténtalo en un momento.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="CantOfferFriendship">
 		En este momento, no se puede ofrecer el ser amigo. Por favor, reinténtalo en un momento.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="BusyModeSet">
 		Pasar al modo ocupado.
 Se ocultará el chat y los mensajes instantáneos. Los mensajes instantáneos recibirán su Respuesta en el modo ocupado. Todos los ofrecimientos de teleporte serán rehusados. Todas las ofertas de inventario irán a tu Papelera.
-		<usetemplate ignoretext="Cuando se pasa al modo ocupado" name="okignore" yestext="OK"/>
+		<usetemplate ignoretext="Cuando se pasa al modo ocupado" name="okignore" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="JoinedTooManyGroupsMember">
@@ -1988,7 +1982,7 @@ Se ocultará el chat y los mensajes instantáneos. Los mensajes instantáneos re
 	
 	<notification name="JoinedTooManyGroups">
 		Has superado tu número máximo de grupos. Por favor, sal de al menos uno de ellos antes de crear uno nuevo o entrar en alguno.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="KickUser">
@@ -2114,7 +2108,7 @@ Por favor, intenta con un nombre diferente.
 lo cual excede el límite de [LIMIT].
 		<tag>group</tag>
 		<tag>fail</tag>
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="OfferTeleportFromGod">
@@ -2153,7 +2147,7 @@ lo cual excede el límite de [LIMIT].
 Esto es EXTREMADAMENTE PELIGROSO, porque puede afectar radicalmente al funcionamiento de los usuarios. En mainland, se cambiarán miles de regiones, y se provocará un colapso en el espacio del servidor.
 
 ¿Proceder?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification label="Cambiar el acceso a un estado Linden" name="ChangeLindenAccess">
@@ -2161,7 +2155,7 @@ Esto es EXTREMADAMENTE PELIGROSO, porque puede afectar radicalmente al funcionam
 
 Esto es PELIGROSO, y sólo debe hacerse para deshacerse de ataques que permitan sacar o meter en el grid objetos o [CURRENCY].
 Se cambiarán miles de regiones, y se provocará un colapso en el espacio del servidor.
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification label="Seleccionar el estado" name="EstateAllowedAgentAdd">
@@ -2206,22 +2200,22 @@ Se cambiarán miles de regiones, y se provocará un colapso en el espacio del se
 	
 	<notification label="Confirmar la expulsión" name="EstateKickUser">
 		¿Expulsar a [EVIL_USER] de este Estado?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 
 	<notification label="Confirmar Expulsar y Prohibir" name="EstateBanUser">
 		¿Expulsar y Prohibir a [EVIL_USER] de este Estado?
-		<usetemplate name="okcancelbuttons" notext="Cancel" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancel" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="EstateChangeCovenant">
 		¿Estás seguro de que quieres cambiar el contrato del Estado?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="RegionEntryAccessBlocked">
 		Tus preferencias de contenido actuales te impiden visitar la región que has seleccionado.  Puedes cambiar las preferencias en Editar &gt; Preferencias &gt; General.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="RegionEntryAccessBlocked_AdultsOnlyContent">
@@ -2255,12 +2249,12 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 	
 	<notification name="RegionEntryAccessBlocked_PreferencesOutOfSync">
 		Estamos experimentando dificultades técnicas con el teleporte porque tus preferencias no están sincronizadas con el servidor.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="TeleportEntryAccessBlocked">
 		Tus preferencias de contenido actuales te impiden visitar la región que has seleccionado. Puedes cambiar las preferencias en Editar &gt; Preferencias &gt; General.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="TeleportEntryAccessBlocked_AdultsOnlyContent">
@@ -2301,22 +2295,22 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 	
 	<notification name="TeleportEntryAccessBlocked_PreferencesOutOfSync">
 		Estamos experimentando dificultades técnicas con el teleporte porque tus preferencias no están sincronizadas con el servidor.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="PreferredMaturityChanged">
 		No recibirás más notificaciones cuando vayas a visitar una región con un contenido [RATING]. En el futuro, puedes cambiar tus preferencias de contenido en Editar &gt; Preferencias &gt; General en la barra de menús.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="MaturityChangeError">
 		En este momento no se pueden cambiar tus preferencias para ver el contenido [PREFERRED_MATURITY].  Tus preferencias se han restablecido para que puedas ver el contenido [ACTUAL_MATURITY]. Si deseas cambiar las preferencias otra vez, en la barra de menús, selecciona Editar &gt; Preferencias &gt; General.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="LandClaimAccessBlocked">
 		Tus preferencias actuales de calificación de contenido te impiden reclamar el terreno que has seleccionado. Puedes cambiar las preferencias en Editar &gt; Preferencias &gt; General.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="LandClaimAccessBlocked_AdultsOnlyContent">
@@ -2348,7 +2342,7 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 	
 	<notification name="LandBuyAccessBlocked">
 		Tus preferencias actuales de calificación de contenido te impiden comprar el terreno que has seleccionado. Puedes cambiar las preferencias en Editar &gt; Preferencias &gt; General.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="LandBuyAccessBlocked_AdultsOnlyContent">
@@ -2380,12 +2374,12 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 	
 	<notification name="TooManyPrimsSelected">
 		Hay seleccionadas demasiadas primitivas. Por favor, selecciona [MAX_PRIM_COUNT] o menos, y reinténtalo
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ProblemImportingEstateCovenant">
 		Hay problemas al importar el contrato del estado.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ProblemAddingEstateManager">
@@ -2398,24 +2392,24 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 	
 	<notification name="UnableToLoadNotecardAsset">
 		En este momento, no se pueden cargar los datos de la&apos;s nota&apos;s.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="NotAllowedToViewNotecard">
 		Permisos insuficientes para ver la nota asociada al ID solicitado.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="MissingNotecardAssetID">
 		Se ha perdido en la base de datos el ID de la nota.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="PublishClassified">
 		Recuerda: las cuotas que se pagan por los clasificados no son reembolsables.
 
 ¿Publicar ahora este anuncio por [CURRENCY][AMOUNT]?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="SetClassifiedMature">
@@ -2430,7 +2424,7 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 	
 	<notification label="Confirmar el reinicio" name="ConfirmRestart">
 		¿Realmente quieres reiniciar la región de aquí a 2 minutos?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification label="Mensaje a toda la región" name="MessageRegion">
@@ -2723,7 +2717,7 @@ Podrás:
  Modificarlo: [MODIFYPERM]
  Copiarlo: [COPYPERM]
  Revenderlo o darlo: [RESELLPERM]
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="BuyOriginalNoOwner">
@@ -2733,7 +2727,7 @@ Podrás:
  Modificarlo: [MODIFYPERM]
  Copiarlo: [COPYPERM]
  Revenderlo o darlo: [RESELLPERM]
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="BuyCopy">
@@ -2743,7 +2737,7 @@ Podráa:
  Modificarlo: [MODIFYPERM]
  Copiarlo: [COPYPERM]
  Revenderlo o darlo: [RESELLPERM]
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="BuyCopyNoOwner">
@@ -2753,19 +2747,19 @@ Podrás:
  Modificarlo: [MODIFYPERM]
  Copiarlo: [COPYPERM]
  Revenderlo o darlo: [RESELLPERM]
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="BuyContents">
 		¿Comprar los contenidos de [OWNER] por [CURRENCY][PRICE]?
 Serán copiados a tu inventario.
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="BuyContentsNoOwner">
 		¿Comprar los contenidos por [CURRENCY][PRICE]?
 Serán copiados a tu inventario.
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmPurchase">
@@ -2773,7 +2767,7 @@ Serán copiados a tu inventario.
 [ACTION]
 
 ¿Estás seguro de querer hacer esta compra?
-		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="OK"/>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmPurchasePassword">
@@ -2792,14 +2786,14 @@ Por favor, vuelve a escribir tu contraseña y pulsa OK.
 	<notification name="SetPickLocation">
 		Nota:
 Has actualizado la posición de este Destacado, pero los otros detalles permanecen con sus valores originales.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="MoveInventoryFromObject">
 		Has elegido ítems &apos;no copiables&apos; de tu inventario. Esos ítems se quitarán de tu inventario, no se copiarán.
 
 ¿Mover el/los ítem/s del inventario?
-		<usetemplate ignoretext="Cuando mueva objetos &apos;no copiables&apos; del inventario" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Cuando mueva objetos &apos;no copiables&apos; del inventario" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="MoveInventoryFromScriptedObject">
@@ -2807,7 +2801,7 @@ Has actualizado la posición de este Destacado, pero los otros detalles permanec
 Dado que estos objetos tienen scripts, moverlos a tu inventario puede provocar un mal funcionamiento del script.
 
 ¿Mover el/los ítem(s) del inventario?
-		<usetemplate ignoretext="Cuando mueva objetos con script &apos;no copiables&apos; del inventario" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Cuando mueva objetos con script &apos;no copiables&apos; del inventario" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ClickActionNotPayable">
@@ -2941,12 +2935,12 @@ Gracias,
 	
 	<notification name="ConfirmDeleteProtectedCategory">
 		La carpeta &apos;[FOLDERNAME]&apos; es una carpeta de sistema. Borrar carpetas de sistema puede causar inestabilidades. ¿Estás seguro de que quieres borrarla?
-		<usetemplate ignoretext="Confirmar antes de borrar una carpeta de sistema" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Confirmar antes de borrar una carpeta de sistema" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>	
 	
 	<notification name="ConfirmEmptyTrash">
 		¿Estás seguro de que quieres vaciar definitivamente el contenido de tu Papelera?
-		<usetemplate ignoretext="Cuando se vacíe la Papelera" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Cuando se vacíe la Papelera" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ConfirmClearBrowserCache">
@@ -3003,17 +2997,17 @@ Publícala en una página web para que otros puedan acceder fácilmente a esta p
 
 	<notification name="EnvCannotDeleteLastDayCycleKey">
 		No se puede borrar la última clave en este ciclo diario porque no tienes un ciclo diario vacío. Deberás modificar la última clave en vez de intentar borrarla y luego crear una nueva.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="DayCycleTooManyKeyframes">
 		No puedes agregar más cuadros clave en este ciclo diario. El número máximo de cuadros clave para ciclos diarios del ámbito [SCOPE] es [MAX].
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="EnvUpdateRate">
 		Solo puedes actualizar las configuraciones ambientales de la región cada [WAIT] segundos.  Espera, como mínimo, este tiempo y luego vuelve a intentarlo.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="PPSaveEffectAlert">
@@ -3255,19 +3249,19 @@ Pero, vaya, diviértete si quieres.
 	<notification name="ChatterBoxSessionStartError">
 		No se puede empezar una nueva sesión de chat con [RECIPIENT].
 [REASON]
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ChatterBoxSessionEventError">
 		[EVENT]
 [REASON]
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="ForceCloseChatterBoxSession">
 		Debe cerrarse tu sesión de chat con [NAME].
 [REASON]
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="Cannot_Purchase_an_Attachment">
@@ -3276,7 +3270,7 @@ Pero, vaya, diviértete si quieres.
 	
 	<notification label="Acerca de las solicitudes de autorización de débito" name="DebitPermissionDetails">
 		Al admitir esta petición, le das permiso a un script para que transfiera dinero del mundo ([CURRENCY]) de tu cuenta. Para revocar este permiso, el propietario del objeto debe eliminarlo o reiniciar ese script del objeto.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="AutoWearNewClothing">
@@ -3689,7 +3683,7 @@ Aquí no puedes crear objetos.
 	<notification name="PathfindingCannotRebakeNavmesh">
 		<unique/>
 			Ha ocurrido un error. Es posible que haya un problema de red o servidor, o puede que no tengas derechos de construcción. A reiniciar la sesión puede resolver este problema.		
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 	
 	<notification name="SeeAvatars">
@@ -4308,7 +4302,11 @@ Pulsa en este mensaje para ver más detalles.
 		Error de Servidor: ha fallado la obtención o actualización del media.
 &apos;[ERROR]&apos;
 		<tag>fail</tag>
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
+	</notification>
+
+	<notification name="ShareNotification">
+		Selecciona el residente al cual compartir.
 	</notification>
 
 	<notification name="MeshUploadError">
@@ -4323,6 +4321,42 @@ Mira el archivo de registro para más detalles.
 	
 	<notification name="RegionCapabilityRequestError">
 		No se pueden obtener las capacidades &apos;[CAPABILITY]&apos; de la región.
+	</notification>
+
+	<notification name="ShareItemsConfirmation">
+		¿Estás seguro que deseas compartir los siguientes ítems?:
+
+[ITEMS]
+
+Con los Residentes:
+
+[RESIDENTS]
+		<tag>confirm</tag>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
+	</notification>
+  
+	<notification name="ShareFolderConfirmation">
+		Solo se puede compartir una carpeta a la vez.
+
+¿Estás seguro que deseas compartir los siguientes ítems?:
+
+[ITEMS]
+
+Con los Residentes:
+
+[RESIDENTS]
+		<tag>confirm</tag>
+		<usetemplate name="okcancelbuttons" notext="Cancelar" yestext="Aceptar"/>
+	</notification>
+  
+	<notification name="ItemsShared">
+		Se han compartido satisfactoriamente los ítems.
+	</notification>
+
+	<notification name="DeedToGroupFail">
+		Ha fallado el ceder al grupo.
+		<tag>group</tag>
+		<tag>fail</tag>
 	</notification>
 	
 	<notification name="AvatarRezNotification">
@@ -4368,7 +4402,7 @@ Avatar '[NAME]' ha entrado en edición de Apariencia.
 
 No podrás establecer comunicaciones de voz.
 Comprueba la configuración de la red y del servidor de seguridad.
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="AvatarRezLeftAppearanceNotification">
@@ -4394,7 +4428,7 @@ Has actualizado en forma local una textura base (baked) [RESOLUTION] para '[BODY
 	<notification name="LivePreviewUnavailable">
 
 No se puede aplicar esta textura en forma inmediata ya que es no copiable y/o no trasnferible.
-		<usetemplate ignoretext="Advertir que el modo Aplicar Textura Inmediatamente no está disponible para texturas no copiables y/o no trasnferibles" name="okignore" yestext="OK"/>
+		<usetemplate ignoretext="Advertir que el modo Aplicar Textura Inmediatamente no está disponible para texturas no copiables y/o no trasnferibles" name="okignore" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="FirstAO">
@@ -4405,7 +4439,7 @@ No se puede aplicar esta textura en forma inmediata ya que es no copiable y/o no
 		Enviando apariencia incompleta. Puedes aparecer como nube para los demás.
 
 Tu cuerpo, piel, pelo u ojos podrían ser los predeterminados
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="PopupAttempt">
@@ -4472,7 +4506,7 @@ Sólo se cargarán texturas como temporal en Agni y Aditi.
 
 ¿Deseas continuar?
 		<tag>confirm</tag>
-		<usetemplate ignoretext="Algunos de los conjuntos de enlaces seleccionados tienen activada la marca de inmaterial." name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Algunos de los conjuntos de enlaces seleccionados tienen activada la marca de inmaterial." name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="PathfindingLinksets_MismatchOnRestricted">
@@ -4480,7 +4514,7 @@ Sólo se cargarán texturas como temporal en Agni y Aditi.
 
 ¿Deseas continuar?
 		<tag>confirm</tag>
-		<usetemplate ignoretext="Algunos conjuntos de enlaces seleccionados no pueden definirse debido a restricciones de permisos en el conjunto de enlaces." name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Algunos conjuntos de enlaces seleccionados no pueden definirse debido a restricciones de permisos en el conjunto de enlaces." name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="PathfindingLinksets_MismatchOnVolume">
@@ -4488,7 +4522,7 @@ Sólo se cargarán texturas como temporal en Agni y Aditi.
 
 ¿Deseas continuar?
 		<tag>confirm</tag>
-		<usetemplate ignoretext="Algunos conjuntos de enlaces no pueden definirse porque la forma es no convexa." name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Algunos conjuntos de enlaces no pueden definirse porque la forma es no convexa." name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="PathfindingLinksets_WarnOnPhantom_MismatchOnRestricted">
@@ -4498,7 +4532,7 @@ Algunos conjuntos de enlaces seleccionados no pueden definirse como '[REQUESTED_
 
 ¿Deseas continuar?
 		<tag>confirm</tag>
-		<usetemplate ignoretext="Algunos conjuntos de enlaces seleccionados no pueden definirse debido a restricciones de permisos en el conjunto de enlaces." name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Algunos conjuntos de enlaces seleccionados no pueden definirse debido a restricciones de permisos en el conjunto de enlaces." name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="PathfindingLinksets_WarnOnPhantom_MismatchOnVolume">
@@ -4508,7 +4542,7 @@ Algunos conjuntos de enlaces no pueden definirse como '[REQUESTED_TYPE]' porque 
 
 ¿Deseas continuar?
 		<tag>confirm</tag>
-		<usetemplate ignoretext="Algunos conjutos de enlaces serán definidos Inmateriales y otros no pueden serlo porque la forma es no convexa" name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Algunos conjutos de enlaces serán definidos Inmateriales y otros no pueden serlo porque la forma es no convexa" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="PathfindingLinksets_MismatchOnRestricted_MismatchOnVolume">
@@ -4518,7 +4552,7 @@ Algunos conjuntos de enlaces no pueden definirse como '[REQUESTED_TYPE]' porque 
 
 ¿Deseas continuar?
 		<tag>confirm</tag>
-		<usetemplate ignoretext="Algunos conjuntos de enlaces seleccionados no pueden definirse debido a restricciones de permisos y porque la forma es no convexa." name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Algunos conjuntos de enlaces seleccionados no pueden definirse debido a restricciones de permisos y porque la forma es no convexa." name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="PathfindingLinksets_WarnOnPhantom_MismatchOnRestricted_MismatchOnVolume">
@@ -4530,13 +4564,13 @@ Algunos conjuntos de enlaces no pueden definirse como '[REQUESTED_TYPE]' porque 
 
 ¿Deseas continuar?
 		<tag>confirm</tag>
-		<usetemplate ignoretext="Algunos conjuntos de enlace ser marcarán Inmateriales y otro no pueden ser definidos por restricciones de permisos y porque su forma es no convexa." name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="Algunos conjuntos de enlace ser marcarán Inmateriales y otro no pueden ser definidos por restricciones de permisos y porque su forma es no convexa." name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="PathfindingLinksets_ChangeToFlexiblePath">
 		El objeto seleccionado afecta al navmesh. Si lo cambias a una ruta flexible se eliminará del navmesh.	
 		<tag>confirm</tag>
-		<usetemplate ignoretext="El objeto seleccionado afecta al navmesh. Cambiándolo a una ruta flexible lo eliminará del navmesh." name="okcancelignore" notext="Cancelar" yestext="OK"/>
+		<usetemplate ignoretext="El objeto seleccionado afecta al navmesh. Cambiándolo a una ruta flexible lo eliminará del navmesh." name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>	
   
 	<global name="UnsupportedGLRequirements">
@@ -5642,7 +5676,7 @@ porque la parcela está llena.
 	<notification name="DefaultObjectPermissions">
 		Ha habido un problema grabando los permisos por defecto debido al siguiente motivo: [REASON].  Por favor, intenta definir los permisos por defecto mas tarde.
 		<tag>fail</tag>
-		<usetemplate name="okbutton" yestext="OK"/>
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 
 <!-- Singularity Specific notifications should go below here, alphabetically -->

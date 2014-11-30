@@ -252,6 +252,7 @@ void LLPngWrapper::normalizeImage()
 // Read out the image meta-data
 void LLPngWrapper::updateMetaData()
 {
+	png_set_interlace_handling(mReadPngPtr); // <alchemy/>
 	png_read_update_info(mReadPngPtr, mReadInfoPtr);
     mWidth = png_get_image_width(mReadPngPtr, mReadInfoPtr);
     mHeight = png_get_image_height(mReadPngPtr, mReadInfoPtr);

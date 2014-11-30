@@ -336,7 +336,7 @@ class WindowsManifest(ViewerManifest):
                     self.path(path_pair[1])
                     self.end_prefix()
 
-        self.package_file = 'npne'
+        self.package_file = 'none'
 
 
     def nsi_file_commands(self, install=True):
@@ -454,12 +454,13 @@ class WindowsManifest(ViewerManifest):
         substitution_strings['installer_file'] = installer_file
 
         # Sign the binaries
-        try:
-            self.sign(self.args['configuration']+"\\"+self.final_exe())
-            self.sign(self.args['configuration']+"\\SLPlugin.exe")
-            self.sign(self.args['configuration']+"\\SLVoice.exe")
-        except Exception, e:
-		    print "Couldn't sign binaries. Tried to sign %s" % self.args['configuration'] + "\\" + self.final_exe() + "\nException: %s" % e
+        if 'VIEWER_SIGNING_PASSWORD' in os.environ:
+            try:
+                self.sign(self.args['configuration']+"\\"+self.final_exe())
+                self.sign(self.args['configuration']+"\\SLPlugin.exe")
+                self.sign(self.args['configuration']+"\\SLVoice.exe")
+            except Exception, e:
+                print "Couldn't sign binaries. Tried to sign %s" % self.args['configuration'] + "\\" + self.final_exe() + "\nException: %s" % e
         tempfile = "secondlife_setup_tmp.nsi"
         # the following replaces strings in the nsi template
         # it also does python-style % substitution
@@ -489,10 +490,11 @@ class WindowsManifest(ViewerManifest):
         # self.remove(self.dst_path_of(tempfile))
 
         # Sign the installer
-        try:
-            self.sign(self.args['configuration'] + "\\" + substitution_strings['installer_file'])
-        except Exception, e:
-            print "Couldn't sign windows installer. Tried to sign %s" % self.args['configuration'] + "\\" + substitution_strings['installer_file'] + "\nException: %s" % e
+	if 'VIEWER_SIGNING_PASSWORD' in os.environ:
+            try:
+                self.sign(self.args['configuration'] + "\\" + substitution_strings['installer_file'])
+            except Exception, e:
+                print "Couldn't sign windows installer. Tried to sign %s" % self.args['configuration'] + "\\" + substitution_strings['installer_file'] + "\nException: %s" % e
 
         self.created_path(self.dst_path_of(installer_file))
         self.package_file = installer_file
@@ -640,9 +642,8 @@ class DarwinManifest(ViewerManifest):
             pass
         else:
             home_path = os.environ['HOME']
-            self.run_command('security unlock-keychain -p "%s" "%s/Library/Keychains/viewer.keychain"' %
-                             (signing_password,
-						      home_path))
+
+            self.run_command('security unlock-keychain -p "%s" "%s/Library/Keychains/viewer.keychain"' % (signing_password, home_path))
             signed=False
             sign_attempts=3
             sign_retry_wait=15
