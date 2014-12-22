@@ -74,7 +74,7 @@ bool agentCanAddToRole(const LLUUID& group_id,
 	if (!gdatap) 
 	{
 		llwarns << "agentCanAddToRole "
-				<< "-- No group data!" << llendl;
+				<< "-- No group data!" << LL_ENDL;
 		return false;
 	}
 
@@ -783,7 +783,7 @@ void LLPanelGroupSubTab::buildActionCategory(LLScrollListCtrl* ctrl,
 
 				// Regardless of whether or not this ability is allowed by all or some, we want to prevent
 				// the group managers from accidentally disabling either of the two additional abilities
-				// tied with GP_GROUP_BAN_ACCESS
+				// tied with GP_GROUP_BAN_ACCESS.
 				if (	(allowed_by_all & GP_GROUP_BAN_ACCESS) == GP_GROUP_BAN_ACCESS ||
 					(allowed_by_some & GP_GROUP_BAN_ACCESS) == GP_GROUP_BAN_ACCESS)
 				{
@@ -1218,7 +1218,7 @@ void LLPanelGroupMembersSubTab::sendEjectNotifications(const LLUUID& group_id, c
 		{
 			LLSD args;
 			std::string av_name;
-			LLAvatarNameCache::getPNSName(*i, av_name);
+			LLAvatarNameCache::getNSName(*i, av_name);
 			args["AVATAR_NAME"] = av_name;
 			args["GROUP_NAME"] = group_data->mName;
 
@@ -1699,6 +1699,12 @@ void LLPanelGroupMembersSubTab::addMemberToList(LLGroupMemberData* data)
 	mHasMatch = TRUE;
 }
 
+const S32& group_member_name_system()
+{
+	static const LLCachedControl<S32> name_system("GroupMembersNameSystem", 0);
+	return name_system;
+}
+
 void LLPanelGroupMembersSubTab::onNameCache(const LLUUID& update_id, LLGroupMemberData* member, const LLAvatarName& av_name, const LLUUID& av_id)
 {
 	avatar_name_cache_connection_map_t::iterator it = mAvatarNameCacheConnections.find(av_id);
@@ -1720,9 +1726,8 @@ void LLPanelGroupMembersSubTab::onNameCache(const LLUUID& update_id, LLGroupMemb
 	}
 
 	// trying to avoid unnecessary hash lookups
-	std::string name;
-	LLAvatarNameCache::getPNSName(av_name, name); // Singu Note: Diverge from LL Viewer and filter by name displayed
-	if (matchesSearchFilter(name))
+	// Singu Note: Diverge from LL Viewer and filter by name displayed
+	if (matchesSearchFilter(av_name.getNSName(group_member_name_system())))
 	{
 		addMemberToList(member);
 		if(!mMembersList->getEnabled())
@@ -1771,11 +1776,11 @@ void LLPanelGroupMembersSubTab::updateMembers()
 			continue;
 
 		// Do filtering on name if it is already in the cache.
-		// Singu Note: Diverge from LL Viewer and filter by name displayed
-		std::string fullname;
-		if (LLAvatarNameCache::getPNSName(mMemberProgress->first, fullname))
+		LLAvatarName av_name;
+		if (LLAvatarNameCache::get(mMemberProgress->first, &av_name))
 		{
-			if (matchesSearchFilter(fullname))
+			// Singu Note: Diverge from LL Viewer and filter by name displayed
+			if (matchesSearchFilter(av_name.getNSName(group_member_name_system())))
 			{
 				addMemberToList(mMemberProgress->second);
 			}

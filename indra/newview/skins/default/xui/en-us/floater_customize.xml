@@ -1445,11 +1445,10 @@ one from scratch and wear it.
 	<button bottom="-536" follows="right|bottom" font="SansSerif" halign="center"
 	     height="20" label="OK" label_selected="OK" mouse_opaque="true"
 	     name="Ok" right="-116" scale_image="true" width="100" />
-	<button bottom="-536" follows="left|bottom" font="SansSerif" halign="center"
+	<flyout_button bottom="-536" follows="left|bottom" font="SansSerif" halign="center"
 	     height="20" label="Make Outfit..." label_selected="Make Outfit..."
 	     mouse_opaque="true" name="Make Outfit" left="10" scale_image="true"
-	     width="100" />
-    <button bottom="-536" follows="left|bottom" height="20" left="110" width="100" name="Save Outfit" label="Save Outfit"/>
+	     width="120" />
     <string name="Save changes to" value="Save changes to [OUTFIT]"/>
     <string name="No Outfit" value="No Outfit"/>
     <string name="Changing outfits" value="Changing outfits"/>

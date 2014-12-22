@@ -159,9 +159,7 @@ void LLPanelGroupBulkImpl::onAvatarNameCache(const LLUUID& agent_id, const LLAva
 	std::vector<std::string> names;
 	uuid_vec_t agent_ids;
 	agent_ids.push_back(agent_id);
-	std::string name;
-	LLAvatarNameCache::getPNSName(av_name, name);
-	names.push_back(name);
+	names.push_back(av_name.getNSName());
 
 	addUsers(names, agent_ids);
 }
@@ -351,9 +349,7 @@ void LLPanelGroupBulk::addUserCallback(const LLUUID& id, const LLAvatarName& av_
 	std::vector<std::string> names;
 	uuid_vec_t agent_ids;
 	agent_ids.push_back(id);
-	std::string name;
-	LLAvatarNameCache::getPNSName(av_name, name);
-	names.push_back(name);
+	names.push_back(av_name.getNSName());
 
 	mImplementation->addUsers(names, agent_ids);
 }
@@ -411,9 +407,7 @@ void LLPanelGroupBulk::addUsers(uuid_vec_t& agent_ids)
 				}
 				else
 				{
-					std::string name;
-					LLAvatarNameCache::getPNSName(av_name, name);
-					names.push_back(name);
+					names.push_back(av_name.getNSName());
 				}
 			}
 		}

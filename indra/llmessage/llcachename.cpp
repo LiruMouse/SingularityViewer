@@ -279,7 +279,9 @@ LLCacheName::Impl::Impl(LLMessageSystem* msg)
 LLCacheName::Impl::~Impl()
 {
 	for_each(mCache.begin(), mCache.end(), DeletePairedPointer());
+	mCache.clear();
 	for_each(mReplyQueue.begin(), mReplyQueue.end(), DeletePointer());
+	mReplyQueue.clear();
 }
 
 boost::signals2::connection LLCacheName::Impl::addPending(const LLUUID& id, const LLCacheNameCallback& callback)
@@ -309,8 +311,10 @@ boost::signals2::connection LLCacheName::addObserver(const LLCacheNameCallback& 
 bool LLCacheName::importFile(std::istream& istr)
 {
 	LLSD data;
-	if(LLSDSerialize::fromXMLDocument(data, istr) < 1)
+	if(LLSDParser::PARSE_FAILURE == LLSDSerialize::fromXMLDocument(data, istr))
+	{
 		return false;
+	}
 
 	// We'll expire entries more than a week old
 	U32 now = (U32)time(NULL);
@@ -527,6 +531,7 @@ std::string LLCacheName::cleanFullName(const std::string& full_name)
 }
 
 //static 
+// Transform hard-coded name provided by server to a more legible username
 std::string LLCacheName::buildUsername(const std::string& full_name)
 {
 	// rare, but handle hard-coded error names returned from server
@@ -553,8 +558,9 @@ std::string LLCacheName::buildUsername(const std::string& full_name)
 		return username;
 	}
 
-	// if the input wasn't a correctly formatted legacy name just return it unchanged
-	return full_name;
+	// if the input wasn't a correctly formatted legacy name, just return it  
+	// cleaned up from a potential terminal "Resident"
+	return cleanFullName(full_name);
 }
 
 //static 
@@ -562,13 +568,13 @@ std::string LLCacheName::buildLegacyName(const std::string& complete_name)
 {
 	//boost::regexp was showing up in the crashreporter, so doing  
 	//painfully manual parsing using substr. LF
-	S32 open_paren = complete_name.rfind(" (");
-	S32 close_paren = complete_name.rfind(')');
+	size_t open_paren = complete_name.rfind(" (");
+	size_t close_paren = complete_name.rfind(')');
 
 	if (open_paren != std::string::npos &&
 		close_paren == complete_name.length()-1)
 	{
-		S32 length = close_paren - open_paren - 2;
+		size_t length = llmax(close_paren - open_paren - 2, (size_t)0);
 		std::string legacy_name = complete_name.substr(open_paren+2, length);
 		
 		if (legacy_name.length() > 0)
@@ -577,7 +583,7 @@ std::string LLCacheName::buildLegacyName(const std::string& complete_name)
 			LLStringUtil::toUpper(cap_letter);
 			legacy_name = cap_letter + legacy_name.substr(1);
 	
-			S32 separator = legacy_name.find('.');
+			size_t separator = legacy_name.find('.');
 
 			if (separator != std::string::npos)
 			{
@@ -668,31 +674,17 @@ boost::signals2::connection LLCacheName::get(const LLUUID& id, bool is_group, ol
 // <edit>
 bool LLCacheName::getIfThere(const LLUUID& id, std::string& fullname, BOOL& is_group)
 {
-	if(id.isNull())
+	if (id.notNull())
+	if (LLCacheNameEntry* entry = get_ptr_in_map(impl.mCache, id))
 	{
-		fullname = "";
-		return false;
-	}
-	
-	LLCacheNameEntry* entry = get_ptr_in_map(impl.mCache, id );
-	if (entry)
-	{
-		if (entry->mIsGroup)
-		{
-			fullname = entry->mGroupName;
-		}
-		else
-		{
-			fullname = entry->mFirstName + " " + entry->mLastName;
-		}
-		is_group = entry->mIsGroup;
+		fullname = (is_group = entry->mIsGroup) ? entry->mGroupName : entry->mFirstName + " " + entry->mLastName;
 		return true;
 	}
+
 	fullname = "";
 	return false;
 }
 // </edit>
-
 
 void LLCacheName::processPending()
 {
@@ -705,7 +697,7 @@ void LLCacheName::processPending()
 	if(!impl.mUpstreamHost.isOk())
 	{
 		lldebugs << "LLCacheName::processPending() - bad upstream host."
-				 << llendl;
+				 << LL_ENDL;
 		return;
 	}
 
@@ -756,7 +748,7 @@ void LLCacheName::dump()
 				<< iter->first << " = (group) "
 				<< entry->mGroupName
 				<< " @ " << entry->mCreateTime
-				<< llendl;
+				<< LL_ENDL;
 		}
 		else
 		{
@@ -764,7 +756,7 @@ void LLCacheName::dump()
 				<< iter->first << " = "
 				<< buildFullName(entry->mFirstName, entry->mLastName)
 				<< " @ " << entry->mCreateTime
-				<< llendl;
+				<< LL_ENDL;
 		}
 	}
 }
@@ -778,7 +770,7 @@ void LLCacheName::dumpStats()
 			<< " Pending=" << impl.mPendingQueue.size()
 			<< " Reply=" << impl.mReplyQueue.size()
 // 			<< " Observers=" << impl.mSignal.size()
-			<< llendl;
+			<< LL_ENDL;
 }
 
 void LLCacheName::clear()
@@ -935,7 +927,7 @@ void LLCacheName::Impl::processUUIDRequest(LLMessageSystem* msg, bool isGroup)
 						<< (isGroup ? "group" : "user") << " name, "
 						<< "but found "
 						<< (entry->mIsGroup ? "group" : "user")
-						<< ": " << id << llendl;
+						<< ": " << id << LL_ENDL;
 			}
 			else
 			{

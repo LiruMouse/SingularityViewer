@@ -156,7 +156,7 @@
 			     label="Instant Message..." label_selected="Instant Message..."
 			     left_delta="71" mouse_opaque="true" name="Instant Message..."
 			     tool_tip="Instant Message (IM)" width="140" />
-			<button bottom="-470" font="SansSerifSmall" halign="center" height="20" label="(Un)Mute"
+			<button bottom="-470" font="SansSerifSmall" halign="center" height="20" label="Mute" label_selected="Unmute" toggle="true"
 			     left_delta="141" mouse_opaque="true" name="Mute"
 			     width="60" />
 			<button bottom="-470" font="SansSerif" halign="center" height="20" label="Invite to Group"

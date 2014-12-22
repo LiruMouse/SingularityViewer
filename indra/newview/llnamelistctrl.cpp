@@ -189,7 +189,7 @@ LLScrollListItem* LLNameListCtrl::addNameItemRow(
 		}
 		else if (LLAvatarNameCache::get(id, &av_name))
 		{
-			LLAvatarNameCache::getPNSName(av_name, fullname, mNameSystem);
+			fullname = av_name.getNSName(mNameSystem);
 		}
 		else
 		{
@@ -287,7 +287,7 @@ void LLNameListCtrl::onAvatarNameCache(const LLUUID& agent_id,
 	}
 
 	std::string name;
-	LLAvatarNameCache::getPNSName(av_name, name, mNameSystem);
+	name = av_name.getNSName(mNameSystem);
 
 	// Append optional suffix.
 	if (!suffix.empty())

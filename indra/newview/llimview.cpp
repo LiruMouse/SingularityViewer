@@ -1118,7 +1118,7 @@ void LLIMMgr::noteOfflineUsers(
 			std::string full_name;
 			if (info
 				&& !info->isOnline()
-				&& LLAvatarNameCache::getPNSName(ids.get(i), full_name))
+				&& LLAvatarNameCache::getNSName(ids.get(i), full_name))
 			{
 				LLUIString offline = LLTrans::getString("offline_message");
 				offline.setArg("[NAME]", full_name);

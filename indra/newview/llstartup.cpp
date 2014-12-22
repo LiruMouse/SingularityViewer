@@ -3524,10 +3524,10 @@ void LLStartUp::initNameCache()
 
 	// Start cache in not-running state until we figure out if we have
 	// capabilities for display name lookup
-	LLAvatarNameCache::initClass(false);
 	S32 phoenix_name_system = gSavedSettings.getS32("PhoenixNameSystem");
-	if(phoenix_name_system <= 0 || phoenix_name_system > 3) LLAvatarNameCache::setUseDisplayNames(false);
-	else LLAvatarNameCache::setUseDisplayNames(true);
+	LLAvatarNameCache::initClass(false, gSavedSettings.getBOOL("UsePeopleAPI"));
+	LLAvatarNameCache::setUseDisplayNames(phoenix_name_system > 0 && phoenix_name_system < 4);
+	LLAvatarNameCache::setUseUsernames(!phoenix_name_system || phoenix_name_system == 1 || phoenix_name_system == 3);
 }
 
 void LLStartUp::cleanupNameCache()

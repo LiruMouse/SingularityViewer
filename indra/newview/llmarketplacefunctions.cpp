@@ -120,9 +120,6 @@ LLSD getMarketplaceStringSubstitutions()
 	return marketplace_sub_map;
 }
 
-class AIHTTPTimeoutPolicy;
-extern AIHTTPTimeoutPolicy MPImportGetResponder_timeout;
-extern AIHTTPTimeoutPolicy MPImportPostResponder_timeout;
 
 namespace LLMarketplaceImport
 {
@@ -194,7 +191,6 @@ namespace LLMarketplaceImport
 			sImportId = mContent;
 		}
 
-		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return MPImportPostResponder_timeout; }
 		/*virtual*/ char const* getName(void) const { return "LLImportPostResponder"; }
 	};
 
@@ -254,7 +250,6 @@ namespace LLMarketplaceImport
 			sImportResults = mContent;
 		}
 
-		/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return MPImportGetResponder_timeout; }
 		/*virtual*/ char const* getName(void) const { return "LLImportGetResponder"; }
 	};
 

@@ -28,24 +28,21 @@
 
 
 class LLFloaterDisplayName : public LLFloater
+, public LLFloaterSingleton<LLFloaterDisplayName>
 {
 public:
-	LLFloaterDisplayName();
-	virtual ~LLFloaterDisplayName();
+	LLFloaterDisplayName(const LLSD&);
+	virtual ~LLFloaterDisplayName() { }
 	/*virtual*/	BOOL	postBuild();
-	static void onSave(void* data);
-	static void onReset(void* data);
-	static void onCancel(void* data);
-	static void show();
+	void onSave();
+	void onReset();
+	void onCancel();
 	/*virtual*/ void onOpen();
 private:
 	
 	void onCacheSetName(bool success,
 										  const std::string& reason,
 										  const LLSD& content);
-protected:
-	static LLFloaterDisplayName* sInstance;
-
 };
 
 

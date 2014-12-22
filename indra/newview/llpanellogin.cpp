@@ -411,25 +411,11 @@ BOOL LLPanelLogin::handleKeyHere(KEY key, MASK mask)
 		return TRUE;
 	}
 
-	if (('P' == key) && (MASK_CONTROL == mask))
-	{
-		LLFloaterPreference::show(NULL);
-		return TRUE;
-	}
-
 	if (('T' == key) && (MASK_CONTROL == mask))
 	{
 		new LLFloaterSimple("floater_test.xml");
 		return TRUE;
 	}
-	
-	//Singu TODO: Re-implement f1 help.
-	/*if ( KEY_F1 == key )
-	{
-		llinfos << "Spawning HTML help window" << llendl;
-		gViewerHtmlHelp.show();
-		return TRUE;
-	}*/
 
 # if !LL_RELEASE_FOR_DOWNLOAD
 	if ( KEY_F2 == key )
@@ -649,9 +635,6 @@ void LLPanelLogin::updateLocationSelectorsVisibility()
 // [/RLVa:KB]
 
 		sInstance->getChildView("location_panel")->setVisible(show_start);
-	
-		bool show_server = gSavedSettings.getBOOL("ForceShowGrid");
-		sInstance->getChildView("grids_panel")->setVisible(show_server);
 	}
 	
 }

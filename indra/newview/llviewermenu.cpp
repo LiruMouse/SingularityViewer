@@ -3811,12 +3811,11 @@ class LLEditEnableCustomizeAvatar : public view_listener_t
 
 class LLEditEnableChangeDisplayname : public view_listener_t
 {
-       bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-       {
-               bool new_value = LLAvatarNameCache::useDisplayNames();
-               gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
-               return true;
-       }
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(LLAvatarName::useDisplayNames());
+		return true;
+	}
 };
 
 bool is_object_sittable()

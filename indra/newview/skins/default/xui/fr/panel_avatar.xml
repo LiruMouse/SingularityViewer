@@ -58,7 +58,7 @@ objets :
 			<button label="Devenir amis" label_selected="Devenir amis" name="Add Friend..." left_delta="167"/>
 			<button label="Payer" label_selected="Payer" name="Pay..."/>
 			<button label="IM" label_selected="IM" left_delta="80" name="Instant Message..." tool_tip="Message instantané (IM)" width="70"/>
-			<button label="Mute/Ignorer" label_selected="Mute" left_delta="85" name="Mute" tool_tip="ATTENTION VOUS ALLEZ MUTER LA PERSONNE" width="110"/>
+			<button label="Mute/Ignorer" label_selected="UnMuter" left_delta="85" name="Mute" tool_tip="ATTENTION VOUS ALLEZ MUTER LA PERSONNE" width="110"/>
 			<button label="Invit. Groupe" label_selected="Invit. Groupe" left_delta="120" name="GroupInvite_Button" width="130"/>
 
 		</panel>

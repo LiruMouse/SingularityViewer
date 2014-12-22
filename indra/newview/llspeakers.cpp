@@ -92,7 +92,7 @@ void LLSpeaker::onNameCache(const LLAvatarName& full_name)
 	if (!name_system)
 		mDisplayName = gCacheName->cleanFullName(full_name.getLegacyName());
 	else
-		LLAvatarNameCache::getPNSName(full_name, mDisplayName, name_system);
+		mDisplayName = full_name.getNSName(name_system);
 }
 
 bool LLSpeaker::isInVoiceChannel()

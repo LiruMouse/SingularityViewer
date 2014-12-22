@@ -3363,10 +3363,10 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 			//	LLFontGL::getFontSansSerifSmall());
 		}
 
-		// On SecondLife we can take a shortcut through getPNSName, which will strip out Resident
+		// On SecondLife we can take a shortcut through getNSName, which will strip out Resident
 		if (gHippoGridManager->getConnectedGrid()->isSecondLife())
 		{
-			if (!LLAvatarNameCache::getPNSName(getID(), firstnameText))
+			if (!LLAvatarNameCache::getNSName(getID(), firstnameText))
 			{
 				// ...call this function back when the name arrives and force a rebuild
 				LLAvatarNameCache::get(getID(), boost::bind(&LLVOAvatar::clearNameTag, this));
@@ -3387,7 +3387,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 
 		bool show_display_names = phoenix_name_system > 0 || phoenix_name_system < 4;
 		bool show_usernames = phoenix_name_system != 2;
-		if (show_display_names && LLAvatarNameCache::useDisplayNames())
+		if (show_display_names && LLAvatarName::useDisplayNames())
 		{
 			LLAvatarName av_name;
 			if (!LLAvatarNameCache::get(getID(), &av_name))
@@ -3405,22 +3405,21 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 			// Might be blank if name not available yet, that's OK
 			if (show_display_names)
 			{
-				firstnameText = phoenix_name_system == 3 ? av_name.mUsername : av_name.mDisplayName;	//Defer for later formatting
-				//addNameTagLine(av_name.mDisplayName, name_tag_color, LLFontGL::NORMAL,
+				firstnameText = phoenix_name_system == 3 ? av_name.getUserName() : av_name.getDisplayName();	//Defer for later formatting
+				//addNameTagLine(av_name.getDisplayName(), name_tag_color, LLFontGL::NORMAL,
 				//	LLFontGL::getFontSansSerif());
 			}
 			// Suppress SLID display if display name matches exactly (ugh)
-			if (show_usernames && !av_name.mIsDisplayNameDefault && !av_name.mUsername.empty())
+			if (show_usernames && !av_name.isDisplayNameDefault())
 			{
 				firstnameText.push_back(' ');
 				firstnameText.push_back('(');
-				firstnameText.append(phoenix_name_system == 3 ? av_name.mDisplayName : av_name.mUsername);	//Defer for later formatting
+				firstnameText.append(phoenix_name_system == 3 ? av_name.getDisplayName() : av_name.getAccountName());	//Defer for later formatting
 				firstnameText.push_back(')');
 				// *HACK: Desaturate the color
 				//LLColor4 username_color = name_tag_color * 0.83f;
-				//nameText=av_name.mUsername;
-				//addNameTagLine(av_name.mUsername, username_color, LLFontGL::NORMAL,
-				//LLFontGL::getFontSansSerifSmall());
+				//addNameTagLine(av_name.getUserName(), username_color, LLFontGL::NORMAL,
+				//	LLFontGL::getFontSansSerifSmall());
 			}
 // [RLVa:KB] - Checked: 2010-10-31 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
 			}
@@ -3707,11 +3706,11 @@ LLColor4 LLVOAvatar::getNameTagColor(bool is_friend)
 		static const LLCachedControl<LLColor4>	avatar_name_color(gColors,"AvatarNameColor",LLColor4(LLColor4U(251, 175, 93, 255)) );
 		return avatar_name_color;
 	}
-	/*else if (LLAvatarNameCache::useDisplayNames())
+	/*else if (LLAvatarName::useDisplayNames())
 	{
 		// ...color based on whether username "matches" a computed display name
 		LLAvatarName av_name;
-		if (LLAvatarNameCache::get(getID(), &av_name) && av_name.mIsDisplayNameDefault)
+		if (LLAvatarNameCache::get(getID(), &av_name) && av_name.isDisplayNameDefault())
 		{
 			color_name = "NameTagMatch";
 		}
@@ -5637,7 +5636,7 @@ BOOL LLVOAvatar::processSingleAnimationStateChange( const LLUUID& anim_id, BOOL 
 			if (announce_snapshots)
 			{
 				std::string name;
-				LLAvatarNameCache::getPNSName(mID, name);
+				LLAvatarNameCache::getNSName(mID, name);
 				LLChat chat;
 				chat.mFromName = name;
 				chat.mText = name + " " + LLTrans::getString("took_a_snapshot") + ".";
@@ -6404,19 +6403,32 @@ LLViewerJointAttachment* LLVOAvatar::getTargetAttachmentPoint(LLViewerObject* vi
 
 	if (!attachment)
 	{
-		llwarns << "Object attachment point invalid: " << attachmentID << llendl;
+		llwarns << "Object attachment point invalid: " << attachmentID
+			<< " trying to use 1 (chest)"
+			<< LL_ENDL;
+
 		if (isSelf() && attachmentID == 127 && gSavedSettings.getBOOL("SGDetachBridge"))
 		{
 			llinfos << "Bridge detected! detaching" << llendl;
 			sDetachBridgeConnection = gAgentAvatarp->setAttachmentCallback(boost::bind(detach_bridge, _1, viewer_object));
 		}
-//		attachment = get_if_there(mAttachmentPoints, 1, (LLViewerJointAttachment*)NULL); // Arbitrary using 1 (chest)
-// [SL:KB] - Patch: Appearance-LegacyMultiAttachment | Checked: 2010-08-28 (Catznip-2.2.0a) | Added: Catznip2.1.2a
-		S32 idxAttachPt = 1;
-		if ( (!isSelf()) && (gSavedSettings.getBOOL("LegacyMultiAttachmentSupport")) && (attachmentID > 38) && (attachmentID <= 68) )
-			idxAttachPt = attachmentID - 38;
-		attachment = get_if_there(mAttachmentPoints, idxAttachPt, (LLViewerJointAttachment*)NULL);
-// [/SL:KB]
+		attachment = get_if_there(mAttachmentPoints, 1, (LLViewerJointAttachment*)NULL); // Arbitrary using 1 (chest)
+		if (attachment)
+		{
+			llwarns << "Object attachment point invalid: " << attachmentID 
+				<< " on object " << viewer_object->getID()
+				<< " attachment item " << viewer_object->getAttachmentItemID()
+				<< " falling back to 1 (chest)"
+				<< LL_ENDL;
+		}
+		else
+		{
+			llwarns << "Object attachment point invalid: " << attachmentID 
+				<< " on object " << viewer_object->getID()
+				<< " attachment item " << viewer_object->getAttachmentItemID()
+				<< "Unable to use fallback attachment point 1 (chest)"
+				<< LL_ENDL;
+		}
 	}
 
 	return attachment;
@@ -6500,7 +6512,7 @@ void LLVOAvatar::lazyAttach()
 				llwarns << "attachObject() failed for " 
 					<< cur_attachment->getID()
 					<< " item " << cur_attachment->getAttachmentItemID()
-					<< llendl;
+					<< LL_ENDL;
 				// MAINT-3312 backout
 				//still_pending.push_back(cur_attachment);
 			}
@@ -6805,9 +6817,6 @@ BOOL LLVOAvatar::isWearingWearableType(LLWearableType::EType type) const
 			break; // Do nothing
 	}
 
-	/* switch(type)
-		case LLWearableType::WT_SHIRT:
-			indicator_te = TEX_UPPER_SHIRT; */
 	for (LLAvatarAppearanceDictionary::Textures::const_iterator tex_iter = LLAvatarAppearanceDictionary::getInstance()->getTextures().begin();
 		 tex_iter != LLAvatarAppearanceDictionary::getInstance()->getTextures().end();
 		 ++tex_iter)
@@ -7256,9 +7265,7 @@ void LLVOAvatar::debugColorizeSubMeshes(U32 i, const LLColor4& color)
 			LLAvatarJointMesh* mesh = (*iter);
 			if (mesh)
 			{
-				{
-					mesh->setColor(color);
-				}
+				mesh->setColor(color);
 			}
 		}
 	}

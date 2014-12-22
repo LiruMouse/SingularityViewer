@@ -3411,6 +3411,13 @@ The
 	<!-- panel contents -->
 	<string name="PanelContentsNewScript">New Script</string>
 
+	<!-- Mute -->
+	<string name="MuteByName">(By name)</string>
+	<string name="MuteAgent">(Resident)</string>
+	<string name="MuteObject">(Object)</string>
+	<string name="MuteGroup">(Group)</string>
+	<string name="MuteExternal">(External)</string>
+
 	<!-- Region/Estate Covenant -->
 	<string name="RegionNoCovenant">There is no Covenant provided for this Estate.</string>
 	<string name="RegionNoCovenantOtherOwner">There is no Covenant provided for this Estate. The land on this estate is being sold by the Estate owner, not Linden Lab.  Please contact the Estate Owner for sales details.</string>
@@ -4161,6 +4168,8 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 	<string name="RightClick">Right click</string>
 	<string name="PowerUser4">Destroy objects - Permanently deletes an object immediately, when you don't feel like waiting for the server to respond.</string>
 	<string name="PowerUser5">Explode objects - Turns an object physical, temporary, and delinks it.</string>
+  <string name="OnlineStatus">Online</string>
+  <string name="OfflineStatus">Offline</string>
 
 	<!-- voice calls -->
 

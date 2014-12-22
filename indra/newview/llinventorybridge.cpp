@@ -3008,7 +3008,7 @@ LLUIImagePtr LLFolderBridge::getIcon(LLFolderType::EType preferred_type)
 	return LLUI::getUIImage(LLViewerFolderType::lookupIconName(preferred_type, FALSE));
 }
 
-LLUIImagePtr LLFolderBridge::getOpenIcon() const
+LLUIImagePtr LLFolderBridge::getIconOpen() const
 {
 	return LLUI::getUIImage(LLViewerFolderType::lookupIconName(getPreferredType(), TRUE));
 

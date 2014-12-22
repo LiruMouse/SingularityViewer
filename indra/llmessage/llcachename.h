@@ -40,7 +40,7 @@ typedef boost::signals2::signal<void (const LLUUID& id,
                                       bool is_group)> LLCacheNameSignal;
 typedef LLCacheNameSignal::slot_type LLCacheNameCallback;
 
-// Old callback with user data for compatability
+// Old callback with user data for compatibility
 typedef void (*old_callback_t)(const LLUUID&, const std::string&, bool, void*);
 
 // Here's the theory:
@@ -107,7 +107,7 @@ public:
 	// otherwise, will request the data, and will call the callback when
 	// available.  There is no garuntee the callback will ever be called.
 	boost::signals2::connection get(const LLUUID& id, bool is_group, const LLCacheNameCallback& callback);
-	
+
 	//<edit>
 	bool getIfThere(const LLUUID& id, std::string& fullname, BOOL& is_group);
 	//</edit>

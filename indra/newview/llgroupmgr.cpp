@@ -537,7 +537,7 @@ bool LLGroupMgrGroupData::changeRoleMember(const LLUUID& role_id,
 			// Already recorded this change?  Weird.
 			llinfos << "Received duplicate change for "
 					<< " role: " << role_id << " member " << member_id 
-					<< " change " << (rmc == RMC_ADD ? "ADD" : "REMOVE") << llendl;
+					<< " change " << (rmc == RMC_ADD ? "ADD" : "REMOVE") << LL_ENDL;
 		}
 		else
 		{
@@ -783,9 +783,12 @@ void LLGroupMgrGroupData::sendRoleChanges()
 				break;
 			}
 			case RC_UPDATE_ALL:
+				// fall through
 			case RC_UPDATE_POWERS:
 				need_power_recalc = true;
+				// fall through
 			case RC_UPDATE_DATA:
+				// fall through
 			default: 
 			{
 				LLGroupRoleData* group_role_data = (*role_it).second;
@@ -1201,6 +1204,8 @@ void LLGroupMgr::processGroupRoleDataReply(LLMessageSystem* msg, void** data)
 			name = LLTrans::getString("group_role_owners");
 		}
 
+
+
 		lldebugs << "Adding role data: " << name << " {" << role_id << "}" << llendl;
 		LLGroupRoleData* rd = new LLGroupRoleData(role_id,name,title,desc,powers,member_count);
 		group_datap->mRoles[role_id] = rd;
@@ -1474,7 +1479,7 @@ void LLGroupMgr::processCreateGroupReply(LLMessageSystem* msg, void ** data)
 	}
 	else
 	{
-		// *TODO:translate
+		// *TODO: Translate
 		LLSD args;
 		args["MESSAGE"] = message;
 		LLNotificationsUtil::add("UnableToCreateGroup", args);
@@ -1617,6 +1622,7 @@ void LLGroupMgr::sendGroupMembersRequest(const LLUUID& group_id)
 	}
 }
 
+
 void LLGroupMgr::sendGroupRoleDataRequest(const LLUUID& group_id)
 {
 	lldebugs << "LLGroupMgr::sendGroupRoleDataRequest" << llendl;
@@ -1652,7 +1658,7 @@ void LLGroupMgr::sendGroupRoleMembersRequest(const LLUUID& group_id)
 			// *TODO: KLW FIXME: Should we start a member or role data request?
 			llinfos << " Pending: " << (group_datap->mPendingRoleMemberRequest ? "Y" : "N")
 				<< " MemberDataComplete: " << (group_datap->mMemberDataComplete ? "Y" : "N")
-				<< " RoleDataComplete: " << (group_datap->mRoleDataComplete ? "Y" : "N") << llendl;
+				<< " RoleDataComplete: " << (group_datap->mRoleDataComplete ? "Y" : "N") << LL_ENDL;
 			group_datap->mPendingRoleMemberRequest = TRUE;
 			return;
 		}
@@ -1885,8 +1891,6 @@ void LLGroupMgr::sendGroupMemberEjects(const LLUUID& group_id,
 	bool start_message = true;
 	LLMessageSystem* msg = gMessageSystem;
 
-	
-
 	LLGroupMgrGroupData* group_datap = LLGroupMgr::getInstance()->getGroupData(group_id);
 	if (!group_datap) return;
 
@@ -1952,10 +1956,6 @@ void LLGroupMgr::sendGroupMemberEjects(const LLUUID& group_id,
 }
 
 
-class AIHTTPTimeoutPolicy;
-extern AIHTTPTimeoutPolicy groupBanDataResponder_timeout;
-extern AIHTTPTimeoutPolicy groupMemberDataResponder_timeout;
-
 // Responder class for capability group management
 class GroupBanDataResponder : public LLHTTPClient::ResponderWithResult
 {
@@ -1964,8 +1964,7 @@ public:
 	virtual ~GroupBanDataResponder() {}
 	virtual void httpSuccess();
 	virtual void httpFailure();
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return groupBanDataResponder_timeout; }
-	/*virtual*/ char const* getName(void) const { return "GroupBanDataResponder"; }
+	virtual char const* getName() const { return "GroupBanDataResponder"; }
 private:
 	LLUUID mGroupID;
 	BOOL mForceRefresh;
@@ -1984,18 +1983,14 @@ void GroupBanDataResponder::httpFailure()
 
 void GroupBanDataResponder::httpSuccess()
 {
-	if (mContent.size())
+	if (mContent.has("ban_list"))
 	{
-		if (mContent.has("ban_list"))
-		{
-			// group ban data received
-			LLGroupMgr::processGroupBanRequest(mContent);
-			mForceRefresh = false;
-		}
+		// group ban data received
+		LLGroupMgr::processGroupBanRequest(mContent);
 	}
-	if (mForceRefresh)
+	else if (mForceRefresh)
 	{
-		// no ban data received, refreshing data successful operation
+		// no ban data received, refreshing data after successful operation
 		LLGroupMgr::getInstance()->sendGroupBanRequest(LLGroupMgr::REQUEST_GET, mGroupID);
 	}
 }
@@ -2097,25 +2092,34 @@ void LLGroupMgr::processGroupBanRequest(const LLSD& content)
 // Responder class for capability group management
 class GroupMemberDataResponder : public LLHTTPClient::ResponderWithResult
 {
+	LOG_CLASS(GroupMemberDataResponder);
 public:
 	GroupMemberDataResponder() {}
 	virtual ~GroupMemberDataResponder() {}
-	/*virtual*/ void httpSuccess(void);
-	/*virtual*/ void httpFailure(void);
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return groupMemberDataResponder_timeout; }
-	/*virtual*/ char const* getName(void) const { return "GroupMemberDataResponder"; }
+
 private:
+	/* virtual */ void httpSuccess();
+	/* virtual */ void httpFailure();
+	/* virtual */ char const* getName() const { return "GroupMemberDataResponder"; }
+
 	LLSD mMemberData;
 };
 
-void GroupMemberDataResponder::httpFailure(void)
+void GroupMemberDataResponder::httpFailure()
 {
-	LL_WARNS("GrpMgr") << "Error receiving group member data." << LL_ENDL;
+	LL_WARNS("GrpMgr") << "Error receiving group member data "
+		<< dumpResponse() << LL_ENDL;
 }
 
-void GroupMemberDataResponder::httpSuccess(void)
+void GroupMemberDataResponder::httpSuccess()
 {
-	LLGroupMgr::processCapGroupMembersRequest(mContent);
+	const LLSD& content = getContent();
+	if (!content.isMap())
+	{
+		failureResult(HTTP_INTERNAL_ERROR_OTHER, "Malformed response contents", content);
+		return;
+	}
+	LLGroupMgr::processCapGroupMembersRequest(content);
 }
 
 
@@ -2163,6 +2167,7 @@ void LLGroupMgr::sendCapGroupMembersRequest(const LLUUID& group_id)
 
 	mLastGroupMembersRequestFrame = gFrameCount;
 }
+
 
 // static
 void LLGroupMgr::processCapGroupMembersRequest(const LLSD& content)
@@ -2274,9 +2279,11 @@ void LLGroupMgr::processCapGroupMembersRequest(const LLSD& content)
 	// I'm going to be dumb and just call services I most likely don't need
 	// with the thought being that the system might need it to be done.
 	//
-	// TODO: Refactor to reduce multiple calls for data we already have.
+	// TODO:
+	// Refactor to reduce multiple calls for data we already have.
 	if (group_datap->mTitles.size() < 1)
 		LLGroupMgr::getInstance()->sendGroupTitlesRequest(group_id);
+
 
 	group_datap->mMemberDataComplete = true;
 	group_datap->mMemberRequestID.setNull();
@@ -2289,7 +2296,9 @@ void LLGroupMgr::processCapGroupMembersRequest(const LLSD& content)
 
 	group_datap->mChanged = TRUE;
 	LLGroupMgr::getInstance()->notifyObservers(GC_MEMBER_DATA);
+
 }
+
 
 void LLGroupMgr::sendGroupRoleChanges(const LLUUID& group_id)
 {

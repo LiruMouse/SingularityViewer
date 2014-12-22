@@ -45,7 +45,6 @@
 	<menu_bar name="Inventory Menu">
 		<menu label="Datei" name="File">
 			<menu_item_call label="Öffnen" name="Open"/>
-			<menu_item_call label="Outfit aktualisieren" name="Update Outfit"/>
 			
 			<menu_item_call label="Neues Fenster" name="New Window"/>
 			
@@ -55,6 +54,7 @@
 			
 			<menu_item_call label="Papierkorb ausleeren" name="Empty Trash"/>
 			<menu_item_call label="Inventar aktualisieren" name="Refresh Inventory"/>
+			<menu_item_call label="Outfit aktualisieren" name="Update Outfit"/>
 		</menu>
 		<menu label="Erstellen" name="Create">
 			<menu_item_call label="Neuer Ordner" name="New Folder"/>

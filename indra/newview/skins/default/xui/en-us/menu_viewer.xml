@@ -491,10 +491,11 @@
 	<menu bottom="-18" create_jump_keys="true" drop_shadow="true" enabled="true"
 	     height="339" label="World" left="0" mouse_opaque="false" name="World"
 	     opaque="true" tear_off="true" width="185">
-		<menu_item_call bottom="-29" enabled="true" height="19" label="Chat" left="0"
+		<menu_item_check bottom="-29" enabled="true" height="19" label="Chat" left="0"
 		     mouse_opaque="true" name="Chat" shortcut="" width="185">
-			<on_click function="FloaterShow" userdata="chatbar" />
-		</menu_item_call>
+			<on_click function="ToggleControl" userdata="ChatVisible"/>
+			<on_check control="ChatVisible"/>
+		</menu_item_check>
 		<menu_item_check bottom="-67" enabled="true" height="19" label="Always Run" left="0"
 		     mouse_opaque="true" name="Always Run" shortcut="control|R" width="185">
 			<on_click function="ShowFloater" userdata="always run" />

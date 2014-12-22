@@ -116,12 +116,6 @@
 // [/RLVa:LF]
 #include "shfloatermediaticker.h"
 
-void handle_chat()
-{
-	// give focus to chatbar if it's open but not focused
-	static const LLCachedControl<bool> chat_visible("ChatVisible",true);
-	(chat_visible && gFocusMgr.childHasKeyboardFocus(gChatBar)) ? LLChatBar::stopChat() : LLChatBar::startChat(NULL);
-}
 void handle_debug_avatar_textures(void*);
 template<typename T> void handle_singleton_toggle(void*);
 void show_outfit_dialog() { new LLMakeOutfitDialog(false); }
@@ -177,12 +171,10 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater("build", boost::bind(toggle_build));
 		registerFloater("buy currency", boost::bind(LLFloaterBuyCurrency::buyCurrency));
 		registerFloater("buy land", boost::bind(&LLViewerParcelMgr::startBuyLand, boost::bind(LLViewerParcelMgr::getInstance), false));
-		registerFloater("chatbar", boost::bind(handle_chat));
 		registerFloater("complaint reporter", boost::bind(LLFloaterReporter::showFromMenu, COMPLAINT_REPORT));
 		registerFloater("DayCycle", boost::bind(LLFloaterDayCycle::show), boost::bind(LLFloaterDayCycle::isOpen));
 		registerFloater("debug avatar", boost::bind(handle_debug_avatar_textures, (void*)NULL));
 		registerFloater("debug settings", boost::bind(handle_singleton_toggle<LLFloaterSettingsDebug>, (void*)NULL));
-		registerFloater("displayname", boost::bind(LLFloaterDisplayName::show));
 		registerFloater("edit ui", boost::bind(LLFloaterEditUI::show, (void*)NULL));
 		registerFloater("EnvSettings", boost::bind(LLFloaterEnvSettings::show), boost::bind(LLFloaterEnvSettings::isOpen));
 		registerFloater("fly", boost::bind(LLAgent::toggleFlying));
@@ -229,6 +221,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterChat>					("chat history");
 		registerFloater<LLFloaterChatterBox>			("communicate");
 		registerFloater<LLFloaterDestinations>			("destinations");
+		registerFloater<LLFloaterDisplayName>			("displayname");
 		registerFloater<LLFloaterMyFriends>				("friends", 0);
 		registerFloater<LLFloaterGesture>				("gestures");
 		registerFloater<LLFloaterMyFriends>				("groups", 1);

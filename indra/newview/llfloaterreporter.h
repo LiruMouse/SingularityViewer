@@ -141,6 +141,7 @@ private:
 	std::list<LLMeanCollisionData*> mMCDList;
 	std::string		mDefaultSummary;
 	LLResourceData* mResourceDatap;
+	boost::signals2::connection mAvatarNameCacheConnection;
 };
 
 #endif

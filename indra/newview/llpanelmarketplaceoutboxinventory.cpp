@@ -91,7 +91,7 @@ LLFolderViewFolder * LLOutboxInventoryPanel::createFolderViewFolder(LLInvFVBridg
 	return new LLOutboxFolderViewFolder(
 		bridge->getDisplayName(),
 		bridge->getIcon(),
-		bridge->getOpenIcon(),
+		bridge->getIconOpen(),
 		LLUI::getUIImage("inv_link_overlay.tga"),
 		mFolderRoot.get(),
 		bridge);
@@ -102,7 +102,7 @@ LLFolderViewItem * LLOutboxInventoryPanel::createFolderViewItem(LLInvFVBridge * 
 	return new LLOutboxFolderViewItem(
 		bridge->getDisplayName(),
 		bridge->getIcon(),
-		bridge->getOpenIcon(),
+		bridge->getIconOpen(),
 		LLUI::getUIImage("inv_link_overlay.tga"),
 		bridge->getCreationDate(),
 		mFolderRoot.get(),

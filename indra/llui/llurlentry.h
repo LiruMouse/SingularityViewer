@@ -32,6 +32,7 @@
 #include "lluicolor.h"
 #include "llstyle.h"
 
+#include "llavatarname.h"
 #include "llhost.h" // for resolving parcel name by parcel id
 
 #include <boost/signals2.hpp>
@@ -93,7 +94,7 @@ public:
 	virtual std::string getLocation(const std::string &url) const { return ""; }
 
 	/// Should this link text be underlined only when mouse is hovered over it?
-	virtual bool underlineOnHoverOnly(const std::string &string) const { return false; }
+	virtual bool underlineOnHoverOnly(const std::string &string) const { return true; } // <alchemy/>
 
 	virtual LLUUID	getID(const std::string &string) const { return LLUUID::null; }
 
@@ -171,6 +172,13 @@ class LLUrlEntryAgent : public LLUrlEntryBase
 {
 public:
 	LLUrlEntryAgent();
+	~LLUrlEntryAgent()
+	{
+		if (mAvatarNameCacheConnection.connected())
+		{
+			mAvatarNameCacheConnection.disconnect();
+		}
+	}
 	/*virtual*/ std::string getLabel(const std::string &url, const LLUrlLabelCallback &cb);
 	/*virtual*/ std::string getIcon(const std::string &url);
 	/*virtual*/ std::string getTooltip(const std::string &string) const;
@@ -181,6 +189,7 @@ protected:
 	/*virtual*/ void callObservers(const std::string &id, const std::string &label, const std::string& icon);
 private:
 	void onAvatarNameCache(const LLUUID& id, const LLAvatarName& av_name);
+	boost::signals2::connection mAvatarNameCacheConnection;
 };
 
 ///
@@ -192,6 +201,13 @@ class LLUrlEntryAgentName : public LLUrlEntryBase, public boost::signals2::track
 {
 public:
 	LLUrlEntryAgentName();
+	~LLUrlEntryAgentName()
+	{
+		if (mAvatarNameCacheConnection.connected())
+		{
+			mAvatarNameCacheConnection.disconnect();
+		}
+	}
 	/*virtual*/ std::string getLabel(const std::string &url, const LLUrlLabelCallback &cb);
 	//*virtual*/ LLStyle::Params getStyle() const;
 protected:
@@ -199,6 +215,7 @@ protected:
 	virtual std::string getName(const LLAvatarName& avatar_name) = 0;
 private:
 	void onAvatarNameCache(const LLUUID& id, const LLAvatarName& av_name);
+	boost::signals2::connection mAvatarNameCacheConnection;
 };
 
 

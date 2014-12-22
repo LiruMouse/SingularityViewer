@@ -485,8 +485,7 @@ inventaire. Vous pouvez aussi en créer une nouvelle et la porter.
 	<button name="Export" label="Exporter"/>
 	<button label="Annuler" label_selected="Annuler" name="Cancel"/>
 	<button label="OK" label_selected="OK" name="Ok"/>
-	<button label="Créer un ensemble" label_selected="Créer un ensemble" name="Make Outfit" left="200" width="125"/>
-	<button left="90" name="Save Outfit" label="sauvegarder"/>
+	<flyout_button label="Créer un ensemble" label_selected="Créer un ensemble" name="Make Outfit" left="200" width="145"/>
 	<string name="No Outfit" value="Aucune tenue"/>
 	<string name="Changing outfits" value="Changement de tenue"/>
 </floater>

@@ -40,52 +40,11 @@
 #include "llagent.h"
 
 
-LLFloaterDisplayName* LLFloaterDisplayName::sInstance = NULL;
-
-LLFloaterDisplayName::LLFloaterDisplayName()
+LLFloaterDisplayName::LLFloaterDisplayName(const LLSD&)
 : LLFloater(std::string("Display Names Floater"))
 {
-	LLFloaterDisplayName::sInstance = this;
+	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_display_name.xml");
 }
-
-// virtual
-LLFloaterDisplayName::~LLFloaterDisplayName()
-{
-
-	LLFloaterDisplayName::sInstance = NULL;
-
-}
-
-BOOL LLFloaterDisplayName::postBuild()
-{
-	childSetAction("reset_btn", onReset, this);
-	childSetAction("cancel_btn", onCancel, this);
-	childSetAction("save_btn", onSave, this);
-	
-	center();
-
-	return TRUE;
-}
-
-void LLFloaterDisplayName::show()
-{
-	if (LLFloaterDisplayName::sInstance)
-	{
-		LLFloaterDisplayName::sInstance->open();		/*Flawfinder: ignore*/
-		return;
-	}
-
-
-	LLFloaterDisplayName *self = new LLFloaterDisplayName();
-
-	// Builds and adds to gFloaterView
-	LLUICtrlFactory::getInstance()->buildFloater(self, "floater_display_name.xml");
-
-	// Fix up rectangle
-
-	self->open();	/*Flawfinder: ignore*/
-}
-
 
 void LLFloaterDisplayName::onOpen()
 {
@@ -112,16 +71,10 @@ void LLFloaterDisplayName::onOpen()
 		std::string hour = next_update_local.asString().substr(11,2);
 		std::string minute = next_update_local.asString().substr(14,2);
 		std::string second = next_update_local.asString().substr(17,2);
-		std::string next_update_string_date = 
-			llformat("%s/%s/%s",year.c_str(),month.c_str(),
-			day.c_str());
-		std::string next_update_string_time = 
-			llformat("%s:%s:%s",hour.c_str(),minute.c_str(),
-			second.c_str());
-		getChild<LLUICtrl>("lockout_text")->setTextArg("[DATE]",
-			next_update_string_date);
-		getChild<LLUICtrl>("lockout_text")->setTextArg("[TIME]",
-			next_update_string_time);
+		std::string next_update_string_date = llformat("%s/%s/%s",year.c_str(),month.c_str(), day.c_str());
+		std::string next_update_string_time = llformat("%s:%s:%s",hour.c_str(),minute.c_str(), second.c_str());
+		getChild<LLUICtrl>("lockout_text")->setTextArg("[DATE]", next_update_string_date);
+		getChild<LLUICtrl>("lockout_text")->setTextArg("[TIME]", next_update_string_time);
 		getChild<LLUICtrl>("lockout_text")->setVisible(true);
 		getChild<LLUICtrl>("save_btn")->setEnabled(false);
 		getChild<LLUICtrl>("display_name_editor")->setEnabled(false);
@@ -139,6 +92,16 @@ void LLFloaterDisplayName::onOpen()
 	}
 }
 
+BOOL LLFloaterDisplayName::postBuild()
+{
+	getChild<LLUICtrl>("reset_btn")->setCommitCallback(boost::bind(&LLFloaterDisplayName::onReset, this));
+	getChild<LLUICtrl>("cancel_btn")->setCommitCallback(boost::bind(&LLFloaterDisplayName::onCancel, this));
+	getChild<LLUICtrl>("save_btn")->setCommitCallback(boost::bind(&LLFloaterDisplayName::onSave, this));
+
+	center();
+
+	return TRUE;
+}
 
 void LLFloaterDisplayName::onCacheSetName(bool success,
 										  const std::string& reason,
@@ -151,10 +114,6 @@ void LLFloaterDisplayName::onCacheSetName(bool success,
 		LLSD args;
 		args["DISPLAY_NAME"] = content["display_name"];
 		LLNotificationsUtil::add("SetDisplayNameSuccess", args);
-		
-		// Re-fetch my name, as it may have been sanitized by the service
-		//LLAvatarNameCache::get(getAvatarId(),
-		//	boost::bind(&LLPanelMyProfileEdit::onNameCache, this, _1, _2));
 		return;
 	}
 
@@ -167,7 +126,7 @@ void LLFloaterDisplayName::onCacheSetName(bool success,
 	if (!error_tag.empty()
 		&& LLNotificationTemplates::getInstance()->templateExists(error_tag))
 	{
-		LLNotifications::instance().add(error_tag);
+		LLNotificationsUtil::add(error_tag);
 		return;
 	}
 
@@ -186,34 +145,30 @@ void LLFloaterDisplayName::onCacheSetName(bool success,
 	LLNotificationsUtil::add("SetDisplayNameFailedGeneric");
 }
 
-void LLFloaterDisplayName::onCancel(void* data)
+void LLFloaterDisplayName::onCancel()
 {
-	LLFloaterDisplayName* self = (LLFloaterDisplayName*)data;
-	self->setVisible(false);
+	setVisible(false);
 }
 
-void LLFloaterDisplayName::onReset(void* data)
+void LLFloaterDisplayName::onReset()
 {
-	LLFloaterDisplayName* self = (LLFloaterDisplayName*)data;
-	if (LLAvatarNameCache::useDisplayNames())
+	if (LLAvatarNameCache::hasNameLookupURL())
 	{
-		LLViewerDisplayName::set("",
-			boost::bind(&LLFloaterDisplayName::onCacheSetName, self, _1, _2, _3));
+		LLViewerDisplayName::set("", boost::bind(&LLFloaterDisplayName::onCacheSetName, this, _1, _2, _3));
 	}	
 	else
 	{
 		LLNotificationsUtil::add("SetDisplayNameFailedGeneric");
 	}
 	
-	self->setVisible(false);
+	setVisible(false);
 }
 
 
-void LLFloaterDisplayName::onSave(void* data)
+void LLFloaterDisplayName::onSave()
 {
-	LLFloaterDisplayName* self = (LLFloaterDisplayName*)data;
-	std::string display_name_utf8 = self->getChild<LLUICtrl>("display_name_editor")->getValue().asString();
-	std::string display_name_confirm = self->getChild<LLUICtrl>("display_name_confirm")->getValue().asString();
+	std::string display_name_utf8 = getChild<LLUICtrl>("display_name_editor")->getValue().asString();
+	std::string display_name_confirm = getChild<LLUICtrl>("display_name_confirm")->getValue().asString();
 
 	if (display_name_utf8.compare(display_name_confirm))
 	{
@@ -231,17 +186,16 @@ void LLFloaterDisplayName::onSave(void* data)
 		return;
 	}
 	
-	if (LLAvatarNameCache::useDisplayNames())
+	if (LLAvatarNameCache::hasNameLookupURL())
 	{
-		LLViewerDisplayName::set(display_name_utf8,
-			boost::bind(&LLFloaterDisplayName::onCacheSetName, self, _1, _2, _3));	
+		LLViewerDisplayName::set(display_name_utf8, boost::bind(&LLFloaterDisplayName::onCacheSetName, this, _1, _2, _3));	
 	}
 	else
 	{
 		LLNotificationsUtil::add("SetDisplayNameFailedGeneric");
 	}
 
-	self->setVisible(false);
+	setVisible(false);
 }
 
 

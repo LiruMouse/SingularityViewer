@@ -1303,7 +1303,7 @@ bool LLPanelRegionTerrainInfo::refreshFromRegion(LLViewerRegion* region)
 			if(texture_ctrl)
 			{
 				lldebugs << "Detail Texture " << i << ": "
-						 << compp->getDetailTextureID(i) << llendl;
+						 << compp->getDetailTextureID(i) << LL_ENDL;
 				LLUUID tmp_id(compp->getDetailTextureID(i));
 				texture_ctrl->setImageAssetID(tmp_id);
 			}
@@ -2260,7 +2260,7 @@ void LLPanelEstateInfo::refreshFromEstate()
 	const LLEstateInfoModel& estate_info = LLEstateInfoModel::instance();
 
 	getChild<LLUICtrl>("estate_name")->setValue(estate_info.getName());
-	LLAvatarNameCache::get(estate_info.getOwnerID(), boost::bind(&LLPanelEstateInfo::setOwnerPNSName, this, _1, _2));
+	LLAvatarNameCache::get(estate_info.getOwnerID(), boost::bind(&LLPanelEstateInfo::setOwnerName, this, boost::bind(&LLAvatarName::getNSName, _2, main_name_system())));
 
 	getChild<LLUICtrl>("externally_visible_check")->setValue(estate_info.getIsExternallyVisible());
 	getChild<LLUICtrl>("voice_chat_check")->setValue(estate_info.getAllowVoiceChat());
@@ -2423,13 +2423,6 @@ const std::string LLPanelEstateInfo::getOwnerName() const
 void LLPanelEstateInfo::setOwnerName(const std::string& name)
 {
 	getChild<LLUICtrl>("estate_owner")->setValue(LLSD(name));
-}
-
-void LLPanelEstateInfo::setOwnerPNSName(const LLUUID& agent_id, const LLAvatarName& av_name)
-{
-	std::string name;
-	LLAvatarNameCache::getPNSName(av_name, name);
-	setOwnerName(name);
 }
 
 void LLPanelEstateInfo::clearAccessLists() 

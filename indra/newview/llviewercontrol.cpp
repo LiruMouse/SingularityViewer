@@ -77,7 +77,6 @@
 #include "llworldmapview.h"
 #include "llnetmap.h"
 #include "llrender.h"
-#include "llfloaterchat.h"
 #include "aistatemachine.h"
 #include "aithreadsafe.h"
 #include "lldrawpoolbump.h"
@@ -585,18 +584,6 @@ bool handleVelocityInterpolate(const LLSD& newvalue)
 	return true;
 }
 
-bool handleTranslateChatPrefsChanged(const LLSD& newvalue)
-{
-	LLFloaterChat* floaterp = LLFloaterChat::getInstance();
-
-	if(floaterp)
-	{
-		// update "translate chat" pref in "Local Chat" floater
-		floaterp->updateSettings();
-	}
-	return true;
-}
-
 bool handleCloudSettingsChanged(const LLSD& newvalue)
 {
 	bool bCloudsEnabled = gSavedSettings.getBOOL("CloudsEnabled");
@@ -795,7 +782,6 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("AudioLevelMic")->getSignal()->connect(boost::bind(&handleVoiceClientPrefsChanged, _2));
 	gSavedSettings.getControl("LipSyncEnabled")->getSignal()->connect(boost::bind(&handleVoiceClientPrefsChanged, _2));	
 	gSavedSettings.getControl("VelocityInterpolate")->getSignal()->connect(boost::bind(&handleVelocityInterpolate, _2));
-	gSavedSettings.getControl("TranslateChat")->getSignal()->connect(boost::bind(&handleTranslateChatPrefsChanged, _2));
 	gSavedSettings.getControl("StateMachineMaxTime")->getSignal()->connect(boost::bind(&handleStateMachineMaxTimeChanged, _2));
 
 	gSavedSettings.getControl("CloudsEnabled")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _2));

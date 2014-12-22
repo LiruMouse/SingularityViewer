@@ -31,7 +31,6 @@ set(llcommon_SOURCE_FILES
     llapr.cpp
     llaprpool.cpp
     llassettype.cpp
-    llavatarname.cpp
     llbase32.cpp
     llbase64.cpp
     llcommon.cpp
@@ -56,7 +55,6 @@ set(llcommon_SOURCE_FILES
     llfile.cpp
     llfindlocale.cpp
     llfixedbuffer.cpp
-    llfoldertype.cpp
     llformat.cpp
     llframetimer.cpp
     llheartbeat.cpp
@@ -135,7 +133,6 @@ set(llcommon_HEADER_FILES
     llassoclist.h
     llatomic.h
     llavatarconstants.h
-    llavatarname.h
     llbase32.h
     llbase64.h
     llboost.h
@@ -177,7 +174,6 @@ set(llcommon_HEADER_FILES
     llfile.h
     llfindlocale.h
     llfixedbuffer.h
-    llfoldertype.h
     llformat.h
     llframetimer.h
     llhandle.h

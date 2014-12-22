@@ -398,8 +398,7 @@ und dieses anziehen.</text>
     <button name="Export" label="Exportieren" tool_tip="Exportiere das gewählte Kleidungsteil; das Kleidungsteil muss copy/mod/trans sein, und sie müssen der Ersteller sein."/>
 	<button label="Abbrechen" label_selected="Abbrechen" name="Cancel"/>
 	<button label="OK" label_selected="OK" name="Ok"/>
-	<button label="Outfit erstellen..." label_selected="Outfit erstellen..." name="Make Outfit"/>
-    <button name="Save Outfit" label="Outfit speichern"/>
+	<flyout_button label="Outfit erstellen..." label_selected="Outfit erstellen..." name="Make Outfit"/>
     <string name="Save changes to" value="Änderungen zu [OUTFIT] speichern"/>
     <string name="No Outfit" value="Kein Outfit"/>
     <string name="Changing outfits" value="Outfits ändern"/>

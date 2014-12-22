@@ -49,6 +49,8 @@ enum LLGroupChange
 	GC_ALL
 };
 
+const U32 GB_MAX_BANNED_AGENTS = 500;
+
 class LLGroupMgrObserver
 {
 public:
@@ -262,7 +264,7 @@ public:
 	const LLUUID& getMemberVersion() const { return mMemberVersion; }
 
 	void clearBanList() { mBanList.clear(); }
-	void getBanList(const LLUUID& ban_i, const LLGroupBanData& ban_data = LLGroupBanData());
+	void getBanList(const LLUUID& group_id, LLGroupBanData& ban_data);
 	const LLGroupBanData& getBanEntry(const LLUUID& ban_id) { return mBanList[ban_id]; }
 
 	void createBanEntry(const LLUUID& ban_id, const LLGroupBanData& ban_data = LLGroupBanData());

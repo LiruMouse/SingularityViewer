@@ -62,7 +62,7 @@
 			<button label="Añadir como Amigo" label_selected="Añadir como Amigo" name="Add Friend..." left_delta="129" />
 			<button label="Pagar..." label_selected="Pagar..." name="Pay..." left="10"/>
 			<button label="Mensaje Instantáneo" label_selected="Mensaje Instantáneo" name="Instant Message..." tool_tip="Mensaje Instantáneo (IM)" left_delta="75"/>
-			<button label="(No) Ignorar" label_selected="Ignorar" name="Mute" left_delta="143" width="69"/>
+			<button label="Ignorar" label_selected="No Ignorar" name="Mute" left_delta="143" width="69"/>
 			<button label="Invitar al Grupo" label_selected="Invitar al Grupo" name="GroupInvite_Button" left_delta="74" width="110"/>
 		</panel>
 		<!-- =========================== -->

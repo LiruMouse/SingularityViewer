@@ -131,10 +131,10 @@ void LLAvatarActions::removeFriendsDialog(const uuid_vec_t& ids)
 	if(ids.size() == 1)
 	{
 		LLUUID agent_id = ids[0];
-		std::string av_name;
-		if(LLAvatarNameCache::getPNSName(agent_id, av_name))
+		LLAvatarName av_name;
+		if(LLAvatarNameCache::get(agent_id, &av_name))
 		{
-			args["NAME"] = av_name;
+			args["NAME"] = av_name.getNSName();
 		}
 
 		msgType = "RemoveFromFriends";
@@ -354,19 +354,11 @@ static void on_avatar_name_show_profile(const LLUUID& agent_id, const LLAvatarNa
 	}
 	else
 	{
-		std::string username = av_name.mUsername;
-		if (username.empty())
-		{
-			username = LLCacheName::buildUsername(av_name.mDisplayName);
-		}
-
-		llinfos << "opening web profile for " << username << llendl;
-		std::string url = getProfileURL(username);
+		std::string url = getProfileURL(av_name.getAccountName());
 
 		// PROFILES: open in webkit window
 		LLFloaterWebContent::Params p;
-		p.url(url).
-			id(agent_id.asString());
+		p.url(url).id(agent_id.asString());
 		LLFloaterWebProfile::showInstance(get_profile_floater_name(agent_id), p);
 	}
 }
@@ -423,14 +415,14 @@ void LLAvatarActions::hideProfile(const LLUUID& id)
 // static
 void LLAvatarActions::showOnMap(const LLUUID& id)
 {
-	std::string av_name;
-	if (!LLAvatarNameCache::getPNSName(id, av_name))
+	LLAvatarName av_name;
+	if (!LLAvatarNameCache::get(id, &av_name))
 	{
 		LLAvatarNameCache::get(id, boost::bind(&LLAvatarActions::showOnMap, id));
 		return;
 	}
 
-	gFloaterWorldMap->trackAvatar(id, av_name);
+	gFloaterWorldMap->trackAvatar(id, av_name.getNSName());
 	LLFloaterWorldMap::show(true);
 }
 
@@ -519,7 +511,7 @@ void LLAvatarActions::on_avatar_name_cache_teleport_request(const LLUUID& id, co
 		name = RlvStrings::getAnonym(av_name.getLegacyName());
 	else
 // [RLVa:KB]
-	LLAvatarNameCache::getPNSName(av_name, name);
+		name = av_name.getNSName();
 	notification["NAME"] = name;
 	LLSD payload;
 
@@ -841,7 +833,7 @@ void LLAvatarActions::buildResidentsString(std::vector<LLAvatarName> avatar_name
 	const std::string& separator = LLTrans::getString("words_separator");
 	for (std::vector<LLAvatarName>::const_iterator it = avatar_names.begin(); ; )
 	{
-		residents_string.append((*it).getCompleteName());
+		residents_string.append((*it).getNSName());
 		if	(++it == avatar_names.end())
 		{
 			break;

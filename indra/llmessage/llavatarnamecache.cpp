@@ -44,10 +44,6 @@ namespace LLAvatarNameCache
 {
 	use_display_name_signal_t mUseDisplayNamesSignal;
 
-	// Manual override for display names - can disable even if the region
-	// supports it.
-	bool sUseDisplayNames = true;
-
 // [RLVa:KB] - Checked: 2010-12-08 (RLVa-1.4.0a) | Added: RLVa-1.2.2c
 	// RLVa override for display names
 	bool sForceDisplayNames = false;
@@ -57,18 +53,22 @@ namespace LLAvatarNameCache
 	// current region supports display names.
 	bool sRunning = false;
 	
+	// Use the People API (modern) for fetching name if true. Use the old legacy protocol if false.
+	// For testing, there's a UsePeopleAPI setting that can be flipped (must restart viewer).
+	bool sUsePeopleAPI = true;
+
 	// Base lookup URL for name service.
 	// On simulator, loaded from indra.xml
 	// On viewer, usually a simulator capability (at People API team's request)
 	// Includes the trailing slash, like "http://pdp60.lindenlab.com:8000/agents/"
 	std::string sNameLookupURL;
 
-	// accumulated agent IDs for next query against service
+	// Accumulated agent IDs for next query against service
 	typedef std::set<LLUUID> ask_queue_t;
 	ask_queue_t sAskQueue;
 
-	// agent IDs that have been requested, but with no reply
-	// maps agent ID to frame time request was made
+	// Agent IDs that have been requested, but with no reply.
+	// Maps agent ID to frame time request was made.
 	typedef std::map<LLUUID, F64> pending_queue_t;
 	pending_queue_t sPendingQueue;
 
@@ -79,21 +79,21 @@ namespace LLAvatarNameCache
 	typedef std::map<LLUUID, callback_signal_t*> signal_map_t;
 	signal_map_t sSignalMap;
 
-	// names we know about
+	// The cache at last, i.e. avatar names we know about.
 	typedef std::map<LLUUID, LLAvatarName> cache_t;
 	cache_t sCache;
 
-	// Send bulk lookup requests a few times a second at most
-	// only need per-frame timing resolution
+	// Send bulk lookup requests a few times a second at most.
+	// Only need per-frame timing resolution.
 	LLFrameTimer sRequestTimer;
 
-    /// Maximum time an unrefreshed cache entry is allowed
+    // Maximum time an unrefreshed cache entry is allowed.
     const F64 MAX_UNREFRESHED_TIME = 20.0 * 60.0;
 
-    /// Time when unrefreshed cached names were checked last
+    // Time when unrefreshed cached names were checked last.
     static F64 sLastExpireCheck;
 
-	/// Time-to-live for a temp cache entry.
+	// Time-to-live for a temp cache entry.
 	const F64 TEMP_CACHE_ENTRY_LIFETIME = 60.0;
 
 	//-----------------------------------------------------------------------
@@ -101,25 +101,20 @@ namespace LLAvatarNameCache
 	//-----------------------------------------------------------------------
 
 	// Handle name response off network.
-	// Optionally skip adding to cache, used when this is a fallback to the
-	// legacy name system.
 	void processName(const LLUUID& agent_id,
-					 const LLAvatarName& av_name,
-					 bool add_to_cache);
+					 const LLAvatarName& av_name);
 
 	void requestNamesViaCapability();
 
-	// Legacy name system callback
+	// Legacy name system callbacks
 	void legacyNameCallback(const LLUUID& agent_id,
 							const std::string& full_name,
-							bool is_group
-							);
+							bool is_group);
+	void legacyNameFetch(const LLUUID& agent_id,
+						 const std::string& full_name,
+						 bool is_group);
 
 	void requestNamesViaLegacy();
-
-	// Fill in an LLAvatarName with the legacy name data
-	void buildLegacyName(const std::string& full_name,
-						 LLAvatarName* av_name);
 
 	// Do a single callback to a given slot
 	void fireSignal(const LLUUID& agent_id,
@@ -174,31 +169,37 @@ namespace LLAvatarNameCache
 </llsd>
 */
 
-class AIHTTPTimeoutPolicy;
-extern AIHTTPTimeoutPolicy avatarNameResponder_timeout;
-
 class LLAvatarNameResponder : public LLHTTPClient::ResponderWithResult
 {
+	LOG_CLASS(LLAvatarNameResponder);
 private:
 	// need to store agent ids that are part of this request in case of
 	// an error, so we can flag them as unavailable
 	std::vector<LLUUID> mAgentIDs;
 
 	// Need the headers to look up Expires: and Retry-After:
-	virtual bool needsHeaders(void) const { return true; }
-	
+	/*virtual*/ bool needsHeaders() const { return true; }
+	/*virtual*/ char const* getName() const { return "LLAvatarNameResponder"; }
+
 public:
 	LLAvatarNameResponder(const std::vector<LLUUID>& agent_ids)
 	:	mAgentIDs(agent_ids)
 	{ }
 
-	/*virtual*/ void httpSuccess(void)
+protected:
+	/*virtual*/ void httpSuccess()
 	{
+		const LLSD& content = getContent();
+		if (!content.isMap())
+		{
+			failureResult(HTTP_INTERNAL_ERROR_OTHER, "Malformed response contents", content);
+			return;
+		}
 		// Pull expiration out of headers if available
-		F64 expires = LLAvatarNameCache::nameExpirationFromHeaders(mReceivedHeaders);
+		F64 expires = LLAvatarNameCache::nameExpirationFromHeaders(getResponseHeaders());
 		F64 now = LLFrameTimer::getTotalSeconds();
 
-		LLSD agents = mContent["agents"];
+		const LLSD& agents = content["agents"];
 		LLSD::array_const_iterator it = agents.beginArray();
 		for ( ; it != agents.endArray(); ++it)
 		{
@@ -211,24 +212,15 @@ public:
 			// Use expiration time from header
 			av_name.mExpires = expires;
 
-			// Some avatars don't have explicit display names set
-			if (av_name.mDisplayName.empty())
-			{
-				av_name.mDisplayName = av_name.mUsername;
-			}
-
-			LL_DEBUGS("AvNameCache") << "LLAvatarNameResponder::result for " << agent_id << " "
-									 << "user '" << av_name.mUsername << "' "
-									 << "display '" << av_name.mDisplayName << "' "
-									 << "expires in " << expires - now << " seconds"
-									 << LL_ENDL;
+			LL_DEBUGS("AvNameCache") << "LLAvatarNameResponder::result for " << agent_id << LL_ENDL;
+			av_name.dump();
 			
 			// cache it and fire signals
-			LLAvatarNameCache::processName(agent_id, av_name, true);
+			LLAvatarNameCache::processName(agent_id, av_name);
 		}
 
 		// Same logic as error response case
-		LLSD unresolved_agents = mContent["bad_ids"];
+		const LLSD& unresolved_agents = content["bad_ids"];
 		S32  num_unresolved = unresolved_agents.size();
 		if (num_unresolved > 0)
 		{
@@ -252,14 +244,13 @@ public:
                                  << LL_ENDL;
     }
 
-	/*virtual*/ void httpFailure(void)
+	/*virtual*/ void httpFailure()
 	{
 		// If there's an error, it might be caused by PeopleApi,
 		// or when loading textures on startup and using a very slow 
 		// network, this query may time out.
 		// What we should do depends on whether or not we have a cached name
-		LL_WARNS("AvNameCache") << "LLAvatarNameResponder::httpFailure " << mStatus << " " << mReason
-								<< LL_ENDL;
+		LL_WARNS("AvNameCache") << dumpResponse() << LL_ENDL;
 
 		// Add dummy records for any agent IDs in this request that we do not have cached already
 		std::vector<LLUUID>::const_iterator it = mAgentIDs.begin();
@@ -269,9 +260,6 @@ public:
 			LLAvatarNameCache::handleAgentError(agent_id);
 		}
 	}
-
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return avatarNameResponder_timeout; }
-	/*virtual*/ char const* getName(void) const { return "LLAvatarNameResponder"; }
 };
 
 // Provide some fallback for agents that return errors
@@ -284,48 +272,34 @@ void LLAvatarNameCache::handleAgentError(const LLUUID& agent_id)
         LL_WARNS("AvNameCache") << "LLAvatarNameCache get legacy for agent "
                                 << agent_id << LL_ENDL;
         gCacheName->get(agent_id, false,  // legacy compatibility
-                        boost::bind(&LLAvatarNameCache::legacyNameCallback,
-                                    _1, _2, _3));
+                        boost::bind(&LLAvatarNameCache::legacyNameFetch, _1, _2, _3));
     }
 	else
     {
-        // we have a chached (but probably expired) entry - since that would have
+        // we have a cached (but probably expired) entry - since that would have
         // been returned by the get method, there is no need to signal anyone
 
         // Clear this agent from the pending list
         LLAvatarNameCache::sPendingQueue.erase(agent_id);
 
         LLAvatarName& av_name = existing->second;
-        LL_DEBUGS("AvNameCache") << "LLAvatarNameCache use cache for agent "
-                                 << agent_id 
-                                 << "user '" << av_name.mUsername << "' "
-                                 << "display '" << av_name.mDisplayName << "' "
-                                 << "expires in " << av_name.mExpires - LLFrameTimer::getTotalSeconds() << " seconds"
-                                 << LL_ENDL;
-		av_name.mExpires = LLFrameTimer::getTotalSeconds() + TEMP_CACHE_ENTRY_LIFETIME; // reset expiry time so we don't constantly rerequest.
+        LL_DEBUGS("AvNameCache") << "LLAvatarNameCache use cache for agent " << agent_id << LL_ENDL;
+		av_name.dump();
+
+		 // Reset expiry time so we don't constantly rerequest.
+		av_name.setExpires(TEMP_CACHE_ENTRY_LIFETIME);
     }
 }
 
-void LLAvatarNameCache::processName(const LLUUID& agent_id,
-									const LLAvatarName& av_name,
-									bool add_to_cache)
+void LLAvatarNameCache::processName(const LLUUID& agent_id, const LLAvatarName& av_name)
 {
-	if (add_to_cache)
-	{
-		//  sCache[agent_id] = av_name;
-		// [SL:KB] - Patch: Agent-DisplayNames | Checked: 2010-12-28 (Catznip-2.4.0h) | Added: Catznip-2.4.0h
-		  // Don't replace existing entries with dummies		  
-		cache_t::iterator itName = (av_name.mIsTemporaryName) ? sCache.find(agent_id) : sCache.end();
-		if (sCache.end() != itName)
-			itName->second.mExpires = av_name.mExpires;
-		else
-			sCache[agent_id] = av_name;
-		// [/SL:KB]
-	}
+	// Add to the cache
+	sCache[agent_id] = av_name;
 
+	// Suppress request from the queue
 	sPendingQueue.erase(agent_id);
 
-	// signal everyone waiting on this name
+	// Signal everyone waiting on this name
 	signal_map_t::iterator sig_it =	sSignalMap.find(agent_id);
 	if (sig_it != sSignalMap.end())
 	{
@@ -356,7 +330,6 @@ void LLAvatarNameCache::requestNamesViaCapability()
 	std::vector<LLUUID> agent_ids;
 	agent_ids.reserve(128);
 	
-	U32 id_total = sAskQueue.size();
 	U32 ids = 0;
 	ask_queue_t::const_iterator it;
 	while(!sAskQueue.empty())
@@ -393,7 +366,7 @@ void LLAvatarNameCache::requestNamesViaCapability()
 	if (!url.empty())
 	{
 		LL_DEBUGS("AvNameCache") << "LLAvatarNameCache::requestNamesViaCapability requested "
-								 << ids << "/" << id_total << "ids "
+								 << ids << " ids"
 								 << LL_ENDL;
 		LLHTTPClient::get(url, new LLAvatarNameResponder(agent_ids));
 	}
@@ -403,22 +376,33 @@ void LLAvatarNameCache::legacyNameCallback(const LLUUID& agent_id,
 										   const std::string& full_name,
 										   bool is_group)
 {
-	// Construct a dummy record for this name.  By convention, SLID is blank
-	// Never expires, but not written to disk, so lasts until end of session.
-	LLAvatarName av_name;
-	LL_DEBUGS("AvNameCache") << "LLAvatarNameCache::legacyNameCallback "
+	// Put the received data in the cache
+	legacyNameFetch(agent_id, full_name, is_group);
+	
+	// Retrieve the name and set it to never (or almost never...) expire: when we are using the legacy
+	// protocol, we do not get an expiration date for each name and there's no reason to ask the 
+	// data again and again so we set the expiration time to the largest value admissible.
+	std::map<LLUUID,LLAvatarName>::iterator av_record = sCache.find(agent_id);
+	LLAvatarName& av_name = av_record->second;
+	av_name.setExpires(MAX_UNREFRESHED_TIME);
+}
+
+void LLAvatarNameCache::legacyNameFetch(const LLUUID& agent_id,
+										const std::string& full_name,
+										bool is_group)
+{
+	LL_DEBUGS("AvNameCache") << "LLAvatarNameCache::legacyNameFetch "
 							 << "agent " << agent_id << " "
 							 << "full name '" << full_name << "'"
 							 << ( is_group ? " [group]" : "" )
 							 << LL_ENDL;
-	buildLegacyName(full_name, &av_name);
 
-	// Add to cache, because if we don't we'll keep rerequesting the
-	// same record forever.  buildLegacyName should always guarantee
-	// that these records expire reasonably soon
-	// (in TEMP_CACHE_ENTRY_LIFETIME seconds), so if the failure was due
-	// to something temporary we will eventually request and get the right data.
-	processName(agent_id, av_name, true);
+	// Construct an av_name record from this name.
+	LLAvatarName av_name;
+	av_name.fromString(full_name);
+
+	// Add to cache: we're still using the new cache even if we're using the old (legacy) protocol.
+	processName(agent_id, av_name);
 }
 
 void LLAvatarNameCache::requestNamesViaLegacy()
@@ -440,25 +424,28 @@ void LLAvatarNameCache::requestNamesViaLegacy()
 		LL_DEBUGS("AvNameCache") << "LLAvatarNameCache::requestNamesViaLegacy agent " << agent_id << LL_ENDL;
 
 		gCacheName->get(agent_id, false,  // legacy compatibility
-			boost::bind(&LLAvatarNameCache::legacyNameCallback,
-				_1, _2, _3));
+			boost::bind(&LLAvatarNameCache::legacyNameCallback, _1, _2, _3));
 	}
 }
 
-void LLAvatarNameCache::initClass(bool running)
+void LLAvatarNameCache::initClass(bool running, bool usePeopleAPI)
 {
 	sRunning = running;
+	sUsePeopleAPI = usePeopleAPI;
 }
 
 void LLAvatarNameCache::cleanupClass()
 {
+	sCache.clear();
 }
 
 void LLAvatarNameCache::importFile(std::istream& istr)
 {
 	LLSD data;
-	S32 parse_count = LLSDSerialize::fromXMLDocument(data, istr);
-	if (parse_count < 1) return;
+	if (LLSDParser::PARSE_FAILURE == LLSDSerialize::fromXMLDocument(data, istr))
+	{
+		return;
+	}
 
 	// by convention LLSD storage is a map
 	// we only store one entry in the map
@@ -490,7 +477,7 @@ void LLAvatarNameCache::exportFile(std::ostream& ostr)
 		const LLUUID& agent_id = it->first;
 		const LLAvatarName& av_name = it->second;
 		// Do not write temporary or expired entries to the stored cache
-		if (!av_name.mIsTemporaryName && av_name.mExpires >= max_unrefreshed)
+		if (av_name.isValidName(max_unrefreshed))
 		{
 			// key must be a string
 			agents[agent_id.asString()] = av_name.asLLSD();
@@ -511,6 +498,11 @@ bool LLAvatarNameCache::hasNameLookupURL()
 	return !sNameLookupURL.empty();
 }
 
+bool LLAvatarNameCache::usePeopleAPI()
+{
+	return hasNameLookupURL() && sUsePeopleAPI;
+}
+
 void LLAvatarNameCache::idle()
 {
 	// By convention, start running at first idle() call
@@ -527,13 +519,12 @@ void LLAvatarNameCache::idle()
 
 	if (!sAskQueue.empty())
 	{
-        if (useDisplayNames())
+        if (usePeopleAPI())
         {
             requestNamesViaCapability();
         }
         else
         {
-            // ...fall back to legacy name cache system
             requestNamesViaLegacy();
         }
 	}
@@ -541,7 +532,7 @@ void LLAvatarNameCache::idle()
 	if (sAskQueue.empty())
 	{
 		// cleared the list, reset the request timer.
-		sRequestTimer.reset(SECS_BETWEEN_REQUESTS);
+		sRequestTimer.resetWithExpiry(SECS_BETWEEN_REQUESTS);
 	}
 
     // erase anything that has not been refreshed for more than MAX_UNREFRESHED_TIME
@@ -577,9 +568,8 @@ void LLAvatarNameCache::eraseUnrefreshed()
             const LLAvatarName& av_name = it->second;
             if (av_name.mExpires < max_unrefreshed)
             {
-                const LLUUID& agent_id = it->first;
-                LL_DEBUGS("AvNameCache") << agent_id 
-                                         << " user '" << av_name.mUsername << "' "
+                LL_DEBUGS("AvNameCache") << it->first 
+                                         << " user '" << av_name.getAccountName() << "' "
                                          << "expired " << now - av_name.mExpires << " secs ago"
                                          << LL_ENDL;
                 sCache.erase(it++);
@@ -593,29 +583,6 @@ void LLAvatarNameCache::eraseUnrefreshed()
 	}
 }
 
-void LLAvatarNameCache::buildLegacyName(const std::string& full_name,
-										LLAvatarName* av_name)
-{
-	llassert(av_name);
-	av_name->mUsername = "";
-	av_name->mDisplayName = full_name;
-	av_name->mIsDisplayNameDefault = true;
-	av_name->mIsTemporaryName = true;
-	av_name->mExpires = LLFrameTimer::getTotalSeconds() + TEMP_CACHE_ENTRY_LIFETIME;
-	LL_DEBUGS("AvNameCache") << "LLAvatarNameCache::buildLegacyName "
-							 << full_name
-							 << LL_ENDL;
-
-	// [Ansariel/Henri]
-	// Why ain't those set? In case of disabled display names
-	// we would have to parse LLAvatarName::mDisplayName to get
-	// first and lastname if we need them. So do it already here
-	// for convenience.
-	std::istringstream fname(full_name);
-	fname >> av_name->mLegacyFirstName >> av_name->mLegacyLastName;
-	// [/Ansariel/Henri]
-}
-
 // fills in av_name if it has it in the cache, even if expired (can check expiry time)
 // returns bool specifying  if av_name was filled, false otherwise
 bool LLAvatarNameCache::get(const LLUUID& agent_id, LLAvatarName *av_name)
@@ -623,36 +590,33 @@ bool LLAvatarNameCache::get(const LLUUID& agent_id, LLAvatarName *av_name)
 	if (sRunning)
 	{
 		// ...only do immediate lookups when cache is running
-		if (useDisplayNames())
+		std::map<LLUUID,LLAvatarName>::iterator it = sCache.find(agent_id);
+		if (it != sCache.end())
 		{
-			// ...use display names cache
-			std::map<LLUUID,LLAvatarName>::iterator it = sCache.find(agent_id);
-			if (it != sCache.end())
-			{
-				*av_name = it->second;
+			*av_name = it->second;
 
-				// re-request name if entry is expired
-				if (av_name->mExpires < LLFrameTimer::getTotalSeconds())
+			// re-request name if entry is expired
+			if (av_name->mExpires < LLFrameTimer::getTotalSeconds())
+			{
+				if (!isRequestPending(agent_id))
 				{
-					if (!isRequestPending(agent_id))
-					{
-						LL_DEBUGS("AvNameCache") << "LLAvatarNameCache::get "
-												 << "refresh agent " << agent_id
-												 << LL_ENDL;
-						sAskQueue.insert(agent_id);
-					}
+					LL_DEBUGS("AvNameCache") << "LLAvatarNameCache::get "
+											 << "refresh agent " << agent_id
+											 << LL_ENDL;
+					sAskQueue.insert(agent_id);
 				}
-				
-				return true;
 			}
+			
+			return true;
 		}
-		else
+		else if (!hasNameLookupURL())
 		{
-			// ...use legacy names cache
 			std::string full_name;
 			if (gCacheName->getFullName(agent_id, full_name))
 			{
-				buildLegacyName(full_name, av_name);
+				LLAvatarName av_name;
+				av_name.fromString(full_name);
+				sCache[agent_id] = av_name;
 				return true;
 			}
 		}
@@ -669,33 +633,20 @@ bool LLAvatarNameCache::get(const LLUUID& agent_id, LLAvatarName *av_name)
 	return false;
 }
 
-const S32& LLAvatarNameCache::phoenix_name_system()
+const S32& main_name_system()
 {
 	static const LLCachedControl<S32> name_system("PhoenixNameSystem", 0);
 	return name_system;
 }
 
-// Return true when name has been set to Phoenix Name System Name, if not return false.
-bool LLAvatarNameCache::getPNSName(const LLUUID& agent_id, std::string& name, const S32& name_system)
+// Return true when name has been set to Name System Name, if not return false.
+bool LLAvatarNameCache::getNSName(const LLUUID& agent_id, std::string& name, const S32& name_system)
 {
 	LLAvatarName avatar_name;
 	if (get(agent_id, &avatar_name))
-		getPNSName(avatar_name, name, name_system);
+		name = avatar_name.getNSName(name_system);
 	else return false;
 	return true;
-}
-
-// get() with callback compatible version of getPNSName
-void LLAvatarNameCache::getPNSName(const LLAvatarName& avatar_name, std::string& name, const S32& name_system)
-{
-	switch (name_system)
-	{
-		case 0 : name = avatar_name.getLegacyName(); break;
-		case 1 : name = avatar_name.getCompleteName(); break;
-		case 2 : name = avatar_name.mDisplayName; break;
-		case 3 : name = avatar_name.getLegacyName() + (avatar_name.mIsDisplayNameDefault ? "" : " (" + avatar_name.mDisplayName + ")"); break;
-		default : name = avatar_name.getLegacyName(); break;
-	}
 }
 
 void LLAvatarNameCache::fireSignal(const LLUUID& agent_id,
@@ -714,30 +665,26 @@ LLAvatarNameCache::callback_connection_t LLAvatarNameCache::get(const LLUUID& ag
 	if (sRunning)
 	{
 		// ...only do immediate lookups when cache is running
-		if (useDisplayNames())
+		std::map<LLUUID,LLAvatarName>::iterator it = sCache.find(agent_id);
+		if (it != sCache.end())
 		{
-			// ...use new cache
-			std::map<LLUUID,LLAvatarName>::iterator it = sCache.find(agent_id);
-			if (it != sCache.end())
+			const LLAvatarName& av_name = it->second;
+			
+			if (av_name.mExpires > LLFrameTimer::getTotalSeconds())
 			{
-				const LLAvatarName& av_name = it->second;
-				
-				if (av_name.mExpires > LLFrameTimer::getTotalSeconds())
-				{
-					// ...name already exists in cache, fire callback now
-					fireSignal(agent_id, slot, av_name);
-					return connection;
-				}
+				// ...name already exists in cache, fire callback now
+				fireSignal(agent_id, slot, av_name);
+				return connection;
 			}
 		}
-		else
+		else if (!hasNameLookupURL())
 		{
-			// ...use old name system
 			std::string full_name;
 			if (gCacheName->getFullName(agent_id, full_name))
 			{
 				LLAvatarName av_name;
-				buildLegacyName(full_name, &av_name);
+				av_name.fromString(full_name);
+				sCache[agent_id] = av_name;
 				fireSignal(agent_id, slot, av_name);
 				return connection;
 			}
@@ -778,7 +725,7 @@ bool LLAvatarNameCache::getForceDisplayNames()
 void LLAvatarNameCache::setForceDisplayNames(bool force)
 {
 	sForceDisplayNames = force;
-	if ( (!sUseDisplayNames) && (force) )
+	if ( (!LLAvatarName::useDisplayNames()) && (force) )
 	{
 		setUseDisplayNames(true);
 	}
@@ -791,21 +738,20 @@ void LLAvatarNameCache::setUseDisplayNames(bool use)
 	// We need to force the use of the "display names" cache when @shownames=n restricted (and disallow toggling it)
 	use |= getForceDisplayNames();
 // [/RLVa:KB]
-	if (use != sUseDisplayNames)
+	if (use != LLAvatarName::useDisplayNames())
 	{
-		sUseDisplayNames = use;
-		LL_DEBUGS("AvNameCache") << "Display names are now: " << (use ? "on" : "off") << LL_ENDL;
-		// flush our cache
-		sCache.clear();
-
+		LLAvatarName::setUseDisplayNames(use);
 		mUseDisplayNamesSignal();
 	}
 }
 
-bool LLAvatarNameCache::useDisplayNames()
+void LLAvatarNameCache::setUseUsernames(bool use)
 {
-	// Must be both manually set on and able to look up names.
-	return sUseDisplayNames && !sNameLookupURL.empty();
+	if (use != LLAvatarName::useUsernames())
+	{
+		LLAvatarName::setUseUsernames(use);
+		mUseDisplayNamesSignal();
+	}
 }
 
 void LLAvatarNameCache::erase(const LLUUID& agent_id)
@@ -839,6 +785,7 @@ bool LLAvatarNameCache::expirationFromCacheControl(AIHTTPReceivedHeaders const& 
 {
 	bool fromCacheControl = false;
 	F64 now = LLFrameTimer::getTotalSeconds();
+
 	// Allow the header to override the default
 	std::string cache_control;
 	if (headers.getFirstValue("cache-control", cache_control))

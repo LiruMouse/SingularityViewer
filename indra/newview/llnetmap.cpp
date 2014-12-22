@@ -952,7 +952,7 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& tool_tip, LLRect* stick
 					LLVector3d targetPosition = (*current).second;
 
 					std::string fullName;
-					if (targetUUID.notNull() && LLAvatarNameCache::getPNSName(targetUUID, fullName))
+					if (targetUUID.notNull() && LLAvatarNameCache::getNSName(targetUUID, fullName))
 					{
 						//tool_tip.append(fullName);
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b

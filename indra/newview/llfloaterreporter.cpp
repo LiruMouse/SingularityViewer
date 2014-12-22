@@ -52,7 +52,6 @@
 
 // viewer project includes
 #include "llagent.h"
-#include "llagentui.h"
 #include "llbutton.h"
 #include "lltexturectrl.h"
 #include "llscrolllistctrl.h"
@@ -80,13 +79,11 @@
 #include "llviewernetwork.h"
 
 #include "llassetuploadresponders.h"
+#include "llagentui.h"
 
 #include "lltrans.h"
 
 const U32 INCLUDE_SCREENSHOT  = 0x01 << 0;
-
-class AIHTTPTimeoutPolicy;
-extern AIHTTPTimeoutPolicy userReportResponder_timeout;
 
 //-----------------------------------------------------------------------------
 // Globals
@@ -106,7 +103,8 @@ LLFloaterReporter::LLFloaterReporter()
 	mPicking( FALSE), 
 	mPosition(),
 	mCopyrightWarningSeen( FALSE ),
-	mResourceDatap(new LLResourceData())
+	mResourceDatap(new LLResourceData()),
+	mAvatarNameCacheConnection()
 {
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_report_abuse.xml");
 }
@@ -174,6 +172,7 @@ BOOL LLFloaterReporter::postBuild()
 	pick_btn->setImages(std::string("UIImgFaceUUID"),
 						std::string("UIImgFaceSelectedUUID") );
 	childSetAction("pick_btn", onClickObjPicker, this);
+
 	childSetAction("select_abuser", boost::bind(&LLFloaterReporter::onClickSelectAbuser, this));
 
 	childSetAction("send_btn", onClickSend, this);
@@ -190,6 +189,11 @@ BOOL LLFloaterReporter::postBuild()
 // virtual
 LLFloaterReporter::~LLFloaterReporter()
 {
+	if (mAvatarNameCacheConnection.connected())
+	{
+		mAvatarNameCacheConnection.disconnect();
+	}
+
 	// child views automatically deleted
 	mObjectID 		= LLUUID::null;
 
@@ -254,14 +258,6 @@ void LLFloaterReporter::getObjectInfo(const LLUUID& object_id)
 			if (regionp)
 			{
 				getChild<LLUICtrl>("sim_field")->setValue(regionp->getName());
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
-/*
-				if ( (rlv_handler_t::isEnabled()) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
-				{
-					childSetText("sim_field", RlvStrings::getString(RLV_STRING_HIDDEN_REGION));
-				}
-*/
-// [/RLVa:KB]
 				LLVector3d global_pos;
 				global_pos.setVec(objectp->getPositionRegion());
 				setPosBox(global_pos);
@@ -315,26 +311,25 @@ void LLFloaterReporter::callbackAvatarID(const uuid_vec_t& ids, const std::vecto
 void LLFloaterReporter::setFromAvatarID(const LLUUID& avatar_id)
 {
 	mAbuserID = mObjectID = avatar_id;
-	std::string avatar_link;
 
-	if (LLAvatarNameCache::getPNSName(avatar_id, avatar_link))
+	if (mAvatarNameCacheConnection.connected())
 	{
-		getChild<LLUICtrl>("owner_name")->setValue(avatar_link);
-		getChild<LLUICtrl>("object_name")->setValue(avatar_link);
-		getChild<LLUICtrl>("abuser_name_edit")->setValue(avatar_link);
-		return;
+		mAvatarNameCacheConnection.disconnect();
 	}
-
-	LLAvatarNameCache::get(avatar_id, boost::bind(&LLFloaterReporter::onAvatarNameCache, this, _1, _2));
+	mAvatarNameCacheConnection = LLAvatarNameCache::get(avatar_id, boost::bind(&LLFloaterReporter::onAvatarNameCache, this, _1, _2));
 }
 
 void LLFloaterReporter::onAvatarNameCache(const LLUUID& avatar_id, const LLAvatarName& av_name)
 {
-	std::string avatar_link;
-	LLAvatarNameCache::getPNSName(av_name, avatar_link);
-	getChild<LLUICtrl>("owner_name")->setValue(avatar_link);
-	getChild<LLUICtrl>("object_name")->setValue(avatar_link);
-	getChild<LLUICtrl>("abuser_name_edit")->setValue(avatar_link);
+	mAvatarNameCacheConnection.disconnect();
+
+	if (mObjectID == avatar_id)
+	{
+		mOwnerName = av_name.getNSName();
+		getChild<LLUICtrl>("owner_name")->setValue(av_name.getNSName());
+		getChild<LLUICtrl>("object_name")->setValue(av_name.getNSName());
+		getChild<LLUICtrl>("abuser_name_edit")->setValue(av_name.getNSName());
+	}
 }
 
 
@@ -472,7 +467,6 @@ void LLFloaterReporter::showFromMenu(EReportType report_type)
 	}
 }
 
-
 // static
 void LLFloaterReporter::show(const LLUUID& object_id, const std::string& avatar_name)
 {
@@ -598,6 +592,7 @@ LLSD LLFloaterReporter::gatherReport()
 	const char* platform = "Lnx";
 #elif LL_SOLARIS
 	const char* platform = "Sol";
+	const char* short_platform = "O:S";
 #else
 	const char* platform = "???";
 #endif
@@ -718,23 +713,24 @@ public:
 	/*virtual*/ char const* getName(void) const { return "LLUserReportScreenshotResponder"; }
 };
 
-class LLUserReportResponder : public LLHTTPClient::ResponderWithResult
+class LLUserReportResponder : public LLHTTPClient::ResponderWithCompleted
 {
+	LOG_CLASS(LLUserReportResponder);
 public:
 	LLUserReportResponder() { }
 
-	/*virtual*/ void httpFailure(void)
+private:
+	void httpCompleted()
 	{
-		// *TODO do some user messaging here
-		LLUploadDialog::modalUploadFinished();
-	}
-	/*virtual*/ void httpSuccess(void)
-	{
+		if (!isGoodStatus(mStatus))
+		{
+			// *TODO do some user messaging here
+			LL_WARNS("UserReport") << dumpResponse() << LL_ENDL;
+		}
 		// we don't care about what the server returns
 		LLUploadDialog::modalUploadFinished();
 	}
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return userReportResponder_timeout; }
-	/*virtual*/ char const* getName(void) const { return "LLUserReportResponder"; }
+	char const* getName() const { return "LLUserReportResponder"; }
 };
 
 void LLFloaterReporter::sendReportViaCaps(std::string url, std::string sshot_url, const LLSD& report)

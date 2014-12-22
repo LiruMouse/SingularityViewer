@@ -98,13 +98,13 @@
 	<menu_bar name="Inventory Menu">
 		<menu label="Archivo" name="File">
 			<menu_item_call label="Abrir" name="Open"/>
-			<menu_item_call label="Actualizar Vestuario" name="Update Outfit"/>
 			<menu_item_call label="Nueva Ventana" name="New Window"/>
 			<menu_item_call label="Mostrar Filtros" name="Show Filters"/>
 			<menu_item_call label="Restablecer Filtros" name="Reset Current"/>
 			<menu_item_call label="Cerrar todas las Carpetas" name="Close All Folders"/>
 			<menu_item_call label="Vaciar la Papelera" name="Empty Trash"/>
 			<menu_item_call label="Actualizar Inventario" name="Refresh Inventory"/>
+			<menu_item_call label="Actualizar Vestuario" name="Update Outfit"/>
 		</menu>
 		<menu label="Crear" name="Create">
 			<menu_item_call label="Nueva Carpeta" name="New Folder"/>

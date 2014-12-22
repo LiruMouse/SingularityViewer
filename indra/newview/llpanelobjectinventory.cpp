@@ -1821,7 +1821,7 @@ void LLPanelObjectInventory::createFolderViews(LLInventoryObject* inventory_root
 		LLFolderViewFolder* new_folder = NULL;
 		new_folder = new LLFolderViewFolder(inventory_root->getName(),
 											bridge->getIcon(),
-											bridge->getOpenIcon(),
+											bridge->getIconOpen(),
 											NULL,
 											mFolders,
 											bridge);
@@ -1860,7 +1860,7 @@ void LLPanelObjectInventory::createViewsForCategory(LLInventoryObject::object_li
 			{
 				view = new LLFolderViewFolder(obj->getName(),
 											  bridge->getIcon(),
-											  bridge->getOpenIcon(),
+											  bridge->getIconOpen(),
 											  NULL,
 											  mFolders,
 											  bridge);
@@ -1871,7 +1871,7 @@ void LLPanelObjectInventory::createViewsForCategory(LLInventoryObject::object_li
 			{
 				view = new LLFolderViewItem(obj->getName(),
 											bridge->getIcon(),
-											bridge->getOpenIcon(),
+											bridge->getIconOpen(),
 											NULL,
 											bridge->getCreationDate(),
 											mFolders,

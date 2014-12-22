@@ -184,27 +184,33 @@ void LLPanelScriptLimitsInfo::updateChild(LLUICtrl* child_ctr)
 // Responders
 ///----------------------------------------------------------------------------
 
-void fetchScriptLimitsRegionInfoResponder::httpSuccess(void)
+void fetchScriptLimitsRegionInfoResponder::httpSuccess()
 {
+	const LLSD& content = getContent();
+	if (!content.isMap())
+	{
+		failureResult(HTTP_INTERNAL_ERROR_OTHER, "Malformed response contents", content);
+		return;
+	}
 	//we don't need to test with a fake response here (shouldn't anyway)
 
 #ifdef DUMP_REPLIES_TO_LLINFOS
 
-	LLSDNotationStreamer notation_streamer(mContent);
+	LLSDNotationStreamer notation_streamer(content);
 	std::ostringstream nice_llsd;
 	nice_llsd << notation_streamer;
 
 	OSMessageBox(nice_llsd.str(), "main cap response:", 0);
 
-	llinfos << "main cap response:" << mContent << llendl;
+	llinfos << "main cap response:" << content << LL_ENDL;
 
 #endif
 
 	// at this point we have an llsd which should contain ether one or two urls to the services we want.
 	// first we look for the details service:
-	if(mContent.has("ScriptResourceDetails"))
+	if(content.has("ScriptResourceDetails"))
 	{
-		LLHTTPClient::get(mContent["ScriptResourceDetails"], new fetchScriptLimitsRegionDetailsResponder(mInfo));
+		LLHTTPClient::get(content["ScriptResourceDetails"], new fetchScriptLimitsRegionDetailsResponder(mInfo));
 	}
 	else
 	{
@@ -216,19 +222,20 @@ void fetchScriptLimitsRegionInfoResponder::httpSuccess(void)
 	}
 
 	// then the summary service:
-	if(mContent.has("ScriptResourceSummary"))
+	if(content.has("ScriptResourceSummary"))
 	{
-		LLHTTPClient::get(mContent["ScriptResourceSummary"], new fetchScriptLimitsRegionSummaryResponder(mInfo));
+		LLHTTPClient::get(content["ScriptResourceSummary"], new fetchScriptLimitsRegionSummaryResponder(mInfo));
 	}
 }
 
-void fetchScriptLimitsRegionInfoResponder::httpFailure(void)
+void fetchScriptLimitsRegionInfoResponder::httpFailure()
 {
-	llwarns << "fetchScriptLimitsRegionInfoResponder error [status:" << mStatus << "]: " << mReason << llendl;
+	llwarns << dumpResponse() << LL_ENDL;
 }
 
-void fetchScriptLimitsRegionSummaryResponder::httpSuccess(void)
+void fetchScriptLimitsRegionSummaryResponder::httpSuccess()
 {
+	const LLSD& content_ref = getContent();
 #ifdef USE_FAKE_RESPONSES
 
 	LLSD fake_content;
@@ -265,9 +272,15 @@ void fetchScriptLimitsRegionSummaryResponder::httpSuccess(void)
 
 #else
 
-	const LLSD& content = mContent;
+	const LLSD& content = content_ref;
 
 #endif
+
+	if (!content.isMap())
+	{
+		failureResult(HTTP_INTERNAL_ERROR_OTHER, "Malformed response contents", content);
+		return;
+	}
 
 
 #ifdef DUMP_REPLIES_TO_LLINFOS
@@ -309,13 +322,14 @@ void fetchScriptLimitsRegionSummaryResponder::httpSuccess(void)
 	}
 }
 
-void fetchScriptLimitsRegionSummaryResponder::httpFailure(void)
+void fetchScriptLimitsRegionSummaryResponder::httpFailure()
 {
-	llwarns << "fetchScriptLimitsRegionSummaryResponder error [status:" << mStatus << "]: " << mReason << llendl;
+	llwarns << dumpResponse() << LL_ENDL;
 }
 
-void fetchScriptLimitsRegionDetailsResponder::httpSuccess(void)
+void fetchScriptLimitsRegionDetailsResponder::httpSuccess()
 {
+	const LLSD& content_ref = getContent();
 #ifdef USE_FAKE_RESPONSES
 /*
 Updated detail service, ** denotes field added:
@@ -374,9 +388,15 @@ result (map)
 
 #else
 
-	const LLSD& content = mContent;
+	const LLSD& content = content_ref;
 
 #endif
+
+	if (!content.isMap())
+	{
+		failureResult(HTTP_INTERNAL_ERROR_OTHER, "Malformed response contents", content);
+		return;
+	}
 
 #ifdef DUMP_REPLIES_TO_LLINFOS
 
@@ -418,13 +438,14 @@ result (map)
 	}
 }
 
-void fetchScriptLimitsRegionDetailsResponder::httpFailure(void)
+void fetchScriptLimitsRegionDetailsResponder::httpFailure()
 {
-	llwarns << "fetchScriptLimitsRegionDetailsResponder error [status:" << mStatus << "]: " << mReason << llendl;
+	llwarns << dumpResponse() << LL_ENDL;
 }
 
-void fetchScriptLimitsAttachmentInfoResponder::httpSuccess(void)
+void fetchScriptLimitsAttachmentInfoResponder::httpSuccess()
 {
+	const LLSD& content_ref = getContent();
 
 #ifdef USE_FAKE_RESPONSES
 
@@ -456,15 +477,21 @@ void fetchScriptLimitsAttachmentInfoResponder::httpSuccess(void)
 	summary["used"] = used;
 
 	fake_content["summary"] = summary;
-	fake_content["attachments"] = mContent["attachments"];
+	fake_content["attachments"] = content_ref["attachments"];
 
 	const LLSD& content = fake_content;
 
 #else
 
-	const LLSD& content = mContent;
+	const LLSD& content = content_ref;
 
 #endif
+
+	if (!content.isMap())
+	{
+		failureResult(HTTP_INTERNAL_ERROR_OTHER, "Malformed response contents", content);
+		return;
+	}
 
 #ifdef DUMP_REPLIES_TO_LLINFOS
 
@@ -514,9 +541,9 @@ void fetchScriptLimitsAttachmentInfoResponder::httpSuccess(void)
 	}
 }
 
-void fetchScriptLimitsAttachmentInfoResponder::httpFailure(void)
+void fetchScriptLimitsAttachmentInfoResponder::httpFailure()
 {
-	llwarns << "fetchScriptLimitsAttachmentInfoResponder error [status:" << mStatus << "]: " << mReason << llendl;
+	llwarns << dumpResponse() << LL_ENDL;
 }
 
 ///----------------------------------------------------------------------------
@@ -604,7 +631,7 @@ void LLPanelScriptLimitsRegionMemory::onNameCache(
 	}
 
 	std::string name;
-	LLAvatarNameCache::getPNSName(id, name);
+	LLAvatarNameCache::getNSName(id, name);
 
 	std::vector<LLSD>::iterator id_itor;
 	for (id_itor = mObjectListItems.begin(); id_itor != mObjectListItems.end(); ++id_itor)
@@ -706,7 +733,7 @@ void LLPanelScriptLimitsRegionMemory::setRegionDetails(LLSD content)
 				}
 				else
 				{
-					name_is_cached = LLAvatarNameCache::getPNSName(owner_id, owner_buf);  // username
+					name_is_cached = LLAvatarNameCache::getNSName(owner_id, owner_buf);  // username
 				}
 				if(!name_is_cached)
 				{
@@ -720,30 +747,39 @@ void LLPanelScriptLimitsRegionMemory::setRegionDetails(LLSD content)
 				}
 			}
 
-			LLSD item_params;
-			item_params["id"] = task_id;
+			LLScrollListItem::Params item_params;
+			item_params.value = task_id;
 
-			item_params["columns"][0]["column"] = "size";
-			item_params["columns"][0]["value"] = size;
+			LLScrollListCell::Params cell_params;
+			//cell_params.font = LLFontGL::getFontSansSerif();
 
-			item_params["columns"][1]["column"] = "urls";
-			item_params["columns"][1]["value"] = urls;
+			cell_params.column = "size";
+			cell_params.value = size;
+			item_params.columns.add(cell_params);
 
-			item_params["columns"][2]["column"] = "name";
-			item_params["columns"][2]["value"] = name_buf;
+			cell_params.column = "urls";
+			cell_params.value = urls;
+			item_params.columns.add(cell_params);
 
-			item_params["columns"][3]["column"] = "owner";
-			item_params["columns"][3]["value"] = owner_buf;
+			cell_params.column = "name";
+			cell_params.value = name_buf;
+			item_params.columns.add(cell_params);
 
-			item_params["columns"][4]["column"] = "parcel";
-			item_params["columns"][4]["value"] = parcel_name;
+			cell_params.column = "owner";
+			cell_params.value = owner_buf;
+			item_params.columns.add(cell_params);
 
-			item_params["columns"][5]["column"] = "location";
-			item_params["columns"][5]["value"] = has_locations
+			cell_params.column = "parcel";
+			cell_params.value = parcel_name;
+			item_params.columns.add(cell_params);
+
+			cell_params.column = "location";
+			cell_params.value = has_locations
 				? llformat("<%0.1f,%0.1f,%0.1f>", location_x, location_y, location_z)
 				: "";
+			item_params.columns.add(cell_params);
 
-			list->addElement(item_params);
+			list->addRow(item_params);
 
 			LLSD element;
 			element["owner_id"] = owner_id;
@@ -878,13 +914,17 @@ BOOL LLPanelScriptLimitsRegionMemory::StartRequestChain()
 	}
 	LLParcel* parcel = instance->getCurrentSelectedParcel();
 	LLViewerRegion* region = LLViewerParcelMgr::getInstance()->getSelectionRegion();
-	if (!parcel) //Pretend we have the parcel we're on selected.
+
+	LLUUID current_region_id = gAgent.getRegion()->getRegionID();
+
+	// <alchemy> Fall back to the parcel we're on if none is selected.
+	// Fixes parcel script info intermittently working and broken in toolbar button.
+	if (!parcel)
 	{
 		parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 		region = gAgent.getRegion();
 	}
-
-	LLUUID current_region_id = gAgent.getRegion()->getRegionID();
+	// </alchemy>
 
 	if ((region) && (parcel))
 	{
@@ -921,7 +961,7 @@ BOOL LLPanelScriptLimitsRegionMemory::StartRequestChain()
 		{
 			llwarns << "Can't get parcel info for script information request" << region_id
 					<< ". Region: "	<< region->getName()
-					<< " does not support RemoteParcelRequest" << llendl;
+					<< " does not support RemoteParcelRequest" << LL_ENDL;
 
 			std::string msg_waiting = LLTrans::getString("ScriptLimitsRequestError");
 			getChild<LLUICtrl>("loading_text")->setValue(LLSD(msg_waiting));

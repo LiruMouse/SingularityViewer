@@ -51,6 +51,8 @@
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
 
+#include <boost/foreach.hpp>
+
 class LLPanelGroupInvite::impl : public boost::signals2::trackable
 {
 public:
@@ -69,7 +71,7 @@ public:
 	static void callbackClickAdd(void* userdata);
 	static void callbackClickRemove(void* userdata);
 	static void callbackSelect(LLUICtrl* ctrl, void* userdata);
-	void callbackAddUsers(const uuid_vec_t& agent_idsa);
+	void callbackAddUsers(const uuid_vec_t& agent_ids);
 	
 	void onAvatarNameCache(const LLUUID& agent_id,
 											 const LLAvatarName& av_name);
@@ -93,6 +95,8 @@ public:
 	void (*mCloseCallback)(void* data);
 
 	void* mCloseCallbackUserData;
+
+	std::map<LLUUID, boost::signals2::connection> mAvatarNameCacheConnection;
 };
 
 
@@ -106,13 +110,19 @@ LLPanelGroupInvite::impl::impl(const LLUUID& group_id):
 	mGroupName( NULL ),
 	mConfirmedOwnerInvite( false ),
 	mCloseCallback( NULL ),
-	mCloseCallbackUserData( NULL )
+	mCloseCallbackUserData( NULL ),
+	mAvatarNameCacheConnection()
 {
 }
 
 LLPanelGroupInvite::impl::~impl()
 {
+	for (std::map<LLUUID, boost::signals2::connection>::const_iterator it = mAvatarNameCacheConnection.begin(); it != mAvatarNameCacheConnection.end(); ++it)
+		if ((*it).second.connected())
+			(*it).second.disconnect();
 }
+
+const S32 MAX_GROUP_INVITES = 100; // Max invites per request. 100 to match server cap.
 
 void LLPanelGroupInvite::impl::addUsers(const std::vector<std::string>& names,
 										const uuid_vec_t& agent_ids)
@@ -191,7 +201,6 @@ void LLPanelGroupInvite::impl::submitInvitations()
 		role_member_pairs[item->getUUID()] = role_id;
 	}
 	
-	const S32 MAX_GROUP_INVITES = 100; // Max invites per request. 100 to match server cap.
 	if (role_member_pairs.size() > MAX_GROUP_INVITES)
 	{
 		// Fail!
@@ -381,7 +390,12 @@ void LLPanelGroupInvite::impl::callbackAddUsers(const uuid_vec_t& agent_ids)
 	std::vector<std::string> names;
 	for (S32 i = 0; i < (S32)agent_ids.size(); i++)
 	{
-		LLAvatarNameCache::get(agent_ids[i],
+		const LLUUID& id(agent_ids[i]);
+		if (mAvatarNameCacheConnection[id].connected())
+		{
+			mAvatarNameCacheConnection[id].disconnect();
+		}
+		mAvatarNameCacheConnection[id] = LLAvatarNameCache::get(id,
 			boost::bind(&LLPanelGroupInvite::impl::onAvatarNameCache, this, _1, _2));
 	}	
 }
@@ -389,6 +403,10 @@ void LLPanelGroupInvite::impl::callbackAddUsers(const uuid_vec_t& agent_ids)
 void LLPanelGroupInvite::impl::onAvatarNameCache(const LLUUID& agent_id,
 											 const LLAvatarName& av_name)
 {
+	if (mAvatarNameCacheConnection[agent_id].connected())
+	{
+		mAvatarNameCacheConnection[agent_id].disconnect();
+	}
 	std::vector<std::string> names;
 	uuid_vec_t agent_ids;
 	agent_ids.push_back(agent_id);
@@ -476,9 +494,7 @@ void LLPanelGroupInvite::addUsers(uuid_vec_t& agent_ids)
 				}
 				else
 				{
-					std::string name;
-					LLAvatarNameCache::getPNSName(av_name, name);
-					names.push_back(name);
+					names.push_back(av_name.getNSName());
 				}
 			}
 		}
@@ -491,9 +507,7 @@ void LLPanelGroupInvite::addUserCallback(const LLUUID& id, const LLAvatarName& a
 	std::vector<std::string> names;
 	uuid_vec_t agent_ids;
 	agent_ids.push_back(id);
-	std::string name;
-	LLAvatarNameCache::getPNSName(av_name, name);
-	names.push_back(name);
+	names.push_back(av_name.getNSName());
 
 	mImplementation->addUsers(names, agent_ids);
 }

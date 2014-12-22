@@ -705,7 +705,7 @@ LLFolderViewFolder * LLInventoryPanel::createFolderViewFolder(LLInvFVBridge * br
 	return new LLFolderViewFolder(
 		bridge->getDisplayName(),
 		bridge->getIcon(),
-		bridge->getOpenIcon(),
+		bridge->getIconOpen(),
 		LLUI::getUIImage("inv_link_overlay.tga"),
 		mFolderRoot.get(),
 		bridge);
@@ -716,7 +716,7 @@ LLFolderViewItem * LLInventoryPanel::createFolderViewItem(LLInvFVBridge * bridge
 	return new LLFolderViewItem(
 		bridge->getDisplayName(),
 		bridge->getIcon(),
-		bridge->getOpenIcon(),
+		bridge->getIconOpen(),
 		LLUI::getUIImage("inv_link_overlay.tga"),
 		bridge->getCreationDate(),
 		mFolderRoot.get(),

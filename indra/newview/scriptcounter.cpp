@@ -48,9 +48,7 @@ namespace
 {
 	void countedScriptsOnAvatar(LLStringUtil::format_map_t args, const LLAvatarName& av_name)
 	{
-		std::string name;
-		LLAvatarNameCache::getPNSName(av_name, name);
-		args["NAME"] = name;
+		args["NAME"] = av_name.getNSName();
 		cmdline_printchat(LLTrans::getString("ScriptCountAvatar", args));
 	}
 }

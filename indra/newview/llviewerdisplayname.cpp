@@ -40,9 +40,6 @@
 #include "llnotificationsutil.h"
 #include "llui.h"					// getLanguage()
 
-class AIHTTPTimeoutPolicy;
-extern AIHTTPTimeoutPolicy setDisplayNameResponder_timeout;
-
 namespace LLViewerDisplayName
 {
 	// Fired when viewer receives server response to display name change
@@ -56,19 +53,21 @@ namespace LLViewerDisplayName
 		sNameChangedSignal.connect(cb); 
 	}
 
+	void doNothing() { }
 }
 
 class LLSetDisplayNameResponder : public LLHTTPClient::ResponderIgnoreBody
 {
-public:
+	LOG_CLASS(LLSetDisplayNameResponder);
+private:
 	// only care about errors
-	/*virtual*/ void httpFailure(void)
+	/*virtual*/ void httpFailure()
 	{
+		llwarns << dumpResponse() << LL_ENDL;
 		LLViewerDisplayName::sSetDisplayNameSignal(false, "", LLSD());
 		LLViewerDisplayName::sSetDisplayNameSignal.disconnect_all_slots();
 	}
 
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return setDisplayNameResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLSetDisplayNameResponder"; }
 };
 
@@ -102,7 +101,7 @@ void LLViewerDisplayName::set(const std::string& display_name, const set_name_sl
 
 	// People API expects array of [ "old value", "new value" ]
 	LLSD change_array = LLSD::emptyArray();
-	change_array.append(av_name.mDisplayName);
+	change_array.append(av_name.getDisplayName());
 	change_array.append(display_name);
 	
 	llinfos << "Set name POST to " << cap_url << llendl;
@@ -130,7 +129,7 @@ public:
 		LLSD body = input["body"];
 
 		S32 status = body["status"].asInteger();
-		bool success = (status == 200);
+		bool success = (status == HTTP_OK);
 		std::string reason = body["reason"].asString();
 		LLSD content = body["content"];
 
@@ -139,14 +138,14 @@ public:
 		// If viewer's concept of display name is out-of-date, the set request
 		// will fail with 409 Conflict.  If that happens, fetch up-to-date
 		// name information.
-		if (status == 409)
+		if (status == HTTP_CONFLICT)
 		{
 			LLUUID agent_id = gAgent.getID();
 			// Flush stale data
 			LLAvatarNameCache::erase( agent_id );
-			// Queue request for new data
-			LLAvatarName ignored;
-			LLAvatarNameCache::get( agent_id, &ignored );
+			// Queue request for new data: nothing to do on callback though...
+			// Note: no need to disconnect the callback as it never gets out of scope
+			LLAvatarNameCache::get(agent_id, boost::bind(&LLViewerDisplayName::doNothing));
 			// Kill name tag, as it is wrong
 			LLVOAvatar::invalidateNameTag( agent_id );
 		}
@@ -160,7 +159,6 @@ public:
 
 class LLDisplayNameUpdate : public LLHTTPNode
 {
-	
 	/*virtual*/ void post(
 		LLHTTPNode::ResponsePtr response,
 		const LLSD& context,
@@ -178,14 +176,15 @@ class LLDisplayNameUpdate : public LLHTTPNode
 
 		llinfos << "name-update now " << LLDate::now()
 			<< " next_update " << LLDate(av_name.mNextUpdate)
-			<< llendl;
+			<< LL_ENDL;
 
 		// Name expiration time may be provided in headers, or we may use a
 		// default value
 		// *TODO: get actual headers out of ResponsePtr
 		//LLSD headers = response->mHeaders;
+		AIHTTPReceivedHeaders headers;
 		av_name.mExpires = 
-			LLAvatarNameCache::nameExpirationFromHeaders(AIHTTPReceivedHeaders());
+			LLAvatarNameCache::nameExpirationFromHeaders(headers);
 
 		LLAvatarNameCache::insert(agent_id, av_name);
 
@@ -196,8 +195,8 @@ class LLDisplayNameUpdate : public LLHTTPNode
 		{
 			LLSD args;
 			args["OLD_NAME"] = old_display_name;
-			args["SLID"] = av_name.mUsername;
-			args["NEW_NAME"] = av_name.mDisplayName;
+			args["SLID"] = av_name.getUserName();
+			args["NEW_NAME"] = av_name.getDisplayName();
 			LLNotificationsUtil::add("DisplayNameUpdate", args);
 		}
 		if (agent_id == gAgent.getID())
@@ -214,4 +213,3 @@ LLHTTPRegistration<LLSetDisplayNameReply>
 LLHTTPRegistration<LLDisplayNameUpdate>
     gHTTPRegistrationMessageDisplayNameUpdate(
 		"/message/DisplayNameUpdate");
-

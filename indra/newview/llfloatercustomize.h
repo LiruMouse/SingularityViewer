@@ -99,7 +99,7 @@ public:
 private:
 	// Callbacks
 	void			onBtnOk();
-	void			onBtnMakeOutfit();
+	void			onBtnMakeOutfit(const LLSD& val);
 	void			onBtnImport();
 	void			onBtnImport_continued(AIFilePicker* filepicker);
 	void			onBtnExport();
@@ -120,7 +120,7 @@ private:
 	LLScrollingPanelList*			mScrollingPanelList;
 	LLScrollContainer*		mScrollContainer;
 	LLView *mMetricHeight, *mImperialHeight;
-	LLUICtrl *mMakeOutfitBtn, *mSaveOutfitBtn;
+	class LLFlyoutButton* mMakeOutfitBtn;
 	LLTabContainer* mTabContainer;
 	LLPointer<LLVisualParamReset>	mResetParams;
 

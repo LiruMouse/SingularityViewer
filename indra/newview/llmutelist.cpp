@@ -50,6 +50,8 @@
 
 #include "llmutelist.h"
 
+#include "pipeline.h"
+
 #include <boost/tokenizer.hpp>
 
 #include "lldispatcher.h"
@@ -62,9 +64,8 @@
 #include "llimpanel.h"
 #include "llimview.h"
 #include "llnotifications.h"
-#include "lluistring.h"
-#include "llviewerobject.h" 
 #include "llviewerobjectlist.h"
+#include "lltrans.h"
 
 namespace 
 {
@@ -105,12 +106,6 @@ static LLDispatchEmptyMuteList sDispatchEmptyMuteList;
 //-----------------------------------------------------------------------------
 // LLMute()
 //-----------------------------------------------------------------------------
-const char BY_NAME_SUFFIX[] = " (by name)";
-const char AGENT_SUFFIX[] = " (resident)";
-const char OBJECT_SUFFIX[] = " (object)";
-const char GROUP_SUFFIX[] = " (group)";
-const char EXTERNAL_SUFFIX[] = " (avaline)";
-
 
 LLMute::LLMute(const LLUUID& id, const std::string& name, EType type, U32 flags)
   : mID(id),
@@ -136,79 +131,29 @@ LLMute::LLMute(const LLUUID& id, const std::string& name, EType type, U32 flags)
 }
 
 
-std::string LLMute::getDisplayName() const
+std::string LLMute::getDisplayType() const
 {
-	std::string name_with_suffix = mName;
 	switch (mType)
 	{
 		case BY_NAME:
 		default:
-			name_with_suffix += BY_NAME_SUFFIX;
+			return LLTrans::getString("MuteByName");
 			break;
 		case AGENT:
-			name_with_suffix += AGENT_SUFFIX;
+			return LLTrans::getString("MuteAgent");
 			break;
 		case OBJECT:
-			name_with_suffix += OBJECT_SUFFIX;
+			return LLTrans::getString("MuteObject");
 			break;
 		case GROUP:
-			name_with_suffix += GROUP_SUFFIX;
+			return LLTrans::getString("MuteGroup");
 			break;
 		case EXTERNAL:
-			name_with_suffix += EXTERNAL_SUFFIX;
+			return LLTrans::getString("MuteExternal");
 			break;
 	}
-	return name_with_suffix;
 }
 
-void LLMute::setFromDisplayName(const std::string& display_name)
-{
-	size_t pos = 0;
-	mName = display_name;
-	
-	pos = mName.rfind(GROUP_SUFFIX);
-	if (pos != std::string::npos)
-	{
-		mName.erase(pos);
-		mType = GROUP;
-		return;
-	}
-	
-	pos = mName.rfind(OBJECT_SUFFIX);
-	if (pos != std::string::npos)
-	{
-		mName.erase(pos);
-		mType = OBJECT;
-		return;
-	}
-	
-	pos = mName.rfind(AGENT_SUFFIX);
-	if (pos != std::string::npos)
-	{
-		mName.erase(pos);
-		mType = AGENT;
-		return;
-	}
-	
-	pos = mName.rfind(BY_NAME_SUFFIX);
-	if (pos != std::string::npos)
-	{
-		mName.erase(pos);
-		mType = BY_NAME;
-		return;
-	}
-	
-	pos = mName.rfind(EXTERNAL_SUFFIX);
-	if (pos != std::string::npos)
-	{
-		mName.erase(pos);
-		mType = EXTERNAL;
-		return;
-	}
-
-	llwarns << "Unable to set mute from display name " << display_name << llendl;
-	return;
-}
 
 /* static */
 LLMuteList* LLMuteList::getInstance()
@@ -232,9 +177,6 @@ LLMuteList::LLMuteList() :
 	mIsLoaded(FALSE)
 {
 	gGenericDispatcher.addHandler("emptymutelist", &sDispatchEmptyMuteList);
-
-	checkNewRegion();
-	gAgent.addRegionChangedCallback(boost::bind(&LLMuteList::checkNewRegion, this));
 }
 
 //-----------------------------------------------------------------------------
@@ -327,6 +269,7 @@ BOOL LLMuteList::add(const LLMute& mute, U32 flags)
 			llinfos << "Muting by name " << mute.mName << llendl;
 			updateAdd(mute);
 			notifyObservers();
+			notifyObserversDetailed(mute);
 			return TRUE;
 		}
 		else
@@ -375,6 +318,7 @@ BOOL LLMuteList::add(const LLMute& mute, U32 flags)
 				llinfos << "Muting " << localmute.mName << " id " << localmute.mID << " flags " << localmute.mFlags << llendl;
 				updateAdd(localmute);
 				notifyObservers();
+				notifyObserversDetailed(localmute);
 				if(!(localmute.mFlags & LLMute::flagParticles))
 				{
 					//Kill all particle systems owned by muted task
@@ -472,19 +416,23 @@ BOOL LLMuteList::remove(const LLMute& mute, U32 flags)
 		}
 		
 		// Must be after erase.
+		notifyObserversDetailed(localmute);
 		setLoaded();  // why is this here? -MG
 	}
-
-	// Clean up any legacy mutes
-	string_set_t::iterator legacy_it = mLegacyMutes.find(mute.mName);
-	if (legacy_it != mLegacyMutes.end())
+	else
 	{
-		// Database representation of legacy mute is UUID null.
-		LLMute mute(LLUUID::null, *legacy_it, LLMute::BY_NAME);
-		updateRemove(mute);
-		mLegacyMutes.erase(legacy_it);
-		// Must be after erase.
-		setLoaded(); // why is this here? -MG
+		// Clean up any legacy mutes
+		string_set_t::iterator legacy_it = mLegacyMutes.find(mute.mName);
+		if (legacy_it != mLegacyMutes.end())
+		{
+			// Database representation of legacy mute is UUID null.
+			LLMute mute(LLUUID::null, *legacy_it, LLMute::BY_NAME);
+			updateRemove(mute);
+			mLegacyMutes.erase(legacy_it);
+			// Must be after erase.
+			notifyObserversDetailed(mute);
+			setLoaded(); // why is this here? -MG
+		}
 	}
 	
 	return found;
@@ -537,15 +485,13 @@ void notify_automute_callback(const LLUUID& agent_id, const std::string& full_na
 
 		if (reason == LLMuteList::AR_IM)
 		{
-			LLFloaterIMPanel *timp = gIMMgr->findFloaterBySession(agent_id);
-			if (timp)
+			if (LLFloaterIMPanel* timp = gIMMgr->findFloaterBySession(agent_id))
 			{
 				timp->addHistoryLine(message);
 			}
 		}
 
-		LLChat auto_chat(message);
-		LLFloaterChat::addChat(auto_chat, FALSE, FALSE);
+		LLFloaterChat::addChat(message, FALSE, FALSE);
 	}
 }
 
@@ -701,14 +647,10 @@ BOOL LLMuteList::isMuted(const LLUUID& id, const std::string& name, U32 flags) c
 	LLViewerObject* mute_object = get_object_to_mute_from_id(id);
 	LLUUID id_to_check  = (mute_object) ? mute_object->getID() : id;
 
+	if (id_to_check == gAgentID) return false; // Can't mute self.
+
 	// don't need name or type for lookup
 	LLMute mute(id_to_check);
-	// Can't mute self.
-	if (mute.mID == gAgent.getID() && !mute_object)
-	{
-		getInstance()->remove(mute);
-		return false;
-	}
 	mute_set_t::const_iterator mute_it = mMutes.find(mute);
 	if (mute_it != mMutes.end())
 	{
@@ -721,7 +663,8 @@ BOOL LLMuteList::isMuted(const LLUUID& id, const std::string& name, U32 flags) c
 	}
 
 	// empty names can't be legacy-muted
-	if (name.empty()) return FALSE;
+	bool avatar = mute_object && mute_object->isAvatar();
+	if (name.empty() || avatar) return FALSE;
 
 	// Look in legacy pile
 	string_set_t::const_iterator legacy_it = mLegacyMutes.find(name);
@@ -849,52 +792,15 @@ void LLMuteList::notifyObservers()
 	}
 }
 
-void LLMuteList::checkNewRegion()
+void LLMuteList::notifyObserversDetailed(const LLMute& mute)
 {
-	LLViewerRegion* regionp = gAgent.getRegion();
-	if (!regionp) return;
-
-	if (regionp->getFeaturesReceived())
+	for (observer_set_t::iterator it = mObservers.begin();
+		it != mObservers.end();
+		)
 	{
-		parseSimulatorFeatures();
-	}
-	else
-	{
-		regionp->setFeaturesReceivedCallback(boost::bind(&LLMuteList::parseSimulatorFeatures, this));
-	}
-}
-
-void LLMuteList::parseSimulatorFeatures()
-{
-	LLViewerRegion* regionp = gAgent.getRegion();
-	if (!regionp) return;
-
-	LLSD info;
-	regionp->getSimulatorFeatures(info);
-
-	mGodLastNames.clear();
-	mGodFullNames.clear();
-
-	if (info.has("god_names"))
-	{
-		if (info["god_names"].has("last_names"))
-		{
-			LLSD godNames = info["god_names"]["last_names"];
-
-			for (LLSD::array_iterator godNames_it = godNames.beginArray(); godNames_it != godNames.endArray(); ++godNames_it)
-				mGodLastNames.insert((*godNames_it).asString());
-		}
-
-		if (info["god_names"].has("full_names"))
-		{
-			LLSD godNames = info["god_names"]["full_names"];
-
-			for (LLSD::array_iterator godNames_it = godNames.beginArray(); godNames_it != godNames.endArray(); ++godNames_it)
-				mGodFullNames.insert((*godNames_it).asString());
-		}
-	}
-	else // Just use Linden
-	{
-		mGodLastNames.insert("Linden");
+		LLMuteListObserver* observer = *it;
+		observer->onChangeDetailed(mute);
+		// In case onChange() deleted an entry.
+		it = mObservers.upper_bound(observer);
 	}
 }

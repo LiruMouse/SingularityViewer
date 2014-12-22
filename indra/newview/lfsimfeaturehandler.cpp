@@ -21,6 +21,7 @@
 
 #include "llagent.h"
 #include "llviewerregion.h"
+#include "llmutelist.h"
 #include "hippogridmanager.h"
 
 LFSimFeatureHandler::LFSimFeatureHandler()
@@ -33,6 +34,7 @@ LFSimFeatureHandler::LFSimFeatureHandler()
 {
 	if (!gHippoGridManager->getCurrentGrid()->isSecondLife()) // Remove this line if we ever handle SecondLife sim features
 		gAgent.addRegionChangedCallback(boost::bind(&LFSimFeatureHandler::handleRegionChange, this));
+	LLMuteList::instance().mGodLastNames.insert("Linden");
 }
 
 ExportPolicy LFSimFeatureHandler::exportPolicy() const
@@ -107,6 +109,34 @@ void LFSimFeatureHandler::setSupportedFeatures()
 			mSayRange.reset();
 			mShoutRange.reset();
 			mWhisperRange.reset();
+		}
+
+		LLMuteList& mute_list(LLMuteList::instance());
+		mute_list.mGodLastNames.clear();
+		mute_list.mGodFullNames.clear();
+
+		if (info.has("god_names"))
+		{
+			const LLSD& god_names(info["god_names"]);
+			if (god_names.has("last_names"))
+			{
+				const LLSD& last_names(god_names["last_names"]);
+
+				for (LLSD::array_const_iterator it = last_names.beginArray(); it != last_names.endArray(); ++it)
+					mute_list.mGodLastNames.insert((*it).asString());
+			}
+
+			if (god_names.has("full_names"))
+			{
+				const LLSD& full_names(god_names["full_names"]);
+
+				for (LLSD::array_const_iterator it = full_names.beginArray(); it != full_names.endArray(); ++it)
+					mute_list.mGodFullNames.insert((*it).asString());
+			}
+		}
+		else
+		{
+			mute_list.mGodLastNames.insert("Linden");
 		}
 	}
 }

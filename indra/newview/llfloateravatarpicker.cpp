@@ -53,6 +53,7 @@
 #include "lldraghandle.h"
 #include "message.h"
 
+//#include "llsdserialize.h"
 
 //put it back as a member once the legacy path is out?
 static std::map<LLUUID, LLAvatarName> sAvatarNameMap;
@@ -333,9 +334,9 @@ void LLFloaterAvatarPicker::populateNearMe()
 		else
 		{
 			element["columns"][0]["column"] = "name";
-			element["columns"][0]["value"] = av_name.mDisplayName;
+			element["columns"][0]["value"] = av_name.getDisplayName();
 			element["columns"][1]["column"] = "username";
-			element["columns"][1]["value"] = av_name.mUsername;
+			element["columns"][1]["value"] = av_name.getUserName();
 
 			sAvatarNameMap[av] = av_name;
 		}
@@ -514,7 +515,6 @@ protected:
 		else
 		{
 			llwarns << "avatar picker failed " << dumpResponse() << LL_ENDL;
-			
 		}
 	}
 
@@ -670,8 +670,7 @@ void LLFloaterAvatarPicker::processAvatarPickerReply(LLMessageSystem* msg, void*
 	// Not for us
 	if (agent_id != gAgent.getID()) return;
 
-	if (!instanceExists()) return;
-	LLFloaterAvatarPicker* floater = getInstance();
+	LLFloaterAvatarPicker* floater = instanceExists() ? getInstance() : NULL;
 
 	// floater is closed or these are not results from our last request
 	if (NULL == floater || query_id != floater->mQueryID)
@@ -713,9 +712,7 @@ void LLFloaterAvatarPicker::processAvatarPickerReply(LLMessageSystem* msg, void*
 				found_one = TRUE;
 
 				LLAvatarName av_name;
-				av_name.mLegacyFirstName = first_name;
-				av_name.mLegacyLastName = last_name;
-				av_name.mDisplayName = avatar_name;
+				av_name.fromString(avatar_name);
 				const LLUUID& agent_id = avatar_id;
 				sAvatarNameMap[agent_id] = av_name;
 

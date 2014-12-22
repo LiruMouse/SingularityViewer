@@ -64,18 +64,12 @@ public:
 	
 	LLMute(const LLUUID& id, const std::string& name = std::string(), EType type = BY_NAME, U32 flags = 0);
 
-	// Returns name + suffix based on type
-	// For example:  "James Tester (resident)"
-	std::string getDisplayName() const;
-	
-	// Converts a UI name into just the agent or object name
-	// For example: "James Tester (resident)" sets the name to "James Tester"
-	// and the type to AGENT.
-	void setFromDisplayName(const std::string& display_name);
+	// Returns localized type name of muted item
+	std::string getDisplayType() const;
 	
 public:
 	LLUUID		mID;	// agent or object id
-	std::string	mName;	// agent or object name
+	std::string	mName;	// agent or object name, does not store last name "Resident"
 	EType		mType;	// needed for UI display of existing mutes
 	U32			mFlags;	// flags pertaining to this mute entry
 };
@@ -119,6 +113,9 @@ public:
 	BOOL isLinden(const std::string& name) const;
 	bool isLinden(const LLUUID& id) const;
 	
+	// <singu/> Quick way to check if LLMute is in the set
+	bool hasMute(const LLMute& mute) const { return mMutes.find(mute) != mMutes.end(); }
+
 	BOOL isLoaded() const { return mIsLoaded; }
 
 	std::vector<LLMute> getMutes() const;
@@ -135,6 +132,7 @@ private:
 
 	void setLoaded();
 	void notifyObservers();
+	void notifyObserversDetailed(const LLMute &mute);
 
 	void updateAdd(const LLMute& mute);
 	void updateRemove(const LLMute& mute);
@@ -144,9 +142,6 @@ private:
 	static void processUseCachedMuteList(LLMessageSystem* msg, void**);
 
 	static void onFileMuteList(void** user_data, S32 code, LLExtStat ext_status);
-
-	void checkNewRegion();
-	void parseSimulatorFeatures();
 
 private:
 	struct compare_by_name
@@ -182,6 +177,7 @@ private:
 
 	friend class LLDispatchEmptyMuteList;
 
+	friend class LFSimFeatureHandler;
 	std::set<std::string> mGodLastNames;
 	std::set<std::string> mGodFullNames;
 };
@@ -191,6 +187,7 @@ class LLMuteListObserver
 public:
 	virtual ~LLMuteListObserver() { }
 	virtual void onChange() = 0;
+	virtual void onChangeDetailed(const LLMute& ) { }
 };
 
 

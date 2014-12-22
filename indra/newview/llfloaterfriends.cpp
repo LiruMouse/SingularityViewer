@@ -330,9 +330,7 @@ const S32& friend_name_system()
 
 static void update_friend_item(LLScrollListItem* item, const LLAvatarName& avname)
 {
-	std::string name;
-	LLAvatarNameCache::getPNSName(avname, name, friend_name_system());
-	item->getColumn(1)->setValue(name);
+	item->getColumn(1)->setValue(avname.getNSName(friend_name_system()));
 }
 
 void LLPanelFriends::addFriend(const LLUUID& agent_id)
@@ -343,7 +341,7 @@ void LLPanelFriends::addFriend(const LLUUID& agent_id)
 	bool isOnline = relation_info->isOnline();
 
 	std::string fullname;
-	bool have_name = LLAvatarNameCache::getPNSName(agent_id, fullname, friend_name_system());
+	bool have_name = LLAvatarNameCache::getNSName(agent_id, fullname, friend_name_system());
 	if (!have_name) gCacheName->getFullName(agent_id, fullname);
 
 	LLScrollListItem::Params element;
@@ -417,7 +415,7 @@ void LLPanelFriends::updateFriendItem(const LLUUID& agent_id, const LLRelationsh
 	bool isOnline = info->isOnline();
 
 	std::string fullname;
-	if (LLAvatarNameCache::getPNSName(agent_id, fullname, friend_name_system()))
+	if (LLAvatarNameCache::getNSName(agent_id, fullname, friend_name_system()))
 	{
 		itemp->getColumn(LIST_FRIEND_UPDATE_GEN)->setValue(info->getChangeSerialNum());
 	}
@@ -847,7 +845,7 @@ void LLPanelFriends::confirmModifyRights(rights_map_t& rights, EGrantRevoke comm
 	{
 		LLSD args;
 		std::string fullname;
-		if (LLAvatarNameCache::getPNSName(rights.begin()->first, fullname, friend_name_system()))
+		if (LLAvatarNameCache::getNSName(rights.begin()->first, fullname, friend_name_system()))
 			args["NAME"] = fullname;
 
 		LLNotificationsUtil::add(command == GRANT ? "GrantModifyRights" : "RevokeModifyRights",

@@ -219,9 +219,7 @@ struct ProfCtrlListAccum : public LLControlGroup::ApplyFunctor
 #endif //PROF_CTRL_CALLS
 void spew_key_to_name(const LLUUID& targetKey, const LLAvatarName& av_name)
 {
-	std::string object_name;
-	LLAvatarNameCache::getPNSName(av_name, object_name);
-	cmdline_printchat(llformat("%s: %s", targetKey.asString().c_str(), object_name.c_str()));
+	cmdline_printchat(llformat("%s: %s", targetKey.asString().c_str(), av_name.getNSName().c_str()));
 }
 bool cmd_line_chat(std::string revised_text, EChatType type)
 {

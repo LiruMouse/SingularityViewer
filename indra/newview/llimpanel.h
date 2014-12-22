@@ -35,6 +35,7 @@
 #include "llcallingcard.h"
 #include "llfloater.h"
 #include "lllogchat.h"
+#include "llmutelist.h"
 
 class LLAvatarName;
 class LLIMSpeakerMgr;
@@ -46,7 +47,7 @@ class LLParticipantList;
 class LLViewerTextEditor;
 class LLVoiceChannel;
 
-class LLFloaterIMPanel : public LLFloater, public LLFriendObserver
+class LLFloaterIMPanel : public LLFloater, public LLFriendObserver, public LLMuteListObserver
 {
 public:
 
@@ -65,6 +66,8 @@ public:
 	void onAvatarNameLookup(const LLAvatarName& avatar_name);
 
 	/*virtual*/ void changed(U32 mask); // From LLFriendObserver, check friend status
+	/*virtual*/ void onChange() {}
+	/*virtual*/ void onChangeDetailed(const LLMute& mute); // From LLMuteListObserver, check for mute status changes for OtherParticipant
 	/*virtual*/ BOOL postBuild();
 
 	// Check typing timeout timer.

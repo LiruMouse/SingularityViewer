@@ -285,7 +285,7 @@ void LLHoverView::updateText()
 				{
 // [/RLVa:KB]
 					std::string complete_name;
-					if (!LLAvatarNameCache::getPNSName(hit_object->getID(), complete_name))
+					if (!LLAvatarNameCache::getNSName(hit_object->getID(), complete_name))
 						complete_name = firstname->getString() + std::string(" ") + lastname->getString();
 
 					if (title)
@@ -408,7 +408,7 @@ void LLHoverView::updateText()
 							{
 								line.append(LLTrans::getString("TooltipPublic"));
 							}
-							else if(LLAvatarNameCache::getPNSName(owner, name))
+							else if (LLAvatarNameCache::getNSName(owner, name))
 							{
 	// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
 								if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))

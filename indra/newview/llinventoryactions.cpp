@@ -60,11 +60,16 @@ extern LLUUID gAgentID;
 
 using namespace LLOldEvents;
 
+namespace LLInventoryAction
+{
+	bool doToSelected(LLFolderView* folder, std::string action);
+}
+
 typedef LLMemberListener<LLPanelObjectInventory> object_inventory_listener_t;
 typedef LLMemberListener<LLInventoryView> inventory_listener_t;
 typedef LLMemberListener<LLInventoryPanel> inventory_panel_listener_t;
 
-bool doToSelected(LLFolderView* folder, std::string action)
+bool LLInventoryAction::doToSelected(LLFolderView* folder, std::string action)
 {
 	LLInventoryModel* model = &gInventory;
 	if ("rename" == action)
@@ -136,7 +141,7 @@ class LLDoToSelectedPanel : public object_inventory_listener_t
 		LLFolderView* folder = panel->getRootFolder();
 		if(!folder) return true;
 
-		return doToSelected(folder, userdata.asString());
+		return LLInventoryAction::doToSelected(folder, userdata.asString());
 	}
 };
 
@@ -148,7 +153,7 @@ class LLDoToSelectedFloater : public inventory_listener_t
 		LLFolderView* folder = panel->getRootFolder();
 		if(!folder) return true;
 
-		return doToSelected(folder, userdata.asString());
+		return LLInventoryAction::doToSelected(folder, userdata.asString());
 	}
 };
 
@@ -160,7 +165,7 @@ class LLDoToSelected : public inventory_panel_listener_t
 		LLFolderView* folder = panel->getRootFolder();
 		if(!folder) return true;
 
-		return doToSelected(folder, userdata.asString());
+		return LLInventoryAction::doToSelected(folder, userdata.asString());
 	}
 };
 

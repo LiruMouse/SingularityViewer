@@ -491,6 +491,10 @@ public:
 	static void put(std::string const& url, LLSD const& body, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
 	    { AIHTTPHeaders headers; put(url, body, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
 
+	static void putRaw(const std::string& url, const char* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
+	static void putRaw(const std::string& url, const char* data, S32 size, ResponderPtr responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
+	    { AIHTTPHeaders headers; putRaw(url, data, size, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }
+
 	static void getHeaderOnly(std::string const& url, ResponderHeadersOnly* responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off));
 	static void getHeaderOnly(std::string const& url, ResponderHeadersOnly* responder/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug = debug_off))
 	    { AIHTTPHeaders headers; getHeaderOnly(url, responder, headers/*,*/ DEBUG_CURLIO_PARAM(debug)); }

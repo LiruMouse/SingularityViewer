@@ -546,7 +546,7 @@ void LLFloaterAvatarList::updateAvatarList()
 			const LLUUID& avid = avatar_ids[i];
 			std::string name;
 			static const LLCachedControl<S32> namesystem("RadarNameSystem");
-			if (!LLAvatarNameCache::getPNSName(avid, name, namesystem)) continue; //prevent (Loading...)
+			if (!LLAvatarNameCache::getNSName(avid, name, namesystem)) continue; //prevent (Loading...)
 
 			LLVector3d position = positions[i];
 

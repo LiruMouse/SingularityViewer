@@ -40,17 +40,9 @@
 
 #include "llfloater.h"
 #include "lllogchat.h"
-class LLButton;
 class LLChat;
-class LLComboBox;
-class LLLineEditor;
-class LLViewerTextEditor;
-class LLMessageSystem;
-class LLUUID;
-class LLCheckBoxCtrl;
-class LLParticipantList;
-class LLLogChat;
 class LLChatBar;
+class LLParticipantList;
 
 class LLFloaterChat
 	:	public LLFloater, public LLUISingleton<LLFloaterChat, LLFloaterChat>
@@ -61,13 +53,11 @@ public:
 
 	virtual void draw();
 	virtual BOOL postBuild();
-	virtual void onOpen();
 	virtual void onClose(bool app_quitting);
 	virtual void onFocusReceived();
 	virtual void handleVisibilityChange(BOOL cur_visibility);
 	virtual void setMinimized(BOOL);
 	void updateConsoleVisibility();
-	void updateSettings();
 
 	static void setHistoryCursorAndScrollToEnd();
 	
@@ -80,12 +70,9 @@ public:
 	
 	static void triggerAlerts(const std::string& text);
 
-	static void onClickMute(void *data);
-	static void onClickToggleShowMute(LLUICtrl* caller, void *data);
-	static void onClickToggleTranslateChat(LLUICtrl* caller, void *data);
-	static void onClickToggleActiveSpeakers(void* userdata);
-    static void onClickChatHistoryOpen(void* userdata);
-	static void chatFromLogFile(LLLogChat::ELogLineType type,std::string line, void* userdata);
+	void onClickToggleShowMute(bool show_mute, class LLTextEditor* history_editor, LLTextEditor* history_editor_with_mute);
+	void onClickToggleActiveSpeakers(const LLSD& val);
+	static void chatFromLogFile(LLLogChat::ELogLineType type, std::string line, void* userdata);
 	static void loadHistory();
 	static void* createSpeakersPanel(void* data);
 	static void* createChatPanel(void* data);
@@ -100,7 +87,6 @@ public:
 
 	BOOL    focusFirstItem(BOOL prefer_text_fields = FALSE, BOOL focus_flash = TRUE );
 
-	CachedUICtrl<LLButton> mToggleActiveSpeakersBtn;
 	CachedUICtrl<LLChatBar> mChatPanel;
 };
 

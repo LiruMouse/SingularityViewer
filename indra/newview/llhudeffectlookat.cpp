@@ -550,7 +550,7 @@ void LLHUDEffectLookAt::render()
 		static const LLCachedControl<S32> lookAtNames("LookAtNameSystem");
 		if (lookAtNames < 0) return;
 		std::string text;
-		if (!LLAvatarNameCache::getPNSName(static_cast<LLVOAvatar*>(mSourceObject.get())->getID(), text, lookAtNames)) return;
+		if (!LLAvatarNameCache::getNSName(static_cast<LLVOAvatar*>(mSourceObject.get())->getID(), text, lookAtNames)) return;
 		if (text.length() > 9 && 0 == text.compare(text.length() - 9, 9, " Resident"))
 			text.erase(text.length() - 9);
 		LLVector3 offset = gAgentCamera.getCameraPositionAgent() - target;
