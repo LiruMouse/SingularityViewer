@@ -13,63 +13,51 @@
 	<string name="forgot_password_url">
 		http://secondlife.com/account/request.php
 	</string>
-  <layout_stack name="element_stack" border_size="0" left="28" right="800" top="70" bottom="10" follows="left|bottom" orientation="horizontal">
-    <layout_panel name="name_panel" left="0" user_resize="false" auto_resize="false" width="163" min_width="0">
+  <layout_stack name="element_stack" border_size="0" left="15" right="800" top="67" bottom="7" follows="left|bottom" orientation="horizontal">
+    <layout_panel name="name_panel" left="0" user_resize="false" auto_resize="false" width="158" min_width="0">
       <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="44" drop_shadow_visible="true" follows="left|bottom"
-	     font="SansSerif" h_pad="0" halign="left" height="16"
-	     left="4" mouse_opaque="true" name="name_label" v_pad="0" width="120">
-        Name or Username:
+	     font="SansSerifSmall" h_pad="0" halign="left" height="16"
+	     left="4" mouse_opaque="true" name="name_label" v_pad="0" width="135">
+        Username:
       </text>
-      <combo_box bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-24"
+      <combo_box bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20"
          font="SansSerif" handle_edit_keys_directly="true" height="20" left="4"
          max_chars="64" mouse_opaque="true" name="username_combo"
-         select_all_on_focus_received="true" width="155" allow_text_entry="true" />
-      <check_box bottom="0" control_name="RememberName"
-         follows="left|bottom" font="SansSerifSmall" height="16"
-       initial_value="true" label="Remember name"
-       left="0" mouse_opaque="true" name="remember_name_check" width="158" />
-      <button bottom_delta="0" left="140" height="20" width="20" follows="left|bottom" image_overlay="inv_folder_trash.tga" scale_image="true" label="" tool_tip="Delete the currently selected remembered login info, if any." name="remove_login"/>
+         select_all_on_focus_received="true" width="145" allow_text_entry="true" />
     </layout_panel>
     <layout_panel name="password_panel" left="0" user_resize="false" auto_resize="false" width="134" min_width="0">
       <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="44" drop_shadow_visible="true" follows="left|bottom"
-	     font="SansSerif" h_pad="0" halign="left" height="16"
-	     left="4" mouse_opaque="true" name="password_text" v_pad="0" width="120">
+	     font="SansSerifSmall" h_pad="0" halign="left" height="16"
+	     left="4" mouse_opaque="true" name="password_text" v_pad="0" width="115">
         Password:
       </text>
-      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-24"
+      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20"
            follows="left|bottom" font="SansSerifSmall" handle_edit_keys_directly="true"
            height="20" left="4" max_length="16" mouse_opaque="true"
-           name="password_edit" select_all_on_focus_received="true" width="120" />
-      <check_box bottom="0" control_name="RememberPassword"
-             follows="left|bottom" font="SansSerifSmall" height="16"
-           initial_value="false" label="Remember password"
-           left="0" mouse_opaque="true" name="remember_check" width="138" />
+           name="password_edit" select_all_on_focus_received="true" width="115" />
     </layout_panel>
-    <layout_panel name="grids_panel" left="0" user_resize="false" auto_resize="false" width="129" min_width="0" visibility_control="ForceShowGrid">
+    <layout_panel name="grids_panel" left="0" user_resize="false" auto_resize="false" width="143" min_width="0" visibility_control="ForceShowGrid">
       <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="44" drop_shadow_visible="true" follows="left|bottom"
-	     font="SansSerif" h_pad="0" halign="left" height="16"
-	     left="0" mouse_opaque="true" name="grids_combo_text" v_pad="0" width="120">
-        Grid:
+	     font="SansSerifSmall" h_pad="0" halign="left" height="16"
+	     left="0" mouse_opaque="true" name="grids_combo_text" v_pad="0" width="130">
+        Grid or Login URI:
       </text>
-      <combo_box allow_text_entry="true" max_chars="128" bottom_delta="-24" follows="left|bottom" height="20"
-           left="0" mouse_opaque="true" width="120" name="grids_combo" tool_tip="Input the name/nick for a known grid or any login uri, or pick one from the list"/>
-      <button name="grids_btn" label="Grid Manager"
-          bottom_delta="-20" left_delta="10" height="16" width="100"
-          follows="left|bottom" font="SansSerifSmall" halign="center"
-          mouse_opaque="true" scale_image="TRUE" />
+      <combo_box allow_text_entry="true" bottom_delta="-20" follows="left|bottom" height="20"
+           left="0" mouse_opaque="true" width="130" name="grids_combo" tool_tip="Input the name/nick for a known grid or any login uri, or pick one from the list"/>
+      <button bottom_delta="-19" follows="left|bottom" height="16" label="Grid Manager" name="grids_btn" width="128" font="SansSerifSmall"/>
     </layout_panel>
-    <layout_panel name="location_panel" left="0" user_resize="false" auto_resize="false" width="165" min_width="0">
+    <layout_panel name="location_panel" left="0" user_resize="false" auto_resize="false" width="143" min_width="0">
       <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="44" drop_shadow_visible="true" follows="left|bottom"
-	     font="SansSerif" h_pad="0" halign="left" height="16"
-	     left="0" mouse_opaque="true" name="start_location_text" v_pad="0" width="120">
+	     font="SansSerifSmall" h_pad="0" halign="left" height="16"
+	     left="0" mouse_opaque="true" name="start_location_text" v_pad="0" width="130">
         Start Location:
       </text>
-      <combo_box allow_text_entry="true" bottom_delta="-24" left="0" follows="left|bottom" height="20"
-           max_chars="128" mouse_opaque="true" name="start_location_combo" width="155">
+      <combo_box allow_text_entry="true" bottom_delta="-20" left="0" follows="left|bottom" height="20"
+           mouse_opaque="true" name="start_location_combo" width="130">
         <combo_item name="MyHome" value="home">
           My Home
         </combo_item>
@@ -81,14 +69,16 @@
         </combo_item>
       </combo_box>
     </layout_panel>
-    <layout_panel name="connect_panel" user_resize="false" auto_resize="true" width="100" min_width="100">
-      <button bottom="18" follows="left|bottom" font="SansSerif" halign="center"
+    <layout_panel name="connect_panel" user_resize="false" auto_resize="true" width="105" min_width="105">
+      <button bottom="22" follows="left|bottom" font="SansSerif"
 	     height="24" label="Log In" label_selected="Log In"
 	     left="0" mouse_opaque="true" name="connect_btn" scale_image="TRUE"
-	     width="100" />
+	     width="90" />
     </layout_panel>
   </layout_stack>
-	
+  <check_box bottom="12" left="15" control_name="RememberName" follows="left|bottom" height="16" label="Save username" name="remember_name_check" width="158"/>
+  <button bottom_delta="0" left="146" height="16" width="16" follows="left|bottom" image_overlay="inv_folder_trash.tga" scale_image="true" label="" tool_tip="Delete the currently selected remembered login info, if any." name="remove_login"/>
+  <check_box bottom_delta="0" left="173" control_name="RememberPassword" follows="left|bottom" height="16" label="Save password" name="remember_check" width="158"/>
 
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="45" drop_shadow_visible="true" follows="right|bottom"

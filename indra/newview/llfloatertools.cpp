@@ -545,7 +545,8 @@ void LLFloaterTools::refresh()
 		// Added in Link Num value -HgB
 		S32 prim_count = LLSelectMgr::getInstance()->getEditSelection()->getObjectCount();
 		std::string value_string;
-		if ((prim_count == 1) && gSavedSettings.getBOOL("EditLinkedParts")) //Selecting a single prim in "Edit Linked" mode, show link number
+		bool edit_linked(gSavedSettings.getBOOL("EditLinkedParts"));
+		if (edit_linked && prim_count == 1) //Selecting a single prim in "Edit Linked" mode, show link number
 		{
 			link_cost = LLSelectMgr::getInstance()->getSelection()->getSelectedObjectCost();
 			childSetTextArg("link_num_obj_count", "[DESC]", std::string("Link number:"));
@@ -572,6 +573,12 @@ void LLFloaterTools::refresh()
 					}
 				}
 			}
+		}
+		else if (edit_linked)
+		{
+			childSetTextArg("link_num_obj_count", "[DESC]", std::string("Selected prims:"));
+			LLResMgr::getInstance()->getIntegerString(value_string, prim_count);
+			link_cost = LLSelectMgr::getInstance()->getSelection()->getSelectedObjectCost();
 		}
 		else
 		{
@@ -606,7 +613,7 @@ void LLFloaterTools::refresh()
 
 		LLStringUtil::format_map_t selection_args;
 		selection_args["OBJ_COUNT"] = llformat("%.1d", prim_count);
-		selection_args["LAND_IMPACT"] = llformat("%.1d", (S32)link_cost);
+		selection_args["LAND_IMPACT"] = llformat(edit_linked ? "%.2f" : "%.0f", link_cost);
 
 		std::ostringstream selection_info;
 

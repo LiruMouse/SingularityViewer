@@ -5,17 +5,15 @@
       <text name="name_label">
         Nom:
       </text>
-      <check_box label="Mémoriser le nom" name="remember_name_check"/>
     </layout_panel>
     <layout_panel name="password_panel">
       <text name="password_text">
         Mot de passe:
       </text>
-      <check_box label="Mémoriser mot de passe" name="remember_check"/>
     </layout_panel>
     <layout_panel name="grids_panel">
       <text name="grids_combo_text">
-        Grille:
+        Grille ou Login URI:
       </text>
       <button name="grids_btn" label="Choix de Grille"/>
     </layout_panel>
@@ -39,6 +37,8 @@
       <button label="Connexion" label_selected="Me connecter" name="connect_btn"/>
     </layout_panel>
   </layout_stack>
+  <check_box label="Retenir le nom" name="remember_name_check"/>
+  <check_box label="Retenir mot de passe" name="remember_check"/>
 	<text name="create_new_account_text">
 		Créer un compte
 	</text>

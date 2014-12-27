@@ -375,7 +375,7 @@ BOOL LLToolPie::handleLeftClickPick()
 			}
 			object = (LLViewerObject*)object->getParent();
 		}
-		if (object && object == gAgentAvatarp && !gSavedSettings.getBOOL("ClickToWalk"))
+		if (object && object == gAgentAvatarp /*&& gSavedSettings.getBOOL("ClickToWalk")*/)
 		{
 			// we left clicked on avatar, switch to focus mode
 			mMouseButtonDown = false;

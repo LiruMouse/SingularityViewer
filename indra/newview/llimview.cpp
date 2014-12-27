@@ -489,7 +489,13 @@ void LLIMMgr::addMessage(
 	}
 
 	// now add message to floater
-	const LLColor4& color = agent_chat_color(other_participant_id, from, false);
+	LLColor4 color = agent_chat_color(other_participant_id, from, false);
+	if (dialog == IM_BUSY_AUTO_RESPONSE)
+	{
+		color *= .75f;
+		color += LLColor4::transparent*.25f;
+	}
+
 	if ( !link_name )
 	{
 		floater->addHistoryLine(msg,color); // No name to prepend, so just add the message normally

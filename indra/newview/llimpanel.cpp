@@ -725,38 +725,38 @@ bool LLFloaterIMPanel::inviteToSession(const LLDynamicArray<LLUUID>& ids)
 
 void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incolor, bool log_to_file, const LLUUID& source, const std::string& name)
 {
-	static const LLCachedControl<bool> mKeywordsChangeColor(gSavedPerAccountSettings, "KeywordsChangeColor", false);
-	static const LLCachedControl<LLColor4> mKeywordsColor(gSavedPerAccountSettings, "KeywordsColor", LLColor4(1.f, 1.f, 1.f, 1.f));
-
-	if (gAgentID != source)
+	bool is_agent(gAgentID == source), from_user(source.notNull());
+	if (!is_agent)
 	{
+		static const LLCachedControl<bool> mKeywordsChangeColor(gSavedPerAccountSettings, "KeywordsChangeColor", false);
 		if (mKeywordsChangeColor)
 		{
 			if (AscentKeyword::hasKeyword(utf8msg, 2))
 			{
+				static const LLCachedControl<LLColor4> mKeywordsColor(gSavedPerAccountSettings, "KeywordsColor", LLColor4(1.f, 1.f, 1.f, 1.f));
 				incolor = mKeywordsColor;
 			}
 		}
 
-		if (mDing && (!hasFocus() || !gFocusMgr.getAppHasFocus()))
+		bool focused(hasFocus());
+		if (mDing && (!focused || !gFocusMgr.getAppHasFocus()))
 		{
 			static const LLCachedControl<std::string> ding("LiruNewMessageSound");
 			static const LLCachedControl<std::string> dong("LiruNewMessageSoundForSystemMessages");
-			LLUI::sAudioCallback(LLUUID(source.notNull() ? ding : dong));
+			LLUI::sAudioCallback(LLUUID(from_user ? ding : dong));
 		}
-	}
 
-	const LLColor4& color = incolor;
-	// start tab flashing when receiving im for background session from user
-	if (source.notNull())
-	{
-		LLMultiFloater* hostp = getHost();
-		if( !isInVisibleChain() 
-			&& hostp 
-			&& source != gAgentID)
+		// start tab flashing when receiving im for background session from user
+		if (from_user)
 		{
-			hostp->setFloaterFlashing(this, TRUE);
+			bool invisible(!isInVisibleChain());
+			LLMultiFloater* host = getHost();
+			if (invisible && host)
+				host->setFloaterFlashing(this, true);
+			if (invisible || (!host && focused))
+				++mNumUnreadMessages;
 		}
+
 	}
 
 	// Now we're adding the actual line of text, so erase the 
@@ -780,14 +780,14 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 		// Don't hotlink any messages from the system (e.g. "Second Life:"), so just add those in plain text.
 		if (name == SYSTEM_FROM)
 		{
-			mHistoryEditor->appendColoredText(name,false,prepend_newline,color);
+			mHistoryEditor->appendColoredText(name,false,prepend_newline,incolor);
 		}
 		else
 		{
 			// IRC style text starts with a colon here; empty names and system messages aren't irc style.
 			static const LLCachedControl<bool> italicize("LiruItalicizeActions");
 			is_irc = italicize && utf8msg[0] != ':';
-			if (source.notNull())
+			if (from_user)
 				LLAvatarNameCache::getNSName(source, show_name);
 			// Convert the name to a hotlink and add to message.
 			LLStyleSP source_style = LLStyleMap::instance().lookupAgent(source);
@@ -800,9 +800,9 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 	// Append the chat message in style
 	{
 		LLStyleSP style(new LLStyle);
-		style->setColor(color);
+		style->setColor(incolor);
 		style->mItalic = is_irc;
-		style->mBold = gSavedSettings.getBOOL("SingularityBoldGroupModerator") && isModerator(source);
+		style->mBold = from_user && gSavedSettings.getBOOL("SingularityBoldGroupModerator") && isModerator(source);
 		mHistoryEditor->appendStyledText(utf8msg, false, prepend_newline, style);
 	}
 
@@ -878,13 +878,8 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 		}
 	}
 
-	if (source.notNull())
+	if (from_user)
 	{
-		if (!isInVisibleChain() || (!hasFocus() && getParent() == gFloaterView))
-		{
-			mNumUnreadMessages++;
-		}
-
 		mSpeakers->speakerChatted(source);
 		mSpeakers->setSpeakerTyping(source, FALSE);
 	}

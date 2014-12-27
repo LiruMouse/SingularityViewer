@@ -5,17 +5,13 @@
 	<string name="forgot_password_url">http://secondlife.com/account/request.php?lang=de</string>
   <layout_stack name="element_stack">
     <layout_panel name="name_panel">
-      <text name="name_label">Name oder Benutzername:</text>
-      
-      <check_box label="Speichere Name" name="remember_name_check"/>
+      <text name="name_label">Benutzername:</text>
     </layout_panel>
     <layout_panel name="password_panel">
       <text name="password_text">Kennwort:</text>
-      
-      <check_box label="Kennwort speichern" name="remember_check"/>
     </layout_panel>
     <layout_panel name="grids_panel">
-      <text name="grids_combo_text">Grid:</text>
+      <text name="grids_combo_text">Grid oder Login URI:</text>
       
       <button name="grids_btn" label="Grid-Manager"/>
     </layout_panel>
@@ -31,7 +27,8 @@
       <button label="Anmelden" label_selected="Anmelden" name="connect_btn"/>
     </layout_panel>
   </layout_stack>
-	
+      <check_box label="Speichere Name" name="remember_name_check"/>
+      <check_box label="Kennwort speichern" name="remember_check"/>
 
 	<text name="create_new_account_text">Konto erstellen</text>
 	<text name="forgot_password_text">Namen oder Kennwort vergessen?</text>

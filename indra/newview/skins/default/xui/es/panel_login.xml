@@ -10,22 +10,19 @@
 	<layout_stack name="element_stack">
 		<layout_panel name="name_panel">
 			<text name="name_label">
-				Nombre o Usuario:
+				Usuario:
 			</text>
 			<combo_box name="username_combo"/>
-			<check_box label="Recordar Nombre" name="remember_name_check"/>
-			<button label="" tool_tip="Borrar la información de inicio de sesión de este usuario, si la hubiera." name="remove_login"/>
 		</layout_panel>
 		<layout_panel name="password_panel">
 			<text name="password_text">
 				Contraseña:
 			</text>
 			<line_editor name="password_edit"/>
-			<check_box label="Recordar Contraseña" name="remember_check"/>
 		</layout_panel>
 		<layout_panel name="grids_panel">
 			<text name="grids_combo_text">
-				Grid:
+				Grid o Login URI:
 			</text>
 			<combo_box name="grids_combo" tool_tip="Ingresa el nombre/nick de un grid conocido o el uri de inicio de sesión del mismo, o selecciona uno de la lista"/>
 			<button name="grids_btn" label="Administrar Grid"/>
@@ -50,6 +47,9 @@
 			<button label="Iniciar Sesión" label_selected="Iniciar Sesión" name="connect_btn"/>
 		</layout_panel>
 	</layout_stack>
+	<check_box label="Recordar Nombre" name="remember_name_check"/>
+	<button label="" tool_tip="Borrar la información de inicio de sesión de este usuario, si la hubiera." name="remove_login"/>
+	<check_box label="Recordar Contraseña" name="remember_check"/>
 	
 	<text name="create_new_account_text">
 		Crear una Cuenta

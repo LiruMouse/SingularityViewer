@@ -170,12 +170,6 @@ LLFloaterAbout::LLFloaterAbout()
 	LLViewerRegion* region = gAgent.getRegion();
 	if (region)
 	{
-		LLStyleSP server_link_style(new LLStyle);
-		server_link_style->setVisible(true);
-		server_link_style->setFontName(LLStringUtil::null);
-		server_link_style->setLinkHREF(region->getCapability("ServerReleaseNotes"));
-		server_link_style->setColor(gSavedSettings.getColor4("HTMLLinkColor"));
-
 // [RLVa:KB] - Checked: 2014-02-24 (RLVa-1.4.10)
 		if (RlvActions::canShowLocation())
 		{
@@ -209,7 +203,14 @@ LLFloaterAbout::LLFloaterAbout()
 		support.append("\n");
 
 		support_widget->appendColoredText(support, FALSE, FALSE, gColors.getColor("TextFgReadOnlyColor"));
-		support_widget->appendStyledText(LLTrans::getString("ReleaseNotes"), false, false, server_link_style);
+
+		const std::string url(region->getCapability("ServerReleaseNotes"));
+		if (!url.empty())
+		{
+			LLStyleSP server_link_style(new LLStyle(*viewer_link_style));
+			server_link_style->setLinkHREF(url);
+			support_widget->appendStyledText(LLTrans::getString("ReleaseNotes"), false, false, server_link_style);
+		}
 
 		support = "\n\n";
 	}

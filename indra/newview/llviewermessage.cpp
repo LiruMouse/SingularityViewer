@@ -4993,7 +4993,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		}
 		else
 		{
-			gIMMgr->addMessage(session_id, from_id, name, message);
+			gIMMgr->addMessage(session_id, from_id, name, separator_string + message.substr(message_offset), name, dialog, parent_estate_id, region_id, position, true);
 		}
 		break;
 		

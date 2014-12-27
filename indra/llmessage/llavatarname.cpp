@@ -29,6 +29,7 @@
 
 #include "llavatarname.h"
 
+#include "llcontrol.h" // For LLCachedControl
 #include "lldate.h"
 #include "llframetimer.h"
 #include "llsd.h"
@@ -200,12 +201,10 @@ std::string LLAvatarName::getLegacyName() const
 		return mDisplayName;
 	}
 
-	std::string name;
-	name.reserve( mLegacyFirstName.size() + 1 + mLegacyLastName.size() );
-	name = mLegacyFirstName;
-	name += " ";
-	name += mLegacyLastName;
-	return name;
+	static const LLCachedControl<bool> show_resident("LiruShowLastNameResident", false);
+	if (show_resident || mLegacyLastName != "Resident")
+		return mLegacyFirstName + ' ' + mLegacyLastName;
+	return mLegacyFirstName;
 }
 
 std::string LLAvatarName::getDisplayName() const

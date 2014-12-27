@@ -125,6 +125,7 @@ protected:
 	BOOL mWindLight;
 	BOOL mDeferred;
 	BOOL mDeferredDoF;
+	bool mDeferredSSAO;
 	BOOL mAvatarVP;
 
 	S32 mReflectionDetail;

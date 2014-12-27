@@ -407,6 +407,7 @@ void LLPanelDisplay::refresh()
 	mAvatarVP = gSavedSettings.getBOOL("RenderAvatarVP");
 	mDeferred = gSavedSettings.getBOOL("RenderDeferred");
 	mDeferredDoF = gSavedSettings.getBOOL("RenderDepthOfField");
+	mDeferredSSAO = gSavedSettings.getBOOL("RenderDeferredSSAO");
 
 	// combo boxes
 	mReflectionDetail = gSavedSettings.getS32("RenderReflectionDetail");
@@ -672,6 +673,7 @@ void LLPanelDisplay::cancel()
 	gSavedSettings.setBOOL("RenderAvatarVP", mAvatarVP);
 	gSavedSettings.setBOOL("RenderDeferred", mDeferred);
 	gSavedSettings.setBOOL("RenderDepthOfField", mDeferredDoF);
+	gSavedSettings.setBOOL("RenderDeferredSSAO", mDeferredSSAO);
 
 	gSavedSettings.setS32("RenderReflectionDetail", mReflectionDetail);
 	gSavedSettings.setS32("RenderShadowDetail", mShadowDetail);
