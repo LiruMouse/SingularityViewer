@@ -5,7 +5,7 @@
 			<string name="CaptionTextAcctInfo">[ACCTTYPE]
 [PAYMENTINFO]
 [AGEVERIFICATION]</string>
-      <button label="Kopiere Schlüssel" tool_tip="Schlüssel in die Zwischenablage kopieren" name="copy_key"/>
+      <button label="Kopiere URI" tool_tip="SLURL in die Zwischenablage kopieren" name="copy_uri"/>
       
       <button name="web_profile" label="Web Profil"/>
       <text name="Name:">Name:</text>

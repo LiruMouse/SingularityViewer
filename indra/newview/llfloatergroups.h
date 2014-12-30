@@ -106,6 +106,9 @@ protected:
 	// initialize based on the type
 	BOOL postBuild();
 
+	// set the text displays
+	void setTexts();
+
 	// highlight_id is a group id to highlight
 	void enableButtons();
 

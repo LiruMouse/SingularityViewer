@@ -55,5 +55,9 @@
 		     mouse_opaque="true" name="About Second Life..." width="166">
 			<on_click function="ShowFloater" userdata="about" />
 		</menu_item_call>
+		<menu_item_call label="Grid Status..." name="Grid Status...">
+			<on_click function="PromptShowURL" userdata="WebLaunchGridStatus,http://status.secondlifegrid.net/"/>
+			<on_visible function="VisibleSecondLife"/>
+		</menu_item_call>
 	</menu>
 </menu_bar>

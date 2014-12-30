@@ -7,7 +7,7 @@
 [PAYMENTINFO]
 [AGEVERIFICATION]
 			</string>
-			<button label="Copiar Key:" tool_tip="Copyiar key al portapapeles" name="copy_key"/>
+			<button label="Copiar URI" tool_tip="Copyiar SLURL al portapapeles" name="copy_url"/>
 			<name_editor name="avatar_key"/>
 			<button name="web_profile" label="Perfil Web"/>
 			<text name="Name:" >

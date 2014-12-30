@@ -3430,6 +3430,18 @@ Open your system Web browser to view this content?
 
   <notification
    icon="alertmodal.tga"
+   name="WebLaunchGridStatus"
+   type="alertmodal">
+Go to the Official [SECOND_LIFE] grid status page?
+    <usetemplate
+     ignoretext="When launching web browser to view the grid status"
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="WebLaunchJoinNow"
    type="alertmodal">
 Go to www.secondlife.com to manage your account?

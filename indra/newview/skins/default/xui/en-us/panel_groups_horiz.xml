@@ -26,7 +26,7 @@
 	     bottom_delta="-13" drop_shadow_visible="true" enabled="true" follows="left|bottom"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="12"
 	     mouse_opaque="false" name="groupcount" v_pad="0" width="280">
-		You belong to [COUNT] groups (of [MAX] maximum).
+		You belong to [COUNT] groups (of [MAX] max, [LEFT] left).
 	</text>
 	<button bottom_delta="-24" follows="left|bottom" font="SansSerif" height="22"
 	     label="IM/Call" left="5" name="IM"

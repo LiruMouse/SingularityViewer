@@ -182,20 +182,27 @@ LLPanelGroups::~LLPanelGroups()
 	gAgent.removeListener(this);
 }
 
+void LLPanelGroups::setTexts()
+{
+	LLUICtrl* ctrl(getChild<LLUICtrl>("groupcount"));
+	size_t count(gAgent.mGroups.size());
+	ctrl->setTextArg("[COUNT]", llformat("%d", count));
+	int maxgroups(gHippoLimits->getMaxAgentGroups());
+	ctrl->setTextArg("[MAX]", llformat("%d", maxgroups));
+	ctrl->setTextArg("[LEFT]", llformat("%d", maxgroups - count));
+}
+
 // clear the group list, and get a fresh set of info.
 void LLPanelGroups::reset()
 {
-	getChild<LLUICtrl>("groupcount")->setTextArg("[COUNT]", llformat("%d",gAgent.mGroups.size()));
-	getChild<LLUICtrl>("groupcount")->setTextArg("[MAX]", llformat("%d", gHippoLimits->getMaxAgentGroups()));
-
+	setTexts();
 	init_group_list(getChild<LLScrollListCtrl>("group list"), gAgent.getGroupID());
 	enableButtons();
 }
 
 BOOL LLPanelGroups::postBuild()
 {
-	getChild<LLUICtrl>("groupcount")->setTextArg("[COUNT]", llformat("%d",gAgent.mGroups.size()));
-	getChild<LLUICtrl>("groupcount")->setTextArg("[MAX]", llformat("%d",gHippoLimits->getMaxAgentGroups()));
+	setTexts();
 
 	LLScrollListCtrl *list = getChild<LLScrollListCtrl>("group list");
 	if (list)

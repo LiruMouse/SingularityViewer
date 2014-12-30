@@ -928,6 +928,11 @@
 		     left="0" mouse_opaque="true" name="Official Linden Blog..." width="166">
 			<on_click function="PromptShowURL" name="OfficialLindenBlog_url"
 			     userdata="WebLaunchSupportWiki,http://blog.secondlife.com/" />
+			<on_visible function="VisibleSecondLife"/>
+		</menu_item_call>
+		<menu_item_call label="Grid Status..." name="Grid Status...">
+			<on_click function="PromptShowURL" userdata="WebLaunchGridStatus,http://status.secondlifegrid.net/"/>
+			<on_visible function="VisibleSecondLife"/>
 		</menu_item_call>
 		<menu_item_separator bottom="-102" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator2" width="166" />
@@ -957,11 +962,13 @@
 			     left="0" mouse_opaque="true" name="Public Issue Tracker..." width="166">
 				<on_click function="PromptShowURL" name="PublicIssueTracker_url"
 				     userdata="WebLaunchPublicIssue,http://jira.secondlife.com" />
+				<on_visible function="VisibleSecondLife"/>
 			</menu_item_call>
 			<menu_item_call bottom="-94" enabled="true" height="19" label="Public Issue Tracker Help..."
 			     left="0" mouse_opaque="true" name="Publc Issue Tracker Help..." width="166">
 				<on_click function="PromptShowURL" name="PublicIssueTrackerHelp_url"
 				     userdata="WebLaunchPublicIssueHelp,http://wiki.secondlife.com/wiki/Issue_tracker" />
+				<on_visible function="VisibleSecondLife"/>
 			</menu_item_call>
 			<menu_item_call bottom="-94" enabled="true" height="19" label="[SHORT_APP_NAME] Issue Tracker..."
 			     left="0" mouse_opaque="true" name="Singularity Issue Tracker..." width="166">
@@ -973,22 +980,26 @@
 			     mouse_opaque="true" name="Bug Reporting 101..." width="166">
 				<on_click function="PromptShowURL" name="BugReporting101_url"
 				     userdata="WebLaunchBugReport101,http://wiki.secondlife.com/wiki/Bug_Reporting_101" />
+				<on_visible function="VisibleSecondLife"/>
 			</menu_item_call>
 			<menu_item_call bottom="-94" enabled="true" height="19" label="Security Issues..." left="0"
 			     mouse_opaque="true" name="Security Issues..." width="166">
 				<on_click function="PromptShowURL" name="SecurityIssues_url"
 				     userdata="WebLaunchSecurityIssues,http://wiki.secondlife.com/wiki/Security_issues" />
+				<on_visible function="VisibleSecondLife"/>
 			</menu_item_call>
 			<menu_item_call bottom="-94" enabled="true" height="19" label="QA Wiki..." left="0"
 			     mouse_opaque="true" name="QA Wiki..." width="166">
 				<on_click function="PromptShowURL" name="QAWiki_url"
 				     userdata="WebLaunchQAWiki,http://wiki.secondlife.com/wiki/QA_Portal" />
+				<on_visible function="VisibleSecondLife"/>
 			</menu_item_call>
 			<menu_item_separator name="separator9"/>
 			<menu_item_call bottom="-240" enabled="true" height="19" label="Report Bug..." left="0"
 			     mouse_opaque="true" name="Report Bug..." width="166">
 				<on_click function="PromptShowURL" name="ReportBug_url"
 				     userdata="WebLaunchPublicIssue,http://jira.secondlife.com" />
+				<on_visible function="VisibleSecondLife"/>
 			</menu_item_call>
 			<menu_item_call bottom="-240" enabled="true" height="19" label="Report [SHORT_APP_NAME] Bug..." left="0"
 			     mouse_opaque="true" name="Report [SHORT_APP_NAME] Bug..." width="166">

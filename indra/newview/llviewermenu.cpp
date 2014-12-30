@@ -8867,6 +8867,15 @@ class SinguVisibleDebugConsole : public view_listener_t
 	}
 };
 
+class VisibleSecondLife : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(gHippoGridManager->getCurrentGrid()->isSecondLife());
+		return true;
+	}
+};
+
 class VisibleNotSecondLife : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9527,6 +9536,7 @@ void initialize_menus()
 	}
 // [/RLVa:KB]
 
+	addMenu(new VisibleSecondLife(), "VisibleSecondLife");
 	addMenu(new VisibleNotSecondLife(), "VisibleNotSecondLife");
 
 	// List-bound menus
