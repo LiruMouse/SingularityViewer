@@ -129,30 +129,8 @@ if (LINUX)
 #      -g
       -pthread
       -march=native
-      -O3
-      -fomit-frame-pointer
-
-      -finline-functions
-      -ffast-math
-      -funsafe-math-optimizations
-      -ffinite-math-only
-      -fno-signed-zeros
-      -fcx-limited-range
-      -funroll-loops
-       -frename-registers
-      -ftracer
-      -fvariable-expansion-in-unroller
-      -freorder-blocks-and-partition
-      -flto=4
-#      -I/usr/lib/gcc/x86_64-redhat-linux/4.8.1/
-#      -lgcov
-#       -fprofile-dir=/home/lee/tmp
-#       -fprofile-generate
-	-Wno-strict-aliasing
-#	-ftree-loop-linear // don't
-	-ftree-loop-im
-#	-ftree-parallelize-loops=4 // compiler segfault
-	-funswitch-loops
+      -O2
+#      -flto
       )
 
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 ")
@@ -164,11 +142,6 @@ if (LINUX)
 
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     find_program(GXX g++)
-# uncomment those to clear stuff cached by cmake --- needed when
-# switching to ccache
-#set(GXX /bin/ccache)
-#set(CXX /bin/ccache)
-#set(CMAKE_CXX_COMPILER /bin/ccache)
     mark_as_advanced(GXX)
 
     if (GXX)
@@ -223,10 +196,8 @@ if (LINUX)
     endif (NOT STANDALONE)
     if (${ARCH} STREQUAL "x86_64")
       add_definitions(-DLINUX64=1 -pipe)
-#      set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fomit-frame-pointer -ffast-math -funroll-loops")
-#      set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fomit-frame-pointer -ffast-math -funroll-loops")
-      set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fomit-frame-pointer -ffast-math")
-      set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fomit-frame-pointer -ffast-math")
+      set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fomit-frame-pointer -ffast-math -funroll-loops")
+      set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fomit-frame-pointer -ffast-math -funroll-loops")
       set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -ffast-math")
       set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -ffast-math")
     else (${ARCH} STREQUAL "x86_64")
@@ -328,10 +299,8 @@ if (LINUX OR DARWIN)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
   elseif (WORD_SIZE EQUAL 64)
-#    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64")
   endif (WORD_SIZE EQUAL 32)
 endif (LINUX OR DARWIN)
 
