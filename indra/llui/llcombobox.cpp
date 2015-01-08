@@ -160,6 +160,9 @@ LLView* LLComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *
 	LLComboBox* combo_box = new LLComboBox("combo_box", rect, label);
 	combo_box->setAllowTextEntry(allow_text_entry, max_chars);
 
+	if (LLFontGL* font = selectFont(node))
+		combo_box->mButton->setFont(font);
+
 	const std::string& contents = node->getValue();
 
 	if (contents.find_first_not_of(" \n\t") != contents.npos)

@@ -1184,10 +1184,7 @@ BOOL LLPanelAvatar::postBuild()
 	ctrl->setEnabled(false);
 	getChild<LLUICtrl>("OK")->setCommitCallback(boost::bind(&LLPanelAvatar::onClickOK, this));
 	getChild<LLUICtrl>("Cancel")->setCommitCallback(boost::bind(&LLPanelAvatar::onClickCancel, this));
-	if (LLUICtrl* ctrl = findChild<LLUICtrl>("copy_key")) // Singu TODO: Bring this back
-		ctrl->setCommitCallback(boost::bind(&LLPanelAvatar::onClickGetKey, this));
-	void copy_profile_uri(const LLUUID& id, bool group);
-	getChild<LLUICtrl>("copy_uri")->setCommitCallback(boost::bind(copy_profile_uri, boost::bind(&LLPanelAvatar::getAvatarID, this), false));
+	getChild<LLUICtrl>("copy_flyout")->setCommitCallback(boost::bind(&LLPanelAvatar::onClickCopy, this, _2));
 	getChildView("web_profile")->setVisible(!gSavedSettings.getString("WebProfileURL").empty());
 
 	if (mTab && !sAllowFirstLife)
@@ -1421,11 +1418,18 @@ void LLPanelAvatar::resetGroupList()
 	}
 }
 
-void LLPanelAvatar::onClickGetKey()
+void LLPanelAvatar::onClickCopy(const LLSD& val)
 {
-	const LLUUID& agent_id(getAvatarID());
-	llinfos << "Copy agent id: " << agent_id << llendl;
-	gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(agent_id.asString()));
+	if (val.isUndefined())
+	{
+		llinfos << "Copy agent id: " << mAvatarID << llendl;
+		gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(mAvatarID.asString()));
+	}
+	else
+	{
+		void copy_profile_uri(const LLUUID& id, bool group = false);
+		copy_profile_uri(mAvatarID);
+	}
 }
 
 void LLPanelAvatar::onClickOK()

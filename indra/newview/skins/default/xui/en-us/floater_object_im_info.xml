@@ -5,7 +5,7 @@
      rect_control="FloaterObjectIMInfo" short_title="Object Info" title="Object Information" >
 
   <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-35" drop_shadow_visible="true" follows="left|top"
+	     bottom="-33" drop_shadow_visible="true" follows="left|top"
 	     font="SansSerif" h_pad="0" halign="left" height="10" left="10"
 	     mouse_opaque="true" name="LabelItemNameTitle" v_pad="0" width="78">
     Object:
@@ -17,7 +17,7 @@
 			     width="200" />
 
   <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-60" drop_shadow_visible="true" follows="left|top"
+	     bottom_delta="-10" drop_shadow_visible="true" follows="left|top"
 	     font="SansSerif" h_pad="0" halign="left" height="10" left="10"
 	     mouse_opaque="true" name="LabelSlurlTitle" v_pad="0" width="78">
     Location:
@@ -37,7 +37,7 @@
   </text>
 
   <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-85" drop_shadow_visible="true" follows="left|top"
+	     bottom_delta="-10" drop_shadow_visible="true" follows="left|top"
 	     font="SansSerif" h_pad="0" halign="left" height="10" left="10"
 	     mouse_opaque="true" name="LabelOwnerNameTitle" v_pad="0" width="78">
     Owner:
@@ -47,8 +47,12 @@
 			     font="SansSerif" height="20" is_unicode="false" left="70" hover="true"
 			     max_length="254" mouse_opaque="true" name="OwnerName" font-style="UNDERLINE"
 			     width="200" hover_cursor="UI_CURSOR_HAND" text_color="TextLinkColor" hover_color="TextLinkHoverColor"/>
-  
-  <button bottom_delta="-30" font="SansSerif" halign="center" height="20" label="Mute Owner"
+  <text bottom_delta="-10" follows="left|top" font="SansSerif" h_pad="0" halign="left" height="10" left="10" name="LabelObjectID" width="78">
+    Key:
+  </text>
+  <line_editor name="ObjectID" width="209" height="16" left="70" bottom_delta="-7" enabled="false"/>
+
+  <button bottom_delta="-28" font="SansSerif" halign="center" height="20" label="Mute Owner"
          label_selected="Mute Owner" left="70" mouse_opaque="true" name="Mute"
          width="160" />
 </floater>

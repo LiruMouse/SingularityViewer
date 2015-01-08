@@ -262,15 +262,13 @@ void LLPreview::draw()
 	{
 		mDirty = FALSE;
 		const LLViewerInventoryItem *item = getItem();
-		if (item)
-		{
-			refreshFromItem(item);
-		}
+		refreshFromItem(item);
 	}
 }
 
 void LLPreview::refreshFromItem(const LLInventoryItem* item)
 {
+	if (!item) return;
 	setTitle(llformat("%s: %s",getTitleName(),item->getName().c_str()));
 	childSetText("desc",item->getDescription());
 

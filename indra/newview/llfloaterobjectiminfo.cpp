@@ -58,32 +58,37 @@
 // LLFloaterObjectIMInfo
 
 LLFloaterObjectIMInfo::LLFloaterObjectIMInfo(const LLSD& seed)
-: mObjectID(), mName(), mSLurl(), mOwnerID(), mGroupOwned(false)
+: mName(), mSLurl(), mOwnerID(), mGroupOwned(false)
 {
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_object_im_info.xml");
 	
-	if (getRect().mLeft == 0 
-		&& getRect().mBottom == 0)
-	{
+	if (!getRect().mLeft && !getRect().mBottom)
 		center();
-	}
 }
 
-BOOL LLFloaterObjectIMInfo::postBuild(void)
+static void show_avatar_profile(const LLUUID& id)
 {
-	childSetAction("Mute",onClickMute,this);
-	childSetActionTextbox("OwnerName",onClickOwner, this);
-	childSetActionTextbox("Slurl",onClickMap, this);
+// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
+	if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) || !RlvUtil::isNearbyAgent(id))
+		return;
+// [/RLVa:KB]
+	LLAvatarActions::showProfile(id);
+}
+
+BOOL LLFloaterObjectIMInfo::postBuild()
+{
+	getChild<LLUICtrl>("Mute")->setCommitCallback(boost::bind(&LLFloaterObjectIMInfo::onClickMute, this));
+	getChild<LLTextBox>("OwnerName")->setClickedCallback(boost::bind(boost::ref(mGroupOwned) ? boost::bind(LLGroupActions::show, boost::ref(mOwnerID)) : boost::bind(show_avatar_profile, boost::ref(mOwnerID))));
+	getChild<LLTextBox>("Slurl")->setClickedCallback(boost::bind(LLUrlAction::showLocationOnMap, "secondlife://" + static_cast<std::string>(boost::ref(mSLurl))));
 
 	return true;
 }
 
-void LLFloaterObjectIMInfo::update(LLSD& data)
+void LLFloaterObjectIMInfo::update(const LLSD& data)
 {
 	// Extract appropriate object information from input LLSD
 	// (Eventually, it might be nice to query server for details
 	// rather than require caller to pass in the information.)
-	mObjectID   = data["object_id"].asUUID();
 	mName       = data["name"].asString();
 	mOwnerID    = data["owner_id"].asUUID();
 	mGroupOwned = data["group_owned"].asBoolean();
@@ -100,7 +105,8 @@ void LLFloaterObjectIMInfo::update(LLSD& data)
 
 	childSetText("ObjectName",mName);
 	childSetText("Slurl",mSLurl);
-	childSetText("OwnerName",std::string(""));
+	childSetText("OwnerName", LLStringUtil::null);
+	getChildView("ObjectID")->setValue(data["object_id"].asUUID());
 
 //	bool my_object = (owner_id == gAgentID);
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
@@ -108,77 +114,43 @@ void LLFloaterObjectIMInfo::update(LLSD& data)
 // [/RLVa:KB]
 	childSetEnabled("Mute",!my_object);
 	
-	if (gCacheName) gCacheName->get(mOwnerID,mGroupOwned,boost::bind(&LLFloaterObjectIMInfo::nameCallback,this,_1,_2,_3));
+	if (gCacheName)
+		gCacheName->get(mOwnerID, mGroupOwned, boost::bind(&LLFloaterObjectIMInfo::nameCallback, this, _2));
 }
 
-//static 
-void LLFloaterObjectIMInfo::onClickMap(void* data)
+void LLFloaterObjectIMInfo::onClickMute()
 {
-	LLFloaterObjectIMInfo* self = (LLFloaterObjectIMInfo*)data;
-
-	std::string url = "secondlife://" + self->mSLurl;
-	LLUrlAction::showLocationOnMap(url);
-}
-
-//static 
-void LLFloaterObjectIMInfo::onClickOwner(void* data)
-{
-	LLFloaterObjectIMInfo* self = (LLFloaterObjectIMInfo*)data;
-	if (self->mGroupOwned)
-	{
-		LLGroupActions::show(self->mOwnerID);
-	}
-//	else
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
-	else if ( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) || (!RlvUtil::isNearbyAgent(self->mOwnerID)) )
-// [/RLVa:KB]
-	{
-		LLAvatarActions::showProfile(self->mOwnerID);
-	}
-}
-
-//static 
-void LLFloaterObjectIMInfo::onClickMute(void* data)
-{
-	LLFloaterObjectIMInfo* self = (LLFloaterObjectIMInfo*)data;
-
-	LLMute::EType mute_type = (self->mGroupOwned) ? LLMute::GROUP : LLMute::AGENT;
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
-	if ( (LLMute::GROUP != mute_type) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(self->mOwnerID)) )
-	{
+	if (!mGroupOwned && gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) && RlvUtil::isNearbyAgent(mOwnerID))
 		return;
-	}
 // [/RLVa:KB]
 
-	LLMute mute(self->mOwnerID, self->mName, mute_type);
-	LLMuteList::getInstance()->add(mute);
+	LLMuteList::instance().add(LLMute(mOwnerID, mName, mGroupOwned ? LLMute::GROUP : LLMute::AGENT));
 	LLFloaterMute::showInstance();
-	self->close();
+	close();
 }
 
 //static 
-void LLFloaterObjectIMInfo::nameCallback(const LLUUID& id, const std::string& full_name, bool is_group)
+void LLFloaterObjectIMInfo::nameCallback(const std::string& full_name)
 {
-	mName = full_name;
+	childSetText("OwnerName", mName =
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
-	if ( (!is_group) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(id)) )
-	{
-		mName = RlvStrings::getAnonym(mName);
-	}
+	(!mGroupOwned && gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) && RlvUtil::isNearbyAgent(mOwnerID)) ? RlvStrings::getAnonym(mName) :
 // [/RLVa:KB]
-
-	childSetText("OwnerName", mName);
+	full_name);
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// LLObjectIMInfoHandler
+// LLObjectIMHandler
 //moved to llchathistory.cpp in v2
-class LLObjectIMInfoHandler : public LLCommandHandler
+// support for secondlife:///app/objectim/{UUID}/ SLapps
+class LLObjectIMHandler : public LLCommandHandler
 {
 public:
-	LLObjectIMInfoHandler() : LLCommandHandler("objectim", UNTRUSTED_THROTTLE) { }
+	// requests will be throttled from a non-trusted browser
+	LLObjectIMHandler() : LLCommandHandler("objectim", UNTRUSTED_THROTTLE) { }
 
-	bool handle(const LLSD& params, const LLSD& query_map,LLMediaCtrl* web)
+	bool handle(const LLSD& params, const LLSD& query_map, LLMediaCtrl* web)
 	{
 		if (params.size() < 1)
 		{
@@ -197,12 +169,8 @@ public:
 		payload["name"] = query_map["name"];
 		payload["slurl"] = LLWeb::escapeURL(query_map["slurl"]);
 		payload["group_owned"] = query_map["groupowned"];
-	
 		LLFloaterObjectIMInfo::showInstance()->update(payload);
-
 		return true;
 	}
 };
-
-// Creating the object registers with the dispatcher.
-LLObjectIMInfoHandler gObjectIMHandler;
+LLObjectIMHandler gObjectIMHandler;

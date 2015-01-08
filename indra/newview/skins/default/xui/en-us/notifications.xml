@@ -2562,7 +2562,6 @@ This is usually a temporary failure. Please customize and save the wearable agai
    type="alertmodal">
 Darn. You have been logged out of [SECOND_LIFE]
             [MESSAGE]
-You can still look at existing IM and chat by clicking &apos;View IM &amp; Chat&apos;. Otherwise, click &apos;Quit&apos; to exit [APP_NAME] immediately.
     <usetemplate
      name="okcancelbuttons"
      notext="Quit"

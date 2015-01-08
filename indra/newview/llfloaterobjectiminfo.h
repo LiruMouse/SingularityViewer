@@ -41,19 +41,16 @@ public:
 	LLFloaterObjectIMInfo(const LLSD& sd);
 	virtual ~LLFloaterObjectIMInfo() { };
 
-	/*virtual*/ BOOL postBuild(void);
+	/*virtual*/ BOOL postBuild();
 
-	void update(LLSD& payload);
+	void update(const LLSD& payload);
 
 	// UI Handlers
-	static void onClickMap(void* data);
-	static void onClickOwner(void* data);
-	static void onClickMute(void* data);
+	void onClickMute();
 
-	void nameCallback(const LLUUID& id, const std::string& full_name, bool is_group);
+	void nameCallback(const std::string& full_name);
 
 private:
-	LLUUID mObjectID;
 	LLUUID mOwnerID;
 	std::string mSLurl;
 	std::string mName;

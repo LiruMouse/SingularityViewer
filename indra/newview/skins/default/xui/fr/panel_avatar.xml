@@ -151,7 +151,7 @@ vous avez écrit.
 			</text>
 			<text_editor bottom_delta="-260" height="240" name="notes edit" width="430"/>
 
-			<button name="copy_uri" label="Copy URI"/>
+			<flyout_button name="copy_flyout" label="Copy :"/>
 			<name_editor bevel_style="in" bg_readonly_color="0, 0, 0, 0" border_style="line"
 			     border_thickness="1" bottom_delta="1" enabled="false" follows="left|top"
 			     font="SansSerifSmall" height="18" is_unicode="false" left_delta="95"

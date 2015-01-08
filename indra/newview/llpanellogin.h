@@ -76,7 +76,7 @@ public:
 	 */
 	static void setFields(const LLSavedLoginEntry& entry, bool takeFocus = true);
 
-	static void getFields(std::string *firstname, std::string *lastname, std::string *password);
+	static void getFields(std::string& firstname, std::string& lastname, std::string& password);
 
 	static void setLocation(const LLSLURL& slurl);
 	
@@ -94,8 +94,8 @@ public:
 	static void refreshLoginPage();
 	static void giveFocus();
 	static void setAlwaysRefresh(bool refresh); 
-	static void mungePassword(LLUICtrl* caller, void* user_data);
-	
+	void mungePassword(const std::string& password);
+
 	// inherited from LLViewerMediaObserver
 	/*virtual*/ void handleMediaEvent(LLPluginClassMedia* self, EMediaEvent event);
 
@@ -109,15 +109,13 @@ private:
 	void onClickConnect();
 	static void onClickNewAccount();
 	static bool newAccountAlertCallback(const LLSD& notification, const LLSD& response);
-	static void onClickGrids(void*);
+	static void onClickGrids();
 	static void onSelectGrid(LLUICtrl *ctrl);
-	static void onClickVersion(void*);
 	static void onClickForgotPassword();
-	static void onPassKey(LLLineEditor* caller);
-	static void onSelectLoginEntry(LLUICtrl*, void*);
+	static void onPassKey();
+	static void onSelectLoginEntry(const LLSD& selected_entry);
 	void onLoginComboLostFocus(LLComboBox* combo_box);
-	static void onNameCheckChanged(LLUICtrl* ctrl, void* data);
-	static void clearPassword();
+	void onNameCheckChanged(const LLSD& value);
 	void confirmDelete();
 	void removeLogin(bool knot);
 
@@ -132,12 +130,6 @@ public:
 		return (sInstance ? sInstance->mLoginHistoryData : LLSavedLogins());
 	}
 
-	/**
-	 * @brief	Returns the state of the "remember resident name" checkbox if it exists.
-	 * @return	Checkbox state, or false if the instance is not instantiated.
-	 */
-	static bool getRememberLogin();
-
 private:
 	LLPointer<LLUIImage> mLogoImage;
 
@@ -145,7 +137,6 @@ private:
 	std::string mMungedPassword;
 
 	static LLPanelLogin* sInstance;
-	static BOOL		sCapslockDidNotification;
 
 	LLSavedLogins	mLoginHistoryData;
 };

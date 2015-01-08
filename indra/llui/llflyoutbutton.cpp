@@ -107,6 +107,9 @@ LLView* LLFlyoutButton::fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFacto
 		flyout_button->mListPosition = ABOVE;
 	}
 
+	if (LLFontGL* font = selectFont(node))
+		flyout_button->mActionButton->setFont(font);
+
 	flyout_button->initFromXML(node, parent);
 
 	for (LLXMLNodePtr child = node->getFirstChild(); child.notNull(); child = child->getNextSibling())

@@ -46,7 +46,7 @@
         Grid or Login URI:
       </text>
       <combo_box allow_text_entry="true" bottom_delta="-20" follows="left|bottom" height="20"
-           left="0" mouse_opaque="true" width="130" name="grids_combo" tool_tip="Input the name/nick for a known grid or any login uri, or pick one from the list"/>
+           left="0" max_chars="256" mouse_opaque="true" width="130" name="grids_combo" tool_tip="Input the name/nick for a known grid or any login uri, or pick one from the list"/>
       <button bottom_delta="-19" follows="left|bottom" height="16" label="Grid Manager" name="grids_btn" width="128" font="SansSerifSmall"/>
     </layout_panel>
     <layout_panel name="location_panel" left="0" user_resize="false" auto_resize="false" width="143" min_width="0">
@@ -57,7 +57,7 @@
         Start Location:
       </text>
       <combo_box allow_text_entry="true" bottom_delta="-20" left="0" follows="left|bottom" height="20"
-           mouse_opaque="true" name="start_location_combo" width="130">
+           max_chars="256" mouse_opaque="true" name="start_location_combo" width="130">
         <combo_item name="MyHome" value="home">
           My Home
         </combo_item>

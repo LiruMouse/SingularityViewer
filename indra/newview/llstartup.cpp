@@ -1002,7 +1002,7 @@ bool idle_startup()
 		{
 			// TODO if not use viewer auth
 			// Load all the name information out of the login view
-			LLPanelLogin::getFields(&firstname, &lastname, &password);
+			LLPanelLogin::getFields(firstname, lastname, password);
 			// end TODO
 	 
 			// HACK: Try to make not jump on login
@@ -1013,8 +1013,6 @@ bool idle_startup()
 		{
 			gSavedSettings.setString("FirstName", firstname);
 			gSavedSettings.setString("LastName", lastname);
-			if (!gSavedSettings.controlExists("RememberLogin")) gSavedSettings.declareBOOL("RememberLogin", false, "Remember login", false);
-			gSavedSettings.setBOOL("RememberLogin", LLPanelLogin::getRememberLogin());
 
 			LL_INFOS("AppInit") << "Attempting login as: " << firstname << " " << lastname << LL_ENDL;
 			gDebugInfo["LoginName"] = firstname + " " + lastname;	
@@ -3945,7 +3943,7 @@ bool process_login_success_response(std::string& password, U32& first_sim_size_x
 		LLSavedLogins history_data = LLSavedLogins::loadFile(history_file);
 		std::string grid_name = gHippoGridManager->getConnectedGrid()->getGridName();
 		history_data.deleteEntry(firstname, lastname, grid_name);
-		if (gSavedSettings.getBOOL("RememberLogin"))
+		if (gSavedSettings.getBOOL("RememberName"))
 		{
 			LLSavedLoginEntry login_entry(firstname, lastname, password, grid_name);
 			history_data.addEntry(login_entry);

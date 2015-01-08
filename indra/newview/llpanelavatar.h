@@ -313,7 +313,7 @@ public:
 	bool haveData() const { return mHaveProperties && mHaveStatistics; }
 	bool isEditable() const { return mAllowEdit; }
 
-	void onClickGetKey();
+	void onClickCopy(const LLSD& val);
 	void onClickOK();
 	void onClickCancel();
 
