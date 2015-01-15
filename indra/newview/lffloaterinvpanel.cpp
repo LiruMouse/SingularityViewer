@@ -59,7 +59,7 @@ void LFFloaterInvPanel::closeAll()
 {
 	// We must make a copy first, because LLInstanceTracker doesn't allow destruction while having iterators to it.
 	std::vector<LFFloaterInvPanel*> cache;
-	for (instance_iter i = beginInstances(); i != endInstances(); ++i)
+	for (instance_iter i = beginInstances(), end(endInstances()); i != end; ++i)
 	{
 		cache.push_back(&*i);
 	}

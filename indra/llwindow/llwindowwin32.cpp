@@ -3853,7 +3853,6 @@ BOOL LLWindowWin32::handleImeRequests(U32 request, U32 param, LRESULT *result)
 				mPreeditor->getPreeditRange(&preedit, &preedit_length);
 				LLCoordGL caret_coord;
 				LLRect preedit_bounds, text_control;
-				llassert_always(char_position); // <singu> Remove before release, this is just to investigate signature 450.
 				const S32 position = wstring_wstring_length_from_utf16_length(wtext, preedit, char_position->dwCharPos);
 
 				if (!mPreeditor->getPreeditLocation(position, &caret_coord, &preedit_bounds, &text_control))

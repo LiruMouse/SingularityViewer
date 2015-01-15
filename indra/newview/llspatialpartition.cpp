@@ -3347,51 +3347,71 @@ void renderPhysicsShapes(LLSpatialGroup* group)
 	for (LLSpatialGroup::OctreeNode::const_element_iter i = group->getDataBegin(); i != group->getDataEnd(); ++i)
 	{
 		LLDrawable* drawable = *i;
-		LLVOVolume* volume = drawable->getVOVolume();
-		if (volume && !volume->isAttachment() && volume->getPhysicsShapeType() != LLViewerObject::PHYSICS_SHAPE_NONE )
+		if (!drawable)
 		{
-			if (!group->mSpatialPartition->isBridge())
+			continue;
+		}
+
+		if (drawable->isSpatialBridge())
+		{
+			LLSpatialBridge* bridge = drawable->asPartition()->asBridge();
+
+			if (bridge)
 			{
 				gGL.pushMatrix();
-				LLVector3 trans = drawable->getRegion()->getOriginAgent();
-				gGL.translatef(trans.mV[0], trans.mV[1], trans.mV[2]);
-				renderPhysicsShape(drawable, volume);
+				gGL.multMatrix(bridge->mDrawable->getRenderMatrix());
+				bridge->renderPhysicsShapes();
 				gGL.popMatrix();
-			}
-			else
-			{
-				renderPhysicsShape(drawable, volume);
 			}
 		}
 		else
 		{
-			LLViewerObject* object = drawable->getVObj();
-			if (object && object->getPCode() == LLViewerObject::LL_VO_SURFACE_PATCH)
+			LLVOVolume* volume = drawable->getVOVolume();
+			if (volume && !volume->isAttachment() && volume->getPhysicsShapeType() != LLViewerObject::PHYSICS_SHAPE_NONE )
 			{
-				gGL.pushMatrix();
-				gGL.multMatrix(object->getRegion()->mRenderMatrix);
-				//push face vertices for terrain
-				for (S32 i = 0; i < drawable->getNumFaces(); ++i)
+				if (!group->mSpatialPartition->isBridge())
 				{
-					LLFace* face = drawable->getFace(i);
-					if (face)
+					gGL.pushMatrix();
+					LLVector3 trans = drawable->getRegion()->getOriginAgent();
+					gGL.translatef(trans.mV[0], trans.mV[1], trans.mV[2]);
+					renderPhysicsShape(drawable, volume);
+					gGL.popMatrix();
+				}
+				else
+				{
+					renderPhysicsShape(drawable, volume);
+				}
+			}
+			else
+			{
+				LLViewerObject* object = drawable->getVObj();
+				if (object && object->getPCode() == LLViewerObject::LL_VO_SURFACE_PATCH)
+				{
+					gGL.pushMatrix();
+					gGL.multMatrix(object->getRegion()->mRenderMatrix);
+					//push face vertices for terrain
+					for (S32 i = 0; i < drawable->getNumFaces(); ++i)
 					{
-						LLVertexBuffer* buff = face->getVertexBuffer();
-						if (buff)
+						LLFace* face = drawable->getFace(i);
+						if (face)
 						{
-							glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+							LLVertexBuffer* buff = face->getVertexBuffer();
+							if (buff)
+							{
+								glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-							buff->setBuffer(LLVertexBuffer::MAP_VERTEX);
-							gGL.diffuseColor3f(0.2f, 0.5f, 0.3f);
-							buff->draw(LLRender::TRIANGLES, buff->getNumIndices(), 0);
+								buff->setBuffer(LLVertexBuffer::MAP_VERTEX);
+								gGL.diffuseColor3f(0.2f, 0.5f, 0.3f);
+								buff->draw(LLRender::TRIANGLES, buff->getNumIndices(), 0);
 									
-							gGL.diffuseColor3f(0.2f, 1.f, 0.3f);
-							glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-							buff->draw(LLRender::TRIANGLES, buff->getNumIndices(), 0);
+								gGL.diffuseColor3f(0.2f, 1.f, 0.3f);
+								glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+								buff->draw(LLRender::TRIANGLES, buff->getNumIndices(), 0);
+							}
 						}
 					}
+					gGL.popMatrix();
 				}
-				gGL.popMatrix();
 			}
 		}
 	}

@@ -41,8 +41,20 @@ LLExternalEditor::EErrorCode LLExternalEditor::setCommand(const std::string& env
 	std::string cmd = findCommand(env_var, override);
 	if (cmd.empty())
 	{
-		llwarns << "Editor command is empty or not set" << llendl;
-		return EC_NOT_SPECIFIED;
+#if LL_WINDOWS
+		cmd = getenv("COMSPEC") + std::string(" /C START \"%s\"");
+#elif LL_DARWIN
+		cmd = "/usr/bin/open \"%s\"";
+#elif LL_LINUX
+		// xdg-open might not actually be installed on all distros, but it's our best bet.
+		cmd = "/usr/bin/xdg-open \"%s\"";
+#endif
+		cmd = findCommand(LLStringUtil::null, cmd);
+		if (cmd.empty())
+		{
+			llwarns << "Failed to find generic open handler." << llendl;
+			return EC_NOT_SPECIFIED;
+		}
 	}
 
 	// Add the filename marker if missing.

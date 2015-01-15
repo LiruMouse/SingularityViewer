@@ -562,6 +562,7 @@ RMDir  "$SMPROGRAMS\$INSTSHORTCUT"
 
 Delete "$DESKTOP\$INSTSHORTCUT.lnk"
 Delete "$INSTDIR\$INSTSHORTCUT.lnk"
+Delete "$INSTDIR\$INSTSHORTCUT Portable.lnk"
 Delete "$INSTDIR\Uninstall $INSTSHORTCUT.lnk"
 
 ; Clean up cache and log files.

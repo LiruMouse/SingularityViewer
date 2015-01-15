@@ -351,7 +351,6 @@ void LLPanelFriends::addFriend(const LLUUID& agent_id)
 	static const LLCachedControl<LLColor4> sDefaultColor(gColors, "DefaultListText");
 	static const LLCachedControl<LLColor4> sMutedColor("AscentMutedColor");
 	friend_column.color(LLAvatarActions::isBlocked(agent_id) ? sMutedColor : sDefaultColor);
-	element.columns.add(friend_column);
 
 	LLScrollListCell::Params cell;
 	cell.column("icon_online_status").type("icon");

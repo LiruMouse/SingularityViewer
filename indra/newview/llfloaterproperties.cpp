@@ -981,7 +981,7 @@ void LLFloaterProperties::closeByID(const LLUUID& item_id, const LLUUID &object_
 //static
 void LLFloaterProperties::dirtyAll()
 {
-	for(instance_iter it = beginInstances();it!=endInstances();++it)
+	for(instance_iter it = beginInstances(), it_end(endInstances()); it != it_end; ++it)
 	{
 		it->dirty();
 	}

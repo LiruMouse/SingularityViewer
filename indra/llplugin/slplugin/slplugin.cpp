@@ -91,45 +91,35 @@ LONG WINAPI myWin32ExceptionHandler( struct _EXCEPTION_POINTERS* exception_infop
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
-// Taken from : http://blog.kalmbachnet.de/?postid=75
-// The MSVC 2005 CRT forces the call of the default-debugger (normally Dr.Watson)
+// Taken from : http://blog.kalmbach-software.de/2013/05/23/improvedpreventsetunhandledexceptionfilter/
+// The MSVC 2005 and above CRT forces the call of the default-debugger (normally Dr.Watson)
 // even with the other exception handling code. This (terrifying) piece of code
 // patches things so that doesn't happen.
-LPTOP_LEVEL_EXCEPTION_FILTER WINAPI MyDummySetUnhandledExceptionFilter(
-	LPTOP_LEVEL_EXCEPTION_FILTER lpTopLevelExceptionFilter )
+static BOOL PreventSetUnhandledExceptionFilter()
 {
-	return NULL;
-}
+	HMODULE hKernel32 = LoadLibrary(TEXT("kernel32.dll"));
+	if (hKernel32 == NULL) return FALSE;
+	void *pOrgEntry = GetProcAddress(hKernel32, "SetUnhandledExceptionFilter");
+	if (pOrgEntry == NULL) return FALSE;
 
-BOOL PreventSetUnhandledExceptionFilter()
-{
-// WARNING: This won't work on 64-bit Windows systems so we turn it off it.
-//          It should work for any flavor of 32-bit Windows we care about.
-//          If it's off, sometimes you will see an OS message when a plugin crashes
-#ifndef _WIN64
-	HMODULE hKernel32 = LoadLibraryA( "kernel32.dll" );
-	if ( NULL == hKernel32 )
-		return FALSE;
-
-	void *pOrgEntry = GetProcAddress( hKernel32, "SetUnhandledExceptionFilter" );
-	if( NULL == pOrgEntry )
-		return FALSE;
-
-	unsigned char newJump[ 100 ];
-	DWORD dwOrgEntryAddr = (DWORD)pOrgEntry;
-	dwOrgEntryAddr += 5; // add 5 for 5 op-codes for jmp far
-	void *pNewFunc = &MyDummySetUnhandledExceptionFilter;
-	DWORD dwNewEntryAddr = (DWORD) pNewFunc;
-	DWORD dwRelativeAddr = dwNewEntryAddr - dwOrgEntryAddr;
-
-	newJump[ 0 ] = 0xE9;  // JMP absolute
-	memcpy( &newJump[ 1 ], &dwRelativeAddr, sizeof( pNewFunc ) );
-	SIZE_T bytesWritten;
-	BOOL bRet = WriteProcessMemory( GetCurrentProcess(), pOrgEntry, newJump, sizeof( pNewFunc ) + 1, &bytesWritten );
-	return bRet;
+#ifdef _M_IX86
+	// Code for x86:
+	// 33 C0                xor         eax,eax
+	// C2 04 00             ret         4
+	unsigned char szExecute[] = { 0x33, 0xC0, 0xC2, 0x04, 0x00 };
+#elif _M_X64
+	// 33 C0                xor         eax,eax
+	// C3                   ret
+	unsigned char szExecute[] = { 0x33, 0xC0, 0xC3 };
 #else
-	return FALSE;
+#error "The following code only works for x86 and x64!"
 #endif
+
+	DWORD oldProtect;
+	BOOL bRet = VirtualProtect(pOrgEntry, sizeof(szExecute), PAGE_EXECUTE_READWRITE, &oldProtect);
+	memcpy(pOrgEntry, szExecute, sizeof(szExecute));
+	VirtualProtect(pOrgEntry, sizeof(szExecute), oldProtect, &oldProtect);
+	return bRet;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

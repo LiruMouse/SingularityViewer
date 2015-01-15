@@ -62,6 +62,7 @@
 #include "pipeline.h"
 #include "llappviewer.h"		// for do_disconnect()
 #include "llpacketring.h"
+#include "hippogridmanager.h"
 
 #include <deque>
 #include <queue>
@@ -136,7 +137,7 @@ void LLWorld::destroyClass()
 {
 	mHoleWaterObjects.clear();
 	gObjectList.destroy();
-	for(region_list_t::iterator region_it = mRegionList.begin(); region_it != mRegionList.end(); )
+	for(region_list_t::iterator region_it = mRegionList.begin(), region_it_end(mRegionList.end()); region_it != region_it_end; )
 	{
 		LLViewerRegion* region_to_delete = *region_it++;
 		removeRegion(region_to_delete->getHost());
@@ -313,8 +314,8 @@ void LLWorld::removeRegion(const LLHost &host)
 	
 	if (regionp == gAgent.getRegion())
 	{
-		for (region_list_t::iterator iter = mRegionList.begin();
-			 iter != mRegionList.end(); ++iter)
+		for (region_list_t::iterator iter = mRegionList.begin(), iter_end(mRegionList.end());
+			 iter != iter_end; ++iter)
 		{
 			LLViewerRegion* reg = *iter;
 			llwarns << "RegionDump: " << reg->getName()
@@ -360,8 +361,8 @@ void LLWorld::removeRegion(const LLHost &host)
 
 LLViewerRegion* LLWorld::getRegion(const LLHost &host)
 {
-	for (region_list_t::iterator iter = mRegionList.begin();
-		 iter != mRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mRegionList.begin(), iter_end(mRegionList.end());
+		 iter != iter_end; ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 		if (regionp->getHost() == host)
@@ -379,8 +380,8 @@ LLViewerRegion* LLWorld::getRegionFromPosAgent(const LLVector3 &pos)
 
 LLViewerRegion* LLWorld::getRegionFromPosGlobal(const LLVector3d &pos)
 {
-	for (region_list_t::iterator iter = mRegionList.begin();
-		 iter != mRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mRegionList.begin(), iter_end = mRegionList.end();
+		 iter != iter_end; ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 		if (regionp->pointInRegionGlobal(pos))
@@ -468,8 +469,8 @@ LLViewerRegion* LLWorld::getRegionFromHandle(const U64 &handle)
 	from_region_handle(handle, &x, &y);
 // </FS:CR> Aurora Sim
 
-	for (region_list_t::iterator iter = mRegionList.begin();
-		 iter != mRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mRegionList.begin(), iter_end(mRegionList.end());
+		 iter != iter_end; ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 // <FS:CR> Aurora Sim
@@ -490,8 +491,8 @@ LLViewerRegion* LLWorld::getRegionFromHandle(const U64 &handle)
 
 LLViewerRegion* LLWorld::getRegionFromID(const LLUUID& region_id)
 {
-	for (region_list_t::iterator iter = mRegionList.begin();
-		 iter != mRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mRegionList.begin(), iter_end(mRegionList.end());
+		 iter != iter_end; ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 		if (regionp->getRegionID() == region_id)
@@ -517,8 +518,8 @@ void LLWorld::updateAgentOffset(const LLVector3d &offset_global)
 
 BOOL LLWorld::positionRegionValidGlobal(const LLVector3d &pos_global)
 {
-	for (region_list_t::iterator iter = mRegionList.begin();
-		 iter != mRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mRegionList.begin(), iter_end(mRegionList.end());
+		 iter != iter_end; ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 		if (regionp->pointInRegionGlobal(pos_global))
@@ -687,8 +688,8 @@ void LLWorld::updateVisibilities()
 	F32 cur_far_clip = LLViewerCamera::getInstance()->getFar();
 
 	// Go through the culled list and check for visible regions (region is visible if land is visible)
-	for (region_list_t::iterator iter = mCulledRegionList.begin();
-			iter != mCulledRegionList.end(); )
+	for (region_list_t::iterator iter = mCulledRegionList.begin(), iter_end(mCulledRegionList.end());
+			iter != iter_end; )
 	{
 		region_list_t::iterator curiter = iter++;
 		LLViewerRegion* regionp = *curiter;
@@ -706,8 +707,8 @@ void LLWorld::updateVisibilities()
 	}
 
 	// Update all of the visible regions 
-	for (region_list_t::iterator iter = mVisibleRegionList.begin();
-		 iter != mVisibleRegionList.end(); )
+	for (region_list_t::iterator iter = mVisibleRegionList.begin(), iter_end(mVisibleRegionList.end());
+		 iter != iter_end; )
 	{
 		region_list_t::iterator curiter = iter++;
 		LLViewerRegion* regionp = *curiter;
@@ -748,8 +749,8 @@ void LLWorld::updateRegions(F32 max_update_time)
 	BOOL did_one = FALSE;
 	
 	// Perform idle time updates for the regions (and associated surfaces)
-	for (region_list_t::iterator iter = mActiveRegionList.begin()/*mRegionList.begin()*/;
-		 iter != mActiveRegionList.end()/*mRegionList.end()*/; ++iter)
+	for (region_list_t::iterator iter = mActiveRegionList.begin()/*mRegionList.begin()*/, iter_end(mActiveRegionList.end()/*mRegionList.end()*/);
+		 iter != iter_end; ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 		F32 max_time = max_update_time - update_timer.getElapsedTimeF32();
@@ -789,8 +790,9 @@ void LLWorld::updateClouds(const F32 dt)
 	{
 		// Update all the cloud puff positions, and timer based stuff
 		// such as death decay
+		region_list_t::iterator iter_end(mActiveRegionList.end());
 		for (region_list_t::iterator iter = mActiveRegionList.begin();
-			 iter != mActiveRegionList.end(); ++iter)
+			 iter != iter_end; ++iter)
 		{
 			LLViewerRegion* regionp = *iter;
 			regionp->mCloudLayer.updatePuffs(dt);
@@ -798,7 +800,7 @@ void LLWorld::updateClouds(const F32 dt)
 
 		// Reshuffle who owns which puffs
 		for (region_list_t::iterator iter = mActiveRegionList.begin();
-			 iter != mActiveRegionList.end(); ++iter)
+			 iter != iter_end; ++iter)
 		{
 			LLViewerRegion* regionp = *iter;
 			regionp->mCloudLayer.updatePuffOwnership();
@@ -806,7 +808,7 @@ void LLWorld::updateClouds(const F32 dt)
 
 		// Add new puffs
 		for (region_list_t::iterator iter = mActiveRegionList.begin();
-			 iter != mActiveRegionList.end(); ++iter)
+			 iter != iter_end; ++iter)
 		{
 			LLViewerRegion* regionp = *iter;
 			regionp->mCloudLayer.updatePuffCount();
@@ -820,8 +822,8 @@ LLCloudGroup* LLWorld::findCloudGroup(const LLCloudPuff &puff)
 	{
 		// Update all the cloud puff positions, and timer based stuff
 		// such as death decay
-		for (region_list_t::iterator iter = mActiveRegionList.begin();
-			 iter != mActiveRegionList.end(); ++iter)
+		for (region_list_t::iterator iter = mActiveRegionList.begin(), iter_end(mActiveRegionList.end());
+			 iter != iter_end; ++iter)
 		{
 			LLViewerRegion* regionp = *iter;
 			LLCloudGroup *groupp = regionp->mCloudLayer.findCloudGroup(puff);
@@ -841,8 +843,8 @@ void LLWorld::renderPropertyLines()
 	S32 region_count = 0;
 	S32 vertex_count = 0;
 
-	for (region_list_t::iterator iter = mVisibleRegionList.begin();
-		 iter != mVisibleRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mVisibleRegionList.begin(), iter_end(mVisibleRegionList.end());
+		 iter != iter_end; ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 		region_count++;
@@ -856,8 +858,8 @@ void LLWorld::updateNetStats()
 	F32 bits = 0.f;
 	U32 packets = 0;
 
-	for (region_list_t::iterator iter = mActiveRegionList.begin();
-		 iter != mActiveRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mActiveRegionList.begin(), iter_end(mActiveRegionList.end());
+		 iter != iter_end; ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 		regionp->updateNetStats();
@@ -898,8 +900,8 @@ void LLWorld::printPacketsLost()
 	llinfos << "----------" << llendl;
 
 	LLCircuitData *cdp = NULL;
-	for (region_list_t::iterator iter = mActiveRegionList.begin();
-		 iter != mActiveRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mActiveRegionList.begin(), iter_end(mActiveRegionList.end());
+		 iter != iter_end; ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 		cdp = gMessageSystem->mCircuitInfo.findCircuit(regionp->getHost());
@@ -949,7 +951,7 @@ void LLWorld::setLandFarClip(const F32 far_clip)
 // a (possibly) new water height. Update it in our local copy.
 void LLWorld::waterHeightRegionInfo(std::string const& sim_name, F32 water_height)
 {
-	for (region_list_t::iterator iter = mRegionList.begin(); iter != mRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mRegionList.begin(), iter_end(mRegionList.end()); iter != iter_end; ++iter)
 	{
 		if ((*iter)->getName() == sim_name)
 		{
@@ -1188,7 +1190,7 @@ void LLWorld::updateWaterObjects()
 	llinfos << "Water height used for Hole and Edge water objects: " << water_height << llendl;
 
 	// Update all Region water objects.
-	for (region_list_t::iterator iter = mRegionList.begin(); iter != mRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mRegionList.begin(), iter_end(mRegionList.end()); iter != iter_end; ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 		LLVOWater* waterp = regionp->getLand().getWaterObj();
@@ -1303,8 +1305,8 @@ U64 LLWorld::getSpaceTimeUSec() const
 
 void LLWorld::requestCacheMisses()
 {
-	for (region_list_t::iterator iter = mRegionList.begin();
-		 iter != mRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mRegionList.begin(), iter_end(mRegionList.end());
+		 iter != iter_end; ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 		regionp->requestCacheMisses();
@@ -1314,8 +1316,8 @@ void LLWorld::requestCacheMisses()
 void LLWorld::getInfo(LLSD& info)
 {
 	LLSD region_info;
-	for (region_list_t::iterator iter = mRegionList.begin();
-		 iter != mRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mRegionList.begin(), iter_end(mRegionList.end());
+		 iter != iter_end; ++iter)
 	{	
 		LLViewerRegion* regionp = *iter;
 		regionp->getInfo(region_info);
@@ -1326,8 +1328,8 @@ void LLWorld::getInfo(LLSD& info)
 void LLWorld::disconnectRegions()
 {
 	LLMessageSystem* msg = gMessageSystem;
-	for (region_list_t::iterator iter = mRegionList.begin();
-		 iter != mRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mRegionList.begin(), iter_end(mRegionList.end());
+		 iter != iter_end; ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 		if (regionp == gAgent.getRegion())
@@ -1376,11 +1378,14 @@ void process_enable_simulator(LLMessageSystem *msg, void **user_data)
 	// Viewer trusts the simulator.
 	msg->enableCircuit(sim, TRUE);
 // <FS:CR> Aurora Sim
-	U32 region_size_x = 256;
-	msg->getU32Fast(_PREHASH_SimulatorInfo, _PREHASH_RegionSizeX, region_size_x);
-	U32 region_size_y = 256;
-	msg->getU32Fast(_PREHASH_SimulatorInfo, _PREHASH_RegionSizeY, region_size_y);
-	LLWorld::getInstance()->setRegionSize(region_size_x, region_size_y);
+	if (!gHippoGridManager->getConnectedGrid()->isSecondLife())
+	{
+		U32 region_size_x = 256;
+		msg->getU32Fast(_PREHASH_SimulatorInfo, _PREHASH_RegionSizeX, region_size_x);
+		U32 region_size_y = 256;
+		msg->getU32Fast(_PREHASH_SimulatorInfo, _PREHASH_RegionSizeY, region_size_y);
+		LLWorld::getInstance()->setRegionSize(region_size_x, region_size_y);
+	}
 // </FS:CR> Aurora Sim
 	LLWorld::getInstance()->addRegion(handle, sim);
 

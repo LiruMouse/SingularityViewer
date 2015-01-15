@@ -345,7 +345,7 @@ LLFastTimer::DeclareTimer::DeclareTimer(const std::string& name)
 void LLFastTimer::updateCachedPointers()
 {
 	// Update DeclareTimer::mFrameState pointers.
-	for (DeclareTimer::instance_iter it = DeclareTimer::beginInstances(); it != DeclareTimer::endInstances(); ++it)
+	for (DeclareTimer::instance_iter it = DeclareTimer::beginInstances(), it_end = DeclareTimer::endInstances(); it != it_end; ++it)
 	{
 		// update cached pointer
 		it->mFrameState = &it->mTimer.getFrameState();
@@ -537,7 +537,7 @@ void LLFastTimer::NamedTimer::buildHierarchy()
 
 	// set up initial tree
 	{
-		for (instance_iter it = beginInstances(); it != endInstances(); ++it)
+		for (instance_iter it = beginInstances(), it_end = endInstances(); it != it_end; ++it)
 		{
 			NamedTimer& timer = *it;
 			if (&timer == NamedTimerFactory::instance().getRootTimer()) continue;
@@ -677,7 +677,7 @@ void LLFastTimer::NamedTimer::resetFrame()
 		LLSD sd;
 
 		{
-			for (instance_iter it = beginInstances(); it != endInstances(); ++it)
+			for (instance_iter it = beginInstances(), it_end = endInstances(); it != it_end; ++it)
 			{
 				NamedTimer& timer = *it;
 				FrameState& info = timer.getFrameState();
@@ -721,7 +721,7 @@ void LLFastTimer::NamedTimer::resetFrame()
 
 	// reset for next frame
 	{
-		for (instance_iter it = beginInstances(); it != endInstances(); ++it)
+		for (instance_iter it = beginInstances(), it_end = endInstances(); it != it_end; ++it)
 		{
 			NamedTimer& timer = *it;
 			
@@ -765,7 +765,7 @@ void LLFastTimer::NamedTimer::reset()
 
 	// reset all history
 	{
-		for (instance_iter it = beginInstances(); it != endInstances(); ++it)
+		for (instance_iter it = beginInstances(), it_end = endInstances(); it != it_end; ++it)
 		{
 			NamedTimer& timer = *it;
 			if (&timer != NamedTimerFactory::instance().getRootTimer()) 

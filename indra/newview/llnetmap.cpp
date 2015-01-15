@@ -329,14 +329,15 @@ void LLNetMap::draw()
 			F32 relative_x = (rel_region_pos.mV[0] / region_width) * mScale;
 			F32 relative_y = (rel_region_pos.mV[1] / region_width) * mScale;
 
+			const F32 real_width(regionp->getWidth());
 			// Background region rectangle.
 			F32 bottom =	relative_y;
 			F32 left =		relative_x;
 // <FS:CR> Aurora Sim
 			//F32 top =		bottom + mScale ;
 			//F32 right =		left + mScale ;
-			F32 top =		bottom + (regionp->getWidth() / REGION_WIDTH_METERS) * mScale ;
-			F32 right =		left + (regionp->getWidth() / REGION_WIDTH_METERS) * mScale ;
+			F32 top =		bottom + (real_width / REGION_WIDTH_METERS) * mScale ;
+			F32 right =		left + (real_width / REGION_WIDTH_METERS) * mScale ;
 // </FS:CR> Aurora Sim
 
 			if (regionp == region) gGL.color4fv(this_region_color().mV);
@@ -349,23 +350,34 @@ void LLNetMap::draw()
 
 			if (s_fUseWorldMapTextures)
 			{
-				LLViewerTexture* pRegionImage = regionp->getWorldMapTile();
-				if ( (pRegionImage) && (pRegionImage->hasGLTexture()) )
-				{
-					gGL.getTexUnit(0)->bind(pRegionImage);
-					gGL.begin(LLRender::QUADS);
-						gGL.texCoord2f(0.f, 1.f);
-						gGL.vertex2f(left, top);
-						gGL.texCoord2f(0.f, 0.f);
-						gGL.vertex2f(left, bottom);
-						gGL.texCoord2f(1.f, 0.f);
-						gGL.vertex2f(right, bottom);
-						gGL.texCoord2f(1.f, 1.f);
-						gGL.vertex2f(right, top);
-					gGL.end();
+				const LLViewerRegion::tex_matrix_t& tiles(regionp->getWorldMapTiles());
 
-					pRegionImage->setBoostLevel(LLViewerTexture::BOOST_MAP_VISIBLE);
-					fRenderTerrain = false;
+				for (S32 i(0), scaled_width(real_width/region_width), square_width(scaled_width*scaled_width); i < square_width; ++i)
+				{
+					const F32 y(i/scaled_width);
+					const F32 x(i - y*scaled_width);
+					const F32 local_left(left + x*mScale);
+					const F32 local_right(local_left + mScale);
+					const F32 local_bottom(bottom + y*mScale);
+					const F32 local_top(local_bottom + mScale);
+					LLViewerTexture* pRegionImage = tiles[x*scaled_width+y];
+					if (pRegionImage && pRegionImage->hasGLTexture())
+					{
+						gGL.getTexUnit(0)->bind(pRegionImage);
+						gGL.begin(LLRender::QUADS);
+							gGL.texCoord2f(0.f, 1.f);
+							gGL.vertex2f(local_left, local_top);
+							gGL.texCoord2f(0.f, 0.f);
+							gGL.vertex2f(local_left, local_bottom);
+							gGL.texCoord2f(1.f, 0.f);
+							gGL.vertex2f(local_right, local_bottom);
+							gGL.texCoord2f(1.f, 1.f);
+							gGL.vertex2f(local_right, local_top);
+						gGL.end();
+
+						pRegionImage->setBoostLevel(LLViewerTexture::BOOST_MAP_VISIBLE);
+						fRenderTerrain = false;
+					}
 				}
 			}
 // [/SL:KB]
@@ -1143,17 +1155,18 @@ void LLNetMap::renderPropertyLinesForRegion(const LLViewerRegion* pRegion, const
 	//
 	// Draw the north and east region borders
 	//
-	const S32 borderY = originY + llround(REGION_WIDTH_METERS * mObjectMapTPM);
+	const F32 real_width(pRegion->getWidth());
+	const S32 borderY = originY + llround(real_width * mObjectMapTPM);
 	if ( (borderY >= 0) && (borderY < imgHeight) )
 	{
-		S32 curX = llclamp(originX, 0, imgWidth), endX = llclamp(originX + llround(REGION_WIDTH_METERS * mObjectMapTPM), 0, imgWidth - 1);
+		S32 curX = llclamp(originX, 0, imgWidth), endX = llclamp(originX + llround(real_width * mObjectMapTPM), 0, imgWidth - 1);
 		for (; curX <= endX; curX++)
 			pTextureData[borderY * imgWidth + curX] = clrOverlay.mAll;
 	}
-	const S32 borderX = originX + llround(REGION_WIDTH_METERS * mObjectMapTPM);
+	const S32 borderX = originX + llround(real_width * mObjectMapTPM);
 	if ( (borderX >= 0) && (borderX < imgWidth) )
 	{
-		S32 curY = llclamp(originY, 0, imgHeight), endY = llclamp(originY + llround(REGION_WIDTH_METERS * mObjectMapTPM), 0, imgHeight - 1);
+		S32 curY = llclamp(originY, 0, imgHeight), endY = llclamp(originY + llround(real_width * mObjectMapTPM), 0, imgHeight - 1);
 		for (; curY <= endY; curY++)
 			pTextureData[curY * imgWidth + borderX] = clrOverlay.mAll;
 	}
@@ -1162,7 +1175,7 @@ void LLNetMap::renderPropertyLinesForRegion(const LLViewerRegion* pRegion, const
 	// Render parcel lines
 	//
 	static const F32 GRID_STEP = PARCEL_GRID_STEP_METERS;
-	static const S32 GRIDS_PER_EDGE = REGION_WIDTH_METERS / GRID_STEP;
+	static const S32 GRIDS_PER_EDGE = real_width / GRID_STEP;
 
 	const U8* pOwnership = pRegion->getParcelOverlay()->getOwnership();
 	const U8* pCollision = (pRegion->getHandle() == LLViewerParcelMgr::instance().getCollisionRegionHandle()) ? LLViewerParcelMgr::instance().getCollisionBitmap() : NULL;

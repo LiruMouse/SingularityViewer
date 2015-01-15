@@ -838,6 +838,7 @@ bool idle_startup()
 			firstname = gSavedSettings.getString("FirstName");
 			lastname = gSavedSettings.getString("LastName");
 			password = LLStartUp::loadPasswordFromDisk();
+			gSavedSettings.setBOOL("RememberName", true);
 			gSavedSettings.setBOOL("RememberPassword", TRUE);
 			
 			show_connect_box = false;

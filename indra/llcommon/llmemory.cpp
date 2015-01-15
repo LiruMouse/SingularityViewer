@@ -133,8 +133,6 @@ void LLMemory::updateMemoryInfo()
 	sMaxPhysicalMemInKB = U32_MAX ;
 	sAvailPhysicalMemInKB = U32_MAX ;
 #endif
-
-	return ;
 }
 
 //

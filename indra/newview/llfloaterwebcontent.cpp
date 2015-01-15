@@ -149,8 +149,7 @@ void LLFloaterWebContent::showInstance(const std::string& window_class, Params& 
 
 	LLSD key = p;
 
-	instance_iter it = beginInstances();
-	for(;it!=endInstances();++it)
+	for(instance_iter it(beginInstances()), it_end(endInstances()); it != it_end; ++it)
 	{
 		if(it->mKey["window_class"].asString() == window_class)
 		{
@@ -255,8 +254,7 @@ void LLFloaterWebContent::preCreate(LLFloaterWebContent::Params& p)
 
 		std::vector<LLFloaterWebContent*> instances;
 		instances.reserve(instanceCount());
-		instance_iter it = beginInstances();
-		for(;it!=endInstances();++it)
+		for(instance_iter it(beginInstances()), it_end(endInstances()); it != it_end;++it)
 		{
 			if(it->mKey["window_class"].asString() == p.window_class.getValue())
 				instances.push_back(&*it);

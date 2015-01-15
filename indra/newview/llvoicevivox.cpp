@@ -507,14 +507,22 @@ bool LLVivoxVoiceClient::writeString(const std::string &str)
 void LLVivoxVoiceClient::connectorCreate()
 {
 	std::ostringstream stream;
-	std::string logpath = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "");
 	std::string loglevel = "0";
 
 	// Transition to stateConnectorStarted when the connector handle comes back.
 	setState(stateConnectorStarting);
 
-	std::string savedLogLevel = gSavedSettings.getString("VivoxDebugLevel");
+	std::string logpath = gSavedSettings.getString("VivoxLogDirectory");
+	if (logpath.empty())
+	{
+		logpath = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "");
+	}
+	if (LLStringUtil::endsWith(logpath, gDirUtilp->getDirDelimiter()))
+	{
+		logpath.resize(logpath.size()-1);
+	}
 
+	std::string savedLogLevel = gSavedSettings.getString("VivoxDebugLevel");
 	if(savedLogLevel != "0")
 	{
 		LL_DEBUGS("Voice") << "creating connector with logging enabled" << LL_ENDL;
@@ -870,13 +878,18 @@ void LLVivoxVoiceClient::stateMachine()
 #else
 						args += loglevel;
 #endif
-						args += " -lf ";
 						std::string log_folder = gSavedSettings.getString("VivoxLogDirectory");
+
 						if (log_folder.empty())
 						{
 							log_folder = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "");
 						}
-						args += "logfolder";
+						if (LLStringUtil::endsWith(log_folder, gDirUtilp->getDirDelimiter()))
+						{
+							log_folder.resize(log_folder.size()-1);
+						}
+						args += " -lf ";
+						args += log_folder;
 						
 // Singu Note: omit shutdown timeout for Linux, as we are using 2.x version of the SDK there
 // Singu TODO: Remove this when the Vivox SDK 4.x is working on Linux

@@ -1078,15 +1078,19 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 
 void show_log_browser(const std::string& name, const std::string& id)
 {
-#if LL_WINDOWS || LL_DARWIN // Singu TODO: Linux?
+	const std::string file(LLLogChat::makeLogFileName(name));
 	if (gSavedSettings.getBOOL("LiruLegacyLogLaunch"))
 	{
-		gViewerWindow->getWindow()->ShellEx(LLLogChat::makeLogFileName(name));
+#if LL_WINDOWS || LL_DARWIN
+		gViewerWindow->getWindow()->ShellEx(file);
+#elif LL_LINUX
+		// xdg-open might not actually be installed on all distros, but it's our best bet.
+		if (!std::system(("/usr/bin/xdg-open \"" + file +'"').c_str())) // 0 = success, otherwise fallback on internal browser.
+#endif
 		return;
 	}
-#endif
 	LLFloaterWebContent::Params p;
-	p.url("file:///" + LLLogChat::makeLogFileName(name));
+	p.url("file:///" + file);
 	p.id(id);
 	p.show_chrome(false);
 	p.trusted_content(true);

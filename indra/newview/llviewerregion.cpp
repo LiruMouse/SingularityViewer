@@ -433,11 +433,8 @@ LLViewerRegion::~LLViewerRegion()
 	mImpl = NULL;
 
 // [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-07-26 (Catznip-3.3)
-	if (mWorldMapTile)
-	{
-		mWorldMapTile->setBoostLevel(LLViewerTexture::BOOST_NONE);
-		mWorldMapTile = NULL;
-	}
+	for (tex_matrix_t::iterator i = mWorldMapTiles.begin(), iend = mWorldMapTiles.end(); i != iend; ++i)
+		(*i)->setBoostLevel(LLViewerTexture::BOOST_NONE);
 // [/SL:KB]
 }
 
@@ -1105,20 +1102,32 @@ F32 LLViewerRegion::getLandHeightRegion(const LLVector3& region_pos)
 }
 
 // [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-06-20 (Catznip-3.3.0)
-LLViewerTexture* LLViewerRegion::getWorldMapTile() const
+const LLViewerRegion::tex_matrix_t& LLViewerRegion::getWorldMapTiles() const
 {
-	if (!mWorldMapTile)
+	if (mWorldMapTiles.empty())
 	{
 		U32 gridX, gridY;
 		grid_from_region_handle(mHandle, &gridX, &gridY);
 		// Singu Note: We must obey the override on certain grids!
 		std::string simOverrideMap = LFSimFeatureHandler::instance().mapServerURL();
-		std::string strImgURL = (simOverrideMap.empty() ? gSavedSettings.getString("MapServerURL") : simOverrideMap) + llformat("map-1-%d-%d-objects.jpg", gridX, gridY);
-
-		mWorldMapTile = LLViewerTextureManager::getFetchedTextureFromUrl(strImgURL, TRUE, LLViewerTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE);
-		mWorldMapTile->setBoostLevel(LLViewerTexture::BOOST_MAP);
+		std::string strImgURL = (simOverrideMap.empty() ? gSavedSettings.getString("MapServerURL") : simOverrideMap) + "map-1-";
+		U32 totalX(getWidth()/REGION_WIDTH_U32);
+		if (!totalX) ++totalX; // If this region is too small, still get an image.
+		/* TODO: Nonsquare regions?
+		U32 totalY(getLength()/REGION_WIDTH_U32);
+		if (!totalY) ++totalY; // If this region is too small, still get an image.
+		*/
+		const U32 totalY(totalX);
+		mWorldMapTiles.reserve(totalX*totalY);
+		for (U32 x = 0; x != totalX; ++x)
+			for (U32 y = 0; y != totalY; ++y)
+			{
+				LLPointer<LLViewerTexture> tex(LLViewerTextureManager::getFetchedTextureFromUrl(strImgURL+llformat("%d-%d-objects.jpg", gridX + x, gridY + y), TRUE, LLViewerTexture::BOOST_NONE, LLViewerTexture::LOD_TEXTURE));
+				mWorldMapTiles.push_back(tex);
+				tex->setBoostLevel(LLViewerTexture::BOOST_MAP);
+			}
 	}
-	return mWorldMapTile;
+	return mWorldMapTiles;
 }
 // [/SL:KB]
 
