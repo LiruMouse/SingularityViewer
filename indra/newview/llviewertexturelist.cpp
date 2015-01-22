@@ -1005,7 +1005,7 @@ F32 LLViewerTextureList::updateImagesFetchTextures(F32 max_time)
 			mLastFetchUUID = imagep->getID();
 		}
 
-		if ((min_count-- <= 0) && (image_op_timer.getElapsedTimeF32() > max_time))
+		if ((min_count-- <= 0) || (image_op_timer.getElapsedTimeF32() > max_time))
 		{
 			break;
 		}
