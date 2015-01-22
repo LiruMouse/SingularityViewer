@@ -38,7 +38,6 @@
 // Library includes
 #include "llgl.h"
 #include "llrender.h"
-#include "lldarray.h"
 
 // Viewer includes
 #include "llviewercontrol.h"
@@ -152,11 +151,11 @@ BOOL LLToolSelectRect::handleHover(S32 x, S32 y, MASK mask)
 			return LLToolSelect::handleHover(x, y, mask);
 		}
 
-		lldebugst(LLERR_USER_INPUT) << "hover handled by LLToolSelectRect (active)" << llendl;		
+		LL_DEBUGS("UserInput") << "hover handled by LLToolSelectRect (active)" << LL_ENDL;		
 	}
 	else
 	{
-		lldebugst(LLERR_USER_INPUT) << "hover handled by LLToolSelectRect (inactive)" << llendl;		
+		LL_DEBUGS("UserInput") << "hover handled by LLToolSelectRect (inactive)" << LL_ENDL;		
 	}
 
 	gViewerWindow->getWindow()->setCursor(UI_CURSOR_ARROW);

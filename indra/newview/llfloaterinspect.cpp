@@ -239,53 +239,56 @@ void LLFloaterInspect::refresh()
 		// actual name and set a placeholder.
 		if (LLAvatarNameCache::get(idOwner, &av_name))
 		{
-//			owner_name = av_name.getCompleteName();
+//			owner_name = av_name.getNSName();
 // [RLVa:KB] - Checked: 2010-11-01 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
 			bool fRlvFilterOwner = (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (idOwner != gAgent.getID()) &&
 				(!obj->mPermissions->isGroupOwned());
-			owner_name = (!fRlvFilterOwner) ? av_name.getCompleteName() : RlvStrings::getAnonym(av_name);
+			owner_name = (!fRlvFilterOwner) ? av_name.getNSName() : RlvStrings::getAnonym(av_name);
 // [/RLVa:KB]
 		}
 		else
 		{
 			owner_name = LLTrans::getString("RetrievingData");
-			LLAvatarNameCache::get(idOwner, boost::bind(&LLFloaterInspect::dirty, this));
-		}
-
-		if (LLAvatarNameCache::get(idCreator, &av_name))
-		{
-//			creator_name = av_name.getCompleteName();
-// [RLVa:KB] - Checked: 2010-11-01 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
-			const LLUUID& idCreator = obj->mPermissions->getCreator();
-			LLAvatarNameCache::get(idCreator, &av_name);
-			bool fRlvFilterCreator = (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (idCreator != gAgent.getID()) &&
-				( (obj->mPermissions->getOwner() == idCreator) || (RlvUtil::isNearbyAgent(idCreator)) );
-			creator_name = (!fRlvFilterCreator) ? av_name.getCompleteName() : RlvStrings::getAnonym(av_name);
-// [/RLVa:KB]
-		}
-		else
-		{
-			creator_name = LLTrans::getString("RetrievingData");
-			LLAvatarNameCache::get(idCreator, boost::bind(&LLFloaterInspect::dirty, this));
+			if (mOwnerNameCacheConnection.find(idOwner) == mOwnerNameCacheConnection.end())
+				mOwnerNameCacheConnection.emplace(idOwner, LLAvatarNameCache::get(idOwner, boost::bind(&LLFloaterInspect::onGetOwnerNameCallback, this, _1)));
 		}
 
 		// <edit>
 		if (LLAvatarNameCache::get(idLastOwner, &av_name))
 		{
-//			last_owner_name = av_name.getCompleteName();
+//			last_owner_name = av_name.getNSName();
 // [RLVa:LF] - Copied from the above creator check Checked: 2010-11-01 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
 			LLAvatarNameCache::get(idLastOwner, &av_name);
-			bool fRlvFilterLastOwner = (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (idLastOwner != gAgent.getID()) &&
-				( (obj->mPermissions->getOwner() == idLastOwner) || (RlvUtil::isNearbyAgent(idLastOwner)) );
-			last_owner_name = (!fRlvFilterLastOwner) ? av_name.getCompleteName() : RlvStrings::getAnonym(av_name);
+			bool fRlvFilterLastOwner = gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) && idLastOwner != gAgent.getID() &&
+				(obj->mPermissions->getOwner() == idLastOwner || RlvUtil::isNearbyAgent(idLastOwner));
+			last_owner_name = (!fRlvFilterLastOwner) ? av_name.getNSName() : RlvStrings::getAnonym(av_name);
 // [/RLVa:LF]
 		}
 		else
 		{
 			last_owner_name = LLTrans::getString("RetrievingData");
-			LLAvatarNameCache::get(idLastOwner, boost::bind(&LLFloaterInspect::dirty, this));
+			if (mLastOwnerNameCacheConnection.find(idLastOwner) == mLastOwnerNameCacheConnection.end())
+				mLastOwnerNameCacheConnection.emplace(idLastOwner,  LLAvatarNameCache::get(idLastOwner, boost::bind(&LLFloaterInspect::onGetLastOwnerNameCallback, this, _1)));
 		}
 		// </edit>
+
+		if (LLAvatarNameCache::get(idCreator, &av_name))
+		{
+//			creator_name = av_name.getNSName();
+// [RLVa:KB] - Checked: 2010-11-01 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
+			const LLUUID& idCreator = obj->mPermissions->getCreator();
+			LLAvatarNameCache::get(idCreator, &av_name);
+			bool fRlvFilterCreator = (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (idCreator != gAgent.getID()) &&
+				( (obj->mPermissions->getOwner() == idCreator) || (RlvUtil::isNearbyAgent(idCreator)) );
+			creator_name = (!fRlvFilterCreator) ? av_name.getNSName() : RlvStrings::getAnonym(av_name);
+// [/RLVa:KB]
+		}
+		else
+		{
+			creator_name = LLTrans::getString("RetrievingData");
+			if (mCreatorNameCacheConnection.find(idCreator) == mCreatorNameCacheConnection.end())
+				mCreatorNameCacheConnection.emplace(idCreator, LLAvatarNameCache::get(idCreator, boost::bind(&LLFloaterInspect::onGetCreatorNameCallback, this, _1)));
+		}
 
 		row["id"] = obj->getObject()->getID();
 		row["columns"][0]["column"] = "object_name";
@@ -321,8 +324,8 @@ void LLFloaterInspect::refresh()
 		row["columns"][5]["value"] = llformat("%d",obj->getObject()->getNumVertices());
 		// inventory silliness
 		S32 scripts,total_inv;
-		std::map<LLUUID,std::pair<S32,S32> >::iterator itr = mInventoryNums.find(obj->getObject()->getID());
-		if(itr != mInventoryNums.end())
+		std::map<LLUUID,std::pair<U32,U32> >::iterator itr = mInventoryNums.find(obj->getObject()->getID());
+		if (itr != mInventoryNums.end())
 		{
 			scripts = itr->second.first;
 			total_inv = itr->second.second;
@@ -331,10 +334,10 @@ void LLFloaterInspect::refresh()
 		{
 			scripts = 0;
 			total_inv = 0;
-			if(std::find(mQueue.begin(),mQueue.end(),obj->getObject()->getID()) == mQueue.end())
+			if (std::find(mQueue.begin(),mQueue.end(),obj->getObject()->getID()) == mQueue.end())
 			{
 				mQueue.push_back(obj->getObject()->getID());
-				registerVOInventoryListener(obj->getObject(),NULL);
+				registerVOInventoryListener(obj->getObject(), NULL);
 				requestVOInventory();
 			}
 		}
@@ -365,23 +368,19 @@ void LLFloaterInspect::refresh()
 }
 
 // <edit>
-void LLFloaterInspect::inventoryChanged(LLViewerObject* viewer_object, LLInventoryObject::object_list_t* inv, S32, void* q_id)
+void LLFloaterInspect::inventoryChanged(LLViewerObject* viewer_object, LLInventoryObject::object_list_t* inv, S32, void*)
 {
 	std::vector<LLUUID>::iterator iter = std::find(mQueue.begin(),mQueue.end(),viewer_object->getID());
-	if (viewer_object && inv && iter != mQueue.end() )
+	if (viewer_object && inv && iter != mQueue.end())
 	{
-		S32 scripts = 0;
+		U32 scripts = 0;
 		LLInventoryObject::object_list_t::const_iterator end = inv->end();
 		for (LLInventoryObject::object_list_t::const_iterator it = inv->begin(); it != end; ++it)
-		{
-			if((*it)->getType() == LLAssetType::AT_LSL_TEXT)
-			{
+			if ((*it)->getType() == LLAssetType::AT_LSL_TEXT)
 				++scripts;
-			}
-		}
 		mInventoryNums[viewer_object->getID()] = std::make_pair(scripts,inv->size());
 		mQueue.erase(iter);
-		mDirty = TRUE;
+		setDirty();
 	}
 }
 // </edit>
@@ -398,6 +397,24 @@ void LLFloaterInspect::dirty()
 	mInventoryNums.clear();
 	mQueue.clear();
 	// </edit>
+	setDirty();
+}
+
+void LLFloaterInspect::onGetOwnerNameCallback(const LLUUID& id)
+{
+	mOwnerNameCacheConnection.erase(id);
+	setDirty();
+}
+
+void LLFloaterInspect::onGetLastOwnerNameCallback(const LLUUID& id)
+{
+	mLastOwnerNameCacheConnection.erase(id);
+	setDirty();
+}
+
+void LLFloaterInspect::onGetCreatorNameCallback(const LLUUID& id)
+{
+	mCreatorNameCacheConnection.erase(id);
 	setDirty();
 }
 

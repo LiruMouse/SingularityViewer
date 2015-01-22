@@ -1373,6 +1373,13 @@ BOOL LLViewerWindow::handleTranslatedKeyUp(KEY key,  MASK mask)
 	// Let the voice chat code check for its PTT key.  Note that this never affects event processing.
 	LLVoiceClient::getInstance()->keyUp(key, mask);
 
+	// Let the inspect tool code check for ALT key to set LLToolSelectRect active instead LLToolCamera
+	LLToolCompInspect * tool_inspectp = LLToolCompInspect::getInstance();
+	if (LLToolMgr::getInstance()->getCurrentTool() == tool_inspectp)
+	{
+		tool_inspectp->keyUp(key, mask);
+	}
+
 	return FALSE;
 }
 
@@ -1380,7 +1387,7 @@ BOOL LLViewerWindow::handleTranslatedKeyUp(KEY key,  MASK mask)
 void LLViewerWindow::handleScanKey(KEY key, BOOL key_down, BOOL key_up, BOOL key_level)
 {
 	LLViewerJoystick::getInstance()->setCameraNeedsUpdate(true);
-	return gViewerKeyboard.scanKey(key, key_down, key_up, key_level);
+	gViewerKeyboard.scanKey(key, key_down, key_up, key_level);
 }
 
 
@@ -1665,7 +1672,7 @@ LLViewerWindow::LLViewerWindow(
 	{
 		LLSplashScreen::update(LLTrans::getString("StartupRequireDriverUpdate"));
 	
-		LL_WARNS("Window") << "Failed to create window, to be shutting Down, be sure your graphics driver is updated." << llendl ;
+		LL_WARNS("Window") << "Failed to create window, to be shutting Down, be sure your graphics driver is updated." << LL_ENDL ;
 
 		ms_sleep(5000) ; //wait for 5 seconds.
 
@@ -3366,10 +3373,8 @@ void LLViewerWindow::updateLayout()
 			||	(tool != LLToolPie::getInstance()						// not default tool
 				&& tool != LLToolCompGun::getInstance()					// not coming out of mouselook
 				&& !suppress_toolbox									// not override in third person
-				&& LLToolMgr::getInstance()->getCurrentToolset() != gFaceEditToolset	// not special mode
-				&& LLToolMgr::getInstance()->getCurrentToolset() != gMouselookToolset
+				&& LLToolMgr::getInstance()->getCurrentToolset()->isShowFloaterTools()
 				&& (!captor || dynamic_cast<LLView*>(captor) != NULL)))						// not dragging
-
 		{
 			// Force floater tools to be visible (unless minimized)
 			if (!gFloaterTools->getVisible())
@@ -3406,7 +3411,7 @@ void LLViewerWindow::updateLayout()
 	}
 
 	// Update rectangles for the various toolbars
-	if (gOverlayBar && gNotifyBoxView && gConsole && gToolBar && gHUDView)
+	if (gOverlayBar && gNotifyBoxView && gToolBar && gHUDView)
 	{
 		LLRect bar_rect(-1, STATUS_BAR_HEIGHT, getWindowWidth()+1, -1);
 
@@ -3456,10 +3461,13 @@ void LLViewerWindow::updateLayout()
 		{
 			gFloaterView->setSnapOffsetBottom(0);
 		}
+	}
 
-		// Always update console
+	// Always update console
+	if (gConsole)
+	{
 		LLRect console_rect = getChatConsoleRect();
-		console_rect.mBottom = gHUDView->getRect().mBottom + getChatConsoleBottomPad();
+		if (gHUDView) console_rect.mBottom = gHUDView->getRect().mBottom + getChatConsoleBottomPad();
 		gConsole->reshape(console_rect.getWidth(), console_rect.getHeight());
 		gConsole->setRect(console_rect);
 	}
@@ -3559,6 +3567,7 @@ void LLViewerWindow::updateKeyboardFocus()
 			cur_focus->focusFirstItem();
 		}
 	}
+
 	// last ditch force of edit menu to selection manager
 	if (LLEditMenuHandler::gEditMenuHandler == NULL && LLSelectMgr::getInstance()->getSelection()->getObjectCount())
 	{
@@ -3597,6 +3606,7 @@ void LLViewerWindow::saveLastMouse(const LLCoordGL &point)
 {
 	// Store last mouse location.
 	// If mouse leaves window, pretend last point was on edge of window
+
 	if (point.mX < 0)
 	{
 		mCurrentMousePoint.mX = 0;
@@ -3886,6 +3896,8 @@ void LLViewerWindow::schedulePick(LLPickInfo& pick_info)
 	mPicks.push_back(pick_info);
 
 	// delay further event processing until we receive results of pick
+	// only do this for async picks so that handleMouseUp won't be called
+	// until the pick triggered in handleMouseDown has been processed, for example
 	mWindow->delayInputProcessing();
 }
 
@@ -3963,6 +3975,7 @@ LLHUDIcon* LLViewerWindow::cursorIntersectIcon(S32 mouse_x, S32 mouse_y, F32 dep
 	}
 
 	// world coordinates of mouse
+	// VECTORIZE THIS
 	LLVector3 mouse_direction_global = mouseDirectionGlobal(x,y);
 	LLVector3 mouse_point_global = LLViewerCamera::getInstance()->getOrigin();
 	LLVector3 mouse_world_start = mouse_point_global;
@@ -4258,7 +4271,7 @@ BOOL LLViewerWindow::mousePointOnLandGlobal(const S32 x, const S32 y, LLVector3d
 		S32 grids_per_edge = (S32) regionp->getLand().mGridsPerEdge;
 		if ((i >= grids_per_edge) || (j >= grids_per_edge))
 		{
-			//llinfos << "LLViewerWindow::mousePointOnLand probe_point is out of region" << llendl;
+			//LL_INFOS() << "LLViewerWindow::mousePointOnLand probe_point is out of region" << LL_ENDL;
 			continue;
 		}
 
@@ -4305,7 +4318,7 @@ BOOL LLViewerWindow::mousePointOnLandGlobal(const S32 x, const S32 y, LLVector3d
 			j = (S32) (local_probe_point.mV[VY]/regionp->getLand().getMetersPerGrid());
 			if ((i >= regionp->getLand().mGridsPerEdge) || (j >= regionp->getLand().mGridsPerEdge))
 			{
-				// llinfos << "LLViewerWindow::mousePointOnLand probe_point is out of region" << llendl;
+				// LL_INFOS() << "LLViewerWindow::mousePointOnLand probe_point is out of region" << LL_ENDL;
 				continue;
 			}
 			land_z = regionp->getLand().mSurfaceZ[ i + j * (regionp->getLand().mGridsPerEdge) ];
@@ -4313,7 +4326,7 @@ BOOL LLViewerWindow::mousePointOnLandGlobal(const S32 x, const S32 y, LLVector3d
 
 			land_z = regionp->getLand().resolveHeightRegion(probe_point_region);
 
-			//llinfos << "mousePointOnLand refine z " << land_z << llendl;
+			//LL_INFOS() << "mousePointOnLand refine z " << land_z << LL_ENDL;
 
 			if (probe_point_region.mV[VZ] < land_z)
 			{
@@ -4739,7 +4752,9 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 	S32 original_width = 0;
 	S32 original_height = 0;
 	bool reset_deferred = false;
+
 	LLRenderTarget scratch_space;
+
 	if ((image_width > window_width || image_height > window_height) && LLPipeline::sRenderDeferred && !show_ui)
 	{
 		if (scratch_space.allocate(image_width, image_height, GL_RGBA, true, true))
@@ -4954,6 +4969,7 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 		initFonts(1.f);
 		LLHUDObject::reshapeAll();
 	}
+
 
 	setCursor(UI_CURSOR_ARROW);
 

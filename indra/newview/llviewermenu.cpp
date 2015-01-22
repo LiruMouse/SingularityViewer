@@ -9574,7 +9574,24 @@ void initialize_menus()
 
 	add_radar_listeners();
 
-	LLToolMgr::getInstance()->initMenu(sMenus);
+	class LLViewBuildMode : public view_listener_t
+	{
+		bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+		{
+			LLToolMgr::getInstance()->toggleBuildMode();
+			return true;
+		}
+	};
+	class LLViewCheckBuildMode : public view_listener_t
+	{
+		bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+		{
+			gMenuHolder->findControl(userdata["control"].asString())->setValue(LLToolMgr::getInstance()->inEdit());
+			return true;
+		}
+	};
+	addMenu(new LLViewBuildMode(), "View.BuildMode");
+	addMenu(new LLViewCheckBuildMode(), "View.CheckBuildMode");
 }
 
 void region_change()

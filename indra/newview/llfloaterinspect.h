@@ -38,6 +38,7 @@
 #include "llavatarname.h"
 #include "llfloater.h"
 #include "llvoinventorylistener.h"
+#include <boost/container/map.hpp>
 
 //class LLTool;
 class LLObjectSelection;
@@ -72,14 +73,21 @@ protected:
 	// </edit>
 
 private:
-	LLFloaterInspect(const LLSD&);
+	void onGetOwnerNameCallback(const LLUUID& id);
+	void onGetLastOwnerNameCallback(const LLUUID& id); // <edit/>
+	void onGetCreatorNameCallback(const LLUUID& id);
+
+	LLFloaterInspect(const LLSD& key);
 	virtual ~LLFloaterInspect(void);
 
 	LLSafeHandle<LLObjectSelection> mObjectSelection;
 	// <edit>
-	std::map<LLUUID,std::pair<S32,S32> > mInventoryNums; //<scripts,total>
+	std::map<LLUUID,std::pair<U32,U32> > mInventoryNums; //<scripts,total>
 	std::vector<LLUUID> mQueue;
 	// </edit>
+	boost::container::map<LLUUID, boost::signals2::scoped_connection> mOwnerNameCacheConnection;
+	boost::container::map<LLUUID, boost::signals2::scoped_connection> mLastOwnerNameCacheConnection; // <edit/>
+	boost::container::map<LLUUID, boost::signals2::scoped_connection> mCreatorNameCacheConnection;
 };
 
 #endif //LL_LLFLOATERINSPECT_H

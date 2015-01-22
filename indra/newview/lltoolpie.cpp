@@ -128,9 +128,10 @@ BOOL LLToolPie::handleRightMouseDown(S32 x, S32 y, MASK mask)
 	mPick.mKeyMask = mask;
 
 	// claim not handled so UI focus stays same
-
-	handleRightClickPick();
-
+	if (gAgentCamera.getCameraMode() != CAMERA_MODE_MOUSELOOK || gSavedSettings.getBOOL("LiruMouselookMenu"))
+	{
+		handleRightClickPick();
+	}
 	return FALSE;
 }
 
@@ -818,7 +819,8 @@ void LLToolPie::handleDeselect()
 
 LLTool* LLToolPie::getOverrideTool(MASK mask)
 {
-	if (gSavedSettings.getBOOL("EnableGrab"))
+	static LLCachedControl<bool> enable_grab(gSavedSettings, "EnableGrab", true);
+	if (enable_grab)
 	{
 		if (mask == MASK_CONTROL)
 		{
@@ -956,7 +958,7 @@ bool LLToolPie::handleMediaHover(const LLPickInfo& pick)
 
 	LLPointer<LLViewerObject> objectp = pick.getObject();
 
-	// Early out cases.  Must clear mouse over media focus flag
+	// Early out cases.  Must clear media hover.
 	// did not hit an object or did not hit a valid face
 	if ( objectp.isNull() ||
 		pick.mObjectFace < 0 || 
@@ -1230,8 +1232,12 @@ BOOL LLToolPie::handleRightClickPick()
 void LLToolPie::showVisualContextMenuEffect()
 {
 	// <edit>
-	if (gSavedSettings.getBOOL("DisablePointAtAndBeam")) return;
+	if (gSavedSettings.getBOOL("DisablePointAtAndBeam"))
+	{
+		return;
+	}
 	// </edit>
+
 	// VEFFECT: ShowPie
 	LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_SPHERE, TRUE);
 	effectp->setPositionGlobal(mPick.mPosGlobal);

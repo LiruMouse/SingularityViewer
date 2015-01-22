@@ -59,7 +59,7 @@
 #include "llworld.h"
 #include "llappviewer.h"
 #include "llparcel.h"
-
+#include "roles_constants.h"
 #include "llglheaders.h"
 
 const std::string REGION_BLOCKS_TERRAFORM_MSG = "This region does not allow terraforming.\n"
@@ -246,9 +246,9 @@ void LLToolBrushLand::modifyLandInSelectionGlobal()
 		iter != mLastAffectedRegions.end(); ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
-		if (!canTerraform(regionp))
+		if (!canTerraformRegion(regionp))
 		{
-			alertNoTerraform(regionp);
+			alertNoTerraformRegion(regionp);
 			return;
 		}
 	}
@@ -383,10 +383,15 @@ BOOL LLToolBrushLand::handleMouseDown(S32 x, S32 y, MASK mask)
 		LLRegionPosition region_position( spot );
 		LLViewerRegion* regionp = region_position.getRegion();
 
-		if (!canTerraform(regionp))
+		if (!canTerraformRegion(regionp))
 		{
-			alertNoTerraform(regionp);
+			alertNoTerraformRegion(regionp);
 			return TRUE;
+		}
+
+		if (!canTerraformParcel(regionp))
+		{
+			alertNoTerraformParcel();
 		}
 
 		LLVector3 pos_region = region_position.getPositionRegion();
@@ -408,13 +413,23 @@ BOOL LLToolBrushLand::handleMouseDown(S32 x, S32 y, MASK mask)
 
 BOOL LLToolBrushLand::handleHover( S32 x, S32 y, MASK mask )
 {
-	lldebugst(LLERR_USER_INPUT) << "hover handled by LLToolBrushLand ("
+	LL_DEBUGS("UserInput") << "hover handled by LLToolBrushLand ("
 								<< (hasMouseCapture() ? "active":"inactive")
-								<< ")" << llendl;
+								<< ")" << LL_ENDL;
 	mMouseX = x;
 	mMouseY = y;
 	mGotHover = TRUE;
 	gViewerWindow->getWindow()->setCursor(UI_CURSOR_TOOLLAND);
+
+	LLVector3d spot;
+	if (gViewerWindow->mousePointOnLandGlobal(mMouseX, mMouseY, &spot))
+	{
+
+		spot.mdV[VX] = floor( spot.mdV[VX] + 0.5 );
+		spot.mdV[VY] = floor( spot.mdV[VY] + 0.5 );
+
+		LLViewerParcelMgr::getInstance()->setHoverParcel(spot);
+	}
 	return TRUE;
 }
 
@@ -463,7 +478,7 @@ void LLToolBrushLand::render()
 {
 	if(mGotHover)
 	{
-		//llinfos << "LLToolBrushLand::render()" << llendl;
+		//LL_INFOS() << "LLToolBrushLand::render()" << LL_ENDL;
 		LLVector3d spot;
 		if(gViewerWindow->mousePointOnLandGlobal(mMouseX, mMouseY, &spot))
 		{
@@ -660,7 +675,7 @@ void LLToolBrushLand::redo()
 }*/
 
 // static
-bool LLToolBrushLand::canTerraform(LLViewerRegion* regionp) const
+bool LLToolBrushLand::canTerraformRegion(LLViewerRegion* regionp) const
 {
 	if (!regionp) return false;
 	if (regionp->canManageEstate()) return true;
@@ -668,13 +683,41 @@ bool LLToolBrushLand::canTerraform(LLViewerRegion* regionp) const
 }
 
 // static
-void LLToolBrushLand::alertNoTerraform(LLViewerRegion* regionp)
+bool LLToolBrushLand::canTerraformParcel(LLViewerRegion* regionp) const
+{
+	LLParcel* selected_parcel = LLViewerParcelMgr::getInstance()->getHoverParcel();
+	bool is_terraform_allowed = false;
+	if (selected_parcel)
+	{
+		BOOL owner_release = LLViewerParcelMgr::isParcelOwnedByAgent(selected_parcel, GP_LAND_ALLOW_EDIT_LAND);
+		is_terraform_allowed = ( gAgent.canManageEstate() || (selected_parcel->getOwnerID() == regionp->getOwner()) || owner_release);
+	}
+
+	return is_terraform_allowed;
+}
+
+
+// static
+void LLToolBrushLand::alertNoTerraformRegion(LLViewerRegion* regionp)
 {
 	if (!regionp) return;
 	
 	LLSD args;
 	args["REGION"] = regionp->getName();
 	LLNotificationsUtil::add("RegionNoTerraforming", args);
+
+}
+
+// static
+void LLToolBrushLand::alertNoTerraformParcel()
+{
+	LLParcel* selected_parcel = LLViewerParcelMgr::getInstance()->getHoverParcel();
+	if (selected_parcel)
+	{
+		LLSD args;
+		args["PARCEL"] = selected_parcel->getName();
+		LLNotificationsUtil::add("ParcelNoTerraforming", args);
+	}
 
 }
 

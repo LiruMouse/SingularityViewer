@@ -889,7 +889,7 @@ void LLVivoxVoiceClient::stateMachine()
 							log_folder.resize(log_folder.size()-1);
 						}
 						args += " -lf ";
-						args += log_folder;
+						args += '"' + log_folder + '"';
 						
 // Singu Note: omit shutdown timeout for Linux, as we are using 2.x version of the SDK there
 // Singu TODO: Remove this when the Vivox SDK 4.x is working on Linux
