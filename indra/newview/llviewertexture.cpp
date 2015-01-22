@@ -493,6 +493,13 @@ static LLFastTimer::DeclareTimer FTM_TEXTURE_UPDATE_MEDIA("Media");
 #if 0
 static LLFastTimer::DeclareTimer FTM_TEXTURE_UPDATE_TEST("Test");
 #endif
+// default is 0.75 with max 512MB --- use less reduction with max 2048MB
+// to free the same amount of memory (128MB)
+// #define TX_REDUCTION_FACTOR 0.9375f
+// ... but then, possibly releasing larger chunks may reduce memory
+// fragmentation: which shouldn't hurt because there's more texture
+// memory available, unless the graphics card is crappy
+#define TX_REDUCTION_FACTOR 0.5f
 //static
 void LLViewerTexture::updateClass(const F32 velocity, const F32 angular_velocity)
 {
@@ -521,7 +528,7 @@ void LLViewerTexture::updateClass(const F32 velocity, const F32 angular_velocity
 		BYTES_TO_MEGA_BYTES(sTotalTextureMemoryInBytes) >= sMaxTotalTextureMemInMegaBytes)
 	{
 		//when texture memory overflows, lower down the threashold to release the textures more aggressively.
-		sMaxDesiredTextureMemInBytes = llmin((S32)(sMaxDesiredTextureMemInBytes * 0.75f) , MEGA_BYTES_TO_BYTES(MAX_VIDEO_RAM_IN_MEGA_BYTES)) ;//512 MB
+		sMaxDesiredTextureMemInBytes = llmin((S32)(sMaxDesiredTextureMemInBytes * TX_REDUCTION_FACTOR) , MEGA_BYTES_TO_BYTES(MAX_VIDEO_RAM_IN_MEGA_BYTES));
 	
 		// If we are using more texture memory than we should,
 		// scale up the desired discard level
@@ -556,9 +563,10 @@ void LLViewerTexture::updateClass(const F32 velocity, const F32 angular_velocity
 	sCameraMovingBias = llmax(0.2f * camera_moving_speed, 2.0f * camera_angular_speed - 1);
 	sCameraMovingDiscardBias = (S8)(sCameraMovingBias);
 
-	LLViewerTexture::sFreezeImageScalingDown = (BYTES_TO_MEGA_BYTES(sBoundTextureMemoryInBytes) < 0.75f * sMaxBoundTextureMemInMegaBytes * texmem_middle_bound_scale) &&
-				(BYTES_TO_MEGA_BYTES(sTotalTextureMemoryInBytes) < 0.75f * sMaxTotalTextureMemInMegaBytes * texmem_middle_bound_scale) ;
+	LLViewerTexture::sFreezeImageScalingDown = (BYTES_TO_MEGA_BYTES(sBoundTextureMemoryInBytes) < TX_REDUCTION_FACTOR * sMaxBoundTextureMemInMegaBytes * texmem_middle_bound_scale) &&
+				(BYTES_TO_MEGA_BYTES(sTotalTextureMemoryInBytes) < TX_REDUCTION_FACTOR * sMaxTotalTextureMemInMegaBytes * texmem_middle_bound_scale) ;
 }
+#undef TX_REDUCTION_FACTOR
 
 //end of static functions
 //-------------------------------------------------------------------------------------------

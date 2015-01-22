@@ -281,7 +281,7 @@ U8* LLImageBase::allocateDataSize(S32 width, S32 height, S32 ncomponents, S32 si
 // LLImageRaw
 //---------------------------------------------------------------------------
 
-AIThreadSafeSimpleDC<S32> LLImageRaw::sGlobalRawMemory;
+AIThreadSafeSimpleDC<U64> LLImageRaw::sGlobalRawMemory;
 S32 LLImageRaw::sRawImageCount = 0;
 S32 LLImageRaw::sRawImageCachedCount = 0;
 
@@ -358,7 +358,7 @@ LLImageRaw::~LLImageRaw()
 U8* LLImageRaw::allocateData(S32 size)
 {
 	U8* res = LLImageBase::allocateData(size);
-	*AIAccess<S32>(sGlobalRawMemory) += getDataSize();
+	*AIAccess<U64>(sGlobalRawMemory) += getDataSize();
 	return res;
 }
 
@@ -367,7 +367,7 @@ U8* LLImageRaw::reallocateData(S32 size)
 {
 	S32 old_data_size = getDataSize();
 	U8* res = LLImageBase::reallocateData(size);
-	*AIAccess<S32>(sGlobalRawMemory) += getDataSize() - old_data_size;
+	*AIAccess<U64>(sGlobalRawMemory) += getDataSize() - old_data_size;
 	return res;
 }
 
@@ -375,7 +375,7 @@ U8* LLImageRaw::reallocateData(S32 size)
 void LLImageRaw::deleteData()
 {
 	{
-		*AIAccess<S32>(sGlobalRawMemory) -= getDataSize();
+		*AIAccess<U64>(sGlobalRawMemory) -= getDataSize();
 	}
 	LLImageBase::deleteData();
 }
@@ -392,7 +392,7 @@ void LLImageRaw::setDataAndSize(U8 *data, S32 width, S32 height, S8 components)
 	LLImageBase::setSize(width, height, components) ;
 	LLImageBase::setDataAndSize(data, width * height * components) ;
 	
-	*AIAccess<S32>(sGlobalRawMemory) += getDataSize();
+	*AIAccess<U64>(sGlobalRawMemory) += getDataSize();
 }
 
 BOOL LLImageRaw::resize(U16 width, U16 height, S8 components)

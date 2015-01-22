@@ -129,8 +129,30 @@ if (LINUX)
 #      -g
       -pthread
       -march=native
-      -O2
-#      -flto
+      -O3
+      -fomit-frame-pointer
+
+      -finline-functions
+      -ffast-math
+      -funsafe-math-optimizations
+      -ffinite-math-only
+      -fno-signed-zeros
+      -fcx-limited-range
+      -funroll-loops
+      -frename-registers
+      -ftracer
+      -fvariable-expansion-in-unroller
+      -freorder-blocks-and-partition
+#      -flto=24
+#      -I/usr/lib/gcc/x86_64-redhat-linux/4.8.1/
+#      -lgcov
+#       -fprofile-dir=/home/lee/tmp
+#       -fprofile-generate
+	-Wno-strict-aliasing
+#	-ftree-loop-linear // don't
+	-ftree-loop-im
+      -ftree-parallelize-loops=24
+	-funswitch-loops
       )
 
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 ")

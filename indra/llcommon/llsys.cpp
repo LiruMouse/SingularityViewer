@@ -742,7 +742,7 @@ static U32 LLMemoryAdjustKBResult(U32 inKB)
 }
 #endif
 
-U32 LLMemoryInfo::getPhysicalMemoryKB() const
+U64 LLMemoryInfo::getPhysicalMemoryKB() const
 {
 #if LL_WINDOWS
 	return LLMemoryAdjustKBResult(mStatsMap["Total Physical KB"].asInteger());
@@ -760,7 +760,7 @@ U32 LLMemoryInfo::getPhysicalMemoryKB() const
 #elif LL_LINUX
 	U64 phys = 0;
 	phys = (U64)(getpagesize()) * (U64)(get_phys_pages());
-	return (U32)(phys >> 10);
+	return (U64)(phys >> 10);
 
 #elif LL_SOLARIS
 	U64 phys = 0;
@@ -773,20 +773,10 @@ U32 LLMemoryInfo::getPhysicalMemoryKB() const
 #endif
 }
 
-U32 LLMemoryInfo::getPhysicalMemoryClamped() const
+U64 LLMemoryInfo::getPhysicalMemoryClamped() const
 {
-	// Return the total physical memory in bytes, but clamp it
-	// to no more than U32_MAX
-	
-	U32 phys_kb = getPhysicalMemoryKB();
-	if (phys_kb >= 4194304 /* 4GB in KB */)
-	{
-		return U32_MAX;
-	}
-	else
-	{
-		return phys_kb << 10;
-	}
+	U64 phys_kb = getPhysicalMemoryKB();
+	return (phys_kb << 10);
 }
 
 //static

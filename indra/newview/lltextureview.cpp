@@ -583,11 +583,11 @@ void LLGLTexMemBar::draw()
 	
 	std::string text = "";
 	
-	S32 global_raw_memory;
+	U64 global_raw_memory;
 	{
-		global_raw_memory = *AIAccess<S32>(LLImageRaw::sGlobalRawMemory);
+		global_raw_memory = *AIAccess<U64>(LLImageRaw::sGlobalRawMemory);
 	}
-	text = llformat("GL Tot: %d/%d MB Bound: %d/%d MB FBO: %d MB Raw Tot: %d MB Bias: %.2f Cache: %.1f/%.1f MB Net Tot Tex: %.1f MB Tot Obj: %.1f MB Tot Htp: %d",
+	text = llformat("GL Tot: %d/%d MB Bound: %d/%d MB FBO: %d MB Raw Tot: %llu MB Bias: %.2f Cache: %.1f/%.1f MB Net Tot Tex: %.1f MB Tot Obj: %.1f MB Tot Htp: %d",
 					total_mem,
 					max_total_mem,
 					bound_mem,
