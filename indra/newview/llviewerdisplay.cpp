@@ -835,9 +835,12 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 
 			{
 				LLFastTimer t(FTM_IMAGE_UPDATE_LIST);
-				F32 max_image_decode_time = 0.050f*gFrameIntervalSeconds; // 50 ms/second decode time
-				max_image_decode_time = llclamp(max_image_decode_time, 0.002f, 0.005f ); // min 2ms/frame, max 5ms/frame)
-				gTextureList.updateImages(max_image_decode_time);
+				// F32 max_image_decode_time = 0.050f*gFrameIntervalSeconds; // 50 ms/second decode time
+				// llinfos << "frame-i: " << gFrameIntervalSeconds << llendl;
+				// max_image_decode_time = llclamp(max_image_decode_time, 0.002f, 0.005f ); // min 2ms/frame, max 5ms/frame)
+				// gTextureList.updateImages(max_image_decode_time);
+				F32 max_image_decode_time = 0.001f / gFrameIntervalSeconds;
+				if(max_image_decode_time > 0.0015f) gTextureList.updateImages(max_image_decode_time);
 			}
 
 			/*{

@@ -1613,7 +1613,7 @@ F32 LLViewerFetchedTexture::maxDecodePriority()
 
 void LLViewerFetchedTexture::setDecodePriority(F32 priority)
 {
-	llassert(!mInImageList); 
+	llassert(!mInImageList);
     
 	mDecodePriority = priority;
 
