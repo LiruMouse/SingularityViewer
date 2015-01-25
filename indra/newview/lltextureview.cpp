@@ -578,11 +578,11 @@ void LLGLTexMemBar::draw()
 	U32 total_http_requests = LLAppViewer::getTextureFetch()->getTotalNumHTTPRequests() ;
 	//----------------------------------------------------------------------------
 	LLGLSUIDefault gls_ui;
-	LLColor4 text_color(1.f, 1.f, 1.f, 0.75f);
+	LLColor4 text_color(0.f, 1.f, 0.f, 1.0f);
 	LLColor4 color;
 	
 	std::string text = "";
-	
+
 	U64 global_raw_memory;
 	{
 		global_raw_memory = *AIAccess<U64>(LLImageRaw::sGlobalRawMemory);
@@ -597,8 +597,7 @@ void LLGLTexMemBar::draw()
 					cache_usage, cache_max_usage, total_texture_downloaded, total_object_downloaded, total_http_requests);
 	//, cache_entries, cache_max_entries
 
-	LLFontGL::getFontMonospace()->renderUTF8(text, 0, 0, v_offset + line_height*3,
-											 text_color, LLFontGL::LEFT, LLFontGL::TOP);
+	LLFontGL::getFontMonospace()->renderUTF8(text, 0, 0, v_offset + line_height*3, text_color, LLFontGL::LEFT, LLFontGL::TOP);
 
 	//----------------------------------------------------------------------------
 #if 0

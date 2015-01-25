@@ -1289,9 +1289,8 @@ void LLViewerTextureList::updateMaxResidentTexMem(S32 unused)
 
 	U64 video_ram = (U64)getMaxVideoRamSetting(0);
 
-	// reserve 1/32 of the actual video ram for frame buffer
-	// (Is that even needed?)
-	mMaxResidentTexMemInMegaBytes = video_ram - video_ram / 32;
+	// reserve 1/2 of the actual video ram for frame buffer
+	mMaxResidentTexMemInMegaBytes = (video_ram >> 1);
 
 	// this is NOT limited to max 4095 anymore:
 	U64 system_ram = (U64)BYTES_TO_MEGA_BYTES(gSysMemory.getPhysicalMemoryClamped());
