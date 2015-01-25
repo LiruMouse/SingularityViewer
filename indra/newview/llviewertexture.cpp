@@ -1553,7 +1553,8 @@ F32 LLViewerFetchedTexture::calcDecodePriority()
 			//Note: 
 			//to give small, low-priority textures some chance to be fetched, 
 			//cut the priority in half if the texture size is larger than 256 * 256 and has a 64*64 ready.
-			priority *= 0.5f ; 
+			//priority *= 0.5f ;
+			priority *= gFrameIntervalSeconds;
 		}
 
 		pixel_priority = llclamp(pixel_priority, 0.0f, MAX_PRIORITY_PIXEL); 
@@ -1589,7 +1590,8 @@ F32 LLViewerFetchedTexture::calcDecodePriority()
 				//Note: 
 				//to give small, low-priority textures some chance to be fetched, 
 				//cut the additional priority to a quarter if the texture size is larger than 256 * 256 and has a 64*64 ready.
-				additional *= 0.25f ;
+				//additional *= 0.25f ;
+				additional *= gFrameIntervalSeconds;
 			}
 			priority += additional;
 		}
