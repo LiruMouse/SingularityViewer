@@ -841,6 +841,61 @@
       <key>Value</key>
       <boolean>0</boolean>
     </map>
+    <key>RtyAddaEnabled</key>
+    <map>
+      <key>Comment</key>
+      <string>Dynamically adjust the draw distance when enabled; not intended to be used together with distance stepping.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>RtyAddaDown</key>
+    <map>
+      <key>Comment</key>
+      <string>When dynamically adjusting the draw distance, decrease it by this much per adjustment.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <F32>2.5</F32>
+    </map>
+    <key>RtyAddaFrames</key>
+    <map>
+      <key>Comment</key>
+      <string>When dynamically adjusting the draw distance, calculate the average frame rate over this many frames.  The higher this number is, the less often the draw distance is adjusted.  Keep this number as high as possible.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <U32>60</U32>
+    </map>
+    <key>RtyAddaLevel</key>
+    <map>
+      <key>Comment</key>
+      <string>Reference for dynamically adjusting the draw distance. A lower number biases towards more FPS.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <U32>50</U32>
+    </map>
+    <key>RtyAddaUp</key>
+    <map>
+      <key>Comment</key>
+      <string>When dynamically adjusting the draw distance, increase it by this much per adjustment.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <F32>1.25</F32>
+    </map>
     <key>RtyShowBothTimes</key>
     <map>
       <key>Comment</key>

@@ -564,7 +564,8 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			F32 current = gSavedSettings.getF32("RenderFarClip");
 			if (gSavedDrawDistance > current)
 			{
-				current *= 2.0;
+				// current *= 2.0;
+				current += current;
 				if (current > gSavedDrawDistance)
 				{
 					current = gSavedDrawDistance;
@@ -578,6 +579,84 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			}
 		}
 	}
+
+	// automatically adjust draw distance
+	static LLCachedControl<bool> addaenabled("RtyAddaEnabled");
+	if(addaenabled)
+		{
+			// increase/decrease dd by this much per step
+			static LLCachedControl<F32> addadeltaup("RtyAddaUp");
+			static LLCachedControl<F32> addadeltadn("RtyAddaDown");
+
+			// FIXME: min and max dd, probably somewhere else defined already
+			const F32 addamindd = 32.0f + addadeltadn;
+			const F32 addamaxdd = 1024.0f - addadeltaup;
+
+			// use average frame rate as reference for adjustment
+			static F32 addaavg = 0.0f;
+			static F32 addaavglast = addaavg;
+			static U32 addaframes = 0;
+			// how many frames to average
+			static LLCachedControl<U32> addaf2avg("RtyAddaFrames");
+			if(addaf2avg < 10) addaf2avg = 10;
+
+			addaavg += gFrameIntervalSeconds;
+			addaframes++;
+			if(addaframes > addaf2avg)
+				{
+					addaavg /= (F32)addaframes;
+					addaframes = 0;
+
+					static LLCachedControl<U32> addalevel("RtyAddaLevel");
+					// note: dd gets reset in llagent.cpp after tp when speedstepping is enabled
+					// begin with medium dd
+					static F32 addadd = (addamindd + addamaxdd) * 0.5f;
+
+					// when there's a big change in average, adjust dd rapidly
+					if(addaavg < addaavglast * 0.6f)
+						{
+							addadd *= 0.55f;
+						}
+					addaavglast = addaavg;
+
+					if(addaavg > addalevel / 1000.0f)
+						{
+							if(addadd < addamindd)
+								{
+									addadd = addamindd;
+									gSavedSettings.setF32("RenderFarClip", addadd);
+									// llinfos << "dd min: " << addadd << " (" << addaavg << ")" << llendl;
+								}
+							else
+								{
+									if(addadd != addamindd)
+										{
+											addadd -= addadeltadn;
+											gSavedSettings.setF32("RenderFarClip", addadd);
+											// llinfos << "dd dec: " << addadd << " (" << addaavg << ")" << llendl;
+										}
+								}
+						}
+					else
+						{
+							if(addadd < addamaxdd)
+								{
+									addadd += addadeltaup;
+									gSavedSettings.setF32("RenderFarClip", addadd);
+									// llinfos << "dd inc: " << addadd << " (" << addaavg << ")" << llendl;
+								}
+							else
+								{
+									if(addadd != addamaxdd)
+										{
+											addadd = addamaxdd;
+											gSavedSettings.setF32("RenderFarClip", addadd);
+											// llinfos << "dd max: " << addadd << " (" << addaavg << ")" << llendl;
+										}
+								}
+						}
+				}
+		}
 
 	//////////////////////////
 	//
