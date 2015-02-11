@@ -50,8 +50,8 @@ U32 wpo2(U32 i);
 
 U32 LLImageGL::sUniqueCount				= 0;
 U32 LLImageGL::sBindCount				= 0;
-S32 LLImageGL::sGlobalTextureMemoryInBytes		= 0;
-S32 LLImageGL::sBoundTextureMemoryInBytes		= 0;
+S64 LLImageGL::sGlobalTextureMemoryInBytes		= 0;
+S64 LLImageGL::sBoundTextureMemoryInBytes		= 0;
 S32 LLImageGL::sCurBoundTextureMemory	= 0;
 S32 LLImageGL::sCount					= 0;
 

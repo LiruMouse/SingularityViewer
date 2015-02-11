@@ -214,8 +214,8 @@ public:
 	static S32 sBoundTextureMemoryInBytes;
 	static S32 sTotalTextureMemoryInBytes;
 	static S32 sMaxBoundTextureMemInMegaBytes;
-	static S32 sMaxTotalTextureMemInMegaBytes;
-	static S32 sMaxDesiredTextureMemInBytes ;
+	static S64 sMaxTotalTextureMemInMegaBytes;
+	static S64 sMaxDesiredTextureMemInBytes ;
 	static S8  sCameraMovingDiscardBias;
 	static F32 sCameraMovingBias;
 	static S32 sMaxSculptRez ;

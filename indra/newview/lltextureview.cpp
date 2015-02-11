@@ -567,7 +567,7 @@ void LLGLTexMemBar::draw()
 	S32 bound_mem = BYTES_TO_MEGA_BYTES(LLViewerTexture::sBoundTextureMemoryInBytes);
  	S32 max_bound_mem = LLViewerTexture::sMaxBoundTextureMemInMegaBytes;
 	S32 total_mem = BYTES_TO_MEGA_BYTES(LLViewerTexture::sTotalTextureMemoryInBytes);
-	S32 max_total_mem = LLViewerTexture::sMaxTotalTextureMemInMegaBytes;
+	S64 max_total_mem = LLViewerTexture::sMaxTotalTextureMemInMegaBytes;
 	F32 discard_bias = LLViewerTexture::sDesiredDiscardBias;
 	F32 cache_usage = (F32)BYTES_TO_MEGA_BYTES(LLAppViewer::getTextureCache()->getUsage()) ;
 	F32 cache_max_usage = (F32)BYTES_TO_MEGA_BYTES(LLAppViewer::getTextureCache()->getMaxUsage()) ;
@@ -587,7 +587,7 @@ void LLGLTexMemBar::draw()
 	{
 		global_raw_memory = *AIAccess<U64>(LLImageRaw::sGlobalRawMemory);
 	}
-	text = llformat("GL Tot: %d/%d MB Bound: %d/%d MB FBO: %d MB Raw Tot: %llu MB Bias: %.2f Cache: %.1f/%.1f MB Net Tot Tex: %.1f MB Tot Obj: %.1f MB Tot Htp: %d",
+	text = llformat("GL Tot: %d/%lld MB Bound: %d/%d MB FBO: %d MB Raw Tot: %llu MB Bias: %.2f Cache: %.1f/%.1f MB Net Tot Tex: %.1f MB Tot Obj: %.1f MB Tot Htp: %d",
 					total_mem,
 					max_total_mem,
 					bound_mem,

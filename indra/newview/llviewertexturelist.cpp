@@ -696,7 +696,7 @@ void LLViewerTextureList::updateImages(F32 max_time)
 	LLViewerStats::getInstance()->mGLTexMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageGL::sGlobalTextureMemoryInBytes));
 	LLViewerStats::getInstance()->mGLBoundMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageGL::sBoundTextureMemoryInBytes));
 	//	LLViewerStats::getInstance()->mRawMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(global_raw_memory));
-	LLViewerStats::getInstance()->mRawMemStat.addValue((F32)((F64)global_raw_memory / 1024.0 / 1024.0 / 1024.0));
+	LLViewerStats::getInstance()->mRawMemStat.addValue((F32)((F64)(global_raw_memory / 1024.f / 1024.f / 1024.f)));
 	LLViewerStats::getInstance()->mFormattedMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageFormatted::sGlobalFormattedMemory));
 
 
@@ -798,10 +798,10 @@ void LLViewerTextureList::updateImagesDecodePriorities()
 			//
 			// const F32 LAZY_FLUSH_TIMEOUT = 30.f; // stop decoding
 			// const F32 MAX_INACTIVE_TIME  = 50.f; // actually delete
-			const F32 LAZY_FLUSH_TIMEOUT = 15.0f; // stop decoding
+			const F32 LAZY_FLUSH_TIMEOUT = 45.0f; // stop decoding
 			const F32 MAX_INACTIVE_TIME  = 90.0f; // actually delete
 
-			S32 min_refs = 3; // 1 for mImageList, 1 for mUUIDMap, 1 for local reference
+			const S32 min_refs = 3; // 1 for mImageList, 1 for mUUIDMap, 1 for local reference
 
 			S32 num_refs = imagep->getNumRefs();
 			if (num_refs == min_refs)
@@ -814,7 +814,7 @@ void LLViewerTextureList::updateImagesDecodePriorities()
 						}
 					continue;
 				}
-			else
+			// else
 				{
 					if(imagep->hasSavedRawImage())
 						{
@@ -1289,16 +1289,20 @@ void LLViewerTextureList::updateMaxResidentTexMem(S32 unused)
 
 	U64 video_ram = (U64)getMaxVideoRamSetting(0);
 
-	// reserve 1/2 of the actual video ram for frame buffer
-	mMaxResidentTexMemInMegaBytes = (video_ram >> 1);
+	// reserve 1/4 of the actual video ram for frame buffer
+	// this might be what's called "bound mem"
+	U64 quarter_video_ram = (video_ram >> 2);
+	mMaxResidentTexMemInMegaBytes = quarter_video_ram;
+
+	// This is what's displayed as "GL Mem" in the stats floater.
+	// Setting this low will show blurred textures and lead to destroying more textures than otherwise.
+	U64 three_quarter_video_ram = video_ram - quarter_video_ram;
+	mMaxTotalTextureMemInMegaBytes = three_quarter_video_ram;
 
 	// this is NOT limited to max 4095 anymore:
-	U64 system_ram = (U64)BYTES_TO_MEGA_BYTES(gSysMemory.getPhysicalMemoryClamped());
+	// U64 system_ram = (U64)BYTES_TO_MEGA_BYTES(gSysMemory.getPhysicalMemoryClamped());
 
-	// reserve 1/2 of system ram for non-texture use; same effect as original code
-	mMaxTotalTextureMemInMegaBytes = (system_ram >> 1);
-
-	llinfos << "system_ram: " << system_ram << "MB" << llendl;
+	// llinfos << "system_ram: " << system_ram << "MB" << llendl;
 	llinfos << "mMaxTotalTextureMemInMegaBytes: " << mMaxTotalTextureMemInMegaBytes << llendl;
 	llinfos << "mMaxResidentTexMemInMegaBytes: " << mMaxResidentTexMemInMegaBytes << llendl;
 }

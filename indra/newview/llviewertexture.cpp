@@ -86,8 +86,8 @@ F32 LLViewerTexture::sDesiredDiscardScale = 1.1f;
 S32 LLViewerTexture::sBoundTextureMemoryInBytes = 0;
 S32 LLViewerTexture::sTotalTextureMemoryInBytes = 0;
 S32 LLViewerTexture::sMaxBoundTextureMemInMegaBytes = 0;
-S32 LLViewerTexture::sMaxTotalTextureMemInMegaBytes = 0;
-S32 LLViewerTexture::sMaxDesiredTextureMemInBytes = 0 ;
+S64 LLViewerTexture::sMaxTotalTextureMemInMegaBytes = 0;
+S64 LLViewerTexture::sMaxDesiredTextureMemInBytes = 0 ;
 S8  LLViewerTexture::sCameraMovingDiscardBias = 0 ;
 F32 LLViewerTexture::sCameraMovingBias = 0.0f ;
 S32 LLViewerTexture::sMaxSculptRez = 128 ; //max sculpt image size
@@ -495,11 +495,7 @@ static LLFastTimer::DeclareTimer FTM_TEXTURE_UPDATE_TEST("Test");
 #endif
 // default is 0.75 with max 512MB --- use less reduction with max 2048MB
 // to free the same amount of memory (128MB)
-// #define TX_REDUCTION_FACTOR 0.9375f
-// ... but then, possibly releasing larger chunks may reduce memory
-// fragmentation: which shouldn't hurt because there's more texture
-// memory available, unless the graphics card is crappy
-#define TX_REDUCTION_FACTOR 0.5f
+#define TX_REDUCTION_FACTOR 0.9375f
 //static
 void LLViewerTexture::updateClass(const F32 velocity, const F32 angular_velocity)
 {
@@ -528,8 +524,9 @@ void LLViewerTexture::updateClass(const F32 velocity, const F32 angular_velocity
 		BYTES_TO_MEGA_BYTES(sTotalTextureMemoryInBytes) >= sMaxTotalTextureMemInMegaBytes)
 	{
 		//when texture memory overflows, lower down the threashold to release the textures more aggressively.
-		sMaxDesiredTextureMemInBytes = llmin((S32)(sMaxDesiredTextureMemInBytes * TX_REDUCTION_FACTOR) , MEGA_BYTES_TO_BYTES(MAX_VIDEO_RAM_IN_MEGA_BYTES));
-	
+		// sMaxDesiredTextureMemInBytes = llmin((S32)(sMaxDesiredTextureMemInBytes * TX_REDUCTION_FACTOR) , MEGA_BYTES_TO_BYTES(MAX_VIDEO_RAM_IN_MEGA_BYTES));
+		// RTY mark (there is no floating point math here)
+
 		// If we are using more texture memory than we should,
 		// scale up the desired discard level
 		if (sEvaluationTimer.getElapsedTimeF32() > discard_delta_time)
@@ -557,7 +554,7 @@ void LLViewerTexture::updateClass(const F32 velocity, const F32 angular_velocity
 	}
 	sDesiredDiscardBias = llclamp(sDesiredDiscardBias, desired_discard_bias_min, desired_discard_bias_max);
 	//LLViewerTexture::sUseTextureAtlas = gSavedSettings.getBOOL("EnableTextureAtlas") ;
-	
+
 	F32 camera_moving_speed = LLViewerCamera::getInstance()->getAverageSpeed() ;
 	F32 camera_angular_speed = LLViewerCamera::getInstance()->getAverageAngularSpeed();
 	sCameraMovingBias = llmax(0.2f * camera_moving_speed, 2.0f * camera_angular_speed - 1);
@@ -1164,11 +1161,13 @@ void LLViewerFetchedTexture::destroyTexture()
 	{
 		return ;
 	}
+
 	if (mNeedsCreateTexture)//return if in the process of generating a new texture.
 	{
 		return ;
 	}
-	
+
+	// llinfos << "RTY destroying tex, texmem: " << BYTES_TO_MEGA_BYTES(LLImageGL::sGlobalTextureMemoryInBytes) << " MB used of " << BYTES_TO_MEGA_BYTES(sMaxDesiredTextureMemInBytes) << llendl;
 	destroyGLTexture() ;
 	mFullyLoaded = FALSE ;
 }
@@ -2406,7 +2405,7 @@ bool LLViewerFetchedTexture::doLoadedCallbacks()
 
 	// Done with any raw image data at this point (will be re-created if we still have callbacks)
 	destroyRawImage();
-	
+
 	return res;
 }
 

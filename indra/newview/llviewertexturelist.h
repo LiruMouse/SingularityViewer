@@ -102,7 +102,7 @@ public:
 	void setUpdateStats(BOOL b)			{ mUpdateStats = b; }
 
 	S32	getMaxResidentTexMem() const	{ return mMaxResidentTexMemInMegaBytes; }
-	S32 getMaxTotalTextureMem() const   { return mMaxTotalTextureMemInMegaBytes;}
+	S64 getMaxTotalTextureMem() const   { return mMaxTotalTextureMemInMegaBytes;}
 	S32 getNumImages()					{ return mImageList.size(); }
 
 	void updateMaxResidentTexMem(S32 unused);
