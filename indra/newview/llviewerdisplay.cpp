@@ -588,9 +588,10 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			static LLCachedControl<F32> addadeltaup("RtyAddaUp");
 			static LLCachedControl<F32> addadeltadn("RtyAddaDown");
 
-			// FIXME: min and max dd, probably somewhere else defined already
-			const F32 addamindd = 32.0f + addadeltadn;
-			const F32 addamaxdd = 1024.0f - addadeltaup;
+			// do not increase/decrease dd beyond these limits
+			// FIXME: there needs to be a lower and an upper hardcoded limit
+			static LLCachedControl<F32> addamindd("RtyAddaMinDD");
+			static LLCachedControl<F32> addamaxdd("RtyAddaMaxDD");
 
 			// use average frame rate as reference for adjustment
 			static F32 addaavg = 0.0f;

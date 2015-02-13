@@ -885,6 +885,28 @@
       <key>Value</key>
       <U32>50</U32>
     </map>
+    <key>RtyAddaMaxDD</key>
+    <map>
+      <key>Comment</key>
+      <string>When dynamically adjusting the draw distance, do not set it higher than this.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <F32>368.0</F32>
+    </map>
+    <key>RtyAddaMinDD</key>
+    <map>
+      <key>Comment</key>
+      <string>When dynamically adjusting the draw distance, do not set it lower than this.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <F32>32.0</F32>
+    </map>
     <key>RtyAddaUp</key>
     <map>
       <key>Comment</key>
