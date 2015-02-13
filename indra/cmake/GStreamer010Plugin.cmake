@@ -16,10 +16,13 @@ else (STANDALONE)
   set(GSTREAMER010_FOUND ON FORCE BOOL)
   set(GSTREAMER010_PLUGINS_BASE_FOUND ON FORCE BOOL)
   set(GSTREAMER010_INCLUDE_DIRS
-      ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/gstreamer-0.10
-      ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/glib-2.0
-      ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/libxml2
-      )
+    ${LIBS_PREBUILT_DIR}/include/gstreamer-0.10
+    ${LIBS_PREBUILT_DIR}/includeg/lib-2.0
+    ${LIBS_PREBUILT_DIR}/include/libxml2
+    ${LIBS_PREBUILT_LEGACY_DIR}/include/gstreamer-0.10
+    ${LIBS_PREBUILT_LEGACY_DIR}/include/glib-2.0
+    ${LIBS_PREBUILT_LEGACY_DIR}/include/libxml2
+    )
 
 endif (STANDALONE)
 

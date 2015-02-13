@@ -17,7 +17,10 @@ else (STANDALONE)
     use_prebuilt_binary(mesa)
     use_prebuilt_binary(SDL)
     set (SDL_FOUND TRUE)
-    set (SDL_INCLUDE_DIR ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR})
+    set (SDL_INCLUDE_DIR
+      ${LIBS_PREBUILT_DIR}/include
+      ${LIBS_PREBUILT_LEGACY_DIR}/include
+      )
     if(WORD_SIZE EQUAL 64)
       set (SDL_LIBRARY SDL)
     else(WORD_SIZE EQUAL 64)

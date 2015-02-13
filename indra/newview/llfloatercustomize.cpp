@@ -346,13 +346,12 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 		// <linden_genepool version="1.0" [metaversion="?"]> (root)
 		//-------------------------------------------------------------------------
 		std::string metaversion;
-		U32 metaversion_major;
+		U32 metaversion_major = 0; // No metaversion
 
 		AIXMLParser linden_genepool(filename, "wearable import file", "linden_genepool", 1);
 		linden_genepool.attribute("version", "1.0");
-		linden_genepool.attribute("metaversion", metaversion);
 
-		if (!LLStringUtil::convertToU32(metaversion, metaversion_major) || metaversion_major > 1)
+		if (linden_genepool.attribute("metaversion", metaversion) && (!LLStringUtil::convertToU32(metaversion, metaversion_major) || metaversion_major > 1))
 		{
 			THROW_MALERT("AIXMLImportRootVersionError", args("[TAG]", "metaversion")("[VERSIONMAJOR]", "1"));
 		}

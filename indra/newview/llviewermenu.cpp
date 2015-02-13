@@ -335,10 +335,6 @@ void set_current_pose(std::string anim)
 	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
 	gAgent.sendAgentSetAppearance();
 }
-void handle_pose_stand(void*)
-{
-	set_current_pose("038fcec9-5ebd-8a8e-0e2e-6e71a0a1ac53");
-}
 void handle_pose_stand_stop(void*)
 {
 	if (on_pose_stand)
@@ -349,24 +345,14 @@ void handle_pose_stand_stop(void*)
 		gAgent.sendAgentSetAppearance();
 	}
 }
-void cleanup_pose_stand(void)
+void cleanup_pose_stand()
 {
 	handle_pose_stand_stop(NULL);
 }
 
-void handle_toggle_pose(void* userdata) {
-	if(current_pose.isNull())
-		handle_pose_stand(userdata);
-	else
-		handle_pose_stand_stop(userdata);
-}
-
-BOOL handle_check_pose(void* userdata) {
-	return current_pose.notNull();
-}
+BOOL handle_check_pose(void* userdata) { return current_pose.notNull(); }
 
 
-void handle_close_all_notifications(void*);
 void handle_open_message_log(void*);
 // </edit>
 
@@ -451,6 +437,7 @@ void handle_morph_load_obj(void*);
 void handle_debug_avatar_textures(void*);
 void handle_dump_region_object_cache(void*);
 
+void menu_toggle_double_click_control(void*);
 BOOL menu_ui_enabled(void *user_data);
 BOOL menu_check_control( void* user_data);
 void menu_toggle_variable( void* user_data );
@@ -1159,11 +1146,11 @@ void init_debug_ui_menu(LLMenuGL* menu)
 	menu->addChild(new LLMenuItemCallGL( "Print Agent Info",			&print_agent_nvpairs, NULL, NULL, 'P', MASK_SHIFT ));
 	menu->addChild(new LLMenuItemCallGL( "Memory Stats",  &output_statistics, NULL, NULL, 'M', MASK_SHIFT | MASK_ALT | MASK_CONTROL));
 	menu->addChild(new LLMenuItemCheckGL("Double-Click Auto-Pilot", 
-		menu_toggle_control, NULL, menu_check_control, 
+		menu_toggle_double_click_control, NULL, menu_check_control,
 		(void*)"DoubleClickAutoPilot"));
 	// add for double click teleport support
 	menu->addChild(new LLMenuItemCheckGL("Double-Click Teleport", 
-		menu_toggle_control, NULL, menu_check_control, 
+		menu_toggle_double_click_control, NULL, menu_check_control,
 		(void*)"DoubleClickTeleport"));
 	menu->addSeparator();
 //	menu->addChild(new LLMenuItemCallGL( "Print Packets Lost",			&print_packets_lost, NULL, NULL, 'L', MASK_SHIFT ));
@@ -3688,17 +3675,6 @@ void process_grant_godlike_powers(LLMessageSystem* msg, void**)
 void handle_open_message_log(void*)
 {
 	LLFloaterMessageLog::show();
-}
-
-void handle_close_all_notifications(void*)
-{
-	LLView::child_list_t child_list(*(gNotifyBoxView->getChildList()));
-	for(LLView::child_list_iter_t iter = child_list.begin();
-		iter != child_list.end();
-		iter++)
-	{
-		gNotifyBoxView->removeChild(*iter);
-	}
 }
 
 void handle_fake_away_status(void*)
@@ -7319,26 +7295,27 @@ BOOL menu_ui_enabled(void *user_data)
 }
 
 // TomY TODO DEPRECATE & REMOVE
-void menu_toggle_control( void* user_data )
+void menu_toggle_control(void* user_data)
 {
         std::string setting(static_cast<char*>(user_data));
-        BOOL checked = gSavedSettings.getBOOL(setting);
-        if (setting == "HighResSnapshot" && !checked)
-        {
-                // High Res Snapshot active, must uncheck RenderUIInSnapshot
-                gSavedSettings.setBOOL( "RenderUIInSnapshot", FALSE );
-        }
-        else if (setting == "DoubleClickAutoPilot" && !checked)
-        {
-                // Doubleclick actions - there can be only one
-                gSavedSettings.setBOOL( "DoubleClickTeleport", FALSE );
-        }
-        else if (setting == "DoubleClickTeleport" && !checked)
-        {
-                // Doubleclick actions - there can be only one
-                gSavedSettings.setBOOL( "DoubleClickAutoPilot", FALSE );
-        }
-        gSavedSettings.setBOOL(setting, !checked);
+		LLControlVariable* control(gSavedSettings.getControl(setting));
+		control->set(!control->get());
+}
+
+void menu_toggle_double_click_control(void* user_data)
+{
+	std::string setting(static_cast<char*>(user_data));
+	LLControlVariable* control(gSavedSettings.getControl(setting));
+	bool checked = control->get();
+	// Doubleclick actions - there can be only one
+	if (!checked)
+	{
+		if (setting == "DoubleClickAutoPilot")
+			gSavedSettings.setBOOL("DoubleClickTeleport", false);
+		else if (setting == "DoubleClickTeleport")
+			gSavedSettings.setBOOL("DoubleClickAutoPilot", false);
+	}
+	control->set(!checked);
 }
 
 
@@ -7347,14 +7324,8 @@ class LLToggleControl : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		std::string control_name = userdata.asString();
-		BOOL checked = gSavedSettings.getBOOL( control_name );
-		if (control_name == "HighResSnapshot" && !checked)
-		{
-			// High Res Snapshot active, must uncheck RenderUIInSnapshot
-			gSavedSettings.setBOOL( "RenderUIInSnapshot", FALSE );
-		}
-		gSavedSettings.setBOOL( control_name, !checked );
+		LLControlVariable* control(gSavedSettings.getControl(userdata.asString()));
+		control->set(!control->get());
 		return true;
 	}
 };
@@ -8796,27 +8767,7 @@ class SinguCloseAllDialogs : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		handle_close_all_notifications(NULL);
-		return true;
-	}
-};
-
-class SinguNimble : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		gSavedSettings.setBOOL("Nimble", !gSavedSettings.getBOOL("Nimble"));
-
-		return true;
-	}
-};
-
-class SinguCheckNimble : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(gSavedSettings.getBOOL("Nimble"));
-
+		gNotifyBoxView->deleteAllChildren();
 		return true;
 	}
 };
@@ -8833,8 +8784,10 @@ class SinguPoseStand : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		handle_toggle_pose(NULL);
-
+		if (current_pose.isNull())
+			set_current_pose("038fcec9-5ebd-8a8e-0e2e-6e71a0a1ac53");
+		else
+			handle_pose_stand_stop(NULL);
 		return true;
 	}
 };
@@ -9521,8 +9474,6 @@ void initialize_menus()
 	// Singularity menu
 	addMenu(new SinguCloseAllDialogs(), "CloseAllDialogs");
 	// ---- Fake away handled elsewhere
-	addMenu(new SinguNimble(), "Nimble");
-	addMenu(new SinguCheckNimble(), "CheckNimble");
 	addMenu(new SinguEnableStreamingAudioDisplay(), "EnableStreamingAudioDisplay");
 	addMenu(new SinguPoseStand(), "PoseStand");
 	addMenu(new SinguCheckPoseStand(), "CheckPoseStand");

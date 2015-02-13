@@ -9,5 +9,8 @@ if (STANDALONE)
 else (STANDALONE)
     use_prebuilt_binary(xmlrpc-epi)
     set(XMLRPCEPI_LIBRARIES xmlrpc-epi)
-    set(XMLRPCEPI_INCLUDE_DIRS ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include)
+    set(XMLRPCEPI_INCLUDE_DIRS
+      ${LIBS_PREBUILT_DIR}/include
+      ${LIBS_PREBUILT_LEGACY_DIR}/include
+      )
 endif (STANDALONE)

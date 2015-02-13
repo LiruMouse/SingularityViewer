@@ -1098,10 +1098,10 @@ void AICurlThread::wakeup_thread(bool stop_thread)
   if (stop_thread)
 	mRunning = false;			// Thread-safe because all other threads were already stopped.
 
-  // Note, we do not want this function to be blocking the calling thread; therefore we only use tryLock()s.
+  // Note, we do not want this function to be blocking the calling thread; therefore we only use try_lock()s.
 
   // Stop two threads running the following code concurrently.
-  if (!mWakeUpMutex.tryLock())
+  if (!mWakeUpMutex.try_lock())
   {
 	// If we failed to obtain mWakeUpMutex then another thread is (or was) in AICurlThread::wakeup_thread,
 	// or curl was holding the lock for a micro second at the start of process_commands.
@@ -1115,7 +1115,7 @@ void AICurlThread::wakeup_thread(bool stop_thread)
   }
 
   // Try if curl thread is still awake and if so, pass the new commands directly.
-  if (mWakeUpFlagMutex.tryLock())
+  if (mWakeUpFlagMutex.try_lock())
   {
 	mWakeUpFlag = true;
 	mWakeUpFlagMutex.unlock();

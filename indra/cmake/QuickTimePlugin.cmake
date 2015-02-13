@@ -9,18 +9,29 @@ if (DARWIN)
   include(CMakeFindFrameworks)
   find_library(QUICKTIME_LIBRARY QuickTime)
 elseif (WINDOWS AND WORD_SIZE EQUAL 32)
-  set(QUICKTIME_SDK_DIR "$ENV{PROGRAMFILES}/QuickTime SDK"
+  SET(program_files "ProgramFiles(x86)")
+  SET(program_files $ENV{${program_files}})
+  if(NOT program_files)
+	SET(program_files $ENV{ProgramW6432})
+  endif(NOT program_files)
+  if(NOT program_files)
+    SET(program_files $ENV{ProgramFiles})
+  endif(NOT program_files)
+
+  set(QUICKTIME_SDK_DIR "${program_files}/QuickTime SDK"
       CACHE PATH "Location of the QuickTime SDK.")
 
   find_library(DEBUG_QUICKTIME_LIBRARY qtmlclient
                PATHS
-               ${ARCH_PREBUILT_DIRS_DEBUG}
+               ${LIBS_PREBUILT_DIR}/lib/debug
+			   ${LIBS_PREBUILT_LEGACY_DIR}/lib/debug
                "${QUICKTIME_SDK_DIR}\\libraries"
                )
 
   find_library(RELEASE_QUICKTIME_LIBRARY qtmlclient
                PATHS
-               ${ARCH_PREBUILT_DIRS_RELEASE}
+               ${LIBS_PREBUILT_DIR}/lib/release
+			   ${LIBS_PREBUILT_LEGACY_DIR}/lib/release
                "${QUICKTIME_SDK_DIR}\\libraries"
                )
 
@@ -33,7 +44,8 @@ elseif (WINDOWS AND WORD_SIZE EQUAL 32)
   endif (DEBUG_QUICKTIME_LIBRARY AND RELEASE_QUICKTIME_LIBRARY)
   
   include_directories(
-    ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/quicktime
+    ${LIBS_PREBUILT_DIR}/include/quicktime
+    ${LIBS_PREBUILT_LEGACY_DIR}/include/quicktime
     "${QUICKTIME_SDK_DIR}\\CIncludes"
     )
 endif (DARWIN)

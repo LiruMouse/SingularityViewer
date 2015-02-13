@@ -2631,14 +2631,15 @@ void LLVivoxVoiceClient::sendPositionalUpdate(void)
 
 	if(mAudioSession && (mAudioSession->mVolumeDirty || mAudioSession->mMuteDirty))
 	{
-		participantMap::iterator iter = mAudioSession->mParticipantsByURI.begin();
+		// Singu Note: mParticipantList has replaced mParticipantsByURI.
+		participantList::iterator iter = mAudioSession->mParticipantList.begin();
 
 		mAudioSession->mVolumeDirty = false;
 		mAudioSession->mMuteDirty = false;
 
-		for(; iter != mAudioSession->mParticipantsByURI.end(); iter++)
+		for(; iter != mAudioSession->mParticipantList.end(); iter++)
 		{
-			participantState *p = iter->second;
+			participantState *p = &*iter;
 
 			if(p->mVolumeDirty)
 			{
@@ -2646,7 +2647,7 @@ void LLVivoxVoiceClient::sendPositionalUpdate(void)
 				if(!p->mIsSelf)
 				{
 					// scale from the range 0.0-1.0 to vivox volume in the range 0-100
-					S32 volume = llround(p->mVolume / VOLUME_SCALE_VIVOX);
+					S32 volume = llmath::llround(p->mVolume / VOLUME_SCALE_VIVOX);
 					bool mute = p->mOnMuteList;
 
 					if(mute)
@@ -2665,7 +2666,7 @@ void LLVivoxVoiceClient::sendPositionalUpdate(void)
 						mute = true;
 					}
 
-					LL_DEBUGS("Voice") << "Setting volume/mute for avatar " << p->mAvatarID << " to " << volume << (mute?"/true":"/false") << LL_ENDL;
+					LL_DEBUGS("Voice") << "Setting volume/mute for avatar " << p->mAvatarID << " to " << volume << (mute ? "/true" : "/false") << LL_ENDL;
 
 					// SLIM SDK: Send both volume and mute commands.
 
@@ -3498,15 +3499,8 @@ void LLVivoxVoiceClient::participantRemovedEvent(
 	sessionState *session = findSession(sessionHandle);
 	if(session)
 	{
-		participantState *participant = session->findParticipant(uriString);
-		if(participant)
-		{
-			session->removeParticipant(participant);
-		}
-		else
-		{
-			LL_DEBUGS("Voice") << "unknown participant " << uriString << LL_ENDL;
-		}
+		// Singu Note: removeParticipant now internally finds the entry. More efficient. Other option is to add a find procedure that returns an iterator.
+		session->removeParticipant(uriString);
 	}
 	else
 	{
@@ -3802,14 +3796,13 @@ void LLVivoxVoiceClient::muteListChanged()
 	// The user's mute list has been updated.  Go through the current participant list and sync it with the mute list.
 	if(mAudioSession)
 	{
-		participantMap::iterator iter = mAudioSession->mParticipantsByURI.begin();
+		// Singu Note: mParticipantList has replaced mParticipantsByURI.
+		participantList::iterator iter = mAudioSession->mParticipantList.begin();
 
-		for(; iter != mAudioSession->mParticipantsByURI.end(); iter++)
+		for(; iter != mAudioSession->mParticipantList.end(); iter++)
 		{
-			participantState *p = iter->second;
-
 			// Check to see if this participant is on the mute list already
-			if(p->updateMuteState())
+			if(iter->updateMuteState())
 				mAudioSession->mVolumeDirty = true;
 		}
 	}
@@ -3817,7 +3810,8 @@ void LLVivoxVoiceClient::muteListChanged()
 
 /////////////////////////////
 // Managing list of participants
-LLVivoxVoiceClient::participantState::participantState(const std::string &uri) :
+// Singu Note: Extended the ctor.
+LLVivoxVoiceClient::participantState::participantState(const std::string &uri, const LLUUID& id, bool isAv) :
 	 mURI(uri),
 	 mPTT(false),
 	 mIsSpeaking(false),
@@ -3829,69 +3823,51 @@ LLVivoxVoiceClient::participantState::participantState(const std::string &uri) :
 	 mOnMuteList(false),
 	 mVolumeSet(false),
 	 mVolumeDirty(false),
-	 mAvatarIDValid(false),
-	 mIsSelf(false)
+	 mAvatarIDValid(isAv),
+	 mIsSelf(false),
+	 mAvatarID(id)
 {
 }
 
 LLVivoxVoiceClient::participantState *LLVivoxVoiceClient::sessionState::addParticipant(const std::string &uri)
 {
-	participantState *result = NULL;
-	bool useAlternateURI = false;
+	// Singu Note: If findParticipant returns non-null then alt uri stuff doesn't matter. Prior LL code was silly.
+	//  Additonally, mParticipantList has replaced both mParticipantsByURI and mParticipantsByUUID, meaning we don't have two maps to maintain any longer.
+	
+	if (participantState* p = findParticipant(uri))
+		return p;
 
-	// Note: this is mostly the body of LLVivoxVoiceClient::sessionState::findParticipant(), but since we need to know if it
-	// matched the alternate SIP URI (so we can add it properly), we need to reproduce it here.
-	{
-		participantMap::iterator iter = mParticipantsByURI.find(uri);
+	const std::string& desired_uri = (!mAlternateSIPURI.empty() && (uri == mAlternateSIPURI)) ? mSIPURI : uri;
 
-		if(iter == mParticipantsByURI.end())
-		{
-			if(!mAlternateSIPURI.empty() && (uri == mAlternateSIPURI))
-			{
-				// This is a p2p session (probably with the SLIM client) with an alternate URI for the other participant.
-				// Use mSIPURI instead, since it will be properly encoded.
-				iter = mParticipantsByURI.find(mSIPURI);
-				useAlternateURI = true;
-			}
-		}
-
-		if(iter != mParticipantsByURI.end())
-		{
-			result = iter->second;
-		}
-	}
-
-	if(!result)
 	{
 		// participant isn't already in one list or the other.
-		result = new participantState(useAlternateURI?mSIPURI:uri);
-		mParticipantsByURI.insert(participantMap::value_type(result->mURI, result));
 		mParticipantsChanged = true;
 
 		// Try to do a reverse transform on the URI to get the GUID back.
 		{
 			LLUUID id;
-			if(LLVivoxVoiceClient::getInstance()->IDFromName(result->mURI, id))
+			if (LLVivoxVoiceClient::getInstance()->IDFromName(desired_uri, id))
 			{
-				result->mAvatarIDValid = true;
-				result->mAvatarID = id;
+				mParticipantList.push_back(participantState(desired_uri, id, true));
 			}
 			else
 			{
 				// Create a UUID by hashing the URI, but do NOT set mAvatarIDValid.
 				// This indicates that the ID will not be in the name cache.
-				result->mAvatarID.generate(uri);
+				id.generate(uri);
+				mParticipantList.push_back(participantState(desired_uri, id, false));
 			}
 		}
 
+		participantState* result = &mParticipantList.back();
 
-		if(result->updateMuteState())
+		if (result->updateMuteState())
 		{
 			mMuteDirty = true;
 		}
 
-		mParticipantsByUUID.insert(participantUUIDMap::value_type(result->mAvatarID, result));
-
+		// Singu Note: mParticipantsByUUID is dead. Keep it that way.
+	
 		if (LLSpeakerVolumeStorage::getInstance()->getSpeakerVolume(result->mAvatarID, result->mVolume))
 		{
 			result->mVolumeDirty = true;
@@ -3899,9 +3875,9 @@ LLVivoxVoiceClient::participantState *LLVivoxVoiceClient::sessionState::addParti
 		}
 
 		LL_DEBUGS("Voice") << "participant \"" << result->mURI << "\" added." << LL_ENDL;
-	}
 
-	return result;
+		return result;
+	}
 }
 
 bool LLVivoxVoiceClient::participantState::updateMuteState()
@@ -3925,35 +3901,25 @@ bool LLVivoxVoiceClient::participantState::isAvatar()
 	return mAvatarIDValid;
 }
 
-void LLVivoxVoiceClient::sessionState::removeParticipant(LLVivoxVoiceClient::participantState *participant)
+// Singu Note: The only real necessary call to this immediatley followed a findParticipant call.
+//  Thus, just do the lookup here. It's faster to find the iterator only one time.
+//  Additonally, mParticipantList has replaced both mParticipantsByURI and mParticipantsByUUID, meaning we don't have two maps to maintain any longer.
+void LLVivoxVoiceClient::sessionState::removeParticipant(const std::string& uri)
 {
-	if(participant)
+	participantList::iterator iter = std::find_if(mParticipantList.begin(), mParticipantList.end(), boost::bind(&participantList::value_type::mURI, _1) == uri);
+	if (iter != mParticipantList.end())
 	{
-		participantMap::iterator iter = mParticipantsByURI.find(participant->mURI);
-		participantUUIDMap::iterator iter2 = mParticipantsByUUID.find(participant->mAvatarID);
-
-		LL_DEBUGS("Voice") << "participant \"" << participant->mURI <<  "\" (" << participant->mAvatarID << ") removed." << LL_ENDL;
-
-		if(iter == mParticipantsByURI.end())
+		vector_replace_with_last(mParticipantList, iter);
+		if (mParticipantList.empty() || mParticipantList.capacity() - mParticipantList.size() > 16)
 		{
-			LL_ERRS("Voice") << "Internal error: participant " << participant->mURI << " not in URI map" << LL_ENDL;
+			vector_shrink_to_fit(mParticipantList);
 		}
-		else if(iter2 == mParticipantsByUUID.end())
-		{
-			LL_ERRS("Voice") << "Internal error: participant ID " << participant->mAvatarID << " not in UUID map" << LL_ENDL;
-		}
-		else if(iter->second != iter2->second)
-		{
-			LL_ERRS("Voice") << "Internal error: participant mismatch!" << LL_ENDL;
-		}
-		else
-		{
-			mParticipantsByURI.erase(iter);
-			mParticipantsByUUID.erase(iter2);
-
-			delete participant;
-			mParticipantsChanged = true;
-		}
+		mParticipantsChanged = true;
+		LL_DEBUGS("Voice") << "participant \"" << uri << "\" (" << iter->mAvatarID << ") removed." << LL_ENDL;
+	}
+	else
+	{
+		LL_DEBUGS("Voice") << "unknown participant " << uri << LL_ENDL;
 	}
 }
 
@@ -3961,87 +3927,72 @@ void LLVivoxVoiceClient::sessionState::removeAllParticipants()
 {
 	LL_DEBUGS("Voice") << "called" << LL_ENDL;
 
-	while(!mParticipantsByURI.empty())
-	{
-		removeParticipant(mParticipantsByURI.begin()->second);
-	}
-
-	if(!mParticipantsByUUID.empty())
-	{
-		LL_ERRS("Voice") << "Internal error: empty URI map, non-empty UUID map" << LL_ENDL;
-	}
+	// Singu Note: mParticipantList has replaced both mParticipantsByURI and mParticipantsByUUID, meaning we don't have two maps to maintain any longer.
+	mParticipantList.clear();
+	vector_shrink_to_fit(mParticipantList);
 }
 
 void LLVivoxVoiceClient::getParticipantList(std::set<LLUUID> &participants)
 {
 	if(mAudioSession)
 	{
-		for(participantUUIDMap::iterator iter = mAudioSession->mParticipantsByUUID.begin();
-			iter != mAudioSession->mParticipantsByUUID.end();
+		// Singu Note: mParticipantList has replaced mParticipantsByURI.
+		for (participantList::iterator iter = mAudioSession->mParticipantList.begin();
+			iter != mAudioSession->mParticipantList.end();
 			iter++)
 		{
-			participants.insert(iter->first);
+			participants.insert(iter->mAvatarID);
 		}
 	}
 }
 
 bool LLVivoxVoiceClient::isParticipant(const LLUUID &speaker_id)
 {
-	if(mAudioSession)
-	{
-		return (mAudioSession->mParticipantsByUUID.find(speaker_id) != mAudioSession->mParticipantsByUUID.end());
-	}
-	return false;
+	// Singu Note: findParticipantByID does the same thing. If null, returns false.
+	return findParticipantByID(speaker_id);
 }
-
 
 LLVivoxVoiceClient::participantState *LLVivoxVoiceClient::sessionState::findParticipant(const std::string &uri)
 {
-	participantState *result = NULL;
+	// Singu Note: mParticipantList has replaced mParticipantsByURI.
+	participantList& vec = mParticipantList;
+	participantList::iterator iter = std::find_if(vec.begin(), vec.end(), boost::bind(&participantList::value_type::mURI, _1) == uri);
 
-	participantMap::iterator iter = mParticipantsByURI.find(uri);
-
-	if(iter == mParticipantsByURI.end())
+	if(iter == vec.end())
 	{
 		if(!mAlternateSIPURI.empty() && (uri == mAlternateSIPURI))
 		{
 			// This is a p2p session (probably with the SLIM client) with an alternate URI for the other participant.
 			// Look up the other URI
-			iter = mParticipantsByURI.find(mSIPURI);
+			iter = std::find_if(vec.begin(), vec.end(), boost::bind(&participantList::value_type::mURI, _1) == mSIPURI);
 		}
 	}
 
-	if(iter != mParticipantsByURI.end())
+	if (iter != mParticipantList.end())
 	{
-		result = iter->second;
+		return &*iter;
 	}
 
-	return result;
+	return NULL;
 }
 
 LLVivoxVoiceClient::participantState* LLVivoxVoiceClient::sessionState::findParticipantByID(const LLUUID& id)
 {
-	participantState * result = NULL;
-	participantUUIDMap::iterator iter = mParticipantsByUUID.find(id);
+	// Singu Note: mParticipantList has replaced mParticipantsByUUID.
+	participantList& vec = mParticipantList;
+	participantList::iterator iter = std::find_if(vec.begin(), vec.end(), boost::bind(&participantList::value_type::mAvatarID, _1) == id);
 
-	if(iter != mParticipantsByUUID.end())
+	if(iter != mParticipantList.end())
 	{
-		result = iter->second;
+		return &*iter;
 	}
 
-	return result;
+	return NULL;
 }
 
 LLVivoxVoiceClient::participantState* LLVivoxVoiceClient::findParticipantByID(const LLUUID& id)
 {
-	participantState * result = NULL;
-
-	if(mAudioSession)
-	{
-		result = mAudioSession->findParticipantByID(id);
-	}
-
-	return result;
+	return mAudioSession ? mAudioSession->findParticipantByID(id) : NULL;
 }
 
 

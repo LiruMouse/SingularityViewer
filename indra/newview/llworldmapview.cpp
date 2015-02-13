@@ -467,9 +467,9 @@ void LLWorldMapView::draw()
 			if (overlayimage)
 			{
 				// Inform the fetch mechanism of the size we need
-				S32 draw_size = llround(sMapScale);
-				overlayimage->setKnownDrawSize(	llround(draw_size * LLUI::getScaleFactor().mV[VX] * ((F32)info->getSizeX() / REGION_WIDTH_METERS)), 
-												llround(draw_size * LLUI::getScaleFactor().mV[VY] * ((F32)info->getSizeY() / REGION_WIDTH_METERS)));
+				S32 draw_size = llmath::llround(sMapScale);
+				overlayimage->setKnownDrawSize(	llmath::llround(draw_size * LLUI::getScaleFactor().mV[VX] * ((F32)info->getSizeX() / REGION_WIDTH_METERS)), 
+												llmath::llround(draw_size * LLUI::getScaleFactor().mV[VY] * ((F32)info->getSizeY() / REGION_WIDTH_METERS)));
 				// Draw something whenever we have enough info
 				if (overlayimage->hasGLTexture() && !overlayimage->isMissingAsset() && overlayimage->getID() != IMG_DEFAULT)
 				{
@@ -674,14 +674,14 @@ void LLWorldMapView::draw()
 	drawImage(pos_global, sAvatarYouImage);
 
 	LLVector3 pos_map = globalPosToView(pos_global);
-	if (!pointInView(llround(pos_map.mV[VX]), llround(pos_map.mV[VY])))
+	if (!pointInView(llmath::llround(pos_map.mV[VX]), llmath::llround(pos_map.mV[VY])))
 	{
 		drawTracking(pos_global, 
 			lerp(LLColor4::yellow, LLColor4::orange, 0.4f), 
 			TRUE, 
 			"You are here", 
 			"", 
-			llround(LLFontGL::getFontSansSerifSmall()->getLineHeight())); // offset vertically by one line, to avoid overlap with target tracking
+			llmath::llround(LLFontGL::getFontSansSerifSmall()->getLineHeight())); // offset vertically by one line, to avoid overlap with target tracking
 	}
 
 	// Show your viewing angle
@@ -823,8 +823,8 @@ void LLWorldMapView::drawLegacyBackgroundLayers(S32 width, S32 height) {
 		}
 		
 		current_image->setBoostLevel(LLGLTexture::BOOST_MAP);
-		current_image->setKnownDrawSize(llround(pix_width * LLUI::getScaleFactor().mV[VX]), 
-			llround(pix_height * LLUI::getScaleFactor().mV[VY]));
+		current_image->setKnownDrawSize(llmath::llround(pix_width * LLUI::getScaleFactor().mV[VX]), 
+			llmath::llround(pix_height * LLUI::getScaleFactor().mV[VY]));
 		
 		if (!current_image->hasGLTexture())	//Still loading.
 		{
@@ -911,9 +911,9 @@ F32 LLWorldMapView::drawLegacySimTile(LLSimInfo& sim_info, S32 left, S32 top, S3
 	//call setKnownDrawSize if image is still loading, or its actually being drawn.
 	if(sim_fetching || alpha >= ALPHA_CUTOFF)
 	{
-		S32 draw_size = llround(sMapScale);
-		simimage->setKnownDrawSize(	llround(draw_size * LLUI::getScaleFactor().mV[VX] * ((F32)sim_info.getSizeX() / REGION_WIDTH_METERS)), 
-									llround(draw_size * LLUI::getScaleFactor().mV[VY] * ((F32)sim_info.getSizeY() / REGION_WIDTH_METERS)));
+		S32 draw_size = llmath::llround(sMapScale);
+		simimage->setKnownDrawSize(	llmath::llround(draw_size * LLUI::getScaleFactor().mV[VX] * ((F32)sim_info.getSizeX() / REGION_WIDTH_METERS)), 
+									llmath::llround(draw_size * LLUI::getScaleFactor().mV[VY] * ((F32)sim_info.getSizeY() / REGION_WIDTH_METERS)));
 		simimage->setBoostLevel(LLGLTexture::BOOST_MAP);
 		if(alpha >= ALPHA_CUTOFF)
 		{
@@ -1128,8 +1128,8 @@ void LLWorldMapView::drawGenericItem(const LLItemInfo& item, LLUIImagePtr image)
 void LLWorldMapView::drawImage(const LLVector3d& global_pos, LLUIImagePtr image, const LLColor4& color)
 {
 	LLVector3 pos_map = globalPosToView( global_pos );
-	image->draw(llround(pos_map.mV[VX] - image->getWidth() /2.f),
-				llround(pos_map.mV[VY] - image->getHeight()/2.f),
+	image->draw(llmath::llround(pos_map.mV[VX] - image->getWidth() /2.f),
+				llmath::llround(pos_map.mV[VY] - image->getHeight()/2.f),
 				color);
 }
 
@@ -1138,8 +1138,8 @@ void LLWorldMapView::drawImageStack(const LLVector3d& global_pos, LLUIImagePtr i
 	LLVector3 pos_map = globalPosToView( global_pos );
 	for(U32 i=0; i<count; i++)
 	{
-		image->draw(llround(pos_map.mV[VX] - image->getWidth() /2.f),
-					llround(pos_map.mV[VY] - image->getHeight()/2.f + i*offset),
+		image->draw(llmath::llround(pos_map.mV[VX] - image->getWidth() /2.f),
+					llmath::llround(pos_map.mV[VY] - image->getHeight()/2.f + i*offset),
 					color);
 	}
 }
@@ -1323,8 +1323,8 @@ void LLWorldMapView::drawTracking(const LLVector3d& pos_global, const LLColor4& 
 								  const std::string& label, const std::string& tooltip, S32 vert_offset )
 {
 	LLVector3 pos_local = globalPosToView( pos_global );
-	S32 x = llround( pos_local.mV[VX] );
-	S32 y = llround( pos_local.mV[VY] );
+	S32 x = llmath::llround( pos_local.mV[VX] );
+	S32 y = llmath::llround( pos_local.mV[VY] );
 	LLFontGL* font = LLFontGL::getFontSansSerifSmall();
 	S32 text_x = x;
 	S32 text_y = (S32)(y - sTrackCircleImage->getHeight()/2 - font->getLineHeight());
@@ -1356,7 +1356,7 @@ void LLWorldMapView::drawTracking(const LLVector3d& pos_global, const LLColor4& 
 	const S32 TEXT_PADDING = DEFAULT_TRACKING_ARROW_SIZE + 2;
 	S32 half_text_width = llfloor(font->getWidthF32(label) * 0.5f);
 	text_x = llclamp(text_x, half_text_width + TEXT_PADDING, getRect().getWidth() - half_text_width - TEXT_PADDING);
-	text_y = llclamp(text_y + vert_offset, TEXT_PADDING + vert_offset, getRect().getHeight() - llround(font->getLineHeight()) - TEXT_PADDING - vert_offset);
+	text_y = llclamp(text_y + vert_offset, TEXT_PADDING + vert_offset, getRect().getHeight() - llmath::llround(font->getLineHeight()) - TEXT_PADDING - vert_offset);
 
 	//if (label != "")
 // [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.4.5) | Added: RLVa-1.0.0
@@ -1484,8 +1484,8 @@ static void drawDot(F32 x_pixels, F32 y_pixels,
 
 	if(-HEIGHT_THRESHOLD <= relative_z && relative_z <= HEIGHT_THRESHOLD)
 	{
-		dot_image->draw(llround(x_pixels) - dot_image->getWidth()/2,
-						llround(y_pixels) - dot_image->getHeight()/2, 
+		dot_image->draw(llmath::llround(x_pixels) - dot_image->getWidth()/2,
+						llmath::llround(y_pixels) - dot_image->getHeight()/2, 
 						color);
 	}
 	else
@@ -1540,9 +1540,9 @@ void LLWorldMapView::drawAvatar(F32 x_pixels,
 		dot_image = sAvatarAboveImage;
 	}
 
-	S32 dot_width = llround(dot_radius * 2.f);
-	dot_image->draw(llround(x_pixels - dot_radius),
-		            llround(y_pixels - dot_radius),
+	S32 dot_width = llmath::llround(dot_radius * 2.f);
+	dot_image->draw(llmath::llround(x_pixels - dot_radius),
+		            llmath::llround(y_pixels - dot_radius),
 		            dot_width,
 		            dot_width,
 		            color);
@@ -1569,8 +1569,8 @@ void LLWorldMapView::drawIconName(F32 x_pixels,
 								  const std::string& second_line)
 {
 	const S32 VERT_PAD = 8;
-	S32 text_x = llround(x_pixels);
-	S32 text_y = llround(y_pixels
+	S32 text_x = llmath::llround(x_pixels);
+	S32 text_y = llmath::llround(y_pixels
 						 - BIG_DOT_RADIUS
 						 - VERT_PAD);
 
@@ -1584,7 +1584,7 @@ void LLWorldMapView::drawIconName(F32 x_pixels,
 		LLFontGL::NORMAL,
 		LLFontGL::DROP_SHADOW);
 
-	text_y -= llround(LLFontGL::getFontSansSerif()->getLineHeight());
+	text_y -= llmath::llround(LLFontGL::getFontSansSerif()->getLineHeight());
 
 	// render text
 	LLFontGL::getFontSansSerif()->renderUTF8(second_line, 0,
@@ -1758,8 +1758,8 @@ void LLWorldMapView::setDirectionPos( LLTextBox* text_box, F32 rotation )
 	F32 radius = llmin( map_half_height - text_half_height, map_half_width - text_half_width );
 
 	text_box->setOrigin( 
-		llround(map_half_width - text_half_width + radius * cos( rotation )),
-		llround(map_half_height - text_half_height + radius * sin( rotation )) );
+		llmath::llround(map_half_width - text_half_width + radius * cos( rotation )),
+		llmath::llround(map_half_height - text_half_height + radius * sin( rotation )) );
 }
 
 
@@ -1807,8 +1807,8 @@ void LLWorldMapView::reshape( S32 width, S32 height, BOOL called_from_parent )
 bool LLWorldMapView::checkItemHit(S32 x, S32 y, LLItemInfo& item, LLUUID* id, bool track)
 {
 	LLVector3 pos_view = globalPosToView(item.getGlobalPosition());
-	S32 item_x = llround(pos_view.mV[VX]);
-	S32 item_y = llround(pos_view.mV[VY]);
+	S32 item_x = llmath::llround(pos_view.mV[VX]);
+	S32 item_y = llmath::llround(pos_view.mV[VY]);
 
 	if (x < item_x - BIG_DOT_RADIUS) return false;
 	if (x > item_x + BIG_DOT_RADIUS) return false;
@@ -1983,8 +1983,8 @@ BOOL LLWorldMapView::handleMouseDown( S32 x, S32 y, MASK mask )
 {
 	gFocusMgr.setMouseCapture( this );
 
-	mMouseDownPanX = llround(sPanX);
-	mMouseDownPanY = llround(sPanY);
+	mMouseDownPanX = llmath::llround(sPanX);
+	mMouseDownPanY = llmath::llround(sPanY);
 	mMouseDownX = x;
 	mMouseDownY = y;
 	sHandledLastClick = TRUE;

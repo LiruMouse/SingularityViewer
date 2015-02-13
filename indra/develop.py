@@ -41,6 +41,7 @@ import shutil
 import socket
 import sys
 import commands
+import shlex
 
 class CommandError(Exception):
     pass
@@ -111,11 +112,15 @@ class PlatformSetup(object):
 
     def build_dirs(self):
         '''Return the top-level directories in which builds occur.
-
         This can return more than one directory, e.g. if doing a
         32-bit viewer and server build on Linux.'''
 
-        return ['build-' + self.platform()]
+        if(os.path.basename(os.path.normpath(os.getcwd())) == 'indra'):
+            prefix = '../'
+        else:
+            prefix = ''
+
+        return [prefix+'build-' + self.platform()]
 
     def cmake_commandline(self, src_dir, build_dir, opts, simple):
         '''Return the command line to run cmake with.'''
@@ -275,9 +280,7 @@ class LinuxSetup(UnixSetup):
         return 'linux'
 
     def build_dirs(self):
-        platform_build = '%s-%s' % (self.platform(), self.build_type.lower())
-
-        return ['viewer-' + platform_build]
+        return [PlatformSetup.build_dirs(self)[0]+'-'+self.build_type.lower()]
 
     def cmake_commandline(self, src_dir, build_dir, opts, simple):
         args = dict(
@@ -399,6 +402,12 @@ class DarwinSetup(UnixSetup):
         else:
             return UnixSetup.arch(self)
 
+    def build_dirs(self):
+        if(self.generator == 'Xcode'):
+            return PlatformSetup.build_dirs(self)
+        else:
+             return [PlatformSetup.build_dirs(self)[0]+'-'+self.build_type.lower()]
+
     def cmake_commandline(self, src_dir, build_dir, opts, simple):
         args = dict(
             dir=src_dir,
@@ -408,15 +417,17 @@ class DarwinSetup(UnixSetup):
             word_size=self.word_size,
             unattended=self.unattended,
             project_name=self.project_name,
-            universal=self.universal,
-            type=self.build_type.upper(),
+            universal='',
+            type='',
             )
+        if(self.generator != 'Xcode'):
+            args['type'] = '-DCMAKE_BUILD_TYPE=%s' % self.build_type.upper()
         if self.universal == 'ON':
             args['universal'] = '-DCMAKE_OSX_ARCHITECTURES:STRING=\'i386;ppc\''
         #if simple:
         #    return 'cmake %(opts)s %(dir)r' % args
         return ('cmake -G %(generator)r '
-                '-DCMAKE_BUILD_TYPE:STRING=%(type)s '
+                '%(type)s '
                 '-DSTANDALONE:BOOL=%(standalone)s '
                 '-DUNATTENDED:BOOL=%(unattended)s '
                 '-DWORD_SIZE:STRING=%(word_size)s '
@@ -425,6 +436,18 @@ class DarwinSetup(UnixSetup):
                 '%(opts)s %(dir)r' % args)
 
     def run_build(self, opts, targets):
+        if(self.generator != 'Xcode'):
+            if targets:
+                targets = ' '.join(targets)
+            else:
+                targets = 'all'
+
+            for d in self.build_dirs():
+                cmd = 'make -C %r %s %s' % (d, ' '.join(opts), targets)
+                print 'Running %r' % cmd
+                self.run(cmd)
+            return
+
         cwd = getcwd()
         if targets:
             targets = ' '.join(['-target ' + repr(t) for t in targets])
@@ -447,14 +470,14 @@ class WindowsSetup(PlatformSetup):
             'gen' : r'Visual Studio 10',
             'ver' : r'10.0'
             },
-        'vc110' : {
-            'gen' : r'Visual Studio 11',
-            'ver' : r'11.0'
+        'vc120' : {
+            'gen' : r'Visual Studio 12',
+            'ver' : r'12.0'
             }
         }
     
     gens['vs2010'] = gens['vc100']
-    gens['vs2012'] = gens['vc110']
+    gens['vs2013'] = gens['vc120']
 
     search_path = r'C:\windows'
     exe_suffixes = ('.exe', '.bat', '.com')
@@ -497,14 +520,24 @@ class WindowsSetup(PlatformSetup):
 
     generator = property(_get_generator, _set_generator)
 
+    def get_gen_str(self, gen):
+        if gen is None:
+             gen = self._generator
+        return self.gens[gen.lower()]['ver']
+
     def os(self):
         return 'win32'
 
     def build_dirs(self):
-        if self.word_size == 64:
-            return ['build-' + self.generator + '-Win64']
+        if(os.path.basename(os.path.normpath(os.getcwd())) == 'indra'):
+            prefix = '../'
         else:
-            return ['build-' + self.generator]
+            prefix = ''
+        
+        if self.word_size == 64:
+            return [prefix+'build-' + self.generator + '-Win64']
+        else:
+            return [prefix+'build-' + self.generator]
 
     def cmake_commandline(self, src_dir, build_dir, opts, simple):
         args = dict(
@@ -525,7 +558,7 @@ class WindowsSetup(PlatformSetup):
                 '-DSTANDALONE:BOOL=%(standalone)s '
                 '-DUNATTENDED:BOOL=%(unattended)s '
                 '-DWORD_SIZE:STRING=%(word_size)s '
-                '-DROOT_PROJECT_NAME:STRING=%(project_name)s '
+                '-DROOT_PROJECT_NAME:STRING=\"%(project_name)s\" '
                 '%(opts)s "%(dir)s"' % args)
 
     def get_HKLM_registry_value(self, key_str, value_str):
@@ -537,34 +570,53 @@ class WindowsSetup(PlatformSetup):
         return value
         
     def find_visual_studio(self, gen=None):
-        if gen is None:
-            gen = self._generator
-        gen = gen.lower()
+        gen = self.get_gen_str(gen)
         value_str = (r'EnvironmentDirectory')
         key_str = (r'SOFTWARE\Microsoft\VisualStudio\%s\Setup\VS' %
-                   self.gens[gen]['ver'])
+                   gen)
         print ('Reading VS environment from HKEY_LOCAL_MACHINE\%s\%s' %
                (key_str, value_str))
         try:
             return self.get_HKLM_registry_value(key_str, value_str)           
         except WindowsError, err:
             key_str = (r'SOFTWARE\Wow6432Node\Microsoft\VisualStudio\%s\Setup\VS' %
-                       self.gens[gen]['ver'])
+                       gen)
 
         try:
             return self.get_HKLM_registry_value(key_str, value_str)
         except:
             print >> sys.stderr, "Didn't find ", self.gens[gen]['gen']
         return ''
-        
+
+    def find_msbuild(self, gen=None):
+        gen = self.get_gen_str(gen)
+
+        key_str = (r'SOFTWARE\Microsoft\MSBuild\ToolsVersions\12.0')
+
+        print ('Checking MSBuild support for vs ver = %s' % gen)
+        if not self.get_HKLM_registry_value(key_str+'\\'+gen, "VCTargetsPath"):
+            return (None, None)
+        print ('Reading MSBuild location from HKEY_LOCAL_MACHINE\%s\MSBuildToolsPath' %
+               key_str)
+        print key_str
+        try:
+            return (self.get_HKLM_registry_value(key_str, 'MSBuildToolsPath'), gen)           
+        except WindowsError, err:
+            key_str = (r'SOFTWARE\Wow6432Node\Microsoft\MSBuild\ToolsVersions\%s' %
+                       gen)
+
+        try:
+            return (self.get_HKLM_registry_value(key_str, 'MSBuildToolsPath'), gen)
+        except WindowsError, err:
+            print 'Didn\'t find msbuild'
+            return (None, None)
+          
     def find_visual_studio_express(self, gen=None):
-        if gen is None:
-            gen = self._generator
-        gen = gen.lower()
+        gen = self.get_gen_str(gen)
         try:
             import _winreg
             key_str = (r'SOFTWARE\Microsoft\VCEXpress\%s\Setup\VC' %
-                       self.gens[gen]['ver'])
+                       gen)
             value_str = (r'ProductDir')
             print ('Reading VS environment from HKEY_LOCAL_MACHINE\%s\%s' %
                    (key_str, value_str))
@@ -576,17 +628,15 @@ class WindowsSetup(PlatformSetup):
             print 'Found: %s' % value
             return value
         except WindowsError, err:
-            print >> sys.stderr, "Didn't find ", self.gens[gen]['gen']
+            print >> sys.stderr, "Didn't find ", gen
             return ''
         
     def find_visual_studio_express_single(self, gen=None):
-        if gen is None:
-            gen = self._generator
-        gen = gen.lower()
+        gen = self.get_gen_str(gen)
         try:
             import _winreg
             key_str = (r'SOFTWARE\Microsoft\VCEXpress\%s_Config\Setup\VC' %
-                       self.gens[gen]['ver'])
+                       gen)
             value_str = (r'ProductDir')
             print ('Reading VS environment from HKEY_CURRENT_USER\%s\%s' %
                    (key_str, value_str))
@@ -598,7 +648,7 @@ class WindowsSetup(PlatformSetup):
             print 'Found: %s' % value
             return value
         except WindowsError, err:
-            print >> sys.stderr, "Didn't find ", self.gens[gen]['gen']
+            print >> sys.stderr, "Didn't find ", gen
             return ''
 
     def get_build_cmd(self):
@@ -607,7 +657,7 @@ class WindowsSetup(PlatformSetup):
             if self.gens[self.generator]['ver'] in [ r'8.0', r'9.0' ]:
                 config = '\"%s|Win32\"' % config
 
-            return "buildconsole %s.sln /build %s" % (self.project_name, config)
+            return "buildconsole \"%s.sln\" /build %s" % (self.project_name, config), None
         environment = self.find_visual_studio()
         if environment == '':
             environment = self.find_visual_studio_express()
@@ -622,16 +672,23 @@ class WindowsSetup(PlatformSetup):
                     print >> sys.stderr, "\nPlease see https://wiki.secondlife.com/wiki/Microsoft_Visual_Studio#Extra_steps_for_Visual_Studio_Express_editions for Visual Studio Express specific information"
                     exit(0)
     
+        msbuild_dir, tool_ver = self.find_msbuild()
+        
+        if msbuild_dir is not None and tool_ver is not None:
+            return ('\"%smsbuild.exe\" \"%s.sln\" /p:configuration=%s /p:VisualStudioVersion=%s' % 
+                (msbuild_dir, self.project_name, self.build_type,  tool_ver)), True
+
         # devenv.com is CLI friendly, devenv.exe... not so much.
-        return ('"%sdevenv.com" %s.sln /build %s' % 
-                (self.find_visual_studio(), self.project_name, self.build_type))
+        return ('"%sdevenv.com" \"%s.sln\" /build %s' % 
+                (self.find_visual_studio(), self.project_name, self.build_type)), None
 
     def run(self, command, name=None):
         '''Run a program.  If the program fails, raise an exception.'''
-        ret = os.system(command)
+        ret = os.system('\"'+command+'\"')
         if ret:
             if name is None:
-                name = command.split(None, 1)[0]
+                name = os.path.normpath(shlex.split(command.encode('utf8'),posix=False)[0].strip('"'))
+
             path = self.find_in_path(name)
             if not path:
                 ret = 'was not found'
@@ -657,10 +714,15 @@ class WindowsSetup(PlatformSetup):
             if prev_build == self.build_type:
                 # Only run vstool if the build type has changed.
                 continue
-            vstool_cmd = (os.path.join('tools','vstool','VSTool.exe') +
-                          ' --solution ' +
-                          os.path.join(build_dir,'Singularity.sln') +
-                          ' --config ' + self.build_type +
+
+            if(os.path.basename(os.path.normpath(os.getcwd())) == 'indra'):
+                tool_path = os.path.join('tools','vstool','VSTool.exe')
+            else:
+                tool_path = os.path.join('indra','tools','vstool','VSTool.exe')
+            vstool_cmd = (tool_path +
+                          ' --solution \"' +
+                          os.path.join(build_dir,'%s.sln' % self.project_name) +
+                          '\" --config ' + self.build_type +
                           ' --startup secondlife-bin')
             print 'Running vstool %r in %r' % (vstool_cmd, getcwd())
             self.run(vstool_cmd)        
@@ -668,16 +730,21 @@ class WindowsSetup(PlatformSetup):
         
     def run_build(self, opts, targets):
         cwd = getcwd()
-        build_cmd = self.get_build_cmd()
+        build_cmd, msbuild = self.get_build_cmd()
 
         for d in self.build_dirs():
             try:
                 os.chdir(d)
                 if targets:
-                    for t in targets:
-                        cmd = '%s /project %s %s' % (build_cmd, t, ' '.join(opts))
+                    if msbuild:
+                        cmd = '%s /target:%s %s' % (build_cmd, ';'.join(targets), ' '.join(opts))
                         print 'Running build(targets) %r in %r' % (cmd, d)
                         self.run(cmd)
+                    else:
+                        for t in targets:
+                            cmd = '%s /project %s %s' % (build_cmd, t, ' '.join(opts))
+                            print 'Running build(targets) %r in %r' % (cmd, d)
+                            self.run(cmd)
                 else:
                     cmd = '%s %s' % (build_cmd, ' '.join(opts))
                     print 'Running build %r in %r' % (cmd, d)
@@ -748,10 +815,12 @@ Commands:
 Command-options for "configure":
   We use cmake variables to change the build configuration.
   -DPACKAGE:BOOL=ON          Create "package" target to make installers
-  -DLOCALIZESETUP:BOOL=ON    Create one win_setup target per supported language
   -DLL_TESTS:BOOL=OFF        Don't generate unit test projects
   -DEXAMPLEPLUGIN:BOOL=OFF   Don't generate example plugin project
   -DDISABLE_TCMALLOC:BOOL=ON Disable linkage of TCMalloc. (64bit builds automatically disable TCMalloc)
+  -DRELEASE_CRASH_REPORTING:BOOL=ON Enable Google Breakpad crash reporting
+  -DFMODSTUDIO:BOOL=ON       Use FMOD Studio audio libraries
+  -DFMODEX:BOOL=ON           Use FMOD Ex audio libraries
 
 Examples:
   Set up a Visual Studio 2010 project with "package" target:

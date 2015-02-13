@@ -93,15 +93,18 @@ LLDir_Linux::LLDir_Linux()
 #else
 	mAppRODataDir = tmp_str;
 #endif
-    std::string::size_type build_dir_pos = mExecutableDir.rfind("/indra/viewer-linux-");
+    std::string::size_type build_dir_pos = mExecutableDir.rfind("/build-linux-");
     if (build_dir_pos != std::string::npos)
     {
 		// ...we're in a dev checkout
 		mSkinBaseDir = mExecutableDir.substr(0, build_dir_pos) + "/indra/newview/skins";
-		llinfos << "Running in dev checkout with mSkinBaseDir "
-		 << mSkinBaseDir << llendl;
+		if (LLFile::isdir(mSkinBaseDir))
+			llinfos << "Running in dev checkout with mSkinBaseDir "
+			 << mSkinBaseDir << LL_ENDL;
+		else
+			mSkinBaseDir = "";
     }
-    else
+    if (mSkinBaseDir.empty())
     {
 		// ...normal installation running
 		mSkinBaseDir = mAppRODataDir + mDirDelimiter + "skins";

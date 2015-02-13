@@ -96,7 +96,7 @@ class LL_COMMON_API AIFrameTimer
 
 	typedef std::multiset<AIRunningFrameTimer> timer_list_type;
 
-	static LLMutex sMutex;						// Mutex for the two global variables below.
+	static LLGlobalMutex sMutex;				// Mutex for the two global variables below.
 	static timer_list_type sTimerList;			// List with all running timers.
 	static F64 sNextExpiration;					// Cache of smallest value in sTimerList.
 	friend class LLFrameTimer;					// Access to sNextExpiration.

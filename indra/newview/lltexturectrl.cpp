@@ -1167,7 +1167,7 @@ LLTextureCtrl::LLTextureCtrl(
 	S32 image_top = getRect().getHeight();
 	S32 image_bottom = BTN_HEIGHT_SMALL;
 	S32 image_middle = (image_top + image_bottom) / 2;
-	S32 line_height = llround(LLFontGL::getFontSansSerifSmall()->getLineHeight());
+	S32 line_height = llmath::llround(LLFontGL::getFontSansSerifSmall()->getLineHeight());
 
 	mTentativeLabel = new LLTextBox( std::string("Multiple"), 
 		LLRect( 

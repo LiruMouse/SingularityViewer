@@ -129,7 +129,7 @@ if (WINDOWS)
           )
 endif (WINDOWS)
 
-get_target_property(TEST_EXE test LOCATION)
+SET(TEST_EXE $<TARGET_FILE:test>)
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cpp_tests_ok.txt

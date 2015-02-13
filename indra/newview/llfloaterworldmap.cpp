@@ -710,9 +710,9 @@ void LLFloaterWorldMap::trackLocation(const LLVector3d& pos_global)
 // </FS:CR>
 	std::string full_name = llformat("%s (%d, %d, %d)", 
 								  sim_name.c_str(),
-								  llround(region_x), 
-								  llround(region_y),
-								  llround((F32)pos_global.mdV[VZ]));
+								  llmath::llround(region_x), 
+								  llmath::llround(region_y),
+								  llmath::llround((F32)pos_global.mdV[VZ]));
 
 	std::string tooltip("");
 	mTrackedStatus = LLTracker::TRACKING_LOCATION;

@@ -342,6 +342,9 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 		mFactoryMap["active_speakers_panel"] = LLCallbackMap(createSpeakersPanel, this);
 		mVoiceChannel = new LLVoiceChannelGroup(mSessionUUID, mLogLabel);
 		break;
+	default:
+		llwarns << "Unknown session type: " << mDialog << llendl;
+		// fallthrough, Singu TODO: Find out which cases this happens in, seems to only be P2P, though.
 	// just received text from another user
 	case IM_NOTHING_SPECIAL:
 		mTextIMPossible = LLVoiceClient::getInstance()->isSessionTextIMPossible(mSessionUUID);
@@ -352,9 +355,6 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 		LLAvatarTracker::instance().addParticularFriendObserver(mOtherParticipantUUID, this);
 		LLMuteList::instance().addObserver(this);
 		mDing = gSavedSettings.getBOOL("LiruNewMessageSoundIMsOn");
-		break;
-	default:
-		llwarns << "Unknown session type" << llendl;
 		break;
 	}
 
@@ -532,7 +532,7 @@ BOOL LLFloaterIMPanel::postBuild()
 		getChild<LLButton>("end_call_btn")->setCommitCallback(boost::bind(&LLIMMgr::endCall, gIMMgr, boost::ref(mSessionUUID)));
 		getChild<LLButton>("send_btn")->setCommitCallback(boost::bind(&LLFloaterIMPanel::onSendMsg,this));
 		if (LLButton* btn = findChild<LLButton>("toggle_active_speakers_btn"))
-			btn->setCommitCallback(boost::bind(&LLFloaterIMPanel::onClickToggleActiveSpeakers, this, _2));
+			btn->setCommitCallback(boost::bind(&LLView::setVisible, getChildView("active_speakers_panel"), _2));
 
 		mHistoryEditor = getChild<LLViewerTextEditor>("im_history");
 		mHistoryEditor->setParseHTML(TRUE);
@@ -622,8 +622,6 @@ void LLFloaterIMPanel::draw()
 		if (mSpeakerPanel) mSpeakerPanel->setVisible(true);
 		mShowSpeakersOnConnect = false;
 	}
-	if (LLUICtrl* ctrl = findChild<LLUICtrl>("toggle_active_speakers_btn"))
-		ctrl->setValue(getChildView("active_speakers_panel")->getVisible());
 
 	if (mTyping)
 	{
@@ -1138,11 +1136,6 @@ void LLFloaterIMPanel::onClickHistory()
 		show_log_browser(mLogLabel, mOtherParticipantUUID.asString());
 		// [/Ansariel: Display name support]
 	}
-}
-
-void LLFloaterIMPanel::onClickToggleActiveSpeakers(const LLSD& value)
-{
-	childSetVisible("active_speakers_panel", !value);
 }
 
 void LLFloaterIMPanel::onInputEditorFocusReceived()

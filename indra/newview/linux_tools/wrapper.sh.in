@@ -109,10 +109,10 @@ echo "Running from ${RUN_PATH}"
 cd "${RUN_PATH}"
 
 # Re-register the secondlife:// protocol handler every launch, for now.
-./register_secondlifeprotocol.sh
+./etc/register_secondlifeprotocol.sh
 
 # Re-register the application with the desktop system every launch, for now.
-./refresh_desktop_app_entry.sh
+./etc/refresh_desktop_app_entry.sh
 
 ## Before we mess with LD_LIBRARY_PATH, save the old one to restore for
 ##  subprocesses that care.
@@ -144,10 +144,10 @@ fi
 
 export VIEWER_BINARY='@VIEWER_BRANDING_ID@-do-not-run-directly'
 BINARY_TYPE=$(expr match "$(file -b bin/$VIEWER_BINARY)" '\(.*executable\)' | sed -e 's/  / /g')
-if [ "${BINARY_TYPE}" == "ELF 64-bit LSB executable" ]; then
-	SL_ENV+='LD_LIBRARY_PATH="`pwd`/lib64:`pwd`/lib32:$LD_LIBRARY_PATH"'
+if [ "${BINARY_TYPE}" == "ELF 32-bit LSB executable" ]; then
+    SL_ENV+='LD_LIBRARY_PATH="`pwd`/lib:$LD_LIBRARY_PATH"'
 else
-	SL_ENV+='LD_LIBRARY_PATH="`pwd`/lib:$LD_LIBRARY_PATH"'
+    SL_ENV+='LD_LIBRARY_PATH="`pwd`/lib64:`pwd`/lib32:$LD_LIBRARY_PATH"'
 fi
 export SL_CMD='$LL_WRAPPER bin/$VIEWER_BINARY'
 

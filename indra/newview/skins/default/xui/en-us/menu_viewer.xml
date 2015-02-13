@@ -1031,8 +1031,8 @@
 			<on_click function="ShowFloater" userdata="ao"/>
 		</menu_item_call>
 		<menu_item_check label="Nimble" mouse_opaque="true" name="Nimble">
-			<on_click function="Nimble"/>
-			<on_check function="CheckNimble"/>
+			<on_click function="ToggleControl" userdata="Nimble"/>
+			<on_check control="Nimble"/>
 		</menu_item_check>
 		<menu_item_separator mouse_opaque="true" name="separators3"/>
 		<menu_item_check label="Object Area Search" mouse_opaque="true" name="Object Area Search">

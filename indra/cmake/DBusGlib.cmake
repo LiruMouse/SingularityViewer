@@ -10,8 +10,9 @@ elseif (LINUX)
   use_prebuilt_binary(dbusglib)
   set(DBUSGLIB_FOUND ON FORCE BOOL)
   set(DBUSGLIB_INCLUDE_DIRS
-      ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/dbus
-      )
+    ${LIBS_PREBUILT_DIR}/include/dbus
+    ${LIBS_PREBUILT_LEGACY_DIR}/include/dbus
+    )
   # We don't need to explicitly link against dbus-glib itself, because
   # the viewer probes for the system's copy at runtime.
   set(DBUSGLIB_LIBRARIES

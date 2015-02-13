@@ -364,138 +364,133 @@ LLThreadLocalData& LLThreadLocalData::tldata(void)
 
 //============================================================================
 
-LLCondition::LLCondition(LLAPRPool& parent) : LLMutex(parent)
+#if defined(NEEDS_MUTEX_IMPL)
+#if defined(USE_WIN32_THREAD)
+LLMutexImpl::LLMutexImpl()
 {
-	apr_thread_cond_create(&mAPRCondp, mPool());
+	InitializeCriticalSection(&mMutexImpl);	//can throw STATUS_NO_MEMORY
+}
+LLMutexImpl::~LLMutexImpl() 
+{
+	DeleteCriticalSection(&mMutexImpl);	//nothrow
+}
+void LLMutexImpl::lock()
+{
+	EnterCriticalSection(&mMutexImpl);	//can throw EXCEPTION_POSSIBLE_DEADLOCK
+}
+void LLMutexImpl::unlock()
+{
+	LeaveCriticalSection(&mMutexImpl);	//nothrow
+}
+bool LLMutexImpl::try_lock()
+{
+	return !!TryEnterCriticalSection(&mMutexImpl);	//nothrow
+}
+LLConditionVariableImpl::LLConditionVariableImpl()
+{
+	InitializeConditionVariable(&mConditionVariableImpl);
+}
+LLConditionVariableImpl::~LLConditionVariableImpl()
+{
+	//There is no DeleteConditionVariable
+}
+void LLConditionVariableImpl::notify_one()
+{
+	WakeConditionVariable(&mConditionVariableImpl);
+}
+void LLConditionVariableImpl::notify_all()
+{
+	WakeAllConditionVariable(&mConditionVariableImpl);
+}
+void LLConditionVariableImpl::wait(LLMutex& lock)
+{
+	LLMutex::ImplAdoptMutex impl_adopted_mutex(lock);
+	SleepConditionVariableCS(&mConditionVariableImpl, &lock.native_handle(), INFINITE);
+}
+#else
+
+void APRExceptionThrower(apr_status_t status)
+{
+	if(status != APR_SUCCESS)
+	{
+		static char buf[256];
+		throw std::logic_error(apr_strerror(status,buf,sizeof(buf)));
+	}
 }
 
-
-LLCondition::~LLCondition()
+LLMutexImpl::LLMutexImpl(native_pool_type& pool) : mPool(pool), mMutexImpl(NULL)
 {
-	apr_thread_cond_destroy(mAPRCondp);
-	mAPRCondp = NULL;
+	APRExceptionThrower(apr_thread_mutex_create(&mMutexImpl, APR_THREAD_MUTEX_UNNESTED, mPool()));
+}
+LLMutexImpl::~LLMutexImpl() 
+{
+	APRExceptionThrower(apr_thread_mutex_destroy(mMutexImpl));
+	mMutexImpl = NULL;
+}
+void LLMutexImpl::lock()
+{
+	APRExceptionThrower(apr_thread_mutex_lock(mMutexImpl));
+}
+void LLMutexImpl::unlock()
+{
+	APRExceptionThrower(apr_thread_mutex_unlock(mMutexImpl));
+}
+bool LLMutexImpl::try_lock()
+{
+	apr_status_t status = apr_thread_mutex_trylock(mMutexImpl);
+	if(APR_STATUS_IS_EBUSY(status))
+		return false;
+	APRExceptionThrower(status);
+	return true;
+}
+LLConditionVariableImpl::LLConditionVariableImpl(native_pool_type& pool) : mPool(pool), mConditionVariableImpl(NULL)
+{
+	APRExceptionThrower(apr_thread_cond_create(&mConditionVariableImpl, mPool()));
+}
+LLConditionVariableImpl::~LLConditionVariableImpl()
+{
+	APRExceptionThrower(apr_thread_cond_destroy(mConditionVariableImpl));
+}
+void LLConditionVariableImpl::notify_one()
+{
+	APRExceptionThrower(apr_thread_cond_signal(mConditionVariableImpl));
+}
+void LLConditionVariableImpl::notify_all()
+{
+	APRExceptionThrower(apr_thread_cond_broadcast(mConditionVariableImpl));
+}
+void LLConditionVariableImpl::wait(LLMutex& lock)
+{
+	LLMutex::ImplAdoptMutex impl_adopted_mutex(lock);
+	APRExceptionThrower(apr_thread_cond_wait(mConditionVariableImpl, lock.native_handle()));
+}
+#endif
+#endif
+
+LLFastTimer::DeclareTimer FT_WAIT_FOR_MUTEX("LLMutex::lock()");
+void LLMutex::lock_main(LLFastTimer::DeclareTimer* timer)
+{
+	llassert(!isSelfLocked());
+	LLFastTimer ft1(timer ? *timer : FT_WAIT_FOR_MUTEX);
+	LLMutexImpl::lock();
 }
 
 LLFastTimer::DeclareTimer FT_WAIT_FOR_CONDITION("LLCondition::wait()");
-
-void LLCondition::wait()
+void LLCondition::wait_main()
 {
-	if (AIThreadID::in_main_thread_inline())
+	llassert(isSelfLocked());
+	LLFastTimer ft1(FT_WAIT_FOR_CONDITION);
+	LLConditionVariableImpl::wait(*this);
+	llassert(isSelfLocked());
+}
+
+LLFastTimer::DeclareTimer FT_WAIT_FOR_MUTEXLOCK("LLMutexLock::lock()");
+void LLMutexLock::lock()
+{
+	if (mMutex)
 	{
-		LLFastTimer ft1(FT_WAIT_FOR_CONDITION);
-		apr_thread_cond_wait(mAPRCondp, mAPRMutexp);
+		mMutex->lock(&FT_WAIT_FOR_MUTEXLOCK);
 	}
-	else
-	{
-		apr_thread_cond_wait(mAPRCondp, mAPRMutexp);
-	}
-}
-
-void LLCondition::signal()
-{
-	apr_thread_cond_signal(mAPRCondp);
-}
-
-void LLCondition::broadcast()
-{
-	apr_thread_cond_broadcast(mAPRCondp);
-}
-
-//============================================================================
-LLMutexBase::LLMutexBase() :
-	mCount(0),
-	mLockingThread(AIThreadID::sNone)
-{
-}
-
-bool LLMutexBase::isSelfLocked() const
-{
-	return mLockingThread.equals_current_thread_inline();
-}
-
-LLFastTimer::DeclareTimer FT_WAIT_FOR_MUTEX("LLMutexBase::lock()");
-
-void LLMutexBase::lock() 
-{ 
-	if (mLockingThread.equals_current_thread_inline())
-	{ //redundant lock
-		mCount++;
-		return;
-	}
-
-	if (APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp)))
-	{
-	  if (AIThreadID::in_main_thread_inline())
-	  {
-		LLFastTimer ft1(FT_WAIT_FOR_MUTEX);
-		apr_thread_mutex_lock(mAPRMutexp);
-	  }
-	  else
-	  {
-		apr_thread_mutex_lock(mAPRMutexp);
-	  }
-	}
-	
-	mLockingThread.reset_inline();
-}
-
-bool LLMutexBase::tryLock()
-{
-	if (mLockingThread.equals_current_thread_inline())
-	{ //redundant lock
-		mCount++;
-		return true;
-	}
-	bool success = !APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp));
-	if (success)
-	{
-		mLockingThread.reset_inline();
-	}
-	return success;
-}
-
-// non-blocking, but does do a lock/unlock so not free
-bool LLMutexBase::isLocked() const
-{
-	if (mLockingThread.equals_current_thread_inline())
-	  return false;		// A call to lock() won't block.
-	if (APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp)))
-	  return true;
-	apr_thread_mutex_unlock(mAPRMutexp);
-	return false;
-}
-
-void LLMutexBase::unlock()
-{
-	if (mCount > 0)
-	{ //not the root unlock
-		mCount--;
-		return;
-	}
-	mLockingThread = AIThreadID::sNone;
-
-	apr_thread_mutex_unlock(mAPRMutexp);
 }
 
 //----------------------------------------------------------------------------
-
-LLThreadSafeRefCount::LLThreadSafeRefCount() :
-	mRef(0)
-{
-}
-
-LLThreadSafeRefCount::~LLThreadSafeRefCount()
-{ 
-	if (mRef != 0)
-	{
-		llerrs << "deleting non-zero reference" << llendl;
-	}
-}
-
-//============================================================================
-
-LLResponder::~LLResponder()
-{
-}
-
-//============================================================================

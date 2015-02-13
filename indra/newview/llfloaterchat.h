@@ -71,7 +71,6 @@ public:
 	static void triggerAlerts(const std::string& text);
 
 	void onClickToggleShowMute(bool show_mute, class LLTextEditor* history_editor, LLTextEditor* history_editor_with_mute);
-	void onClickToggleActiveSpeakers(const LLSD& val);
 	static void chatFromLogFile(LLLogChat::ELogLineType type, std::string line, void* userdata);
 	static void loadHistory();
 	static void* createSpeakersPanel(void* data);

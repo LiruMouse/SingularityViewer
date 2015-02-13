@@ -280,6 +280,8 @@ target_link_libraries(
     ${WINDOWS_LIBRARIES}
     ${Boost_CONTEXT_LIBRARY}
     ${Boost_REGEX_LIBRARY}
+    ${Boost_THREAD_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY}
     ${CORESERVICES_LIBRARY}
     )
 

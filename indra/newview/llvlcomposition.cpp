@@ -133,10 +133,10 @@ BOOL LLVLComposition::generateHeights(const F32 x, const F32 y,
 
 	S32 x_begin, y_begin, x_end, y_end;
 
-	x_begin = llround( x * mScaleInv );
-	y_begin = llround( y * mScaleInv );
-	x_end = llround( (x + width) * mScaleInv );
-	y_end = llround( (y + width) * mScaleInv );
+	x_begin = llmath::llround( x * mScaleInv );
+	y_begin = llmath::llround( y * mScaleInv );
+	x_end = llmath::llround( (x + width) * mScaleInv );
+	y_end = llmath::llround( (y + width) * mScaleInv );
 
 	if (x_end > mWidth)
 	{
@@ -331,8 +331,8 @@ BOOL LLVLComposition::generateTexture(const F32 x, const F32 y,
 	S32 x_begin, y_begin, x_end, y_end;
 	x_begin = (S32)(x * mScaleInv);
 	y_begin = (S32)(y * mScaleInv);
-	x_end = llround( (x + width) * mScaleInv );
-	y_end = llround( (y + width) * mScaleInv );
+	x_end = llmath::llround( (x + width) * mScaleInv );
+	y_end = llmath::llround( (y + width) * mScaleInv );
 
 	if (x_end > mWidth)
 	{

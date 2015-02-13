@@ -65,7 +65,7 @@ static F64 const NEVER = 1e16;				// 317 million years.
 
 F64 AIFrameTimer::sNextExpiration;
 AIFrameTimer::timer_list_type AIFrameTimer::sTimerList;
-LLMutex AIFrameTimer::sMutex;
+LLGlobalMutex AIFrameTimer::sMutex;
 
 // Notes on thread-safety of AIRunningFrameTimer (continued from aiframetimer.h)
 //
@@ -80,11 +80,10 @@ LLMutex AIFrameTimer::sMutex;
 void AIFrameTimer::create(F64 expiration, signal_type::slot_type const& slot)
 {
 	AIRunningFrameTimer new_timer(expiration, this);
-	sMutex.lock();
+	LLMutexLock lock(sMutex);
 	llassert(mHandle.mRunningTimer == sTimerList.end());	// Create may only be called when the timer isn't already running.
 	mHandle.init(sTimerList.insert(new_timer), slot);
 	sNextExpiration = sTimerList.begin()->expiration();
-	sMutex.unlock();
 }
 
 void AIFrameTimer::cancel(void)
@@ -95,18 +94,19 @@ void AIFrameTimer::cancel(void)
 	// mHandle.mMutex lock), we start with trying to obtain
 	// it here and as such wait till the callback function
 	// returned.
-    mHandle.mMutex.lock();
+	mHandle.mMutex.lock();
 	// Next we have to grab this lock in order to stop
 	// AIFrameTimer::handleExpiration from even entering
 	// in the case we manage to get it first.
-    sMutex.lock();
-    if (mHandle.mRunningTimer != sTimerList.end())
 	{
-		sTimerList.erase(mHandle.mRunningTimer);
-		mHandle.mRunningTimer = sTimerList.end();
-		sNextExpiration = sTimerList.empty() ? NEVER : sTimerList.begin()->expiration();
+		LLMutexLock lock(sMutex);
+		if (mHandle.mRunningTimer != sTimerList.end())
+		{
+			sTimerList.erase(mHandle.mRunningTimer);
+			mHandle.mRunningTimer = sTimerList.end();
+			sNextExpiration = sTimerList.empty() ? NEVER : sTimerList.begin()->expiration();
+		}
 	}
-    sMutex.unlock();
     mHandle.mMutex.unlock();
 }
 
@@ -164,7 +164,7 @@ void AIFrameTimer::handleExpiration(F64 current_frame_time)
 		//
 		// Note that if the other thread actually obtained the sMutex then we
 		// can't be here: this is still inside the critical area of sMutex.
-		if (handle.mMutex.tryLock())			// If this fails then another thread is in the process of cancelling this timer, so do nothing.
+		if (handle.mMutex.try_lock())			// If this fails then another thread is in the process of cancelling this timer, so do nothing.
 		{
 			sMutex.unlock();
 			running_timer->do_callback();		// May not throw exceptions.

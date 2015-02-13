@@ -36,16 +36,13 @@
 
 #include "lltimer.h"
 #include "timing.h"
-#include <apr_thread_mutex.h>
-#ifdef SHOW_ASSERT
-#include "aithreadid.h"			// is_main_thread()
-#endif
+#include "llthread.h"
 
 class LL_COMMON_API LLFrameTimer
 {
 public:
 	// Create an LLFrameTimer and start it. After creation it is running and in the state expired (hasExpired will return true).
-	LLFrameTimer(void) : mExpiry(0), mRunning(true), mPaused(false) { if (!sGlobalMutex) global_initialization(); setAge(0.0); }
+	LLFrameTimer(void) : mExpiry(0), mRunning(true), mPaused(false) { if (!sFirstFrameTimerCreated) global_initialization(); setAge(0.0); }
 
 	//<singu>
 	void copy(LLFrameTimer const& timer) { mStartTime = timer.mStartTime; mExpiry = timer.mExpiry; mRunning = timer.mRunning; mPaused = timer.mPaused; }
@@ -57,9 +54,9 @@ public:
 	static F64 getElapsedSeconds(void)
 	{
 		// Loses msec precision after ~4.5 hours...
-		apr_thread_mutex_lock(sGlobalMutex);
+		sGlobalMutex.lock();
 		F64 res = sFrameTime;
-		apr_thread_mutex_unlock(sGlobalMutex);
+		sGlobalMutex.unlock();
 		return res;
 	} 
 
@@ -68,9 +65,9 @@ public:
 	{
 		// sTotalTime is only accessed by the main thread, so no locking is necessary.
 		llassert(is_main_thread());
-		//apr_thread_mutex_lock(sGlobalMutex);
+		//sGlobalMutex.lock();
 		U64 res = sTotalTime;
-		//apr_thread_mutex_unlock(sGlobalMutex);
+		//sGlobalMutex.unlock();
 		llassert(res);
 		return res;
 	}
@@ -80,9 +77,9 @@ public:
 	{
 		// sTotalSeconds is only accessed by the main thread, so no locking is necessary.
 		llassert(is_main_thread());
-		//apr_thread_mutex_lock(sGlobalMutex);
+		//sGlobalMutex.lock();
 		F64 res = sTotalSeconds;
-		//apr_thread_mutex_unlock(sGlobalMutex);
+		//sGlobalMutex.unlock();
 		return res;
 	}
 
@@ -91,9 +88,9 @@ public:
 	{
 		// sFrameCount is only accessed by the main thread, so no locking is necessary.
 		llassert(is_main_thread());
-		//apr_thread_mutex_lock(sGlobalMutex);
+		//sGlobalMutex.lock();
 		U32 res = sFrameCount;
-		//apr_thread_mutex_unlock(sGlobalMutex);
+		//sGlobalMutex.unlock();
 		return res;
 	}
 
@@ -170,7 +167,7 @@ protected:
 	//
 
 	// More than one thread are accessing (some of) these variables, therefore we need locking.
-	static apr_thread_mutex_t* sGlobalMutex;
+	static LLGlobalMutex sGlobalMutex;
 
 	// Current time in seconds since application start, updated together with sTotalTime.
 	static F64 sFrameTime;
@@ -189,6 +186,8 @@ protected:
 
 	// Current frame number (number of frames since application start).
 	static S32 sFrameCount;
+
+	static bool sFirstFrameTimerCreated;
 
 	//
 	// Member data

@@ -590,7 +590,7 @@ void LLPreviewTexture::updateDimensions()
 		client_width = getRect().getWidth() - horiz_pad;
 		if (mAspectRatio > 0.f)
 		{
-			client_height = llround(client_width / mAspectRatio);
+			client_height = llmath::llround(client_width / mAspectRatio);
 		}
 		else
 		{
@@ -608,7 +608,7 @@ void LLPreviewTexture::updateDimensions()
 		if (client_height > max_height)
 		{
 			client_height = max_height;
-			client_width = llround(client_height * mAspectRatio);
+			client_width = llmath::llround(client_height * mAspectRatio);
 		}
 	}
 	else

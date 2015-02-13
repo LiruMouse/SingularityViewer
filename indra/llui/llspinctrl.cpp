@@ -147,7 +147,7 @@ F32 clamp_precision(F32 value, S32 decimal_precision)
 	for (S32 i = 0; i < decimal_precision; i++)
 		clamped_value *= 10.0;
 
-	clamped_value = llround((F32)clamped_value);
+	clamped_value = llmath::llround((F32)clamped_value);
 
 	for (S32 i = 0; i < decimal_precision; i++)
 		clamped_value /= 10.0;
@@ -161,13 +161,13 @@ F32 get_increment(F32 inc, S32 decimal_precision) //CF: finetune increments
 	if(gKeyboard->getKeyDown(KEY_ALT))
 		inc = inc * 10.f;
 	else if(gKeyboard->getKeyDown(KEY_CONTROL)) {
-		if (llround(inc * 1000.f) == 25) // 0.025 gets 0.05 here
+		if (llmath::llround(inc * 1000.f) == 25) // 0.025 gets 0.05 here
 			inc = inc * 0.2f;
 		else
 			inc = inc * 0.1f;
 	}
 	else if(gKeyboard->getKeyDown(KEY_SHIFT)) {
-		if (decimal_precision == 2 && llround(inc) == 1) // for rotations, finest step is 0.05
+		if (decimal_precision == 2 && llmath::llround(inc) == 1) // for rotations, finest step is 0.05
 			inc = inc * 0.05f;
 		else
 			inc = inc * 0.01f;

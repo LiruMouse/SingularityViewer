@@ -96,6 +96,16 @@ protected:
 public:
 	LLJointStateBlender();
 	~LLJointStateBlender();
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 	void blendJointStates(BOOL apply_now = TRUE);
 	BOOL addJointState(const LLPointer<LLJointState>& joint_state, S32 priority, BOOL additive_blend);
 	void interpolate(F32 u);

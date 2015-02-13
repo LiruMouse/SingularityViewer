@@ -1548,6 +1548,14 @@ The region [REGION] does not allow terraforming.
 
   <notification
    icon="alertmodal.tga"
+   name="ParcelNoTerraforming"
+   type="notify">
+You are not allowed to terraform parcel [PARCEL].
+  <tag>fail</tag>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="CannotCopyWarning"
    type="alertmodal">
 You do not have permission to copy the following items:

@@ -37,6 +37,7 @@
 
 #include "llerror.h"
 #include "llaprpool.h"
+#include "llatomic.h"
 #include "llthread.h"
 
 // Create a subpool from parent.
@@ -110,23 +111,18 @@ LLAPRInitialization::LLAPRInitialization(void)
 }
 
 bool LLAPRRootPool::sCountInitialized = false;
-apr_uint32_t volatile LLAPRRootPool::sCount;
-
-apr_thread_mutex_t* gLogMutexp;
-apr_thread_mutex_t* gCallStacksLogMutexp;
+LLAtomicS32 LLAPRRootPool::sCount;
 
 LLAPRRootPool::LLAPRRootPool(void) : LLAPRInitialization(), LLAPRPool(0)
 {
 	// sCountInitialized don't need locking because when we get here there is still only a single thread.
 	if (!sCountInitialized)
 	{
-		// Initialize the logging mutex
-		apr_thread_mutex_create(&gLogMutexp, APR_THREAD_MUTEX_UNNESTED, mPool);
-		apr_thread_mutex_create(&gCallStacksLogMutexp, APR_THREAD_MUTEX_UNNESTED, mPool);
-
+#ifdef NEEDS_APR_ATOMICS
 		apr_status_t status = apr_atomic_init(mPool);
 		llassert_always(status == APR_SUCCESS);
-		apr_atomic_set32(&sCount, 1);	// Set to 1 to account for the global root pool.
+#endif
+		sCount = 1;	// Set to 1 to account for the global root pool.
 		sCountInitialized = true;
 
 		// Initialize thread-local APR pool support.
@@ -134,32 +130,15 @@ LLAPRRootPool::LLAPRRootPool(void) : LLAPRInitialization(), LLAPRPool(0)
 		// it must be done last, so that sCount is already initialized.
 		LLThreadLocalData::init();
 	}
-	apr_atomic_inc32(&sCount);
+	sCount++;
 }
 
 LLAPRRootPool::~LLAPRRootPool()
 {
-	if (!apr_atomic_dec32(&sCount))
+	if (!--sCount)
 	{
 		// The last pool was destructed. Cleanup remainder of APR.
 		LL_INFOS("APR") << "Cleaning up APR" << LL_ENDL;
-
-		if (gLogMutexp)
-		{
-			// Clean up the logging mutex
-
-			// All other threads NEED to be done before we clean up APR, so this is okay.
-			apr_thread_mutex_destroy(gLogMutexp);
-			gLogMutexp = NULL;
-		}
-		if (gCallStacksLogMutexp)
-		{
-			// Clean up the logging mutex
-
-			// All other threads NEED to be done before we clean up APR, so this is okay.
-			apr_thread_mutex_destroy(gCallStacksLogMutexp);
-			gCallStacksLogMutexp = NULL;
-		}
 
 		// Must destroy ALL, and therefore this last LLAPRRootPool, before terminating APR.
 		static_cast<LLAPRRootPool*>(this)->destroy();

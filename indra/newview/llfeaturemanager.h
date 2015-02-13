@@ -72,7 +72,6 @@ public:
 	virtual ~LLFeatureList();
 
 	BOOL isFeatureAvailable(const std::string& name);
-	F32 getRecommendedValue(const std::string& name);
 
 	void setFeatureAvailable(const std::string& name, const BOOL available);
 	void setRecommendedLevel(const std::string& name, const F32 level);

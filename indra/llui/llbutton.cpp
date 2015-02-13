@@ -536,8 +536,8 @@ void LLButton::getOverlayImageSize(S32& overlay_width, S32& overlay_height)
 	overlay_height = mImageOverlay->getHeight();
 
 	F32 scale_factor = llmin((F32)getRect().getWidth() / (F32)overlay_width, (F32)getRect().getHeight() / (F32)overlay_height, 1.f);
-	overlay_width = llround((F32)overlay_width * scale_factor);
-	overlay_height = llround((F32)overlay_height * scale_factor);
+	overlay_width = llmath::llround((F32)overlay_width * scale_factor);
+	overlay_height = llmath::llround((F32)overlay_height * scale_factor);
 }
 
 
@@ -696,7 +696,7 @@ void LLButton::draw()
 	if (hasFocus())
 	{
 		F32 lerp_amt = gFocusMgr.getFocusFlashAmt();
-		drawBorder(imagep, gFocusMgr.getFocusColor() % alpha, llround(lerp(1.f, 3.f, lerp_amt)));
+		drawBorder(imagep, gFocusMgr.getFocusColor() % alpha, llmath::llround(lerp(1.f, 3.f, lerp_amt)));
 	}
 	
 	if (use_glow_effect)
@@ -981,7 +981,7 @@ void LLButton::resize(LLUIString label)
 		{
 			S32 overlay_width = mImageOverlay->getWidth();
 			F32 scale_factor = (getRect().getHeight() - (mImageOverlayBottomPad + mImageOverlayTopPad)) / (F32)mImageOverlay->getHeight();
-			overlay_width = llround((F32)overlay_width * scale_factor);
+			overlay_width = llmath::llround((F32)overlay_width * scale_factor);
 
 			switch(mImageOverlayAlignment)
 			{

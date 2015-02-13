@@ -330,33 +330,33 @@ else (DARWIN)
   )
 endif (DARWIN)
 
-get_target_property(BUILT_SLPLUGIN SLPlugin LOCATION)
+SET(BUILT_SLPLUGIN $<TARGET_FILE:SLPlugin>)
 add_custom_command(TARGET llmediaplugintest POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy ${BUILT_SLPLUGIN}  ${PLUGINS_DESTINATION_DIR}
   DEPENDS ${BUILT_SLPLUGIN}
 )
 
 if (DARWIN OR WINDOWS)
-  get_target_property(BUILT_WEBKIT_PLUGIN media_plugin_webkit LOCATION)
+  SET(BUILT_WEBKIT_PLUGIN $<TARGET_FILE:media_plugin_webkit>)
   add_custom_command(TARGET llmediaplugintest POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${BUILT_WEBKIT_PLUGIN}  ${PLUGINS_DESTINATION_DIR}
     DEPENDS ${BUILT_WEBKIT_PLUGIN}
   )
 
-  get_target_property(BUILT_QUICKTIME_PLUGIN media_plugin_quicktime LOCATION)
+  SET(BUILT_QUICKTIME_PLUGIN $<TARGET_FILE:media_plugin_quicktime>)
   add_custom_command(TARGET llmediaplugintest POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${BUILT_QUICKTIME_PLUGIN}  ${PLUGINS_DESTINATION_DIR}
     DEPENDS ${BUILT_QUICKTIME_PLUGIN}
   )
   
-  get_target_property(BUILT_EXAMPLE_PLUGIN media_plugin_example LOCATION)
+  SET(BUILT_EXAMPLE_PLUGIN $<TARGET_FILE:media_plugin_example>)
   add_custom_command(TARGET llmediaplugintest POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${BUILT_EXAMPLE_PLUGIN}  ${PLUGINS_DESTINATION_DIR}
     DEPENDS ${BUILT_EXAMPLE_PLUGIN}
   )
   
   # copy over bookmarks file if llmediaplugintest gets built
-  get_target_property(BUILT_LLMEDIAPLUGINTEST llmediaplugintest LOCATION)
+  SET(BUILT_LLMEDIAPLUGINTEST $<TARGET_FILE:llmediaplugintest>)
   add_custom_command(TARGET llmediaplugintest POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/bookmarks.txt ${CMAKE_CURRENT_BINARY_DIR}/
     DEPENDS ${BUILT_LLMEDIAPLUGINTEST}

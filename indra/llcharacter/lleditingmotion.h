@@ -58,6 +58,16 @@ public:
 	// Destructor
 	virtual ~LLEditingMotion();
 
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 public:
 	//-------------------------------------------------------------------------
 	// functions to support MotionController and MotionRegistry

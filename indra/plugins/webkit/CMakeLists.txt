@@ -117,15 +117,15 @@ if (DARWIN)
     PREFIX ""
     BUILD_WITH_INSTALL_RPATH 1
     INSTALL_NAME_DIR "@executable_path"
-    LINK_FLAGS "-exported_symbols_list ${CMAKE_CURRENT_SOURCE_DIR}/../base_media/media_plugin_base.exp"
+    LINK_FLAGS "-exported_symbols_list '${CMAKE_CURRENT_SOURCE_DIR}/../base_media/media_plugin_base.exp'"
   )
 
   # copy the webkit dylib to the build directory
   add_custom_command(
     TARGET media_plugin_webkit POST_BUILD
 #    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/libllqtwebkit.dylib
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/../libraries/universal-darwin/lib/release/libllqtwebkit.dylib ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/
-    DEPENDS media_plugin_webkit ${CMAKE_SOURCE_DIR}/../libraries/universal-darwin/lib/release/libllqtwebkit.dylib
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/packages/libraries/universal-darwin/lib/release/libllqtwebkit.dylib ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/
+    DEPENDS media_plugin_webkit ${CMAKE_BINARY_DIR}/packages/libraries/universal-darwin/lib/release/libllqtwebkit.dylib
     )
     
 endif (DARWIN)

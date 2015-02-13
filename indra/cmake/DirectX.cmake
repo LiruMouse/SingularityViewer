@@ -11,25 +11,32 @@ if (WINDOWS)
     set (DIRECTX_ARCHITECTURE x86)
   endif (WORD_SIZE EQUAL 32)
 
+  SET(program_files $ENV{ProgramW6432})
+  if(NOT program_files)
+    SET(program_files $ENV{ProgramFiles})
+  endif(NOT program_files)
+  SET(program_files_x86 "ProgramFiles(x86)")
+  SET(program_files_x86 $ENV{${program_files_x86}})
+
   find_path(DIRECTX_ROOT_DIR Include/dxdiag.h
             PATHS
             "$ENV{DXSDK_DIR}"
-            "$ENV{ProgramFiles}/Microsoft DirectX SDK (June 2010)"
-            "$ENV{ProgramFiles(x86)}/Microsoft DirectX SDK (June 2010)"
-            "$ENV{ProgramFiles}/Microsoft DirectX SDK (February 2010)"
-            "$ENV{ProgramFiles(x86)}/Microsoft DirectX SDK (February 2010)"
-            "$ENV{ProgramFiles}/Microsoft DirectX SDK (March 2009)"
-            "$ENV{ProgramFiles(x86)}/Microsoft DirectX SDK (March 2009)"
-            "$ENV{ProgramFiles}/Microsoft DirectX SDK (August 2008)"
-            "$ENV{ProgramFiles(x86)}/Microsoft DirectX SDK (August 2008)"
-            "$ENV{ProgramFiles}/Microsoft DirectX SDK (June 2008)"
-            "$ENV{ProgramFiles(x86)}/Microsoft DirectX SDK (June 2008)"
-            "$ENV{ProgramFiles}/Microsoft DirectX SDK (March 2008)"
-            "$ENV{ProgramFiles(x86)}/Microsoft DirectX SDK (March 2008)"
-            "$ENV{ProgramFiles}/Microsoft DirectX SDK (November 2007)"
-            "$ENV{ProgramFiles(x86)}/Microsoft DirectX SDK (November 2007)"
-            "$ENV{ProgramFiles}/Microsoft DirectX SDK (August 2007)"
-            "$ENV{ProgramFiles(x86)}/Microsoft DirectX SDK (August 2007)"
+            "${program_files}/Microsoft DirectX SDK (June 2010)"
+            "${program_files_x86}/Microsoft DirectX SDK (June 2010)"
+            "${program_files}/Microsoft DirectX SDK (February 2010)"
+            "${program_files_x86}/Microsoft DirectX SDK (February 2010)"
+            "${program_files}/Microsoft DirectX SDK (March 2009)"
+            "${program_files_x86}/Microsoft DirectX SDK (March 2009)"
+            "${program_files}/Microsoft DirectX SDK (August 2008)"
+            "${program_files_x86}/Microsoft DirectX SDK (August 2008)"
+            "${program_files}/Microsoft DirectX SDK (June 2008)"
+            "${program_files_x86}/Microsoft DirectX SDK (June 2008)"
+            "${program_files}/Microsoft DirectX SDK (March 2008)"
+            "${program_files_x86}/Microsoft DirectX SDK (March 2008)"
+            "${program_files}/Microsoft DirectX SDK (November 2007)"
+            "${program_files_x86}/Microsoft DirectX SDK (November 2007)"
+            "${program_files}/Microsoft DirectX SDK (August 2007)"
+            "${program_files_x86}/Microsoft DirectX SDK (August 2007)"
             )
 
   if (DIRECTX_ROOT_DIR)
@@ -38,10 +45,10 @@ if (WINDOWS)
   else (DIRECTX_ROOT_DIR)
     find_path (WIN_KIT_ROOT_DIR Include/um/windows.h
                PATHS
-               "$ENV{ProgramFiles}/Windows Kits/8.1"
-               "$ENV{ProgramFiles(x86)}/Windows Kits/8.1"
-               "$ENV{ProgramFiles}/Windows Kits/8.0"
-               "$ENV{ProgramFiles(x86)}/Windows Kits/8.0"
+               "${program_files}/Windows Kits/8.1"
+               "${program_files_x86}/Windows Kits/8.1"
+               "${program_files}/Windows Kits/8.0"
+               "${program_files_x86}/Windows Kits/8.0"
                )
 
     find_path (WIN_KIT_LIB_DIR dxguid.lib

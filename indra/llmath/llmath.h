@@ -174,6 +174,7 @@ inline S32 lltrunc( F32 f )
 
 inline S32 lltrunc( F64 f )
 {
+
 	return (S32)f;
 }
 
@@ -204,64 +205,35 @@ inline S32 llceil( F32 f )
 }
 
 
-#ifndef BOGUS_ROUND
-// Use this round.  Does an arithmetic round (0.5 always rounds up)
-inline S32 llround(const F32 val)
+namespace llmath
 {
-	return llfloor(val + 0.5f);
-}
-
-#else // BOGUS_ROUND
-// Old llround implementation - does banker's round (toward nearest even in the case of a 0.5.
-// Not using this because we don't have a consistent implementation on both platforms, use
-// llfloor(val + 0.5f), which is consistent on all platforms.
-inline S32 llround(const F32 val)
-{
-	#if LL_WINDOWS
-		// Note: assumes that the floating point control word is set to rounding mode (the default)
-		S32 ret_val;
-		_asm fld	val
-		_asm fistp	ret_val;
-		return ret_val;
-	#elif LL_LINUX
-		// Note: assumes that the floating point control word is set
-		// to rounding mode (the default)
-		S32 ret_val;
-		__asm__ __volatile__( "flds %1    \n\t"
-							  "fistpl %0  \n\t"
-							  : "=m" (ret_val)
-							  : "m" (val) );
-		return ret_val;
-	#else
-		return llfloor(val + 0.5f);
-	#endif
-}
-
-// A fast arithmentic round on intel, from Laurent de Soras http://ldesoras.free.fr
-inline int round_int(double x)
-{
-	const float round_to_nearest = 0.5f;
-	int i;
-	__asm
+	// Use this round.  Does an arithmetic round (0.5 always rounds up)
+	inline S32 llround(const F32 val)
 	{
-		fld x
-		fadd st, st (0)
-		fadd round_to_nearest
-		fistp i
-		sar i, 1
+#if __cplusplus >= 201103L || _MSC_VER >= 1800
+		return S32(std::round(val));
+#else
+		return llfloor(val + 0.5f);
+#endif
 	}
-	return (i);
-}
-#endif // BOGUS_ROUND
 
-inline F32 llround( F32 val, F32 nearest )
-{
-	return F32(floor(val * (1.0f / nearest) + 0.5f)) * nearest;
-}
+	inline F32 llround(F32 val, F32 nearest)
+	{
+#if __cplusplus >= 201103L || _MSC_VER >= 1800
+		return F32(std::round(val * (1.0f / nearest))) * nearest;
+#else
+		return F32(floor(val * (1.0f / nearest) + 0.5f)) * nearest;
+#endif
+	}
 
-inline F64 llround( F64 val, F64 nearest )
-{
-	return F64(floor(val * (1.0 / nearest) + 0.5)) * nearest;
+	inline F64 llround(F64 val, F64 nearest)
+	{
+#if __cplusplus >= 201103L || _MSC_VER >= 1800
+		return F64(std::round(val * (1.0 / nearest))) * nearest;
+#else
+		return F64(floor(val * (1.0 / nearest) + 0.5)) * nearest;
+#endif
+	}
 }
 
 // these provide minimum peak error
@@ -309,7 +281,7 @@ const S32 LL_SHIFT_AMOUNT			= 16;                    //16.16 fixed point represe
 	#define LL_MAN_INDEX				1
 #endif
 
-/* Deprecated: use llround(), lltrunc(), or llfloor() instead
+/* Deprecated: use llmath::llround(), lltrunc(), or llfloor() instead
 // ================================================================================================
 // Real2Int
 // ================================================================================================
@@ -351,7 +323,7 @@ static union
 #define LL_EXP_A (1048576 * OO_LN2) // use 1512775 for integer
 #define LL_EXP_C (60801)			// this value of C good for -4 < y < 4
 
-#define LL_FAST_EXP(y) (LLECO.n.i = llround(F32(LL_EXP_A*(y))) + (1072693248 - LL_EXP_C), LLECO.d)
+#define LL_FAST_EXP(y) (LLECO.n.i = llmath::llround(F32(LL_EXP_A*(y))) + (1072693248 - LL_EXP_C), LLECO.d)
 
 
 
@@ -370,8 +342,8 @@ inline F32 snap_to_sig_figs(F32 foo, S32 sig_figs)
 		bar *= 10.f;
 	}
 
-	//F32 new_foo = (F32)llround(foo * bar);
-	// the llround() implementation sucks.  Don't us it.
+	//F32 new_foo = (F32)llmath::llround(foo * bar);
+	// the llmath::llround() implementation sucks.  Don't us it.
 
 	F32 sign = (foo > 0.f) ? 1.f : -1.f;
 	F32 new_foo = F32( S64(foo * bar + sign * 0.5f));

@@ -174,6 +174,9 @@ void LLAudioEngine::shutdown()
 		delete mBuffers[i];
 		mBuffers[i] = NULL;
 	}
+
+	delete mStreamingAudioImpl;
+	mStreamingAudioImpl = NULL;
 }
 
 

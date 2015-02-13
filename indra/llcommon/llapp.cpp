@@ -66,6 +66,7 @@ bool windows_post_minidump_callback(const wchar_t* dump_path,
 #else
 # include <signal.h>
 # include <unistd.h> // for fork()
+# include "apr_signal.h" // for apr_signal_description_get(int signum)
 void setup_signals();
 void default_unix_signal_handler(int signum, siginfo_t *info, void *);
 

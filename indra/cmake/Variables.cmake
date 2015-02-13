@@ -32,9 +32,6 @@ set(DISABLE_TCMALLOC OFF CACHE BOOL "Disable linkage of TCMalloc. (64bit builds 
 set(LL_TESTS OFF CACHE BOOL "Build and run unit and integration tests (disable for build timing runs to reduce variation)")
 set(DISABLE_FATAL_WARNINGS TRUE CACHE BOOL "Set this to FALSE to enable fatal warnings.")
 
-set(LIBS_PREBUILT_DIR ${CMAKE_SOURCE_DIR}/../libraries CACHE PATH
-    "Location of prebuilt libraries.")
-
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   set(WINDOWS ON BOOL FORCE)
   if (WORD_SIZE EQUAL 32)
@@ -153,6 +150,12 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(LL_ARCH ${ARCH}_darwin)
   set(LL_ARCH_DIR universal-darwin)
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+set(LIBS_PREBUILT_DIR ${CMAKE_BINARY_DIR}/packages CACHE PATH
+    "Location of prebuilt libraries.")
+
+set(LIBS_PREBUILT_LEGACY_DIR ${CMAKE_BINARY_DIR}/packages/libraries/${LL_ARCH_DIR} CACHE PATH
+    "Legacy location of prebuilt libraries.")
 
 if (WINDOWS AND WORD_SIZE EQUAL 32)
   set(PREBUILT_TYPE windows)

@@ -35,7 +35,7 @@
 #define LL_AUDIOENGINE_FMODEX_H
 
 #include "llaudioengine.h"
-#include "lllistener_fmod.h"
+#include "lllistener_fmodex.h"
 #include "llwindgen.h"
 
 //Stubs

@@ -1446,8 +1446,11 @@ bool LLModelLoader::doLoadModel()
 	}
 
 	//no suitable slm exists, load from the .dae file
+	//replace illegal # in path as collada's escapser is broken
+	std::string tmp_file = mFilename;
+	boost::replace_all(tmp_file, "#", "%23");
 	DAE dae;
-	domCOLLADA* dom = dae.open(mFilename);
+	domCOLLADA* dom = dae.open(tmp_file);
 
 	if (!dom)
 	{
@@ -1474,7 +1477,7 @@ bool LLModelLoader::doLoadModel()
 
 	daeInt count = db->getElementCount(NULL, COLLADA_TYPE_MESH);
 
-	daeDocument* doc = dae.getDoc(mFilename);
+	daeDocument* doc = dae.getDoc(tmp_file);
 	if (!doc)
 	{
 		llwarns << "can't find internal doc" << llendl;

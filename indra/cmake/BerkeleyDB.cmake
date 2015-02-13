@@ -13,5 +13,8 @@ else (STANDALONE)
   else (LINUX)
     set(DB_LIBRARIES db-4.2)
   endif (LINUX)
-  set(DB_INCLUDE_DIRS ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include)
+  set(DB_INCLUDE_DIRS
+    ${LIBS_PREBUILT_DIR}/include
+    ${LIBS_PREBUILT_LEGACY_DIR}/include
+    )
 endif (STANDALONE)

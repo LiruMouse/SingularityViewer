@@ -47,12 +47,14 @@ S32 LLFrameTimer::sFrameCount = 0;									// Current frame number (number of fr
 U64 LLFrameTimer::sPrevTotalTime = LLFrameTimer::sStartTotalTime;	// Previous (frame) time in microseconds since epoch, updated once per frame.
 U64 LLFrameTimer::sFrameDeltaTime = 0;								// Microseconds between last two calls to LLFrameTimer::updateFrameTimeAndCount.
 // Mutex for the above.
-apr_thread_mutex_t* LLFrameTimer::sGlobalMutex;
+LLGlobalMutex LLFrameTimer::sGlobalMutex;
+
+bool LLFrameTimer::sFirstFrameTimerCreated;
 
 // static
 void LLFrameTimer::global_initialization(void)
 {
-	apr_thread_mutex_create(&sGlobalMutex, APR_THREAD_MUTEX_UNNESTED, LLAPRRootPool::get()());
+	sFirstFrameTimerCreated = true;
 	AIFrameTimer::sNextExpiration = NEVER;
 }
 
@@ -63,9 +65,9 @@ void LLFrameTimer::updateFrameTime(void)
 	sTotalTime = totalTime();
 	sTotalSeconds = U64_to_F64(sTotalTime) * USEC_TO_SEC_F64;
 	F64 new_frame_time = U64_to_F64(sTotalTime - sStartTotalTime) * USEC_TO_SEC_F64;
-	apr_thread_mutex_lock(sGlobalMutex);
+	sGlobalMutex.lock();
 	sFrameTime = new_frame_time;
-	apr_thread_mutex_unlock(sGlobalMutex);
+	sGlobalMutex.unlock();
 }
 
 // static

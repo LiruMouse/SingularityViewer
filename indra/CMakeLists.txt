@@ -4,7 +4,7 @@
 # other commands to guarantee full compatibility
 # with the version specified
 
-cmake_minimum_required(VERSION 2.6.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.10 FATAL_ERROR)
 
 # Eventually the third-party support modules (cmake/*.cmake) should
 # know the full path to all libraries.  Until that happens we need
@@ -15,7 +15,7 @@ cmake_minimum_required(VERSION 2.6.2 FATAL_ERROR)
 # CMP0003 to OLD and link to one library (apr) on a per-configuration
 # basis to convince CMake to add the proper link directory.  This line
 # can be removed when we use full paths for all libraries.
-cmake_policy(SET CMP0003 OLD)
+#cmake_policy(SET CMP0003 OLD)
 
 set(ROOT_PROJECT_NAME "Singularity" CACHE STRING
     "The root project/makefile/solution name. Defaults to Singularity.")
@@ -27,7 +27,6 @@ include(Variables)
 
 # Load versions now.  Install locations need them.
 include(BuildVersion)
-
 include(UnixInstall)
 
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
@@ -41,6 +40,9 @@ if(NOT STANDALONE)
   # We prepare prebuilt binaries when not building standalone.
   set(prepare_depends ${CMAKE_BINARY_DIR}/prepare/prebuilt)
 endif(NOT STANDALONE)
+if(WINDOWS)
+  set(prepare_depends ${prepare_depends} copy_win_libs)
+endif(WINDOWS)
 add_custom_target(prepare DEPENDS ${prepare_depends})
 
 add_subdirectory(cmake)
@@ -107,3 +109,16 @@ add_custom_command(
   DEPENDS ${CMAKE_SOURCE_DIR}/../install.xml
           ${CMAKE_BINARY_DIR}/DownloadPrebuilt.cmake
   )
+
+
+if(WINDOWS)
+  configure_file(${CMAKE_SOURCE_DIR}/cmake/CopyWinLibs.cmake.in
+    ${CMAKE_BINARY_DIR}/CopyWinLibs.cmake @ONLY)
+  add_custom_command(
+    COMMENT "Copying prebuilt libraries to viewer executable directory"
+    OUTPUT ${CMAKE_BINARY_DIR}/CopyWinLibs
+    COMMAND ${CMAKE_COMMAND} -DCUR_CONFIG:STRING=${CMAKE_CFG_INTDIR} -P ${CMAKE_BINARY_DIR}/CopyWinLibs.cmake
+    DEPENDS ${CMAKE_BINARY_DIR}/prepare/prebuilt ${CMAKE_BINARY_DIR}/CopyWinLibs.cmake
+  	)
+  add_custom_target(copy_win_libs DEPENDS ${CMAKE_BINARY_DIR}/CopyWinLibs)
+endif(WINDOWS)

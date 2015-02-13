@@ -105,7 +105,6 @@ public:
 
 	void			onClickHistory();
 	void			onFlyoutCommit(class LLComboBox* flyout, const LLSD& value);
-	void			onClickToggleActiveSpeakers(const LLSD& value);
 	static void*	createSpeakersPanel(void* data);
 
 	//callbacks for P2P muting and volume control

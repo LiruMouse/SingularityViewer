@@ -76,7 +76,7 @@ if (QUICKTIME)
         PREFIX ""
         BUILD_WITH_INSTALL_RPATH 1
         INSTALL_NAME_DIR "@executable_path"
-        LINK_FLAGS "-exported_symbols_list ${CMAKE_CURRENT_SOURCE_DIR}/../base_media/media_plugin_base.exp"
+        LINK_FLAGS "-exported_symbols_list '${CMAKE_CURRENT_SOURCE_DIR}/../base_media/media_plugin_base.exp'"
       )
 
 # We use a bunch of deprecated system APIs.

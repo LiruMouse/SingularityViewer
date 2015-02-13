@@ -101,8 +101,10 @@ class InstallFile(object):
 
     def _is_md5sum_match(self):
         hasher = md5(file(self.filename, 'rb').read())
-        if hasher.hexdigest() == self.md5sum:
+        md5_sum = hasher.hexdigest()
+        if md5_sum == self.md5sum:
             return  True
+        print "Got:", md5_sum, " Expected ", self.md5sum
         return False
 
     def is_match(self, platform):
@@ -124,16 +126,20 @@ class InstallFile(object):
         return True
 
     def fetch_local(self):
-        #print "Looking for:",self.filename
+        cache_path, cache_file = os.path.split(self.filename)
+        cache_path, cache_folder = os.path.split(os.path.normpath(cache_path))
+        cache_file = os.path.join(cache_path, cache_folder.rsplit('.',1)[0] + ".<user>", cache_file)
+        #print "Looking for:",cache_file
+
         if not os.path.exists(self.filename):
             pass
         elif self.md5sum and not self._is_md5sum_match():
-            print "md5 mismatch:", self.filename
+            print "md5 mismatch:", cache_file
             os.remove(self.filename)
         else:
-            print "Found matching package:", self.filename
+            print "Found matching package:", cache_file
             return
-        print "Downloading",self.url,"to local file",self.filename
+        print "Downloading",self.url,"to local file",cache_file
 
         request = urllib2.Request(self.url)
 
@@ -566,9 +572,16 @@ windows/i686/vs/2003 -- specify a windows visual studio 2003 package"""
                 except AttributeError:
                     _extractall(tar, path=install_dir)
             symlinks = []
+
+            filenames = tar.getnames()
+            if('autobuild-package.xml' in filenames):
+                filenames.remove("autobuild-package.xml")
+                rem_file = os.path.join(install_dir, "autobuild-package.xml")
+                if os.path.exists(rem_file):
+                    os.remove(rem_file)
             if _get_platform() == 'linux' or _get_platform() == 'linux64':
                 first = 1
-                for tfile in tar.getnames():
+                for tfile in filenames:
                     if tfile.find('.so.') > 0:
                         LINK = re.sub(r'\.so\.[0-9.]*$', '.so', tfile)
                         link_name = install_dir + "/" + LINK
@@ -594,14 +607,14 @@ windows/i686/vs/2003 -- specify a windows visual studio 2003 package"""
             if ifile.pkgname in self._installed:
                 self._installed[ifile.pkgname].add_files(
                     ifile.url,
-                    tar.getnames() + symlinks)
+                    filenames + symlinks)
                 self._installed[ifile.pkgname].set_md5sum(
                     ifile.url,
                     ifile.md5sum)
             else:
                 # *HACK: this understands the installed package syntax.
                 definition = { ifile.url :
-                               {'files': tar.getnames() + symlinks,
+                               {'files': filenames + symlinks,
                                 'md5sum' : ifile.md5sum } }
                 self._installed[ifile.pkgname] = InstalledPackage(definition)
             self._installed_changed = True

@@ -22,18 +22,10 @@ REQUIREMENTS
 -=-=-=-=-=-=
 
 * A headset/microphone supported by your chosen version of Linux
-* The ALSA sound system (you probably already have this -
-  i.e. the alsa-base and alsa-utils packages on Ubuntu)
-
-Success with Linux Voice support has been reported on the following
-systems:
-* Ubuntu 6.06 (Dapper) with Intel ICH5/CMI9761A+ audio chipset
-* Ubuntu 6.06 (Dapper) with SigmaTel STAC2997 audio chipset
-* Ubuntu 6.06 (Dapper) with Creative EMU10K1 audio chipset
-* Ubuntu 7.04 (Feisty) with USB Plantronics headset
-* Ubuntu 7.04 (Feisty) with Intel HDA audio chipset
-* Fedora Core 6 with (unknown) audio chipset
-* Ubuntu 8.04 (Hardy) with (unknown) audio chipset
+* At this time, the PulseAudio audio system is recommended; this software
+  is already part of most modern (2009+) Linux desktop systems.  Alternatively,
+  the ALSA audio system may be used on systems installed from around
+  2007 onwards (again this is likely already installed on your system).
 
 TESTING YOUR SETTINGS
 -=-=-=-=-=-=-=-=-=-=-
@@ -45,8 +37,8 @@ when you speak.
 KNOWN PROBLEMS
 -=-=-=-=-=-=-=
 
-* The 'Input Level' meter in the Voice Chat Device Settings dialog
-  does not respond to audio input.
+* Compatibility with old ALSA-based audio systems (such as Ubuntu Dapper
+  from 2006) is poor.
 
 TROUBLESHOOTING
 -=-=-=-=-=-=-=-

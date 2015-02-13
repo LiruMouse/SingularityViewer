@@ -637,8 +637,8 @@ void LLPostProcess::drawOrthoQuad(QuadType type)
 		mVBO->getTexCoord1Strider(uv2);
 
 		float offs[2] = {
-			llround(((float) rand() / (float) RAND_MAX) * (float)NOISE_SIZE)/float(NOISE_SIZE),
-			llround(((float) rand() / (float) RAND_MAX) * (float)NOISE_SIZE)/float(NOISE_SIZE) };
+			llmath::llround(((float) rand() / (float) RAND_MAX) * (float)NOISE_SIZE)/float(NOISE_SIZE),
+			llmath::llround(((float) rand() / (float) RAND_MAX) * (float)NOISE_SIZE)/float(NOISE_SIZE) };
 		float scale[2] = {
 			(float)mScreenWidth * mNoiseTextureScale,
 			(float)mScreenHeight * mNoiseTextureScale };

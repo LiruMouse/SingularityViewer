@@ -287,6 +287,19 @@ inline T* vector_append(std::vector<T>& invec, S32 N)
 	return &(invec[sz]);
 }
 
+template <typename T>
+inline void vector_shrink_to_fit(std::vector<T>& invec)
+{
+	//For Windows: We always assume vs2010 or later, which support this c++11 feature with no configuration needed.
+	//For GCC: __cplusplus >= 201103L indicates C++11 support. __GXX_EXPERIMENTAL_CXX0X being set indicates experimental c++0x support. C++11 support replaces C++0x support.
+	//		   std::vector::shrink_to_fit was added to GCCs C++0x implementation in version 4.5.0.
+#if defined(LL_WINDOWS) || __cplusplus >= 201103L || (defined(__GXX_EXPERIMENTAL_CXX0X) && __GNUC_MINOR__ >= 5)
+	invec.shrink_to_fit();
+#else
+	std::vector<T>(invec).swap(invec);
+#endif
+}
+
 // call function f to n members starting at first. similar to std::for_each
 template <class InputIter, class Size, class Function>
 Function ll_for_n(InputIter first, Size n, Function f)

@@ -49,6 +49,16 @@ public:
 	LLViewerJoint(const std::string &name, LLJoint *parent = NULL);
 	virtual ~LLViewerJoint();
 
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 	// Render character hierarchy.
 	// Traverses the entire joint hierarchy, setting up
 	// transforms and calling the drawShape().

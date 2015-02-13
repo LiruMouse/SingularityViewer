@@ -430,7 +430,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 
   public:
 	static LLChannelDescriptors const sChannels;		// Channel object for mInput (channel out()) and mOutput (channel in()).
-	static LLMutex sResponderCallbackMutex;				// Locked while calling back any overridden ResponderBase::finished and/or accessing sShuttingDown.
+	static LLGlobalMutex sResponderCallbackMutex;		// Locked while calling back any overridden ResponderBase::finished and/or accessing sShuttingDown.
 	static bool sShuttingDown;							// If true, no additional calls to ResponderBase::finished will be made anymore.
 	static AIAverage sHTTPBandwidth;					// HTTP bandwidth usage of all services combined.
 
@@ -466,7 +466,7 @@ class BufferedCurlEasyRequest : public CurlEasyRequest {
 
 	// Return true when prepRequest was already called and the object has not been
 	// invalidated as a result of calling aborted().
-	bool isValid(void) const { return mResponder; }
+	bool isValid(void) const { return !!mResponder; }
 
 	// Return the capability type of this request.
 	AICapabilityType capability_type(void) const { llassert(mCapabilityType != number_of_capability_types); return mCapabilityType; }

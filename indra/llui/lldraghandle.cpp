@@ -247,7 +247,7 @@ void LLDragHandleTop::reshapeTitleBox()
 	S32 title_width = font->getWidth( getTitleBox()->getText() ) + TITLE_PAD;
 	if (getMaxTitleWidth() > 0)
 		title_width = llmin(title_width, getMaxTitleWidth());
-	S32 title_height = llround(font->getLineHeight());
+	S32 title_height = llmath::llround(font->getLineHeight());
 	LLRect title_rect;
 	title_rect.setLeftTopAndSize( 
 		LEFT_PAD, 

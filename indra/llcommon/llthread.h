@@ -27,18 +27,23 @@
 #ifndef LL_LLTHREAD_H
 #define LL_LLTHREAD_H
 
+#if !defined(_MSC_VER) || _MSC_VER >= 1700
+#define USE_BOOST_MUTEX 1
+#endif
+
+#define IS_LLCOMMON_INLINE (!LL_COMMON_LINK_SHARED || defined(llcommon_EXPORTS))
+
 #if LL_GNUC
 // Needed for is_main_thread() when compiling with optimization (relwithdebinfo).
 // It doesn't hurt to just always specify it though.
-#pragma interface
+//#pragma interface
 #endif
 
 #include "llapp.h"
 #include "llapr.h"
-#include "llmemory.h"
-#include "apr_thread_cond.h"
 #include "llaprpool.h"
 #include "llatomic.h"
+#include "llmemory.h"
 #include "aithreadid.h"
 
 class LLThread;
@@ -177,126 +182,314 @@ protected:
 
 //============================================================================
 
-#define MUTEX_DEBUG (LL_DEBUG || LL_RELEASE_WITH_DEBUG_INFO)
+#define MUTEX_POOL(arg)
 
-#ifdef MUTEX_DEBUG
-// We really shouldn't be using recursive locks. Make sure of that in debug mode.
-#define MUTEX_FLAG APR_THREAD_MUTEX_UNNESTED
+//Internal definitions
+#define NEEDS_MUTEX_IMPL do_not_define_manually_thanks
+#undef NEEDS_MUTEX_IMPL
+#define NEEDS_MUTEX_RECURSION do_not_define_manually_thanks
+#undef NEEDS_MUTEX_RECURSION
+
+//Prefer boost over stl over windows over apr.
+
+#if USE_BOOST_MUTEX && (BOOST_VERSION >= 103400)	//condition_variable_any was added in boost 1.34
+//Define BOOST_SYSTEM_NO_DEPRECATED to avoid system_category() and generic_category() dependencies, as those won't be exported.
+#define BOOST_SYSTEM_NO_DEPRECATED
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread/locks.hpp> 
+#include <boost/thread/condition_variable.hpp>
+typedef boost::recursive_mutex LLMutexImpl;
+typedef boost::condition_variable_any LLConditionVariableImpl;
+#elif defined(USE_STD_MUTEX) && (__cplusplus >= 201103L || _MSC_VER >= 1800)
+#include <mutex>
+typedef std::recursive_mutex LLMutexImpl;
+typedef std::condition_variable_any LLConditionVariableImpl;
+#elif defined(USE_WIN32_MUTEX) 
+typedef CRITICAL_SECTION impl_mutex_handle_type;
+typedef CONDITION_VARIABLE impl_cond_handle_type;
+#define NEEDS_MUTEX_IMPL
+#define NEEDS_MUTEX_RECURSION
 #else
-// Use the fastest platform-optimal lock behavior (can be recursive or non-recursive).
-#define MUTEX_FLAG APR_THREAD_MUTEX_DEFAULT
+//----APR specific------
+#include "apr_thread_cond.h"
+#include "apr_thread_mutex.h"
+typedef LLAPRPool native_pool_type;
+typedef apr_thread_mutex_t* impl_mutex_handle_type;
+typedef apr_thread_cond_t* impl_cond_handle_type;
+#undef MUTEX_POOL
+#undef DEFAULT_POOL
+#define MUTEX_POOL(arg) arg
+#define NEEDS_MUTEX_IMPL
+#define NEEDS_MUTEX_RECURSION
+//END
 #endif
 
-class LL_COMMON_API LLMutexBase
+#ifdef NEEDS_MUTEX_IMPL
+
+//Impl classes are not meant to be accessed directly. They must be utilized by a parent classes.
+// They are designed to be 'clones' of their stl counterparts to facilitate simple drop-in 
+// replacement of underlying implementation (boost,std,apr,critical_sections,etc)
+// Members and member functions are all private.
+class LL_COMMON_API LLMutexImpl : private boost::noncopyable
 {
-public:
-	LLMutexBase() ;
-	
-	void lock();		// blocks
+	friend class LLMutex;
+	friend class LLCondition;
+	friend class LLConditionVariableImpl;
+
+	typedef impl_mutex_handle_type native_handle_type;
+
+	LLMutexImpl(MUTEX_POOL(native_pool_type& pool));
+	virtual ~LLMutexImpl();
+	void lock();
 	void unlock();
-	// Returns true if lock was obtained successfully.
-	bool tryLock();
-
-	// Returns true if a call to lock() would block (returns false if self-locked()).
-	bool isLocked() const;
-
-	// Returns true if locked by this thread.
-	bool isSelfLocked() const;
-
-protected:
-	// mAPRMutexp is initialized and uninitialized in the derived class.
-	apr_thread_mutex_t* mAPRMutexp;
-	mutable U32			mCount;
-	mutable AIThreadID	mLockingThread;
+	bool try_lock();
+	native_handle_type& native_handle()	{ return mMutexImpl; }
 
 private:
-	// Disallow copy construction and assignment.
-	LLMutexBase(LLMutexBase const&);
-	LLMutexBase& operator=(LLMutexBase const&);
+	native_handle_type mMutexImpl;
+	MUTEX_POOL(native_pool_type mPool);
 };
 
-class LL_COMMON_API LLMutex : public LLMutexBase
-{
-public:
-	LLMutex(LLAPRPool& parent = LLThread::tldata().mRootPool) : mPool(parent)
-	{
-		apr_thread_mutex_create(&mAPRMutexp, MUTEX_FLAG, mPool());
-	}
-	~LLMutex()
-	{
-		//this assertion erroneously triggers whenever an LLCondition is destroyed
-		//llassert(!isLocked()); // better not be locked!
-		apr_thread_mutex_destroy(mAPRMutexp);
-		mAPRMutexp = NULL;
-	}
-
-protected:
-	LLAPRPool mPool;
-};
-
-#if APR_HAS_THREADS
-// No need to use a root pool in this case.
-typedef LLMutex LLMutexRootPool;
-#else  // APR_HAS_THREADS
-class LL_COMMON_API LLMutexRootPool : public LLMutexBase
-{
-public:
-	LLMutexRootPool(void)
-	{
-		apr_thread_mutex_create(&mAPRMutexp, MUTEX_FLAG, mRootPool());
-	}
-	~LLMutexRootPool()
-	{
-#if APR_POOL_DEBUG
-		// It is allowed to destruct root pools from a different thread.
-		mRootPool.grab_ownership();
 #endif
-		llassert(!isLocked()); // better not be locked!
-		apr_thread_mutex_destroy(mAPRMutexp);
-		mAPRMutexp = NULL;
+
+class LL_COMMON_API LLMutex : public LLMutexImpl
+{
+#ifdef NEEDS_MUTEX_IMPL
+	friend class LLConditionVariableImpl;
+#endif
+public:
+	LLMutex(MUTEX_POOL(native_pool_type& pool = LLThread::tldata().mRootPool)) : LLMutexImpl(MUTEX_POOL(pool)),
+#ifdef NEEDS_MUTEX_RECURSION
+		mLockDepth(0),
+#endif
+		mLockingThread(AIThreadID::sNone)
+	{}
+	~LLMutex()
+	{}
+
+	void lock(LLFastTimer::DeclareTimer* timer = NULL)	// blocks
+	{
+		if (inc_lock_if_recursive())
+			return;
+
+#if IS_LLCOMMON_INLINE
+		if (AIThreadID::in_main_thread_inline() && LLApp::isRunning())
+#else
+		if (AIThreadID::in_main_thread() && LLApp::isRunning())
+#endif
+		{
+			if (!LLMutexImpl::try_lock())
+			{
+				lock_main(timer);
+			}
+		}
+		else
+		{
+			LLMutexImpl::lock();
+		}
+#if IS_LLCOMMON_INLINE
+		mLockingThread.reset_inline();
+#else
+		mLockingThread.reset();
+#endif
 	}
 
-protected:
-	LLAPRRootPool mRootPool;
+	void unlock()
+	{
+#ifdef NEEDS_MUTEX_RECURSION
+		if (mLockDepth > 0)
+		{
+			--mLockDepth;
+			return;
+		}
+#endif
+		mLockingThread = AIThreadID::sNone;
+		LLMutexImpl::unlock();
+	}
+
+	// Returns true if lock was obtained successfully.
+	bool try_lock()
+	{
+		if (inc_lock_if_recursive())
+			return true;
+		if (!LLMutexImpl::try_lock())
+			return false;
+#if IS_LLCOMMON_INLINE
+		mLockingThread.reset_inline();
+#else
+		mLockingThread.reset();
+#endif
+		return true;
+	}
+	
+	// Returns true if locked not by this thread
+	bool isLocked()
+	{
+		if (isSelfLocked())
+			return false;
+		if (LLMutexImpl::try_lock())
+		{
+			LLMutexImpl::unlock();
+			return false;
+		}
+		return true;
+	}
+	// Returns true if locked by this thread.
+	bool isSelfLocked() const
+	{
+#if IS_LLCOMMON_INLINE
+		return mLockingThread.equals_current_thread_inline();
+#else
+		return mLockingThread.equals_current_thread();
+#endif
+	}
+
+#ifdef NEEDS_MUTEX_IMPL
+	//This is important for libraries that we cannot pass LLMutex into.
+	//For example, apr wait. apr wait unlocks and re-locks the thread, however
+	// it has no knowledge of LLMutex::mLockingThread and LLMutex::mLockDepth,
+	// and thus will leave those member variables set even after the wait internally releases the lock.
+	// Leaving those two variables set even when mutex has actually been unlocked via apr is BAD.
+	friend class ImplAdoptMutex;
+	class ImplAdoptMutex
+	{
+		friend class LLConditionVariableImpl;
+		ImplAdoptMutex(LLMutex& mutex) : mMutex(mutex), 
+#ifdef NEEDS_MUTEX_RECURSION
+			mLockDepth(mutex.mLockDepth),
+#endif
+			mLockingThread(mutex.mLockingThread)
+
+		{
+			mMutex.mLockingThread = AIThreadID::sNone;
+#ifdef NEEDS_MUTEX_RECURSION
+			mMutex.mLockDepth = 0;
+#endif
+		}
+		~ImplAdoptMutex()
+		{
+			mMutex.mLockingThread = mLockingThread;
+#ifdef NEEDS_MUTEX_RECURSION
+			mMutex.mLockDepth = mLockDepth;
+#endif
+		}
+		LLMutex& mMutex;
+		AIThreadID mLockingThread;
+#ifdef NEEDS_MUTEX_RECURSION
+		S32 mLockDepth;
+#endif
+	};
+#endif
+
+private:
+	void lock_main(LLFastTimer::DeclareTimer* timer);
+
+	bool inc_lock_if_recursive()
+	{
+#ifdef NEEDS_MUTEX_RECURSION
+		if (isSelfLocked())
+		{
+			mLockDepth++;
+			return true;
+		}
+#endif
+		return false;
+	}
+
+	mutable AIThreadID	mLockingThread;
+#ifdef NEEDS_MUTEX_RECURSION
+	LLAtomicS32 mLockDepth;
+#endif
 };
-#endif // APR_HAS_THREADS
+
+class LLGlobalMutex : public LLMutex
+{
+public:
+	LLGlobalMutex() : LLMutex(MUTEX_POOL(LLAPRRootPool::get())), mbInitalized(true)
+	{}
+	bool isInitalized() const
+	{
+		return mbInitalized;
+	}
+private:
+	bool mbInitalized;
+};
+
+#ifdef NEEDS_MUTEX_IMPL
+class LL_COMMON_API LLConditionVariableImpl : private boost::noncopyable
+{
+	friend class LLCondition;
+
+	typedef impl_cond_handle_type native_handle_type;
+
+	LLConditionVariableImpl(MUTEX_POOL(native_pool_type& pool));
+	virtual ~LLConditionVariableImpl();
+	void notify_one();
+	void notify_all();
+	void wait(LLMutex& lock);
+	native_handle_type& native_handle()	{ return mConditionVariableImpl; }
+
+	native_handle_type mConditionVariableImpl;
+	MUTEX_POOL(native_pool_type mPool);
+};
+#endif
+
+typedef LLMutex LLMutexRootPool;
 
 // Actually a condition/mutex pair (since each condition needs to be associated with a mutex).
-class LL_COMMON_API LLCondition : public LLMutex
+class LLCondition : public LLConditionVariableImpl, public LLMutex
 {
 public:
-	LLCondition(LLAPRPool& parent = LLThread::tldata().mRootPool);
-	~LLCondition();
-	
-	void wait();		// blocks
-	void signal();
-	void broadcast();
-	
-protected:
-	apr_thread_cond_t *mAPRCondp;
+	LLCondition(MUTEX_POOL(native_pool_type& pool = LLThread::tldata().mRootPool)) : 
+		LLMutex(MUTEX_POOL(pool)), 
+		LLConditionVariableImpl(MUTEX_POOL(pool))
+	{}
+	~LLCondition()
+	{}
+	void wait()
+	{
+#if IS_LLCOMMON_INLINE
+		if (AIThreadID::in_main_thread_inline())
+#else
+		if (AIThreadID::in_main_thread())
+#endif
+			wait_main();
+		else LLConditionVariableImpl::wait(*this);
+	}
+	void signal()		{ LLConditionVariableImpl::notify_one(); }
+	void broadcast()	{ LLConditionVariableImpl::notify_all(); }
+private:
+	LL_COMMON_API void wait_main();	//Cannot be inline. Uses internal fasttimer.
 };
 
-class LL_COMMON_API LLMutexLock
+class LLMutexLock
 {
 public:
-	LLMutexLock(LLMutexBase* mutex)
+	LLMutexLock(LLMutex* mutex)
 	{
 		mMutex = mutex;
-		if(mMutex) mMutex->lock();
+		lock();
+	}
+	LLMutexLock(LLMutex& mutex)
+	{
+		mMutex = &mutex;
+		lock();
 	}
 	~LLMutexLock()
 	{
-		if(mMutex) mMutex->unlock();
+		if (mMutex) mMutex->unlock();
 	}
 private:
-	LLMutexBase* mMutex;
+	LL_COMMON_API void lock();	//Cannot be inline. Uses internal fasttimer.
+	LLMutex* mMutex;
 };
 
-class LL_COMMON_API AIRWLock
+class AIRWLock
 {
 public:
 	AIRWLock(LLAPRPool& parent = LLThread::tldata().mRootPool) :
-		mWriterWaitingMutex(parent), mNoHoldersCondition(parent), mHoldersCount(0), mWriterIsWaiting(false) { }
+		mWriterWaitingMutex(MUTEX_POOL(parent)), mNoHoldersCondition(MUTEX_POOL(parent)), mHoldersCount(0), mWriterIsWaiting(false) { }
 
 private:
 	LLMutex mWriterWaitingMutex;		//!< This mutex is locked while some writer is waiting for access.
@@ -398,7 +591,7 @@ public:
 };
 
 #if LL_DEBUG
-class LL_COMMON_API AINRLock
+class AINRLock
 {
 private:
 	int read_locked;
@@ -409,15 +602,15 @@ private:
 
 	void accessed(void) const
 	{
-	  if (!mAccessed)
-	  {
-		mAccessed = true;
-		mTheadID.reset();
-	  }
-	  else
-	  {
-		llassert_always(mTheadID.equals_current_thread());
-	  }
+		if (!mAccessed)
+		{
+			mAccessed = true;
+			mTheadID.reset();
+		}
+		else
+		{
+			llassert_always(mTheadID.equals_current_thread());
+		}
 	}
 
 public:
@@ -451,27 +644,34 @@ void LLThread::unlockData()
 
 // see llmemory.h for LLPointer<> definition
 
-class LL_COMMON_API LLThreadSafeRefCount
+class LLThreadSafeRefCount
 {
 private:
 	LLThreadSafeRefCount(const LLThreadSafeRefCount&); // not implemented
 	LLThreadSafeRefCount&operator=(const LLThreadSafeRefCount&); // not implemented
 
 protected:
-	virtual ~LLThreadSafeRefCount(); // use unref()
-	
+	virtual ~LLThreadSafeRefCount() // use unref()
+	{
+		if (mRef != 0)
+		{
+			llerrs << "deleting non-zero reference" << llendl;
+		}
+	}
+
 public:
-	LLThreadSafeRefCount();
-	
+	LLThreadSafeRefCount() : mRef(0)
+	{}
+
 	void ref()
 	{
-		mRef++; 
-	} 
+		mRef++;
+	}
 
 	void unref()
 	{
 		llassert(mRef > 0);
-		if (!--mRef) delete this;
+		if (--mRef == 0) delete this;
 	}
 	S32 getNumRefs() const
 	{
@@ -486,10 +686,10 @@ private:
 
 // Simple responder for self destructing callbacks
 // Pure virtual class
-class LL_COMMON_API LLResponder : public LLThreadSafeRefCount
+class LLResponder : public LLThreadSafeRefCount
 {
 protected:
-	virtual ~LLResponder();
+	virtual ~LLResponder() {}
 public:
 	virtual void completed(bool success) = 0;
 };

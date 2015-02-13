@@ -70,6 +70,8 @@ class LLStreamingAudio_FMODEX : public LLStreamingAudioInterface
 	/*virtual*/ bool supportsAdjustableBufferSizes(){return true;}
 	/*virtual*/ void setBufferSizes(U32 streambuffertime, U32 decodebuffertime);
 private:
+	bool releaseDeadStreams();
+
 	FMOD::System *mSystem;
 
 	LLAudioStreamManagerFMODEX *mCurrentInternetStreamp;

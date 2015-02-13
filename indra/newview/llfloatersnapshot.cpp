@@ -493,16 +493,16 @@ void LLSnapshotLivePreview::updateSnapshot(BOOL new_snapshot, BOOL new_thumbnail
 	if (mAspectRatio > window_aspect_ratio)
 	{
 		// trim off top and bottom
-		S32 height_diff = llround(getRect().getHeight() - (F32)getRect().getWidth() / mAspectRatio);
-		S32 half_height_diff = llround((getRect().getHeight() - (F32)getRect().getWidth() / mAspectRatio) * 0.5);
+		S32 height_diff = llmath::llround(getRect().getHeight() - (F32)getRect().getWidth() / mAspectRatio);
+		S32 half_height_diff = llmath::llround((getRect().getHeight() - (F32)getRect().getWidth() / mAspectRatio) * 0.5);
 		rect.mBottom += half_height_diff;
 		rect.mTop -= height_diff - half_height_diff;
 	}
 	else if (mAspectRatio < window_aspect_ratio)
 	{
 		// trim off left and right
-		S32 width_diff = llround(getRect().getWidth() - (F32)getRect().getHeight() * mAspectRatio);
-		S32 half_width_diff = llround((getRect().getWidth() - (F32)getRect().getHeight() * mAspectRatio) * 0.5f);
+		S32 width_diff = llmath::llround(getRect().getWidth() - (F32)getRect().getHeight() * mAspectRatio);
+		S32 half_width_diff = llmath::llround((getRect().getWidth() - (F32)getRect().getHeight() * mAspectRatio) * 0.5f);
 		rect.mLeft += half_width_diff;
 		rect.mRight -= width_diff - half_width_diff;
 	}
@@ -639,9 +639,9 @@ void LLSnapshotLivePreview::draw()
 			LLLocalClipRect clip(getLocalRect());
 			{
 				// draw diagonal stripe with gradient that passes over screen
-				S32 x1 = gViewerWindow->getWindowWidthScaled() * llround((clamp_rescale(shine_interp, 0.f, 1.f, -1.f - SHINE_WIDTH, 1.f)));
-				S32 x2 = x1 + llround(gViewerWindow->getWindowWidthScaled() * SHINE_WIDTH);
-				S32 x3 = x2 + llround(gViewerWindow->getWindowWidthScaled() * SHINE_WIDTH);
+				S32 x1 = gViewerWindow->getWindowWidthScaled() * llmath::llround((clamp_rescale(shine_interp, 0.f, 1.f, -1.f - SHINE_WIDTH, 1.f)));
+				S32 x2 = x1 + llmath::llround(gViewerWindow->getWindowWidthScaled() * SHINE_WIDTH);
+				S32 x3 = x2 + llmath::llround(gViewerWindow->getWindowWidthScaled() * SHINE_WIDTH);
 				S32 y1 = 0;
 				S32 y2 = gViewerWindow->getWindowHeightScaled();
 
@@ -719,7 +719,7 @@ void LLSnapshotLivePreview::draw()
 			gGL.pushMatrix();
 			{
 				LLRect const& rect = mFallFullScreenImageRect;
-				gGL.translatef((F32)rect.mLeft, (F32)rect.mBottom - llround(getRect().getHeight() * 2.f * (fall_interp * fall_interp)), 0.f);
+				gGL.translatef((F32)rect.mLeft, (F32)rect.mBottom - llmath::llround(getRect().getHeight() * 2.f * (fall_interp * fall_interp)), 0.f);
 				gGL.rotatef(-45.f * fall_interp, 0.f, 0.f, 1.f);
 				gGL.begin(LLRender::QUADS);
 				{
@@ -772,13 +772,13 @@ BOOL LLSnapshotLivePreview::setThumbnailImageSize()
 	{
 		// image too wide, shrink to width
 		mThumbnailWidth = max_width;
-		mThumbnailHeight = llround((F32)max_width / window_aspect_ratio);
+		mThumbnailHeight = llmath::llround((F32)max_width / window_aspect_ratio);
 	}
 	else
 	{
 		// image too tall, shrink to height
 		mThumbnailHeight = max_height;
-		mThumbnailWidth = llround((F32)max_height * window_aspect_ratio);
+		mThumbnailWidth = llmath::llround((F32)max_height * window_aspect_ratio);
 	}
 	
 	if(mThumbnailWidth > window_width || mThumbnailHeight > window_height)
@@ -790,11 +790,11 @@ BOOL LLSnapshotLivePreview::setThumbnailImageSize()
 	F32 ratio = mAspectRatio * window_height / window_width;
 	if(ratio > 1.f)
 	{
-		top = llround(top / ratio);
+		top = llmath::llround(top / ratio);
 	}
 	else
 	{
-		right = llround(right * ratio);
+		right = llmath::llround(right * ratio);
 	}			
 	left = (mThumbnailWidth - right + 1) / 2;
 	bottom = (mThumbnailHeight - top + 1) / 2;
@@ -991,8 +991,8 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::getAspectSizePr
 	// We need an image with the aspect mAspectRatio (from which mWidth and mHeight were derived).
 
 	// The current aspect ratio of mRawSnapshot. This should be (almost) equal to window_width / window_height,
-	// since these values are calculated in rawRawSnapshot with llround(window_width * scale_factor) and
-	// llround(window_height * scale_factor) respectively (since we set uncrop = true).
+	// since these values are calculated in rawRawSnapshot with llmath::llround(window_width * scale_factor) and
+	// llmath::llround(window_height * scale_factor) respectively (since we set uncrop = true).
 	F32 raw_aspect = (F32)mRawSnapshotWidth / mRawSnapshotHeight;
 	// The smaller dimension might have been rounded up to 0.5 up or down. Calculate upper and lower limits.
 	F32 lower_raw_aspect = (mRawSnapshotWidth - 0.5) / (mRawSnapshotHeight + 0.5);
@@ -1017,7 +1017,7 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::getAspectSizePr
 	height_out = mRawSnapshotHeight;
 	if (mAspectRatio < lower_raw_aspect)
 	{
-		width_out = llround(width_out * mAspectRatio / raw_aspect);
+		width_out = llmath::llround(width_out * mAspectRatio / raw_aspect);
 		if (width_out < mRawSnapshotWidth)
 		{
 			// Only set this to false when there is actually something to crop.
@@ -1033,7 +1033,7 @@ LLSnapshotLivePreview::EAspectSizeProblem LLSnapshotLivePreview::getAspectSizePr
 	}
 	else if (mAspectRatio > upper_raw_aspect)
 	{
-		height_out = llround(height_out * raw_aspect / mAspectRatio);
+		height_out = llmath::llround(height_out * raw_aspect / mAspectRatio);
 		if (height_out < mRawSnapshotHeight)
 		{
 			if (!allow_vertical_crop)
@@ -2407,8 +2407,8 @@ void LLFloaterSnapshot::Impl::keepAspect(LLFloaterSnapshot* view, bool on, bool 
 		LLSnapshotLivePreview* previewp = getPreviewView();
 		if (previewp)
 		{
-			S32 w = llround(view->childGetValue("snapshot_width").asReal(), 1.0);
-			S32 h = llround(view->childGetValue("snapshot_height").asReal(), 1.0);
+			S32 w = llmath::llround(view->childGetValue("snapshot_width").asReal(), 1.0);
+			S32 h = llmath::llround(view->childGetValue("snapshot_height").asReal(), 1.0);
 			gSavedSettings.setS32(lastSnapshotWidthName(), w);
 			gSavedSettings.setS32(lastSnapshotHeightName(), h);
 			comboSetCustom(view, previewp->resolutionComboName());
@@ -2468,8 +2468,8 @@ void LLFloaterSnapshot::Impl::updateResolution(LLUICtrl* ctrl, void* data, bool 
 		  // The size is actually the source aspect now, encoded in the width.
 		  F32 source_aspect = width / 630.f;
 		  // Use the size of the current window, cropped to the required aspect.
-		  width = llmin(gViewerWindow->getWindowDisplayWidth(), llround(gViewerWindow->getWindowDisplayHeight() * source_aspect));
-		  height = llmin(gViewerWindow->getWindowDisplayHeight(), llround(gViewerWindow->getWindowDisplayWidth() / source_aspect));
+		  width = llmin(gViewerWindow->getWindowDisplayWidth(), llmath::llround(gViewerWindow->getWindowDisplayHeight() * source_aspect));
+		  height = llmin(gViewerWindow->getWindowDisplayHeight(), llmath::llround(gViewerWindow->getWindowDisplayWidth() / source_aspect));
 		  previewp->setSize(width, height);
 		}
 		else
@@ -2656,8 +2656,8 @@ void LLFloaterSnapshot::Impl::enforceResolution(LLFloaterSnapshot* floater, F32 
 		nw = llmin(nw, nh * new_aspect);
 		nh = llmin(nh, nw / new_aspect);
 		// Round off to nearest integer.
-		S32 new_width = llround(nw);
-		S32 new_height = llround(nh);
+		S32 new_width = llmath::llround(nw);
+		S32 new_height = llmath::llround(nh);
 
 		gSavedSettings.setS32(lastSnapshotWidthName(), new_width);
 		gSavedSettings.setS32(lastSnapshotHeightName(), new_height);
@@ -2758,8 +2758,8 @@ void LLFloaterSnapshot::Impl::onCommitCustomResolution(LLUICtrl *ctrl, void* dat
 		LLSpinCtrl* width_spinner = view->getChild<LLSpinCtrl>("snapshot_width");
 		LLSpinCtrl* height_spinner = view->getChild<LLSpinCtrl>("snapshot_height");
 
-		S32 w = llround((F32)width_spinner->getValue().asReal(), 1.0f);
-		S32 h = llround((F32)height_spinner->getValue().asReal(), 1.0f);
+		S32 w = llmath::llround((F32)width_spinner->getValue().asReal(), 1.0f);
+		S32 h = llmath::llround((F32)height_spinner->getValue().asReal(), 1.0f);
 
 		LLSnapshotLivePreview* previewp = getPreviewView();
 		if (previewp)
@@ -2786,12 +2786,12 @@ void LLFloaterSnapshot::Impl::onCommitCustomResolution(LLUICtrl *ctrl, void* dat
 					if (h == curh)
 					{
 						// Width was changed. Change height to keep aspect constant.
-						h = llround(w / aspect);
+						h = llmath::llround(w / aspect);
 					}
 					else
 					{
 						// Height was changed. Change width to keep aspect constant.
-						w = llround(h * aspect);
+						w = llmath::llround(h * aspect);
 					}
 				}
 				width_spinner->forceSetValue(LLSD::Real(w));

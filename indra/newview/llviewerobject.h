@@ -168,6 +168,8 @@ public:
 										const EObjectUpdateType update_type,
 										LLDataPacker *dp);
 
+	void processTerseData(LLMessageSystem *mesgsys, void **user_data, U32 block_num, S32& this_update_precision, LLVector3& new_pos_parent, LLQuaternion& new_rot, LLVector3& new_angv, LLVector3& test_pos_parent);
+
 
 	virtual BOOL    isActive() const; // Whether this object needs to do an idleUpdate.
 	BOOL			onActiveList() const				{return mOnActiveList;}

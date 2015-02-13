@@ -108,7 +108,7 @@ namespace {
 			mFile.close();
 		}
 		
-		bool okay() { return mFile; }
+		bool okay() { return !!mFile; }
 		
 		virtual bool wantsTime() { return true; }
 		
@@ -874,8 +874,8 @@ You get:
 	
 */
 
-extern apr_thread_mutex_t* gLogMutexp;
-extern apr_thread_mutex_t* gCallStacksLogMutexp;
+LLGlobalMutex gLogMutex;
+LLGlobalMutex gCallStacksLogMutex;
 
 namespace {
 	bool checkLevelMap(const LevelMap& map, const std::string& key,
@@ -905,17 +905,15 @@ namespace {
 	LogLock::LogLock()
 		: mLocked(false), mOK(false)
 	{
-		if (!gLogMutexp)
+		if (!gLogMutex.isInitalized())
 		{
 			mOK = true;
 			return;
 		}
-		
 		const int MAX_RETRIES = 5;
 		for (int attempts = 0; attempts < MAX_RETRIES; ++attempts)
 		{
-			apr_status_t s = apr_thread_mutex_trylock(gLogMutexp);
-			if (!APR_STATUS_IS_EBUSY(s))
+			if (gLogMutex.try_lock())
 			{
 				mLocked = true;
 				mOK = true;
@@ -937,7 +935,7 @@ namespace {
 	{
 		if (mLocked)
 		{
-			apr_thread_mutex_unlock(gLogMutexp);
+			gLogMutex.unlock();
 		}
 	}
 }
@@ -1299,17 +1297,16 @@ namespace LLError
 	CallStacksLogLock::CallStacksLogLock()
 		: mLocked(false), mOK(false)
 	{
-		if (!gCallStacksLogMutexp)
+		if (!gCallStacksLogMutex.isInitalized())
 		{
 			mOK = true;
 			return;
 		}
-		
+
 		const int MAX_RETRIES = 5;
 		for (int attempts = 0; attempts < MAX_RETRIES; ++attempts)
 		{
-			apr_status_t s = apr_thread_mutex_trylock(gCallStacksLogMutexp);
-			if (!APR_STATUS_IS_EBUSY(s))
+			if (gCallStacksLogMutex.try_lock())
 			{
 				mLocked = true;
 				mOK = true;
@@ -1328,7 +1325,7 @@ namespace LLError
 	{
 		if (mLocked)
 		{
-			apr_thread_mutex_unlock(gCallStacksLogMutexp);
+			gCallStacksLogMutex.unlock();
 		}
 	}
 

@@ -1303,7 +1303,7 @@ static int const HTTP_REDIRECTS_DEFAULT = 16;	// Singu note: I've seen up to 10 
 												// This limit is only here to avoid a redirect loop (infinite redirections).
 
 LLChannelDescriptors const BufferedCurlEasyRequest::sChannels;
-LLMutex BufferedCurlEasyRequest::sResponderCallbackMutex;
+LLGlobalMutex BufferedCurlEasyRequest::sResponderCallbackMutex;
 bool BufferedCurlEasyRequest::sShuttingDown = false;
 AIAverage BufferedCurlEasyRequest::sHTTPBandwidth(25);
 

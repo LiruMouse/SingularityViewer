@@ -70,6 +70,8 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
+#include <boost/algorithm/string/predicate.hpp>
+
 //
 // Global statics
 //
@@ -112,7 +114,11 @@ BOOL LLFloaterChat::postBuild()
 {
 	mPanel = getChild<LLParticipantList>("active_speakers_panel");
 
-	getChild<LLUICtrl>("toggle_active_speakers_btn")->setCommitCallback(boost::bind(&LLFloaterChat::onClickToggleActiveSpeakers, this, _2));
+// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
+	getChild<LLUICtrl>("toggle_active_speakers_btn")->setCommitCallback(boost::bind(&LLView::setVisible, mPanel, boost::bind(std::logical_and<bool>(), _2, !boost::bind(&RlvHandler::hasBehaviour, boost::ref(gRlvHandler), RLV_BHVR_SHOWNAMES))));
+// [/RLVa:KB]
+	//getChild<LLUICtrl>("toggle_active_speakers_btn")->setCommitCallback(boost::bind(&LLView::setVisible, mPanel, _2));
+
 	mChatPanel.connect(this,"chat_panel");
 	mChatPanel->setGestureCombo(getChild<LLComboBox>( "Gesture"));
 	return TRUE;
@@ -496,21 +502,11 @@ LLColor4 get_text_color(const LLChat& chat, bool from_im)
 		}
 	}
 
-	static const LLCachedControl<bool> mKeywordsChangeColor(gSavedPerAccountSettings, "KeywordsChangeColor", false);
-	static const LLCachedControl<LLColor4> mKeywordsColor(gSavedPerAccountSettings, "KeywordsColor", LLColor4(1.f, 1.f, 1.f, 1.f));
-
-    if ((gAgent.getID() != chat.mFromID) && (chat.mSourceType != CHAT_SOURCE_SYSTEM))
+	static const LLCachedControl<bool> sKeywordsChangeColor(gSavedPerAccountSettings, "KeywordsChangeColor", false);
+	if (sKeywordsChangeColor && gAgentID != chat.mFromID && chat.mSourceType != CHAT_SOURCE_SYSTEM && AscentKeyword::hasKeyword(boost::starts_with(chat.mText, chat.mFromName) ? chat.mText.substr(chat.mFromName.length()) : chat.mText, 1))
 	{
-		if (mKeywordsChangeColor)
-		{
-            std::string shortmsg(chat.mText);
-            shortmsg.erase(0, chat.mFromName.length());
-
-    		if (AscentKeyword::hasKeyword(shortmsg, 1))
-            {
-				text_color = mKeywordsColor;
-            }
-		}
+		static const LLCachedControl<LLColor4> sKeywordsColor(gSavedPerAccountSettings, "KeywordsColor", LLColor4(1.f, 1.f, 1.f, 1.f));
+		text_color = sKeywordsColor;
 	}
 
 	return text_color;
@@ -556,14 +552,6 @@ void* LLFloaterChat::createChatPanel(void* data)
 	return new LLChatBar;
 }
 
-// static
-void LLFloaterChat::onClickToggleActiveSpeakers(const LLSD& val)
-{
-// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
-	mPanel->setVisible(val && !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES));
-// [/RLVa:KB]
-	//mPanel->setVisible(val);
-}
 
 // xantispam
 // this function has disappeared
@@ -593,6 +581,7 @@ void LLFloaterChat::onClickToggleActiveSpeakers(const LLSD& val)
 // >>>>>>> 78131d2d53c57b7102c1a673c113587ebb8ee5dc
 
 // / xantispam
+
 
 //static 
 bool LLFloaterChat::visible(LLFloater* instance, const LLSD& key)

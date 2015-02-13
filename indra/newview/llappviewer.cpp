@@ -4481,12 +4481,6 @@ void LLAppViewer::shutdownAudio()
 {
 	if (gAudiop)
 	{
-		// shut down the streaming audio sub-subsystem first, in case it relies on not outliving the general audio subsystem.
-
-		LLStreamingAudioInterface *sai = gAudiop->getStreamingAudioImpl();
-		delete sai;
-		gAudiop->setStreamingAudioImpl(NULL);
-
 		// shut down the audio subsystem
 
 		bool want_longname = false;

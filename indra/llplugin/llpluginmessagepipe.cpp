@@ -120,10 +120,11 @@ LLPluginMessagePipe::~LLPluginMessagePipe()
 bool LLPluginMessagePipe::addMessage(const std::string &message)
 {
 	// queue the message for later output
-	LLMutexLock lock(&mOutputMutex);
+	//LLMutexLock lock(&mOutputMutex);
+	mOutputMutex.lock();
 	mOutput += message;
 	mOutput += MESSAGE_DELIMITER;	// message separator
-	
+	mOutputMutex.unlock();
 	return true;
 }
 

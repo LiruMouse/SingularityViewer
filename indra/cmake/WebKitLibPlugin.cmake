@@ -32,8 +32,8 @@ if (WINDOWS)
     )
 elseif (DARWIN)
     set(WEBKIT_PLUGIN_LIBRARIES
-        optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libllqtwebkit.dylib
-        debug ${ARCH_PREBUILT_DIRS_DEBUG}/libllqtwebkit.dylib
+        debug libllqtwebkit.dylib
+        optimized libllqtwebkit.dylib
         )
 elseif (LINUX)
      if (STANDALONE)

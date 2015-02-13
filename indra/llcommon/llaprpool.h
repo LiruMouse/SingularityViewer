@@ -47,8 +47,10 @@
 
 #include "apr_portable.h"
 #include "apr_pools.h"
+#include "llatomic.h"
 #include "llerror.h"
 #include "aithreadid.h"
+
 
 extern void ll_init_apr();
 
@@ -104,8 +106,11 @@ public:
 	// NEVER destroy a pool that is returned by this function!
 	apr_pool_t* operator()(void) const
 	{
-		llassert(mPool);
-		llassert(mOwner.equals_current_thread());
+		if (mParent)
+		{
+			llassert(mPool);
+			llassert(mOwner.equals_current_thread());
+		}
 		return mPool;
 	}
 
@@ -181,7 +186,7 @@ private:
 private:
 	// Keep track of how many root pools exist and when the last one is destructed.
 	static bool sCountInitialized;
-	static apr_uint32_t volatile sCount;
+	static LLAtomicS32 sCount;
 
 public:
 	// Return a global root pool that is independent of LLThreadLocalData.

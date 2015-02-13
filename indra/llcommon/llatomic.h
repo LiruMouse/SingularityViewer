@@ -34,8 +34,29 @@
 #ifndef LL_LLATOMIC_H
 #define LL_LLATOMIC_H
 
-#include "apr_atomic.h"
+#define USE_BOOST_ATOMIC
 
+//Internal definitions
+#define NEEDS_APR_ATOMICS do_not_define_manually_thanks
+#undef NEEDS_APR_ATOMICS
+
+#if defined(USE_BOOST_ATOMIC)
+#include "boost/version.hpp"
+#endif
+
+//Prefer boost over stl over apr.
+
+#if defined(USE_BOOST_ATOMIC) && (BOOST_VERSION >= 105300)
+#include "boost/atomic.hpp"
+template<typename T>
+struct impl_atomic_type { typedef boost::atomic<T> type; };
+#elif defined(USE_STD_ATOMIC) && (__cplusplus >= 201103L || _MSC_VER >= 1800)
+#include <atomic>
+template<typename T>
+struct impl_atomic_type { typedef std::atomic<T> type; };
+#else
+#include "apr_atomic.h"
+#define NEEDS_APR_ATOMICS
 template <typename Type> class LLAtomic32
 {
 public:
@@ -54,6 +75,27 @@ public:
 private:
 	apr_uint32_t mData;
 };
+#endif
+#if !defined(NEEDS_APR_ATOMICS)
+template <typename Type> class LLAtomic32
+{
+public:
+	LLAtomic32(void) { }
+	LLAtomic32(LLAtomic32 const& atom) { mData = Type(atom.mData); }
+	LLAtomic32(Type x) { mData = x; }
+	LLAtomic32& operator=(LLAtomic32 const& atom) { mData = Type(atom.mData); return *this; }
+
+	operator Type() const { return mData; }
+	void operator=(Type x) { mData = x; }
+	void operator-=(Type x) { mData -= x; }
+	void operator+=(Type x) { mData += x; }
+	Type operator++(int) { return mData++; } // Type++
+	bool operator--() { return --mData; } // Returns (--Type != 0)
+
+private:
+	typename impl_atomic_type<Type>::type mData;
+};
+#endif
 
 typedef LLAtomic32<U32> LLAtomicU32;
 typedef LLAtomic32<S32> LLAtomicS32;

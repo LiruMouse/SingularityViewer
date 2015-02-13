@@ -8,9 +8,12 @@ if (STANDALONE)
   include(FindPNG)
 else (STANDALONE)
   use_prebuilt_binary(libpng)
-  set(PNG_INCLUDE_DIRS ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/)
   if (WINDOWS)
-    set(PNG_LIBRARIES libpng15)
+    if(MSVC12)
+      set(PNG_LIBRARIES libpng16)
+    else(MSVC12)
+      set(PNG_LIBRARIES libpng15)
+    endif(MSVC12)
   elseif(DARWIN)
     set(PNG_LIBRARIES png15)
   else(LINUX)
@@ -31,7 +34,17 @@ else (STANDALONE)
       #
       set(PNG_PRELOAD_ARCHIVES -Wl,--whole-archive png16 -Wl,--no-whole-archive)
       set(PNG_LIBRARIES png16)
-      set(PNG_INCLUDE_DIRS ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/libpng16)
     endif ()
   endif()
+  if (WINDOWS)
+    set(PNG_INCLUDE_DIRS
+      ${LIBS_PREBUILT_DIR}/include/${PNG_LIBRARIES}
+      ${LIBS_PREBUILT_LEGACY_DIR}/include/${PNG_LIBRARIES}
+      )
+  else (WINDOWS)
+    set(PNG_INCLUDE_DIRS
+      ${LIBS_PREBUILT_DIR}/include/lib${PNG_LIBRARIES}
+      ${LIBS_PREBUILT_LEGACY_DIR}/include/lib${PNG_LIBRARIES}
+      )
+  endif (WINDOWS)
 endif (STANDALONE)

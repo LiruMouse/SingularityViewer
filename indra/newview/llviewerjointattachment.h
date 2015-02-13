@@ -47,6 +47,16 @@ public:
 	LLViewerJointAttachment();
 	virtual ~LLViewerJointAttachment();
 
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 	//virtual U32 render( F32 pixelArea );	// Returns triangle count
 
 	// Returns true if this object is transparent.

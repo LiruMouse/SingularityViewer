@@ -5831,9 +5831,9 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			const LLViewerObject* obj(chatter ? chatter : gObjectList.findObject(owner_id));
 			// Compute the object SLURL.
 			LLVector3 pos = obj ? obj->getPositionRegion() : LLVector3::zero;
-			S32 x = llround((F32)fmod((F64)pos.mV[VX], (F64)REGION_WIDTH_METERS));
-			S32 y = llround((F32)fmod((F64)pos.mV[VY], (F64)REGION_WIDTH_METERS));
-			S32 z = llround((F32)pos.mV[VZ]);
+			S32 x = llmath::llround((F32)fmod((F64)pos.mV[VX], (F64)REGION_WIDTH_METERS));
+			S32 y = llmath::llround((F32)fmod((F64)pos.mV[VY], (F64)REGION_WIDTH_METERS));
+			S32 z = llmath::llround((F32)pos.mV[VZ]);
 			std::ostringstream location;
 			location << (obj ? obj->getRegion() : gAgent.getRegion())->getName() << "/" << x << "/" << y << "/" << z;
 			if (chatter != obj) location << "?owner_not_object";

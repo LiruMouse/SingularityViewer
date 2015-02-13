@@ -83,10 +83,15 @@ def main(configuration, search_dirs, viewer_exes, libs_suffix, dump_syms_tool, v
     def dump_module(m):
         print "dumping module '%s' with '%s'..." % (m, dump_syms_tool)
         dsym_full_path = m
-        child = subprocess.Popen([dump_syms_tool, dsym_full_path] , stdout=subprocess.PIPE)
-        out, err = child.communicate()
-        return (m,child.returncode, out, err)
-
+        
+        tools = dump_syms_tool.split('|')
+        for tool in tools:
+            if tool:
+                if os.path.isfile(tool):
+                    child = subprocess.Popen([tool, dsym_full_path] , stdout=subprocess.PIPE)
+                    out, err = child.communicate()
+                    return (m,child.returncode, out, err)
+        raise IOError('Failed to find dump_syms tool!')
     
     modules = {}
         

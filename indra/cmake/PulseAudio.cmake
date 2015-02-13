@@ -13,8 +13,9 @@ if (PULSEAUDIO)
     use_prebuilt_binary(pulseaudio)
     set(PULSEAUDIO_FOUND ON FORCE BOOL)
     set(PULSEAUDIO_INCLUDE_DIRS
-        ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include
-        )
+      ${LIBS_PREBUILT_DIR}/include
+      ${LIBS_PREBUILT_LEGACY_DIR}/include
+      )
     # We don't need to explicitly link against pulseaudio itself, because
     # the viewer probes for the system's copy at runtime.
     set(PULSEAUDIO_LIBRARIES

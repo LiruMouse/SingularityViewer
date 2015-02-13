@@ -52,7 +52,6 @@ public:
 	void close();
 
 	static void initClass();
-	static void destroyClass();
 	static bool onNewNotification(const LLSD& notification);
 
 protected:
@@ -72,11 +71,6 @@ protected:
 
 	/*virtual*/ ~LLGroupNotifyBox();
 
-// JC - removed support for clicking in background to dismiss
-// the dialogs.
-//	/*virtual*/ BOOL handleMouseDown(S32 x, S32 y, MASK mask);
-//	/*virtual*/ BOOL handleDoubleClick(S32 x, S32 y, MASK mask);
-//	/*virtual*/ BOOL handleMouseUp(S32 x, S32 y, MASK mask);
 	/*virtual*/ BOOL handleRightMouseDown(S32 x, S32 y, MASK mask);
 
 	// Animate as sliding onto the screen.
@@ -89,15 +83,11 @@ protected:
 	static LLRect getGroupNotifyRect();
 
 	// internal handler for button being clicked
-	void onClickOk();
 	void onClickSaveInventory();
-
-	// for "next" button
-	void onClickNext();
 
 private:
 	// Are we sliding onscreen?
-	BOOL mAnimating;
+	bool mAnimating;
 
 	// Time since this notification was displayed.
 	// This is an LLTimer not a frame timer because I am concerned
@@ -107,17 +97,9 @@ private:
 	LLButton* mNextBtn;
 	LLButton* mSaveInventoryBtn;
 
-	static S32 sGroupNotifyBoxCount;
-
 	LLUUID mGroupID;
-	BOOL mHasInventory;
+	bool mHasInventory;
 	LLOfferInfo* mInventoryOffer;
 };
-
-// This view contains the stack of notification windows.
-//extern LLView* gGroupNotifyBoxView;
-
-const S32 GROUP_LAYOUT_DEFAULT = 0;
-const S32 GROUP_LAYOUT_SCRIPT_DIALOG = 1;
 
 #endif

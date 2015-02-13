@@ -2,81 +2,115 @@
 
 include(Linking)
 
-if (NOT FMODEX_LIBRARY)
-  set(FMODEX_SDK_DIR CACHE PATH "Path to the FMOD Ex SDK.")
-  if (FMODEX_SDK_DIR)
-    if(WORD_SIZE EQUAL 32)
-      find_library(FMODEX_LIBRARY
-                   fmodex_vc fmodexL_vc fmodex fmodexL
-                   PATHS
-                   "${FMODEX_SDK_DIR}/api/lib"
-                   "${FMODEX_SDK_DIR}/api"
-                   "${FMODEX_SDK_DIR}/lib"
-                   "${FMODEX_SDK_DIR}"
-                   )
-    elseif(WORD_SIZE EQUAL 64)
-      find_library(FMODEX_LIBRARY
-                   fmodex64_vc fmodexL64_vc fmodex64 fmodexL64
-                   PATHS
-                   "${FMODEX_SDK_DIR}/api/lib"
-                   "${FMODEX_SDK_DIR}/api"
-                   "${FMODEX_SDK_DIR}/lib"
-                   "${FMODEX_SDK_DIR}"
-                   )
-    endif(WORD_SIZE EQUAL 32)
-  endif(FMODEX_SDK_DIR)
-  if(WINDOWS AND NOT FMODEX_SDK_DIR)
-    GET_FILENAME_COMPONENT(FMODEX_PROG_DIR [HKEY_CURRENT_USER\\Software\\FMOD\ Programmers\ API\ Windows] ABSOLUTE CACHE)
-    if(WORD_SIZE EQUAL 32)
-      find_library(FMODEX_LIBRARY
-                   fmodex_vc fmodexL_vc
-                   PATHS
-                   "${FMODEX_PROG_DIR}/api/lib"
-                   "${FMODEX_PROG_DIR}/api"
-                   "${FMODEX_PROG_DIR}"
-                   )
-    else(WORD_SIZE EQUAL 32)
-      find_library(FMODEX_LIBRARY
-                   fmodex64_vc fmodexL64_vc
-                   PATHS
-                   "${FMODEX_PROG_DIR}/api/lib"
-                   "${FMODEX_PROG_DIR}/api"
-                   "${FMODEX_PROG_DIR}"
-                   )
-    endif(WORD_SIZE EQUAL 32)
-    if(FMODEX_LIBRARY)
-      message(STATUS "Found fmodex in ${FMODEX_PROG_DIR}")
-      set(FMODEX_SDK_DIR "${FMODEX_PROG_DIR}")
-      set(FMODEX_SDK_DIR "${FMODEX_PROG_DIR}" CACHE PATH "Path to the FMOD Ex SDK." FORCE)
-    endif(FMODEX_LIBRARY)
-  endif(WINDOWS AND NOT FMODEX_SDK_DIR)
-endif (NOT FMODEX_LIBRARY)
+if (FMODEX AND FMODSTUDIO)
+  message( FATAL_ERROR "You can not enable two FMOD variants at the same time." )
+endif (FMODEX AND FMODSTUDIO)
 
-find_path(FMODEX_INCLUDE_DIR fmod.hpp
-          "${LIBS_PREBUILT_DIR}/include/fmodex"
-          "${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/fmodex"
-          "${FMODEX_SDK_DIR}/api/inc"
-          "${FMODEX_SDK_DIR}/inc"
-          "${FMODEX_SDK_DIR}"
-          )
+unset(FMOD_LIBRARY_RELEASE CACHE)
+unset(FMOD_LIBRARY_DEBUG CACHE)
+unset(FMOD_INCLUDE_DIR CACHE)
 
-if(DARWIN)
-  set(FMODEX_ORIG_LIBRARY "${FMODEX_LIBRARY}")
-  set(FMODEX_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/libfmodex.dylib")
-endif(DARWIN)
+set(FMOD_EXTERNAL_LIB OFF)
 
-if (FMODEX_LIBRARY AND FMODEX_INCLUDE_DIR)
-  set(FMODEX ON CACHE BOOL "Use closed source FMOD Ex sound library.")
-else (FMODEX_LIBRARY AND FMODEX_INCLUDE_DIR)
-  set(FMODEX_LIBRARY "")
-  set(FMODEX_INCLUDE_DIR "")
-  if (FMODEX)
-    message(STATUS "No support for FMOD Ex audio (need to set FMODEX_SDK_DIR?)")
-  endif (FMODEX)
-  set(FMODEX OFF CACHE BOOL "Use closed source FMOD Ex sound library.")
+if(STANDALONE OR WINDOWS)
+  if (NOT FMODEX_SDK_DIR AND WINDOWS)
+    GET_FILENAME_COMPONENT(REG_DIR [HKEY_CURRENT_USER\\Software\\FMOD\ Programmers\ API\ Windows] ABSOLUTE)
+    set(FMODEX_SDK_DIR ${REG_DIR} CACHE PATH "Path to the FMOD Ex SDK." FORCE)
+  endif (NOT FMODEX_SDK_DIR AND WINDOWS)
+  if(NOT FMODEX_SDK_DIR AND STANDALONE)
+    message(FATAL_ERROR "FMODEX_SDK_DIR not set!")
+  endif(NOT FMODEX_SDK_DIR AND STANDALONE)
+endif(STANDALONE OR WINDOWS)
+
+if(FMODEX_SDK_DIR)
+  set(fmod_lib_paths "${FMODEX_SDK_DIR}/api" "${FMODEX_SDK_DIR}/api/lib" )
+  set(fmod_inc_paths "${FMODEX_SDK_DIR}/api/inc")
+
+  if(WINDOWS)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES_OLD ${CMAKE_FIND_LIBRARY_SUFFIXES})
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)
+  endif(WINDOWS)
+  if(WORD_SIZE EQUAL 64)
+    find_library(FMOD_LIBRARY_RELEASE fmodex64 PATHS ${fmod_lib_paths} NO_DEFAULT_PATH)
+    find_library(FMOD_LIBRARY_DEBUG fmodexL64 PATHS ${fmod_lib_paths} NO_DEFAULT_PATH)
+  else(WORD_SIZE EQUAL 64)#Check if CMAKE_FIND_LIBRARY_PREFIXES is set to 'lib' for darwin.
+    find_library(FMOD_LIBRARY_RELEASE fmodex PATHS ${fmod_lib_paths} NO_DEFAULT_PATH)
+    find_library(FMOD_LIBRARY_DEBUG fmodexL PATHS ${fmod_lib_paths} NO_DEFAULT_PATH)
+  endif(WORD_SIZE EQUAL 64)
+  if(WINDOWS)
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES_OLD})
+    if(WORD_SIZE EQUAL 64)
+      find_library(FMOD_LINK_LIBRARY_RELEASE fmodex64_vc PATHS ${fmod_lib_paths} NO_DEFAULT_PATH)
+      find_library(FMOD_LINK_LIBRARY_DEBUG fmodexL64_vc PATHS ${fmod_lib_paths} NO_DEFAULT_PATH)
+    else(WORD_SIZE EQUAL 64)#Check if CMAKE_FIND_LIBRARY_PREFIXES is set to 'lib' for darwin.
+      find_library(FMOD_LINK_LIBRARY_RELEASE fmodex_vc PATHS ${fmod_lib_paths} NO_DEFAULT_PATH)
+      find_library(FMOD_LINK_LIBRARY_DEBUG fmodexL_vc PATHS ${fmod_lib_paths} NO_DEFAULT_PATH)
+    endif(WORD_SIZE EQUAL 64)
+  else(WINDOWS)
+    set(FMOD_LINK_LIBRARY_RELEASE ${FMOD_LIBRARY_RELEASE})
+    set(FMOD_LINK_LIBRARY_DEBUG ${FMOD_LIBRARY_DEBUG})
+  endif(WINDOWS)
+  find_path(FMOD_INCLUDE_DIR fmod.hpp ${fmod_inc_paths})
+  if(NOT FMOD_LIBRARY_RELEASE OR NOT FMOD_INCLUDE_DIR)
+    if(STANDALONE)
+      message(FATAL_ERROR "Provided FMODEX_SDK_DIR path not found '{$FMODEX_SDK_DIR}'")
+    else(STANDALONE)
+      message(STATUS "Provided FMODEX_SDK_DIR path not found '${FMODEX_SDK_DIR}'. Falling back to prebuilts")
+    endif(STANDALONE)
+  else(NOT FMOD_LIBRARY_RELEASE OR NOT FMOD_INCLUDE_DIR)
+    message(STATUS "Using system-provided FMOD Ex Libraries")
+    set(FMOD_EXTERNAL_LIB ON)
+  endif(NOT FMOD_LIBRARY_RELEASE OR NOT FMOD_INCLUDE_DIR)
+endif (FMODEX_SDK_DIR)
+
+if (NOT FMOD_LIBRARY_RELEASE OR NOT FMOD_INCLUDE_DIR)
+  if(WINDOWS)
+    set(lib_suffix .dll)
+  elseif(DARWIN)
+    set(lib_suffix .dylib)
+  else(WINDOWS)
+    set(lib_suffix .so)
+  endif(WINDOWS)
+  if(WINDOWS)
+    if(WORD_SIZE EQUAL 64)
+      set(FMOD_LIBRARY_RELEASE ${LIBS_PREBUILT_DIR}/lib/release/fmodex64${lib_suffix})
+      set(FMOD_LIBRARY_DEBUG ${LIBS_PREBUILT_DIR}/lib/debug/fmodexL64${lib_suffix})
+    else(WORD_SIZE EQUAL 64)
+      set(FMOD_LIBRARY_RELEASE ${LIBS_PREBUILT_DIR}/lib/release/fmodex${lib_suffix})
+      set(FMOD_LIBRARY_DEBUG ${LIBS_PREBUILT_DIR}/lib/debug/fmodexL${lib_suffix})
+    endif(WORD_SIZE EQUAL 64)
+  else(WINDOWS)
+    if(WORD_SIZE EQUAL 64)
+      set(FMOD_LIBRARY_RELEASE ${LIBS_PREBUILT_DIR}/lib/release/libfmodex64${lib_suffix})
+      set(FMOD_LIBRARY_DEBUG ${LIBS_PREBUILT_DIR}/lib/debug/libfmodex64L${lib_suffix})
+    else(WORD_SIZE EQUAL 64)
+      set(FMOD_LIBRARY_RELEASE ${LIBS_PREBUILT_DIR}/lib/release/libfmodex${lib_suffix})
+      set(FMOD_LIBRARY_DEBUG ${LIBS_PREBUILT_DIR}/lib/debug/libfmodexL${lib_suffix})
+    endif(WORD_SIZE EQUAL 64)
+  endif(WINDOWS)
+  set(FMOD_LINK_LIBRARY_RELEASE ${FMOD_LIBRARY_RELEASE})
+  set(FMOD_LINK_LIBRARY_DEBUG ${FMOD_LIBRARY_DEBUG})
+  if(WINDOWS)
+    string(REPLACE ".dll" "_vc.lib" FMOD_LINK_LIBRARY_RELEASE ${FMOD_LIBRARY_RELEASE})
+    string(REPLACE ".dll" "_vc.lib" FMOD_LINK_LIBRARY_DEBUG ${FMOD_LIBRARY_DEBUG})
+  endif(WINDOWS)
+  use_prebuilt_binary(fmodex)
+  set(FMOD_INCLUDE_DIR
+      ${LIBS_PREBUILT_DIR}/include/fmodex)
+endif(NOT FMOD_LIBRARY_RELEASE OR NOT FMOD_INCLUDE_DIR)
+
+if(FMOD_LIBRARY_RELEASE AND FMOD_INCLUDE_DIR)
+  set(FMOD ON)
+  if (NOT FMOD_LIBRARY_DEBUG) #Use release library in debug configuration if debug library is absent.
+    set(FMOD_LIBRARY_DEBUG ${FMOD_LIBRARY_RELEASE})
+  endif (NOT FMOD_LIBRARY_DEBUG)
+else (FMOD_LIBRARY_RELEASE AND FMOD_INCLUDE_DIR)
+  message(STATUS "No support for FMOD EX audio (need to set FMODEX_SDK_DIR?)")
+  set(FMOD OFF)
   set(FMODEX OFF)
-endif (FMODEX_LIBRARY AND FMODEX_INCLUDE_DIR)
+endif (FMOD_LIBRARY_RELEASE AND FMOD_INCLUDE_DIR)
 
-if (FMODEX)
+if (FMOD)
   message(STATUS "Building with FMOD Ex audio support")
-endif (FMODEX)
+  set(LLSTARTUP_COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS} -DLL_FMODEX")
+endif (FMOD)

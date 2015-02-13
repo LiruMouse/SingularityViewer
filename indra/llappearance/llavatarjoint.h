@@ -127,6 +127,16 @@ public:
 	LLAvatarJointCollisionVolume();
 	virtual ~LLAvatarJointCollisionVolume() {};
 
+	void* operator new(size_t size)
+	{
+		return ll_aligned_malloc_16(size);
+	}
+
+	void operator delete(void* ptr)
+	{
+		ll_aligned_free_16(ptr);
+	}
+
 	/*virtual*/ BOOL inheritScale() { return TRUE; }
 	/*virtual*/ U32 render( F32 pixelArea, BOOL first_pass = TRUE, BOOL is_dummy = FALSE );
 

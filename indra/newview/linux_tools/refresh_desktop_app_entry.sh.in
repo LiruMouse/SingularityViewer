@@ -3,7 +3,7 @@
 SCRIPTSRC=`readlink -f "$0" || echo "$0"`
 RUN_PATH=`dirname "${SCRIPTSRC}" || echo .`
 
-install_prefix=${RUN_PATH}
+install_prefix=${RUN_PATH}/..
 
 function install_desktop_entry()
 {

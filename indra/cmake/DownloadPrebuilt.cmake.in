@@ -2,7 +2,7 @@
 # The top-level CMakeLists.txt configures packages and tool locations.
 set(packages "@PREBUILT_PACKAGES@")
 set(python "@PYTHON_EXECUTABLE@")
-set(install_dir "@CMAKE_SOURCE_DIR@/..")
+set(install_dir "@CMAKE_BINARY_DIR@/packages")
 set(scp "@SCP_EXECUTABLE@")
 set(scripts_dir "@SCRIPTS_DIR@")
 set(sentinel_dir "@CMAKE_BINARY_DIR@/prepare")
@@ -20,7 +20,7 @@ foreach(package ${packages})
     # This package is missing or out of date.
     message(STATUS "Obtaining${proprietary_message} prebuilt '${package}'")
     execute_process(
-      COMMAND ${python} install.py -p${prebuilt_type} --install-dir=${install_dir} ${scp_option} ${package}
+      COMMAND ${python} install.py -p${prebuilt_type} --install-dir=${install_dir} --installed-manifest=${install_dir}/installed.xml ${scp_option} ${package}
       WORKING_DIRECTORY ${scripts_dir}
       RESULT_VARIABLE result
       )

@@ -95,20 +95,26 @@ LLFeatureList::~LLFeatureList()
 
 void LLFeatureList::addFeature(const std::string& name, const BOOL available, const F32 level)
 {
-	if (mFeatures.count(name))
+	LLFeatureInfo fi(name, available, level);
+
+	feature_map_t::iterator iter = mFeatures.find(name);
+	if (iter != mFeatures.end())
 	{
 		LL_WARNS("RenderInit") << "LLFeatureList::Attempting to add preexisting feature " << name << LL_ENDL;
+		iter->second = fi;
 	}
-
-	LLFeatureInfo fi(name, available, level);
-	mFeatures[name] = fi;
+	else
+	{
+		mFeatures.insert(std::make_pair(name, fi));
+	}
 }
 
 BOOL LLFeatureList::isFeatureAvailable(const std::string& name)
 {
-	if (mFeatures.count(name))
+	feature_map_t::iterator iter = mFeatures.find(name);
+	if (iter != mFeatures.end())
 	{
-		return mFeatures[name].mAvailable;
+		return iter->second.mAvailable;
 	}
 
 	LL_WARNS_ONCE("RenderInit") << "Feature " << name << " not on feature list!" << LL_ENDL;
@@ -116,17 +122,6 @@ BOOL LLFeatureList::isFeatureAvailable(const std::string& name)
 	// changing this to TRUE so you have to explicitly disable 
 	// something for it to be disabled
 	return TRUE;
-}
-
-F32 LLFeatureList::getRecommendedValue(const std::string& name)
-{
-	if (mFeatures.count(name) && isFeatureAvailable(name))
-	{
-		return mFeatures[name].mRecommendedLevel;
-	}
-
-	LL_WARNS_ONCE("RenderInit") << "Feature " << name << " not on feature list or not available!" << LL_ENDL;
-	return 0;
 }
 
 BOOL LLFeatureList::maskList(LLFeatureList &mask)
@@ -146,13 +141,14 @@ BOOL LLFeatureList::maskList(LLFeatureList &mask)
 		//
 		// Look for the corresponding feature
 		//
-		if (!mFeatures.count(mask_fi.mName))
+		feature_map_t::iterator iter = mFeatures.find(mask_fi.mName);
+		if (iter == mFeatures.end())
 		{
 			LL_WARNS("RenderInit") << "Feature " << mask_fi.mName << " in mask not in top level!" << LL_ENDL;
 			continue;
 		}
 
-		LLFeatureInfo &cur_fi = mFeatures[mask_fi.mName];
+		LLFeatureInfo &cur_fi = iter->second;
 		if (mask_fi.mAvailable && !cur_fi.mAvailable)
 		{
 			LL_WARNS("RenderInit") << "Mask attempting to reenabling disabled feature, ignoring " << cur_fi.mName << LL_ENDL;
@@ -503,22 +499,29 @@ void LLFeatureManager::applyFeatures(bool skipFeatures)
 			continue;
 		}
 
+		if (!mIt->second.mAvailable)
+		{
+			LL_WARNS_ONCE("RenderInit") << "Feature " << mIt->first << " not available!" << LL_ENDL;
+		}
+
+		F32 val = mIt->second.mAvailable ? mIt->second.mRecommendedLevel : 0.f;
+
 		// handle all the different types
 		if(ctrl->isType(TYPE_BOOLEAN))
 		{
-			gSavedSettings.setBOOL(mIt->first, (BOOL)getRecommendedValue(mIt->first));
+			gSavedSettings.setBOOL(mIt->first, (BOOL)val);
 		}
 		else if (ctrl->isType(TYPE_S32))
 		{
-			gSavedSettings.setS32(mIt->first, (S32)getRecommendedValue(mIt->first));
+			gSavedSettings.setS32(mIt->first, (S32)val);
 		}
 		else if (ctrl->isType(TYPE_U32))
 		{
-			gSavedSettings.setU32(mIt->first, (U32)getRecommendedValue(mIt->first));
+			gSavedSettings.setU32(mIt->first, (U32)val);
 		}
 		else if (ctrl->isType(TYPE_F32))
 		{
-			gSavedSettings.setF32(mIt->first, (F32)getRecommendedValue(mIt->first));
+			gSavedSettings.setF32(mIt->first, (F32)val);
 		}
 		else
 		{

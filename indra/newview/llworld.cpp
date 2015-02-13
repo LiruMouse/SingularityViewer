@@ -1124,7 +1124,7 @@ void LLWorld::updateWaterObjects()
 				// Count the found coastline.
 				F32 new_water_height = water_heights[index];
 				LL_DEBUGS("WaterHeight") << "  This is void; counting coastline with water height of " << new_water_height << LL_ENDL;
-				S32 new_water_height_cm = llround(new_water_height * 100);
+				S32 new_water_height_cm = llmath::llround(new_water_height * 100);
 				int count = (water_height_counts[new_water_height_cm] += 1);
 				// Just use the lowest water height: this is mainly about the horizon water,
 				// and whatever we do, we don't want it to be possible to look under the water

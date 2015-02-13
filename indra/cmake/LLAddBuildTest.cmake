@@ -87,7 +87,7 @@ MACRO(ADD_BUILD_TEST_INTERNAL name parent libraries source_files)
         ${libraries}
         )
 
-    GET_TARGET_PROPERTY(TEST_EXE ${name}_test LOCATION)
+	SET(TEST_EXE $<TARGET_FILE:${name}_test>)
     SET(TEST_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${name}_test_ok.txt)
 
     IF ("${wrapper}" STREQUAL "")

@@ -625,6 +625,12 @@ static bool handleAllowLargeSounds(const LLSD& newvalue)
 	return true;
 }
 
+void handleHighResChanged(const LLSD& val)
+{
+	if (val) // High Res Snapshot active, must uncheck RenderUIInSnapshot
+		gSavedSettings.setBOOL("RenderUIInSnapshot", false);
+}
+
 ////////////////////////////////////////////////////////////////////////////
 void settings_setup_listeners()
 {
@@ -819,6 +825,7 @@ void settings_setup_listeners()
 
 	gSavedSettings.getControl("AllowLargeSounds")->getSignal()->connect(boost::bind(&handleAllowLargeSounds, _2));
 	gSavedSettings.getControl("LiruUseZQSDKeys")->getSignal()->connect(boost::bind(load_default_bindings, _2));
+	gSavedSettings.getControl("HighResSnapshot")->getSignal()->connect(boost::bind(&handleHighResChanged, _2));
 }
 
 void onCommitControlSetting_gSavedSettings(LLUICtrl* ctrl, void* name)

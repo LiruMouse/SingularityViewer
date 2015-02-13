@@ -2,7 +2,7 @@
 # Copies a binary back to the source directory
 
 MACRO(COPY_BACK_TO_SOURCE target)
-   GET_TARGET_PROPERTY(FROM ${target} LOCATION)
+   SET(FROM $<TARGET_FILE:${target}>)
    SET(TO ${CMAKE_CURRENT_SOURCE_DIR})
    #MESSAGE("TARGET ${target} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${FROM} ${TO}")
    ADD_CUSTOM_COMMAND(

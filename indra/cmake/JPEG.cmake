@@ -13,11 +13,14 @@ else (STANDALONE)
     set(JPEG_LIBRARIES jpeg)
   elseif (DARWIN)
     set(JPEG_LIBRARIES
-      optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libjpeg.a
-      debug ${ARCH_PREBUILT_DIRS_DEBUG}/libjpeg.a
+      debug libjpeg.a
+      optimized libjpeg.a
       )
   elseif (WINDOWS)
     set(JPEG_LIBRARIES jpeglib)
   endif (LINUX)
-  set(JPEG_INCLUDE_DIRS ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include)
+  set(JPEG_INCLUDE_DIRS
+    ${LIBS_PREBUILT_DIR}/include
+    ${LIBS_PREBUILT_LEGACY_DIR}/include
+    )
 endif (STANDALONE)

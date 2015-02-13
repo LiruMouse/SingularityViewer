@@ -536,7 +536,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 	{
 		if((*it).second.mLevel == shader_level && (*it).second.mType == type && (*it).second.mDefinitions == (defines ? *defines : std::map<std::string, std::string>()))
 		{
-			llinfos << "Loading cached shader for " << filename << llendl;
+			//LL_INFOS("ShaderLoading") << "Loading cached shader for " << filename << LL_ENDL;
 			return (*it).second.mHandle;
 		}
 	}
@@ -575,7 +575,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		file = LLFile::fopen(fname.str(), "r");		/* Flawfinder: ignore */
 		if (file)
 		{
-			LL_INFOS("ShaderLoading") << "Loading file: shaders/class" << gpu_class << "/" << filename << " (Want class " << gpu_class << ")" << LL_ENDL;
+			//LL_INFOS("ShaderLoading") << "Loading file: shaders/class" << gpu_class << "/" << filename << " (Want class " << gpu_class << ")" << LL_ENDL;
 			break; // done
 		}
 	}

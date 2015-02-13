@@ -28,13 +28,12 @@ $/LicenseInfo$
 
 import random, socket, string, time, re
 import uuid
-
-# *HACK: Necessary for python 2.4. Consider replacing this code wart
-# after python >=2.5 has deployed everywhere. 2009-10-05
 try:
+    # Python 2.6
     from hashlib import md5
 except ImportError:
-    from md5 import md5
+    # Python 2.5 and earlier
+    from md5 import new as md5
 
 def _int2binstr(i,l):
     s=''
@@ -73,7 +72,7 @@ class UUID(object):
     ip = ''
     try:
         ip = socket.gethostbyname(socket.gethostname())
-    except(socket.gaierror):
+    except(socket.gaierror, socket.error):
         # no ip address, so just default to somewhere in 10.x.x.x
         ip = '10'
         for i in range(3):
@@ -164,7 +163,7 @@ class UUID(object):
     def setFromMemoryDump(self, gdb_string):
         """
         We expect to get gdb_string as four hex units. eg:
-        0x147d54db		0xc34b3f1b		0x714f989b		0x0a892fd2
+        0x147d54db      0xc34b3f1b      0x714f989b      0x0a892fd2
         Which will be translated to:
         db547d14-1b3f4bc3-9b984f71-d22f890a
         Returns self.
@@ -188,7 +187,7 @@ class UUID(object):
     def getAsString(self):
         """
         Return a different string representation of the form
-        AAAAAAAA-AAAABBBB-BBBBBBBB-BBCCCCCC	 (a 128-bit number in hex)
+        AAAAAAAA-AAAABBBB-BBBBBBBB-BBCCCCCC  (a 128-bit number in hex)
         where A=network address, B=timestamp, C=random.
         """
         i1 = _binstr2int(self._bits[0:4])
@@ -234,7 +233,7 @@ NULL = UUID()
 def printTranslatedMemory(four_hex_uints):
     """
     We expect to get the string as four hex units. eg:
-    0x147d54db		0xc34b3f1b		0x714f989b		0x0a892fd2
+    0x147d54db      0xc34b3f1b      0x714f989b      0x0a892fd2
     Which will be translated to:
     db547d14-1b3f4bc3-9b984f71-d22f890a
     """

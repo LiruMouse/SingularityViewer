@@ -29,8 +29,8 @@ set(cmake_SOURCE_FILES
     ELFIO.cmake
     EXPAT.cmake
     ExamplePlugin.cmake
-    FMOD.cmake
     FMODEX.cmake
+    FMODSTUDIO.cmake
     FindAPR.cmake
     FindBerkeleyDB.cmake
     FindCARes.cmake

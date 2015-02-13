@@ -37,7 +37,6 @@
 #include "llpanel.h"
 #include "lleventtimer.h"
 #include "llnotifications.h"
-#include <vector>
 
 class LLButton;
 class LLNotifyBoxTemplate;
@@ -51,16 +50,12 @@ class LLNotifyBox :
 	public LLInstanceTracker<LLNotifyBox, LLUUID>
 {
 public:
-	typedef void (*notify_callback_t)(S32 option, void* data);
-	typedef std::vector<std::string> option_list_t;
-
 	static void initClass();
-	static void destroyClass();
 
-	BOOL isTip() const { return mIsTip; }
-	BOOL isCaution() const { return mIsCaution; }
+	bool isTip() const { return mIsTip; }
+	bool isCaution() const { return mIsCaution; }
 	/*virtual*/ void setVisible(BOOL visible);
-	void stopAnimation() { mAnimating = FALSE; }
+	void stopAnimation() { mAnimating = false; }
 
 	void close();
 
@@ -69,11 +64,11 @@ public:
 	static void format(std::string& msg, const LLStringUtil::format_map_t& args);
 
 protected:
-	LLNotifyBox(LLNotificationPtr notification, BOOL layout_script_dialog);
+	LLNotifyBox(LLNotificationPtr notification);
 
 	/*virtual*/ ~LLNotifyBox();
 
-	LLButton* addButton(std::string const &name, const std::string& label, BOOL is_option, BOOL is_default);
+	LLButton* addButton(const std::string& name, const std::string& label, bool is_option, bool is_default, bool layout_script_dialog);
 	
 	/*virtual*/ BOOL handleMouseUp(S32 x, S32 y, MASK mask);
 	/*virtual*/ BOOL handleRightMouseDown(S32 x, S32 y, MASK mask);
@@ -86,30 +81,23 @@ protected:
 
 	// Returns the rect, relative to gNotifyView, where this
 	// notify box should be placed.
-	static LLRect getNotifyRect(S32 num_options, BOOL layout_script_dialog, BOOL is_caution);
+	static LLRect getNotifyRect(S32 num_options, bool layout_script_dialog, bool is_caution);
 	static LLRect getNotifyTipRect(const std::string &message);
 
 	// internal handler for button being clicked
 	void onClickButton(const std::string name);
-
-	// for "next" button
-	void onClickNext();
-
-	//static LLNotifyBox* findExistingNotify(LLPointer<LLNotifyBoxTemplate> notify_template, const LLString::format_map_t& args);
 
 private:
 	static bool onNotification(const LLSD& notify);
 	void drawBackground() const;
 
 protected:
-	std::string mMessage;
-
 	LLTextEditor *mUserInputBox;
 
 	LLNotificationPtr mNotification;
-	BOOL mIsTip;
-	BOOL mIsCaution; // is this a caution notification?
-	BOOL mAnimating; // Are we sliding onscreen?
+	bool mIsTip;
+	bool mIsCaution; // is this a caution notification?
+	bool mAnimating; // Are we sliding onscreen?
 
 	// Time since this notification was displayed.
 	// This is an LLTimer not a frame timer because I am concerned
@@ -120,34 +108,19 @@ protected:
 
 	S32 mNumOptions;
 	S32 mNumButtons;
-	BOOL mAddedDefaultBtn;
-
-	BOOL mLayoutScriptDialog;
-
-	// Used for callbacks
-	struct InstanceAndS32
-	{
-		LLNotifyBox* mSelf;
-		std::string	mButtonName;
-	};
-	static S32 sNotifyBoxCount;
-	static const LLFontGL* sFont;
-	static const LLFontGL* sFontSmall;
-
-	typedef std::map<std::string, LLNotifyBox*> unique_map_t;
-	static unique_map_t sOpenUniqueNotifyBoxes;
+	bool mAddedDefaultBtn;
 };
 
 class LLNotifyBoxView : public LLUICtrl
 {
 public:
 	LLNotifyBoxView(const std::string& name, const LLRect& rect, BOOL mouse_opaque, U32 follows=FOLLOWS_NONE);
-	void showOnly(LLView * ctrl);
-	LLNotifyBox * getFirstNontipBox() const;
+	void showOnly(LLView* ctrl);
+	LLNotifyBox* getFirstNontipBox() const;
+	/*virtual*/ void deleteAllChildren();
 
-	class Matcher
+	struct Matcher
 	{
-	public: 
 		Matcher(){}
 		virtual ~Matcher() {}
 		virtual bool matches(const LLNotificationPtr) const = 0;
@@ -157,7 +130,7 @@ public:
 	void purgeMessagesMatching(const Matcher& matcher);
 
 private:
-	bool isGroupNotifyBox(const LLView* view) const ;
+	bool isGroupNotifyBox(const LLView* view) const;
 };
 
 // This view contains the stack of notification windows.

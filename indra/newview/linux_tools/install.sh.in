@@ -77,7 +77,7 @@ function root_install()
     install_to_prefix "$install_prefix"
 
     mkdir -p /usr/local/share/applications
-    ${install_prefix}/refresh_desktop_app_entry.sh
+    ${install_prefix}/etc/refresh_desktop_app_entry.sh
 }
 
 function install_to_prefix()

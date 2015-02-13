@@ -53,11 +53,9 @@
 #include "llglheaders.h"
 #include "llagent.h"
 // Globals
-//LLView* gGroupNotifyBoxView = NULL;
-
 const F32 ANIMATION_TIME = 0.333f;
 
-S32 LLGroupNotifyBox::sGroupNotifyBoxCount = 0;
+static S32 sGroupNotifyBoxCount = 0;
 
 
 //---------------------------------------------------------------------------
@@ -90,7 +88,7 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 							 const std::string& inventory_name,
 							 const LLSD& inventory_offer)
 :	LLPanel("groupnotify", LLGroupNotifyBox::getGroupNotifyRect(), BORDER_YES),
-	mAnimating(TRUE),
+	mAnimating(true),
 	mTimer(),
 	mGroupID(group_id),
 	mHasInventory(has_inventory),
@@ -122,9 +120,6 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 	setBackgroundVisible(TRUE);
 	setBackgroundOpaque(TRUE);
 	setBackgroundColor( gColors.getColor("GroupNotifyBoxColor") );
-
-	LLIconCtrl* icon;
-	LLTextEditor* text;
 
 	S32 y = TOP;
 	S32 x = HPAD + HPAD;
@@ -159,18 +154,9 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 	x = HPAD + HPAD;
 
 	// TODO: change this to be the group icon.
-	if (!group_insignia.isNull())
-	{
-		icon = new LLIconCtrl(std::string("icon"),
-							  LLRect(x, y, x+ICON_WIDTH, y-ICON_WIDTH),
-							  group_insignia.asString());
-	}
-	else
-	{
-		icon = new LLIconCtrl(std::string("icon"),
-							  LLRect(x, y, x+ICON_WIDTH, y-ICON_WIDTH),
-							  std::string("notify_box_icon.tga"));
-	}
+	LLIconCtrl* icon = new LLIconCtrl(std::string("icon"),
+						  LLRect(x, y, x+ICON_WIDTH, y-ICON_WIDTH),
+						  group_insignia.isNull() ? "notify_box_icon.tga" : group_insignia.asString());
 
 	icon->setMouseOpaque(FALSE);
 	addChild(icon);
@@ -179,7 +165,7 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 	// If we have inventory with this message, leave room for the name.
 	S32 box_bottom = BTN_TOP + (mHasInventory ? (LINE_HEIGHT + 2*VPAD) : 0);
 
-	text = new LLViewerTextEditor(std::string("box"),
+	LLTextEditor* text = new LLViewerTextEditor(std::string("box"),
 		LLRect(x, y, RIGHT, box_bottom),
 		DB_GROUP_NOTICE_MSG_STR_LEN,
 		LLStringUtil::null,
@@ -217,45 +203,42 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 
 	if (mHasInventory)
 	{
-			addChild(new NoticeText(std::string("subjecttitle"),LLRect(x,y,x + LABEL_WIDTH,y - LINE_HEIGHT),LLTrans::getString("GroupNotifyAttached"),LLFontGL::getFontSansSerif()));
+		addChild(new NoticeText(std::string("subjecttitle"),LLRect(x,y,x + LABEL_WIDTH,y - LINE_HEIGHT),LLTrans::getString("GroupNotifyAttached"),LLFontGL::getFontSansSerif()));
 
-			LLUIImagePtr item_icon = LLInventoryIcon::getIcon(mInventoryOffer->mType,
-													LLInventoryType::IT_TEXTURE,
-													0, FALSE);
+		LLUIImagePtr item_icon = LLInventoryIcon::getIcon(mInventoryOffer->mType,
+												LLInventoryType::IT_TEXTURE,
+												0, FALSE);
 
+		x += LABEL_WIDTH + HPAD;
 
-			x += LABEL_WIDTH + HPAD;
+		std::stringstream ss;
+		ss << "        " << inventory_name;
+		LLTextBox *line = new LLTextBox(std::string("object_name"),LLRect(x,y,RIGHT - HPAD,y - LINE_HEIGHT),ss.str(),LLFontGL::getFontSansSerif());
+		line->setEnabled(FALSE);
+		line->setBorderVisible(TRUE);
+		line->setDisabledColor(LLColor4::blue4);
+		line->setFontStyle(LLFontGL::NORMAL);
+		line->setBackgroundVisible(true);
+		line->setBackgroundColor( semi_transparent );
+		addChild(line);
 
-			std::stringstream ss;
-			ss << "        " << inventory_name;
-			LLTextBox *line = new LLTextBox(std::string("object_name"),LLRect(x,y,RIGHT - HPAD,y - LINE_HEIGHT),ss.str(),LLFontGL::getFontSansSerif());
-			line->setEnabled(FALSE);
-			line->setBorderVisible(TRUE);
-			line->setDisabledColor(LLColor4::blue4);
-			line->setFontStyle(LLFontGL::NORMAL);
-			line->setBackgroundVisible(true);
-			line->setBackgroundColor( semi_transparent );
-			addChild(line);
-
-			icon = new LLIconCtrl(std::string("icon"),
-									LLRect(x, y, x+16, y-16),
-									item_icon->getName());
-			icon->setMouseOpaque(FALSE);
-			addChild(icon);
+		icon = new LLIconCtrl(std::string("icon"),
+				LLRect(x, y, x+16, y-16),
+				item_icon->getName());
+		icon->setMouseOpaque(FALSE);
+		addChild(icon);
 	}
 
-	LLButton* btn;
-	btn = new LLButton(LLTrans::getString("next"),
+	mNextBtn = new LLButton(LLTrans::getString("next"),
 				LLRect(getRect().getWidth()-26, BOTTOM_PAD + 20, getRect().getWidth()-2, BOTTOM_PAD),
 				std::string("notify_next.png"),
 				std::string("notify_next.png"),
 				LLStringUtil::null,
-				boost::bind(&LLGroupNotifyBox::onClickNext, this),
+				boost::bind(&LLGroupNotifyBox::moveToBack, this),
 				LLFontGL::getFontSansSerif());
-	btn->setToolTip(LLTrans::getString("next"));
-	btn->setScaleImage(TRUE);
-	addChild(btn);
-	mNextBtn = btn;
+	mNextBtn->setToolTip(LLTrans::getString("next"));
+	mNextBtn->setScaleImage(TRUE);
+	addChild(mNextBtn);
 
 	S32 btn_width = 80;
 	S32 wide_btn_width = 136;
@@ -267,13 +250,12 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 								btn_width,
 								BTN_HEIGHT);
 
-	btn = new LLButton(LLTrans::getString("ok"), btn_rect, LLStringUtil::null, boost::bind(&LLGroupNotifyBox::onClickOk,this));
+	LLButton* btn = new LLButton(LLTrans::getString("ok"), btn_rect, LLStringUtil::null, boost::bind(&LLGroupNotifyBox::close, this));
 	addChild(btn, -1);
 	setDefaultBtn(btn);
 
 	x += btn_width + HPAD;
 
-	
 	btn_rect.setOriginAndSize(x,
 								BOTTOM_PAD,
 								wide_btn_width,
@@ -292,27 +274,14 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 									wide_btn_width,
 									BTN_HEIGHT);
 
-		std::string btn_lbl("");
-		if(is_openable(mInventoryOffer->mType))
-		{
-			btn_lbl = LLTrans::getString("GroupNotifyOpenAttachment");
-		}
-		else
-		{
-			btn_lbl = LLTrans::getString("GroupNotifySaveAttachment");
-		}
-		mSaveInventoryBtn = new LLButton(btn_lbl, btn_rect, LLStringUtil::null, boost::bind(&LLGroupNotifyBox::onClickSaveInventory,this));
+		mSaveInventoryBtn = new LLButton(LLTrans::getString(is_openable(mInventoryOffer->mType) ? "GroupNotifyOpenAttachment" : "GroupNotifySaveAttachment"), btn_rect, LLStringUtil::null, boost::bind(&LLGroupNotifyBox::onClickSaveInventory,this));
 		mSaveInventoryBtn->setVisible(mHasInventory);
 		addChild(mSaveInventoryBtn);
 	}
 
-	sGroupNotifyBoxCount++;
-
 	// If this is the only notify box, don't show the next button
-	if (sGroupNotifyBoxCount == 1)
-	{
-		mNextBtn->setVisible(FALSE);
-	}
+	if (++sGroupNotifyBoxCount == 1)
+		mNextBtn->setVisible(false);
 }
 
 
@@ -352,7 +321,7 @@ void LLGroupNotifyBox::draw()
 	}
 	else
 	{
-		mAnimating = FALSE;
+		mAnimating = false;
 		LLPanel::draw();
 	}
 }
@@ -363,11 +332,11 @@ void LLGroupNotifyBox::close()
 	// The group notice dialog may be an inventory offer.
 	// If it has an inventory save button and that button is still enabled
 	// Then we need to send the inventory declined message
-	if(mHasInventory)
+	if (mHasInventory)
 	{
 		mInventoryOffer->forceResponse(IOR_DECLINE);
 		mInventoryOffer = NULL;
-		mHasInventory = FALSE;
+		mHasInventory = false;
 	}
 	gNotifyBoxView->removeChild(this);
 
@@ -384,9 +353,7 @@ void LLGroupNotifyBox::initClass()
 //static 
 bool LLGroupNotifyBox::onNewNotification(const LLSD& notify)
 {
-	LLNotificationPtr notification = LLNotifications::instance().find(notify["id"].asUUID());
-
-	if (notification)
+	if (LLNotificationPtr notification = LLNotifications::instance().find(notify["id"].asUUID()))
 	{
 		const LLSD& payload = notification->getPayload();
 		// Get the group data
@@ -397,8 +364,7 @@ bool LLGroupNotifyBox::onNewNotification(const LLSD& notify)
 			return false;
 		}
 
-		LLGroupNotifyBox* self;
-		self = new LLGroupNotifyBox(payload["subject"].asString(),
+		gNotifyBoxView->addChild(new LLGroupNotifyBox(payload["subject"].asString(),
 									payload["message"].asString(),
 									payload["sender_name"].asString(), 
 									payload["group_id"].asUUID(), 
@@ -407,8 +373,7 @@ bool LLGroupNotifyBox::onNewNotification(const LLSD& notify)
 									notification->getDate(),
 									payload["inventory_offer"].isDefined(),
 									payload["inventory_name"].asString(),
-									payload["inventory_offer"]);
-		gNotifyBoxView->addChild(self);
+									payload["inventory_offer"]));
 	}
 	return false;
 }
@@ -424,14 +389,12 @@ void LLGroupNotifyBox::moveToBack()
 	if (sGroupNotifyBoxCount > 1)
 	{
 		LLView* view = gNotifyBoxView->getFirstChild();
-		
-		if(view && "groupnotify" == view->getName())
+		if (view && "groupnotify" == view->getName())
 		{
-			LLGroupNotifyBox* front = (LLGroupNotifyBox*)view;
-		
-			if(front->mNextBtn)
+			LLGroupNotifyBox* front = static_cast<LLGroupNotifyBox*>(view);
+			if (front->mNextBtn)
 			{
-				front->mNextBtn->setVisible(TRUE);
+				front->mNextBtn->setVisible(true);
 			}
 		}
 	}
@@ -452,23 +415,13 @@ LLRect LLGroupNotifyBox::getGroupNotifyRect()
 }
 
 
-void LLGroupNotifyBox::onClickOk()
-{
-	close();
-}
-
 void LLGroupNotifyBox::onClickSaveInventory()
 {
 	mInventoryOffer->forceResponse(IOR_ACCEPT);
 
 	mInventoryOffer = NULL;
-	mHasInventory = FALSE;
+	mHasInventory = false;
 
 	// Each item can only be received once, so disable the button.
 	mSaveInventoryBtn->setEnabled(FALSE);
-}
-
-void LLGroupNotifyBox::onClickNext()
-{
-	moveToBack();
 }

@@ -42,7 +42,7 @@
 #include "llrun.h"
 
 // Define this to enable use with the APR thread library.
-//#define LL_THREADS_APR 1
+//#define LL_THREADS_PUMPIO 1
 
 // some simple constants to help with timeouts
 extern const F32 DEFAULT_CHAIN_EXPIRY_SECS;
@@ -382,16 +382,13 @@ protected:
 	LLAPRPool mCurrentPool;
 	S32 mCurrentPoolReallocCount;
 
-#if LL_THREADS_APR
-	apr_thread_mutex_t* mChainsMutex;
-	apr_thread_mutex_t* mCallbackMutex;
-#else
-	int* mChainsMutex;
-	int* mCallbackMutex;
+#if LL_THREADS_PUMPIO
+	LLMutex mChainsMutex;
+	LLMutex mCallbackMutex;
 #endif
 
 protected:
-	void initialize();
+	LLAPRPool& initPool();
 
 	current_chain_t removeRunningChain(current_chain_t& chain) ;
 	/** 

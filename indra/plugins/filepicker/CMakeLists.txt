@@ -102,7 +102,7 @@ if (DARWIN)
     PREFIX ""
     BUILD_WITH_INSTALL_RPATH 1
     INSTALL_NAME_DIR "@executable_path"
-    LINK_FLAGS "-exported_symbols_list ${CMAKE_CURRENT_SOURCE_DIR}/../base_basic/basic_plugin_base.exp"
+    LINK_FLAGS "-exported_symbols_list '${CMAKE_CURRENT_SOURCE_DIR}/../base_basic/basic_plugin_base.exp'"
   )
 
 endif (DARWIN)

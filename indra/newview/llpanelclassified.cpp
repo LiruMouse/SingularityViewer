@@ -332,9 +332,9 @@ void LLPanelClassifiedInfo::processProperties(void* data, EAvatarProcessorType t
 			if (!location_text.empty())
 				location_text.append(", ");
 
-			S32 region_x = llround((F32)c_info->pos_global.mdV[VX]) % REGION_WIDTH_UNITS;
-			S32 region_y = llround((F32)c_info->pos_global.mdV[VY]) % REGION_WIDTH_UNITS;
-			S32 region_z = llround((F32)c_info->pos_global.mdV[VZ]);
+			S32 region_x = llmath::llround((F32)c_info->pos_global.mdV[VX]) % REGION_WIDTH_UNITS;
+			S32 region_y = llmath::llround((F32)c_info->pos_global.mdV[VY]) % REGION_WIDTH_UNITS;
+			S32 region_z = llmath::llround((F32)c_info->pos_global.mdV[VZ]);
 
 			std::string buffer = llformat("%s (%d, %d, %d)", c_info->sim_name.c_str(), region_x, region_y, region_z);
 		    location_text.append(buffer);
@@ -893,9 +893,9 @@ void LLPanelClassifiedInfo::onClickSet()
 	location_text.assign(regionName);
 	location_text.append(", ");
 
-	S32 region_x = llround((F32)mPosGlobal.mdV[VX]) % REGION_WIDTH_UNITS;
-	S32 region_y = llround((F32)mPosGlobal.mdV[VY]) % REGION_WIDTH_UNITS;
-	S32 region_z = llround((F32)mPosGlobal.mdV[VZ]);
+	S32 region_x = llmath::llround((F32)mPosGlobal.mdV[VX]) % REGION_WIDTH_UNITS;
+	S32 region_y = llmath::llround((F32)mPosGlobal.mdV[VY]) % REGION_WIDTH_UNITS;
+	S32 region_z = llmath::llround((F32)mPosGlobal.mdV[VZ]);
 
 	location_text.append(mSimName);
 	location_text.append(llformat(" (%d, %d, %d)", region_x, region_y, region_z));

@@ -14,25 +14,25 @@ else (STANDALONE)
   use_prebuilt_binary(apr_suite)
   if (WINDOWS)
     set(APR_LIBRARIES 
-      debug ${ARCH_PREBUILT_DIRS_DEBUG}/libapr-1.lib
-      optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libapr-1.lib
+      debug libapr-1.lib
+      optimized libapr-1.lib
       )
     set(APRICONV_LIBRARIES 
-      debug ${ARCH_PREBUILT_DIRS_DEBUG}/libapriconv-1.lib
-      optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libapriconv-1.lib
+      debug libapriconv-1.lib
+      optimized libapriconv-1.lib
       )
     set(APRUTIL_LIBRARIES 
-      debug ${ARCH_PREBUILT_DIRS_DEBUG}/libaprutil-1.lib ${APRICONV_LIBRARIES}
-      optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libaprutil-1.lib ${APRICONV_LIBRARIES}
+      debug libaprutil-1.lib
+      optimized libaprutil-1.lib
       )
   elseif (DARWIN)
     set(APR_LIBRARIES 
-      debug ${ARCH_PREBUILT_DIRS_DEBUG}/libapr-1.0.dylib
-      optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libapr-1.0.dylib
+      debug libapr-1.0.dylib
+      optimized libapr-1.0.dylib
       )
-    set(APRUTIL_LIBRARIES 
-      debug ${ARCH_PREBUILT_DIRS_DEBUG}/libaprutil-1.dylib
-      optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libaprutil-1.dylib
+    set(APRUTIL_LIBRARIES
+      debug libaprutil-1.dylib
+      optimized libaprutil-1.dylib
       )
     set(APRICONV_LIBRARIES iconv)
   else (WINDOWS)
@@ -40,7 +40,10 @@ else (STANDALONE)
     set(APRUTIL_LIBRARIES aprutil-1)
     set(APRICONV_LIBRARIES iconv)
   endif (WINDOWS)
-  set(APR_INCLUDE_DIR ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/apr-1)
+  set(APR_INCLUDE_DIR
+    ${LIBS_PREBUILT_DIR}/include/apr-1
+    ${LIBS_PREBUILT_LEGACY_DIR}/include/apr-1
+    )
 
   if (LINUX)
     list(APPEND APRUTIL_LIBRARIES ${DB_LIBRARIES})

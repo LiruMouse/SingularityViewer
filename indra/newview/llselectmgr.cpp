@@ -6203,13 +6203,16 @@ void LLSelectNode::renderOneWireframe(const LLColor4& color)
 		}
 		else
 		{
-			LLGLEnable fog(GL_FOG);
-			glFogi(GL_FOG_MODE, GL_LINEAR);
-			float d = (LLViewerCamera::getInstance()->getPointOfInterest()-LLViewerCamera::getInstance()->getOrigin()).magVec();
-			LLColor4 fogCol = color * (F32)llclamp((LLSelectMgr::getInstance()->getSelectionCenterGlobal()-gAgentCamera.getCameraPositionGlobal()).magVec()/(LLSelectMgr::getInstance()->getBBoxOfSelection().getExtentLocal().magVec()*4), 0.0, 1.0);
-			glFogf(GL_FOG_START, d);
-			glFogf(GL_FOG_END, d*(1 + (LLViewerCamera::getInstance()->getView() / LLViewerCamera::getInstance()->getDefaultFOV())));
-			glFogfv(GL_FOG_COLOR, fogCol.mV);
+			if (!LLGLSLShader::sNoFixedFunction)
+			{
+				LLGLEnable fog(GL_FOG);
+				glFogi(GL_FOG_MODE, GL_LINEAR);
+				float d = (LLViewerCamera::getInstance()->getPointOfInterest() - LLViewerCamera::getInstance()->getOrigin()).magVec();
+				LLColor4 fogCol = color * (F32)llclamp((LLSelectMgr::getInstance()->getSelectionCenterGlobal() - gAgentCamera.getCameraPositionGlobal()).magVec() / (LLSelectMgr::getInstance()->getBBoxOfSelection().getExtentLocal().magVec() * 4), 0.0, 1.0);
+				glFogf(GL_FOG_START, d);
+				glFogf(GL_FOG_END, d*(1 + (LLViewerCamera::getInstance()->getView() / LLViewerCamera::getInstance()->getDefaultFOV())));
+				glFogfv(GL_FOG_COLOR, fogCol.mV);
+			}
 
 			gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
 			{
@@ -6325,13 +6328,16 @@ void LLSelectNode::renderOneSilhouette(const LLColor4 &color)
 		{
 			gGL.flush();
 			gGL.blendFunc(LLRender::BF_SOURCE_COLOR, LLRender::BF_ONE);
-			LLGLEnable fog(GL_FOG);
-			glFogi(GL_FOG_MODE, GL_LINEAR);
-			float d = (LLViewerCamera::getInstance()->getPointOfInterest()-LLViewerCamera::getInstance()->getOrigin()).magVec();
-			LLColor4 fogCol = color * (F32)llclamp((LLSelectMgr::getInstance()->getSelectionCenterGlobal()-gAgentCamera.getCameraPositionGlobal()).magVec()/(LLSelectMgr::getInstance()->getBBoxOfSelection().getExtentLocal().magVec()*4), 0.0, 1.0);
-			glFogf(GL_FOG_START, d);
-			glFogf(GL_FOG_END, d*(1 + (LLViewerCamera::getInstance()->getView() / LLViewerCamera::getInstance()->getDefaultFOV())));
-			glFogfv(GL_FOG_COLOR, fogCol.mV);
+			if (!LLGLSLShader::sNoFixedFunction)
+			{
+				LLGLEnable fog(GL_FOG);
+				glFogi(GL_FOG_MODE, GL_LINEAR);
+				float d = (LLViewerCamera::getInstance()->getPointOfInterest() - LLViewerCamera::getInstance()->getOrigin()).magVec();
+				LLColor4 fogCol = color * (F32)llclamp((LLSelectMgr::getInstance()->getSelectionCenterGlobal() - gAgentCamera.getCameraPositionGlobal()).magVec() / (LLSelectMgr::getInstance()->getBBoxOfSelection().getExtentLocal().magVec() * 4), 0.0, 1.0);
+				glFogf(GL_FOG_START, d);
+				glFogf(GL_FOG_END, d*(1 + (LLViewerCamera::getInstance()->getView() / LLViewerCamera::getInstance()->getDefaultFOV())));
+				glFogfv(GL_FOG_COLOR, fogCol.mV);
+			}
 
 			LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE, GL_GEQUAL);
 			gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);

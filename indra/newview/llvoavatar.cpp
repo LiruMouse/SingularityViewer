@@ -2424,6 +2424,10 @@ S32 LLVOAvatar::setTETexture(const U8 te, const LLUUID& uuid)
 
 static LLFastTimer::DeclareTimer FTM_AVATAR_UPDATE("Avatar Update");
 static LLFastTimer::DeclareTimer FTM_JOINT_UPDATE("Update Joints");
+static LLFastTimer::DeclareTimer FTM_CHARACTER_UPDATE("Character Update");
+static LLFastTimer::DeclareTimer FTM_BASE_UPDATE("Base Update");
+static LLFastTimer::DeclareTimer FTM_MISC_UPDATE("Misc Update");
+static LLFastTimer::DeclareTimer FTM_DETAIL_UPDATE("Detail Update");
 
 //------------------------------------------------------------------------
 // LLVOAvatar::dumpAnimationState()
@@ -2509,7 +2513,10 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 
 	if (isSelf())
 	{
-		LLViewerObject::idleUpdate(agent, world, time);
+		{
+			LLFastTimer t(FTM_BASE_UPDATE);
+			LLViewerObject::idleUpdate(agent, world, time);
+		}
 		
 		// trigger fidget anims
 		if (isAnyAnimationSignaled(AGENT_STAND_ANIMS, NUM_AGENT_STAND_ANIMS))
@@ -2521,7 +2528,10 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 	{
 		// Should override the idleUpdate stuff and leave out the angular update part.
 		LLQuaternion rotation = getRotation();
-		LLViewerObject::idleUpdate(agent, world, time);
+		{
+			LLFastTimer t(FTM_BASE_UPDATE);
+			LLViewerObject::idleUpdate(agent, world, time);
+		}
 		setRotation(rotation);
 	}
 
@@ -2531,8 +2541,11 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 	// animate the character
 	// store off last frame's root position to be consistent with camera position
 	LLVector3 root_pos_last = mRoot->getWorldPosition();
-	bool detailed_update = updateCharacter(agent);
-
+	bool detailed_update;
+	{
+		LLFastTimer t(FTM_CHARACTER_UPDATE);
+		detailed_update = updateCharacter(agent);
+	}
 	if (gNoRender)
 	{
 		return;
@@ -2542,19 +2555,23 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 	bool voice_enabled = (visualizers_in_calls || LLVoiceClient::getInstance()->inProximalChannel()) &&
 						 LLVoiceClient::getInstance()->getVoiceEnabled(mID);
 
-	idleUpdateVoiceVisualizer( voice_enabled );
-	idleUpdateMisc( detailed_update );
-	idleUpdateAppearanceAnimation();
-	if (detailed_update)
 	{
-		idleUpdateLipSync( voice_enabled );
-		idleUpdateLoadingEffect();
-		idleUpdateBelowWater();	// wind effect uses this
-		idleUpdateWindEffect();
-	}
+		LLFastTimer t(FTM_MISC_UPDATE);
+		idleUpdateVoiceVisualizer(voice_enabled);
+		idleUpdateMisc(detailed_update);
+		idleUpdateAppearanceAnimation();
+		if (detailed_update)
+		{
+			LLFastTimer t(FTM_DETAIL_UPDATE);
+			idleUpdateLipSync(voice_enabled);
+			idleUpdateLoadingEffect();
+			idleUpdateBelowWater();	// wind effect uses this
+			idleUpdateWindEffect();
+		}
 
-	idleUpdateNameTag( root_pos_last );
-	idleUpdateRenderCost();
+		idleUpdateNameTag(root_pos_last);
+		idleUpdateRenderCost();
+	}
 }
 
 void LLVOAvatar::idleUpdateVoiceVisualizer(bool voice_enabled)
@@ -5175,8 +5192,10 @@ void LLVOAvatar::releaseOldTextures()
 	mTextureIDs = new_texture_ids;
 }
 
+static LLFastTimer::DeclareTimer FTM_TEXTURE_UPDATE("Update Textures");
 void LLVOAvatar::updateTextures()
 {
+	LLFastTimer t(FTM_TEXTURE_UPDATE);
 	releaseOldTextures();
 	
 	BOOL render_avatar = TRUE;
@@ -6142,8 +6161,10 @@ BOOL LLVOAvatar::isActive() const
 //-----------------------------------------------------------------------------
 // setPixelAreaAndAngle()
 //-----------------------------------------------------------------------------
+static LLFastTimer::DeclareTimer FTM_PIXEL_AREA("Pixel Area");
 void LLVOAvatar::setPixelAreaAndAngle(LLAgent &agent)
 {
+	LLFastTimer t(FTM_PIXEL_AREA);
 	if (mDrawable.isNull())
 	{
 		return;
@@ -7987,7 +8008,7 @@ void LLVOAvatar::parseAppearanceMessage(LLMessageSystem* mesgsys, LLAppearanceMe
 		if (it != contents.mParams.end())
 		{
 			S32 index = it - contents.mParams.begin();
-			contents.mParamAppearanceVersion = llround(contents.mParamWeights[index]);
+			contents.mParamAppearanceVersion = llmath::llround(contents.mParamWeights[index]);
 			LL_DEBUGS("Avatar") << "appversion req by appearance_version param: " << contents.mParamAppearanceVersion << LL_ENDL;
 		}
 	}

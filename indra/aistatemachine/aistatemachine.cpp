@@ -440,7 +440,7 @@ void AIStateMachine::multiplex(event_type event)
 	// our need to run (by us having set need_run), so there is no need to run
 	// ourselves.
 	llassert(!mMultiplexMutex.isSelfLocked());		// We may never enter recursively!
-	if (!mMultiplexMutex.tryLock())
+	if (!mMultiplexMutex.try_lock())
 	{
 	  Dout(dc::statemachine(mSMDebug), "Leaving because it is already being run [" << (void*)this << "]");
 	  return;
@@ -762,7 +762,7 @@ void AIStateMachine::multiplex(event_type event)
 		//=========================================
 
 		// Release the lock on mMultiplexMutex *first*, before releasing the lock on mState,
-		// to avoid to ever call the tryLock() and fail, while this thread isn't still
+		// to avoid to ever call the try_lock() and fail, while this thread isn't still
 		// BEFORE the critical area of mState!
 
 		mMultiplexMutex.unlock();
@@ -1262,7 +1262,7 @@ void AIStateMachine::abort(void)
 	multiplex(insert_abort);
   }
   // Block until the current run finished.
-  if (!mRunMutex.tryLock())
+  if (!mRunMutex.try_lock())
   {
 	llwarns << "AIStateMachine::abort() blocks because the statemachine is still executing code in another thread." << llendl;
 	mRunMutex.lock();

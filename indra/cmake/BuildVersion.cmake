@@ -38,11 +38,6 @@ if (WINDOWS)
        ${CMAKE_SOURCE_DIR}/newview/res/viewerRes.rc.in
        ${CMAKE_SOURCE_DIR}/newview/res/viewerRes.rc
    )
-   
-   configure_file(
-       ${CMAKE_SOURCE_DIR}/newview/res/viewerRes_bc.rc.in
-       ${CMAKE_SOURCE_DIR}/newview/res/viewerRes_bc.rc
-   )
 endif (WINDOWS)
 
 if (DARWIN)
@@ -75,13 +70,12 @@ if (LINUX)
    )
 endif (LINUX)
 
-# Compose the version.
-set(viewer_VERSION "${vMAJOR}.${vMINOR}.${vPATCH}.${vBUILD}")
-if (viewer_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")
-  message(STATUS "Version is ${viewer_VERSION}")
-else (viewer_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")
-  message(FATAL_ERROR "Could not determine version (${viewer_VERSION})")
-endif (viewer_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")
 
-# Report version to caller.
-#set(viewer_VERSION "${viewer_VERSION}" PARENT_SCOPE)
+# Compose the version.
+set(${ROOT_PROJECT_NAME}_VERSION "${vMAJOR}.${vMINOR}.${vPATCH}.${vBUILD}")
+if (${ROOT_PROJECT_NAME}_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")
+  message(STATUS "Version is ${${ROOT_PROJECT_NAME}_VERSION}")
+else (${ROOT_PROJECT_NAME}_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")
+  message(FATAL_ERROR "Could not determine version (${${ROOT_PROJECT_NAME}_VERSION})")
+endif (${ROOT_PROJECT_NAME}_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")
+

@@ -984,26 +984,10 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 	// Use getPosition, not getPositionRegion, since this is what we're comparing directly against.
 	LLVector3 test_pos_parent = getPosition();
 
-	U8  data[60+16]; // This needs to match the largest size below.
-#ifdef LL_BIG_ENDIAN
-	U16 valswizzle[4];
-#endif
-	U16	*val;
-// <FS:CR> Aurora Sim
-	//const F32 size = LLWorld::getInstance()->getRegionWidthInMeters();	
-	const F32 size = mRegionp->getWidth();	
-// </FS:CR> Aurora Sim
-	const F32 MAX_HEIGHT = LLWorld::getInstance()->getRegionMaxHeight();
-	const F32 MIN_HEIGHT = LLWorld::getInstance()->getRegionMinHeight();
-	S32 length;
-	S32	count;
 	S32 this_update_precision = 32;		// in bits
 
 	// Temporaries, because we need to compare w/ previous to set dirty flags...
-	LLVector3 new_pos_parent;
-	LLVector3 new_vel;
-	LLVector3 new_acc;
-	LLVector3 new_angv;
+	LLVector3 new_pos_parent, new_vel, new_angv;
 	LLVector3 old_angv = getAngularVelocity();
 	LLQuaternion new_rot;
 	LLVector3 new_scale = getScale();
@@ -1031,6 +1015,8 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 #ifdef DEBUG_UPDATE_TYPE
 				llinfos << "Full:" << getID() << llendl;
 #endif
+				processTerseData(mesgsys, user_data, block_num, this_update_precision, new_pos_parent, new_rot, new_angv, test_pos_parent);
+
 				//clear cost and linkset cost
 				mCostStale = true;
 				if (isSelected())
@@ -1053,8 +1039,6 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 				mesgsys->getU8Fast(  _PREHASH_ObjectData, _PREHASH_Material, material, block_num );
 				mesgsys->getU8Fast(  _PREHASH_ObjectData, _PREHASH_ClickAction, click_action, block_num); 
 				mesgsys->getVector3Fast(_PREHASH_ObjectData, _PREHASH_Scale, new_scale, block_num );
-				length = mesgsys->getSizeFast(_PREHASH_ObjectData, block_num, _PREHASH_ObjectData);
-				mesgsys->getBinaryDataFast(_PREHASH_ObjectData, _PREHASH_ObjectData, data, length, block_num);
 
 				mTotalCRC = crc;
 
@@ -1071,157 +1055,6 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 					}
 				}
 				setClickAction(click_action);
-
-				count = 0;
-				LLVector4 collision_plane;
-				
-				switch(length)
-				{
-				case (60 + 16):
-					// pull out collision normal for avatar
-					htonmemcpy(collision_plane.mV, &data[count], MVT_LLVector4, sizeof(LLVector4));
-					((LLVOAvatar*)this)->setFootPlane(collision_plane);
-					count += sizeof(LLVector4);
-					// fall through
-				case 60:
-					this_update_precision = 32;
-					// this is a terse update
-					// pos
-					htonmemcpy(new_pos_parent.mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
-					count += sizeof(LLVector3);
-					// vel
-					htonmemcpy((void*)getVelocity().mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
-					count += sizeof(LLVector3);
-					// acc
-					htonmemcpy((void*)getAcceleration().mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
-					count += sizeof(LLVector3);
-					// theta
-					{
-						LLVector3 vec;
-						htonmemcpy(vec.mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
-						new_rot.unpackFromVector3(vec);
-					}
-					count += sizeof(LLVector3);
-					// omega
-					htonmemcpy((void*)new_angv.mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
-					if (new_angv.isExactlyZero())
-					{
-						// reset rotation time
-						resetRot();
-					}
-					setAngularVelocity(new_angv);
-#if LL_DARWIN
-					if (length == 76)
-					{
-						setAngularVelocity(LLVector3::zero);
-					}
-#endif
-					break;
-				case(32 + 16):
-					// pull out collision normal for avatar
-					htonmemcpy(collision_plane.mV, &data[count], MVT_LLVector4, sizeof(LLVector4));
-					((LLVOAvatar*)this)->setFootPlane(collision_plane);
-					count += sizeof(LLVector4);
-					// fall through
-				case 32:
-					this_update_precision = 16;
-					test_pos_parent.quantize16(-0.5f*size, 1.5f*size, MIN_HEIGHT, MAX_HEIGHT);
-
-					// This is a terse 16 update, so treat data as an array of U16's.
-#ifdef LL_BIG_ENDIAN
-					htonmemcpy(valswizzle, &data[count], MVT_U16Vec3, 6); 
-					val = valswizzle;
-#else
-					val = (U16 *) &data[count];
-#endif
-					count += sizeof(U16)*3;
-					new_pos_parent.mV[VX] = U16_to_F32(val[VX], -0.5f*size, 1.5f*size);
-					new_pos_parent.mV[VY] = U16_to_F32(val[VY], -0.5f*size, 1.5f*size);
-					new_pos_parent.mV[VZ] = U16_to_F32(val[VZ], MIN_HEIGHT, MAX_HEIGHT);
-
-#ifdef LL_BIG_ENDIAN
-					htonmemcpy(valswizzle, &data[count], MVT_U16Vec3, 6); 
-					val = valswizzle;
-#else
-					val = (U16 *) &data[count];
-#endif
-					count += sizeof(U16)*3;
-					setVelocity(LLVector3(U16_to_F32(val[VX], -size, size),
-													   U16_to_F32(val[VY], -size, size),
-													   U16_to_F32(val[VZ], -size, size)));
-
-#ifdef LL_BIG_ENDIAN
-					htonmemcpy(valswizzle, &data[count], MVT_U16Vec3, 6); 
-					val = valswizzle;
-#else
-					val = (U16 *) &data[count];
-#endif
-					count += sizeof(U16)*3;
-					setAcceleration(LLVector3(U16_to_F32(val[VX], -size, size),
-														   U16_to_F32(val[VY], -size, size),
-														   U16_to_F32(val[VZ], -size, size)));
-
-#ifdef LL_BIG_ENDIAN
-					htonmemcpy(valswizzle, &data[count], MVT_U16Quat, 4); 
-					val = valswizzle;
-#else
-					val = (U16 *) &data[count];
-#endif
-					count += sizeof(U16)*4;
-					new_rot.mQ[VX] = U16_to_F32(val[VX], -1.f, 1.f);
-					new_rot.mQ[VY] = U16_to_F32(val[VY], -1.f, 1.f);
-					new_rot.mQ[VZ] = U16_to_F32(val[VZ], -1.f, 1.f);
-					new_rot.mQ[VW] = U16_to_F32(val[VW], -1.f, 1.f);
-
-#ifdef LL_BIG_ENDIAN
-					htonmemcpy(valswizzle, &data[count], MVT_U16Vec3, 6); 
-					val = valswizzle;
-#else
-					val = (U16 *) &data[count];
-#endif
-					new_angv.setVec(U16_to_F32(val[VX], -size, size),
-										U16_to_F32(val[VY], -size, size),
-										U16_to_F32(val[VZ], -size, size));
-					if (new_angv.isExactlyZero())
-					{
-						// reset rotation time
-						resetRot();
-					}
-					setAngularVelocity(new_angv);
-					break;
-
-				case 16:
-					this_update_precision = 8;
-					test_pos_parent.quantize8(-0.5f*size, 1.5f*size, MIN_HEIGHT, MAX_HEIGHT);
-					// this is a terse 8 update
-					new_pos_parent.mV[VX] = U8_to_F32(data[0], -0.5f*size, 1.5f*size);
-					new_pos_parent.mV[VY] = U8_to_F32(data[1], -0.5f*size, 1.5f*size);
-					new_pos_parent.mV[VZ] = U8_to_F32(data[2], MIN_HEIGHT, MAX_HEIGHT);
-
-					setVelocity(U8_to_F32(data[3], -size, size),
-								U8_to_F32(data[4], -size, size),
-								U8_to_F32(data[5], -size, size) );
-
-					setAcceleration(U8_to_F32(data[6], -size, size),
-									U8_to_F32(data[7], -size, size),
-									U8_to_F32(data[8], -size, size) );
-
-					new_rot.mQ[VX] = U8_to_F32(data[9], -1.f, 1.f);
-					new_rot.mQ[VY] = U8_to_F32(data[10], -1.f, 1.f);
-					new_rot.mQ[VZ] = U8_to_F32(data[11], -1.f, 1.f);
-					new_rot.mQ[VW] = U8_to_F32(data[12], -1.f, 1.f);
-
-					new_angv.setVec(U8_to_F32(data[13], -size, size),
-										U8_to_F32(data[14], -size, size),
-										U8_to_F32(data[15], -size, size) );
-					if (new_angv.isExactlyZero())
-					{
-						// reset rotation time
-						resetRot();
-					}
-					setAngularVelocity(new_angv);
-					break;
-				}
 
 				////////////////////////////////////////////////////
 				//
@@ -1371,152 +1204,7 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 #ifdef DEBUG_UPDATE_TYPE
 				llinfos << "TI:" << getID() << llendl;
 #endif
-				length = mesgsys->getSizeFast(_PREHASH_ObjectData, block_num, _PREHASH_ObjectData);
-				mesgsys->getBinaryDataFast(_PREHASH_ObjectData, _PREHASH_ObjectData, data, length, block_num);
-				count = 0;
-				LLVector4 collision_plane;
-				
-				switch(length)
-				{
-				case(60 + 16):
-					// pull out collision normal for avatar
-					htonmemcpy(collision_plane.mV, &data[count], MVT_LLVector4, sizeof(LLVector4));
-					((LLVOAvatar*)this)->setFootPlane(collision_plane);
-					count += sizeof(LLVector4);
-					// fall through
-				case 60:
-					// this is a terse 32 update
-					// pos
-					this_update_precision = 32;
-					htonmemcpy(new_pos_parent.mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
-					count += sizeof(LLVector3);
-					// vel
-					htonmemcpy((void*)getVelocity().mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
-					count += sizeof(LLVector3);
-					// acc
-					htonmemcpy((void*)getAcceleration().mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
-					count += sizeof(LLVector3);
-					// theta
-					{
-						LLVector3 vec;
-						htonmemcpy(vec.mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
-						new_rot.unpackFromVector3(vec);
-					}
-					count += sizeof(LLVector3);
-					// omega
-					htonmemcpy((void*)new_angv.mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
-					if (new_angv.isExactlyZero())
-					{
-						// reset rotation time
-						resetRot();
-					}
-					setAngularVelocity(new_angv);
-#if LL_DARWIN
-					if (length == 76)
-					{
-						setAngularVelocity(LLVector3::zero);
-					}
-#endif
-					break;
-				case(32 + 16):
-					// pull out collision normal for avatar
-					htonmemcpy(collision_plane.mV, &data[count], MVT_LLVector4, sizeof(LLVector4));
-					((LLVOAvatar*)this)->setFootPlane(collision_plane);
-					count += sizeof(LLVector4);
-					// fall through
-				case 32:
-					// this is a terse 16 update
-					this_update_precision = 16;
-					test_pos_parent.quantize16(-0.5f*size, 1.5f*size, MIN_HEIGHT, MAX_HEIGHT);
-
-#ifdef LL_BIG_ENDIAN
-					htonmemcpy(valswizzle, &data[count], MVT_U16Vec3, 6); 
-					val = valswizzle;
-#else
-					val = (U16 *) &data[count];
-#endif
-					count += sizeof(U16)*3;
-					new_pos_parent.mV[VX] = U16_to_F32(val[VX], -0.5f*size, 1.5f*size);
-					new_pos_parent.mV[VY] = U16_to_F32(val[VY], -0.5f*size, 1.5f*size);
-					new_pos_parent.mV[VZ] = U16_to_F32(val[VZ], MIN_HEIGHT, MAX_HEIGHT);
-
-#ifdef LL_BIG_ENDIAN
-					htonmemcpy(valswizzle, &data[count], MVT_U16Vec3, 6); 
-					val = valswizzle;
-#else
-					val = (U16 *) &data[count];
-#endif
-					count += sizeof(U16)*3;
-					setVelocity(U16_to_F32(val[VX], -size, size),
-								U16_to_F32(val[VY], -size, size),
-								U16_to_F32(val[VZ], -size, size));
-
-#ifdef LL_BIG_ENDIAN
-					htonmemcpy(valswizzle, &data[count], MVT_U16Vec3, 6); 
-					val = valswizzle;
-#else
-					val = (U16 *) &data[count];
-#endif
-					count += sizeof(U16)*3;
-					setAcceleration(U16_to_F32(val[VX], -size, size),
-									U16_to_F32(val[VY], -size, size),
-									U16_to_F32(val[VZ], -size, size));
-
-#ifdef LL_BIG_ENDIAN
-					htonmemcpy(valswizzle, &data[count], MVT_U16Quat, 8); 
-					val = valswizzle;
-#else
-					val = (U16 *) &data[count];
-#endif
-					count += sizeof(U16)*4;
-					new_rot.mQ[VX] = U16_to_F32(val[VX], -1.f, 1.f);
-					new_rot.mQ[VY] = U16_to_F32(val[VY], -1.f, 1.f);
-					new_rot.mQ[VZ] = U16_to_F32(val[VZ], -1.f, 1.f);
-					new_rot.mQ[VW] = U16_to_F32(val[VW], -1.f, 1.f);
-
-#ifdef LL_BIG_ENDIAN
-					htonmemcpy(valswizzle, &data[count], MVT_U16Vec3, 6); 
-					val = valswizzle;
-#else
-					val = (U16 *) &data[count];
-#endif
-					new_angv.set(U16_to_F32(val[VX], -size, size),
-								 U16_to_F32(val[VY], -size, size),
-								 U16_to_F32(val[VZ], -size, size));
-					setAngularVelocity(new_angv);
-					break;
-
-				case 16:
-					// this is a terse 8 update
-					this_update_precision = 8;
-					test_pos_parent.quantize8(-0.5f*size, 1.5f*size, MIN_HEIGHT, MAX_HEIGHT);
-					new_pos_parent.mV[VX] = U8_to_F32(data[0], -0.5f*size, 1.5f*size);
-					new_pos_parent.mV[VY] = U8_to_F32(data[1], -0.5f*size, 1.5f*size);
-					new_pos_parent.mV[VZ] = U8_to_F32(data[2], MIN_HEIGHT, MAX_HEIGHT);
-
-					setVelocity(U8_to_F32(data[3], -size, size),
-								U8_to_F32(data[4], -size, size),
-								U8_to_F32(data[5], -size, size) );
-
-					setAcceleration(U8_to_F32(data[6], -size, size),
-									U8_to_F32(data[7], -size, size),
-									U8_to_F32(data[8], -size, size) );
-
-					new_rot.mQ[VX] = U8_to_F32(data[9], -1.f, 1.f);
-					new_rot.mQ[VY] = U8_to_F32(data[10], -1.f, 1.f);
-					new_rot.mQ[VZ] = U8_to_F32(data[11], -1.f, 1.f);
-					new_rot.mQ[VW] = U8_to_F32(data[12], -1.f, 1.f);
-
-					new_angv.set(U8_to_F32(data[13], -size, size),
-								 U8_to_F32(data[14], -size, size),
-								 U8_to_F32(data[15], -size, size) );
-					setAngularVelocity(new_angv);
-					break;
-				}
-
-				U8 state;
-				mesgsys->getU8Fast(_PREHASH_ObjectData, _PREHASH_State, state, block_num );
-				mState = state;
+				processTerseData(mesgsys, user_data, block_num, this_update_precision, new_pos_parent, new_rot, new_angv, test_pos_parent);
 				break;
 			}
 
@@ -2295,6 +1983,179 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 	}
 
 	return retval;
+}
+
+void LLViewerObject::processTerseData(LLMessageSystem *mesgsys, void **user_data, U32 block_num, S32& this_update_precision, LLVector3& new_pos_parent, LLQuaternion& new_rot, LLVector3& new_angv, LLVector3& test_pos_parent)
+{
+	// <FS:CR> Aurora Sim
+	//const F32 size = LLWorld::getInstance()->getRegionWidthInMeters();	
+	const F32 size = mRegionp->getWidth();
+	// </FS:CR> Aurora Sim
+	const F32 MAX_HEIGHT = LLWorld::getInstance()->getRegionMaxHeight();
+	const F32 MIN_HEIGHT = LLWorld::getInstance()->getRegionMinHeight();
+
+	U8  data[60+16]; // This needs to match the largest size below.
+#ifdef LL_BIG_ENDIAN
+	U16 valswizzle[4];
+#endif
+	U16	*val;
+	S32 count = 0;
+	LLVector4 collision_plane;
+
+	S32 length = mesgsys->getSizeFast(_PREHASH_ObjectData, block_num, _PREHASH_ObjectData);
+	mesgsys->getBinaryDataFast(_PREHASH_ObjectData, _PREHASH_ObjectData, data, length, block_num);
+
+	switch (length)
+	{
+	case(60 + 16) :
+		// pull out collision normal for avatar
+		htonmemcpy(collision_plane.mV, &data[count], MVT_LLVector4, sizeof(LLVector4));
+		((LLVOAvatar*)this)->setFootPlane(collision_plane);
+		count += sizeof(LLVector4);
+		// fall through
+	case 60:
+		// this is a terse 32 update
+		// pos
+		this_update_precision = 32;
+		htonmemcpy(new_pos_parent.mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
+		count += sizeof(LLVector3);
+		// vel
+		htonmemcpy((void*)getVelocity().mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
+		count += sizeof(LLVector3);
+		// acc
+		htonmemcpy((void*)getAcceleration().mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
+		count += sizeof(LLVector3);
+		// theta
+		{
+			LLVector3 vec;
+			htonmemcpy(vec.mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
+			new_rot.unpackFromVector3(vec);
+		}
+		count += sizeof(LLVector3);
+		// omega
+		htonmemcpy((void*)new_angv.mV, &data[count], MVT_LLVector3, sizeof(LLVector3));
+		if (new_angv.isExactlyZero())
+		{
+			// reset rotation time
+			resetRot();
+		}
+		setAngularVelocity(new_angv);
+#if LL_DARWIN
+		if (length == 76)
+		{
+			setAngularVelocity(LLVector3::zero);
+		}
+#endif
+		break;
+	case(32 + 16) :
+		// pull out collision normal for avatar
+		htonmemcpy(collision_plane.mV, &data[count], MVT_LLVector4, sizeof(LLVector4));
+		((LLVOAvatar*)this)->setFootPlane(collision_plane);
+		count += sizeof(LLVector4);
+		// fall through
+	case 32:
+		// this is a terse 16 update
+		this_update_precision = 16;
+		test_pos_parent.quantize16(-0.5f*size, 1.5f*size, MIN_HEIGHT, MAX_HEIGHT);
+
+#ifdef LL_BIG_ENDIAN
+		htonmemcpy(valswizzle, &data[count], MVT_U16Vec3, 6); 
+		val = valswizzle;
+#else
+		val = (U16 *)&data[count];
+#endif
+		count += sizeof(U16) * 3;
+		new_pos_parent.mV[VX] = U16_to_F32(val[VX], -0.5f*size, 1.5f*size);
+		new_pos_parent.mV[VY] = U16_to_F32(val[VY], -0.5f*size, 1.5f*size);
+		new_pos_parent.mV[VZ] = U16_to_F32(val[VZ], MIN_HEIGHT, MAX_HEIGHT);
+
+#ifdef LL_BIG_ENDIAN
+		htonmemcpy(valswizzle, &data[count], MVT_U16Vec3, 6); 
+		val = valswizzle;
+#else
+		val = (U16 *)&data[count];
+#endif
+		count += sizeof(U16) * 3;
+		setVelocity(U16_to_F32(val[VX], -size, size),
+			U16_to_F32(val[VY], -size, size),
+			U16_to_F32(val[VZ], -size, size));
+
+#ifdef LL_BIG_ENDIAN
+		htonmemcpy(valswizzle, &data[count], MVT_U16Vec3, 6); 
+		val = valswizzle;
+#else
+		val = (U16 *)&data[count];
+#endif
+		count += sizeof(U16) * 3;
+		setAcceleration(U16_to_F32(val[VX], -size, size),
+			U16_to_F32(val[VY], -size, size),
+			U16_to_F32(val[VZ], -size, size));
+
+#ifdef LL_BIG_ENDIAN
+		htonmemcpy(valswizzle, &data[count], MVT_U16Quat, 8); 
+		val = valswizzle;
+#else
+		val = (U16 *)&data[count];
+#endif
+		count += sizeof(U16) * 4;
+		new_rot.mQ[VX] = U16_to_F32(val[VX], -1.f, 1.f);
+		new_rot.mQ[VY] = U16_to_F32(val[VY], -1.f, 1.f);
+		new_rot.mQ[VZ] = U16_to_F32(val[VZ], -1.f, 1.f);
+		new_rot.mQ[VW] = U16_to_F32(val[VW], -1.f, 1.f);
+
+#ifdef LL_BIG_ENDIAN
+		htonmemcpy(valswizzle, &data[count], MVT_U16Vec3, 6); 
+		val = valswizzle;
+#else
+		val = (U16 *)&data[count];
+#endif
+		new_angv.set(U16_to_F32(val[VX], -size, size),
+			U16_to_F32(val[VY], -size, size),
+			U16_to_F32(val[VZ], -size, size));
+		if (new_angv.isExactlyZero())
+		{
+			// reset rotation time
+			resetRot();
+		}
+		setAngularVelocity(new_angv);
+		break;
+
+	case 16:
+		// this is a terse 8 update
+		this_update_precision = 8;
+		test_pos_parent.quantize8(-0.5f*size, 1.5f*size, MIN_HEIGHT, MAX_HEIGHT);
+		new_pos_parent.mV[VX] = U8_to_F32(data[0], -0.5f*size, 1.5f*size);
+		new_pos_parent.mV[VY] = U8_to_F32(data[1], -0.5f*size, 1.5f*size);
+		new_pos_parent.mV[VZ] = U8_to_F32(data[2], MIN_HEIGHT, MAX_HEIGHT);
+
+		setVelocity(U8_to_F32(data[3], -size, size),
+			U8_to_F32(data[4], -size, size),
+			U8_to_F32(data[5], -size, size));
+
+		setAcceleration(U8_to_F32(data[6], -size, size),
+			U8_to_F32(data[7], -size, size),
+			U8_to_F32(data[8], -size, size));
+
+		new_rot.mQ[VX] = U8_to_F32(data[9], -1.f, 1.f);
+		new_rot.mQ[VY] = U8_to_F32(data[10], -1.f, 1.f);
+		new_rot.mQ[VZ] = U8_to_F32(data[11], -1.f, 1.f);
+		new_rot.mQ[VW] = U8_to_F32(data[12], -1.f, 1.f);
+
+		new_angv.set(U8_to_F32(data[13], -size, size),
+			U8_to_F32(data[14], -size, size),
+			U8_to_F32(data[15], -size, size));
+		if (new_angv.isExactlyZero())
+		{
+			// reset rotation time
+			resetRot();
+		}
+		setAngularVelocity(new_angv);
+		break;
+	default:
+		break;
+	}
+
+	mesgsys->getU8Fast(_PREHASH_ObjectData, _PREHASH_State, mState, block_num);
 }
 
 BOOL LLViewerObject::isActive() const

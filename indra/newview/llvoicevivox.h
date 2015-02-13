@@ -246,7 +246,8 @@ protected:
 	struct participantState
 	{
 	public:
-		participantState(const std::string &uri);
+		// Singu Note: Extended the ctor.
+		participantState(const std::string &uri, const LLUUID& id, bool isAv);
 
 		bool updateMuteState();	// true if mute state has changed
 		bool isAvatar();
@@ -270,9 +271,9 @@ protected:
 		bool mAvatarIDValid;
 		bool mIsSelf;
 	};
-
-	typedef std::map<const std::string, participantState*> participantMap;
-	typedef std::map<const LLUUID, participantState*> participantUUIDMap;
+	
+	// Singu Note: participantList has replaced both participantMap and participantUUIDMap.
+	typedef std::vector<participantState> participantList;
 
 	struct sessionState
 	{
@@ -283,7 +284,8 @@ protected:
 		participantState *addParticipant(const std::string &uri);
 		// Note: after removeParticipant returns, the participant* that was passed to it will have been deleted.
 		// Take care not to use the pointer again after that.
-		void removeParticipant(participantState *participant);
+		// Singu Note: removeParticipant now internally finds the entry. More efficient. Other option is to add a find procedure that returns an iterator.
+		void removeParticipant(const std::string& uri);
 		void removeAllParticipants();
 
 		participantState *findParticipant(const std::string &uri);
@@ -325,8 +327,8 @@ protected:
 		bool		mMuteDirty;
 
 		bool		mParticipantsChanged;
-		participantMap mParticipantsByURI;
-		participantUUIDMap mParticipantsByUUID;
+		// Singu Note: mParticipantList has replaced both mParticipantsByURI and mParticipantsByUUID.
+		participantList mParticipantList;
 
 		LLUUID		mVoiceFontID;
 	};

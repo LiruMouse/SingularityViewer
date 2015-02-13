@@ -227,8 +227,8 @@ void LLFloaterLandHoldings::processPlacesReply(LLMessageSystem* msg, void**)
 		self->mActualArea += actual_area;
 		self->mBillableArea += billable_area;
 
-		S32 region_x = llround(global_x) % REGION_WIDTH_UNITS;
-		S32 region_y = llround(global_y) % REGION_WIDTH_UNITS;
+		S32 region_x = llmath::llround(global_x) % REGION_WIDTH_UNITS;
+		S32 region_y = llmath::llround(global_y) % REGION_WIDTH_UNITS;
 
 		std::string location;
 		location = llformat("%s (%d, %d)", sim_name.c_str(), region_x, region_y);

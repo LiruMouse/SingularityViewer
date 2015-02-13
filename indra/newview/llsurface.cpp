@@ -1425,10 +1425,10 @@ BOOL LLSurface::generateWaterTexture(const F32 x, const F32 y,
 
 	S32 x_begin, y_begin, x_end, y_end;
 
-	x_begin = llround(x * scale_inv);
-	y_begin = llround(y * scale_inv);
-	x_end = llround((x + width) * scale_inv);
-	y_end = llround((y + width) * scale_inv);
+	x_begin = llmath::llround(x * scale_inv);
+	y_begin = llmath::llround(y * scale_inv);
+	x_end = llmath::llround((x + width) * scale_inv);
+	y_end = llmath::llround((y + width) * scale_inv);
 
 	if (x_end > tex_width)
 	{
@@ -1476,9 +1476,9 @@ BOOL LLSurface::generateWaterTexture(const F32 x, const F32 y,
 				// Want non-linear curve for transparency gradient
 				coloru = MAX_WATER_COLOR;
 				const F32 frac = 1.f - 2.f/(2.f - (height - WATER_HEIGHT));
-				S32 alpha = 64 + llround((255-64)*frac);
+				S32 alpha = 64 + llmath::llround((255-64)*frac);
 
-				alpha = llmin(llround((F32)MAX_WATER_COLOR.mV[3]), alpha);
+				alpha = llmin(llmath::llround((F32)MAX_WATER_COLOR.mV[3]), alpha);
 				alpha = llmax(64, alpha);
 
 				coloru.mV[3] = alpha;

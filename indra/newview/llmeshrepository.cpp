@@ -2334,7 +2334,7 @@ void LLMeshRepository::notifyLoadedMeshes()
 	//call completed callbacks on finished decompositions
 	mDecompThread->notifyCompleted();
 
-	if (!mThread->mSignal->tryLock())
+	if (!mThread->mSignal->try_lock())
 	{ //curl thread is churning, wait for it to go idle
 		return;
 	}

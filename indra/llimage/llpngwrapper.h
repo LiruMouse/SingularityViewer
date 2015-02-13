@@ -30,7 +30,11 @@
 #include <png.h>
 #else
 // Workaround for wrongly packaged prebuilt.
+#if _MSC_VER >= 1800
+#include <libpng16/png.h>
+#else
 #include "libpng15/png.h"
+#endif
 #endif
 #include "llimage.h"
 
