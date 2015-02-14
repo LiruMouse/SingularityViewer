@@ -1,0 +1,14 @@
+
+To compile on Gentoo:
+
+
++ Use python2.7, not 3.x.
+
++ When you get undefined references to GOMP_.* and omp.* symbols, add
+  '-lgomp' (without the quotes) to:
+
+  build-linux-x86_64-release/newview/CMakeFiles/secondlife-bin.dir/link.txt
+  build-linux-x86_64-release/llplugin/slplugin/CMakeFiles/SLPlugin.dir/link.txt
+
++ You may get messages about 'libwebkit_pluin' failing.  I don't know
+  how to fix that.
