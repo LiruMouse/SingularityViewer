@@ -149,6 +149,8 @@ if (LINUX)
       -fvariable-expansion-in-unroller
       -freorder-blocks-and-partition
 #      -flto=24
+       -fuse-linker-plugin
+       -flto
 #      -I/usr/lib/gcc/x86_64-redhat-linux/4.8.1/
 #      -lgcov
 #       -fprofile-dir=/home/lee/tmp
