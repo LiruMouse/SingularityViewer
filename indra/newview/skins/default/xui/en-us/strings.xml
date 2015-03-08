@@ -1770,7 +1770,7 @@ integer llGetRegionAgentCount()
 Returns the number of avatars in the region
 	</string>
 	<string name="LSLTipText_llTextBox">
-llTextBox(key avatar, string message, integer chat_channel
+llTextBox(key avatar, string message, integer chat_channel)
 Shows a dialog box on the avatar&apos;s screen with the message.
 It contains a text box for input, and if entered that text is chatted on chat_channel.
 	</string>
@@ -3527,7 +3527,6 @@ This can be because you somehow have multiple copies running, or your system inc
 If this message persists, restart your computer and try again.
 If it continues to persist, you may need to completely uninstall [APP_NAME] and reinstall it.
 	</string>
-	<string name="MBRequiresAltiVec"> [APP_NAME] requires a processor with AltiVec (G4 or later).</string>
 	<string name="MBAlreadyRunning">
 		[APP_NAME] is already running.
 Check your task bar for a minimized copy of the program.

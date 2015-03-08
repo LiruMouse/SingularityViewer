@@ -43,9 +43,8 @@ void main()
 	//transform vertex
 	vary_texcoord0 = (texture_matrix0 * vec4(texcoord0,0,1)).xy;
 	
-	mat4 mat = getObjectSkinnedTransform();
+	mat4 mat = modelview_matrix * getObjectSkinnedTransform();
 	
-	mat = modelview_matrix * mat;
 	vec3 pos = (mat*vec4(position.xyz, 1.0)).xyz;
 	
 	vertex_color = emissive;

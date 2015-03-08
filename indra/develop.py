@@ -779,6 +779,22 @@ class CygwinSetup(WindowsSetup):
                 '-DROOT_PROJECT_NAME:STRING=%(project_name)s '
                 '%(opts)s "%(dir)s"' % args)
 
+    def run(self, command, name=None):
+        '''Run a program.  If the program fails, raise an exception.'''
+        ret = os.system(command)
+        if ret:
+            if name is None:
+                name = os.path.normpath(shlex.split(command.encode('utf8'),posix=False)[0].strip('"'))
+
+            path = self.find_in_path(name)
+            if not path:
+                ret = 'was not found'
+            else:
+                ret = 'exited with status %d' % ret
+            raise CommandError('the command %r %s' %
+                               (name, ret))
+
+
 setup_platform = {
     'darwin': DarwinSetup,
     'linux2': LinuxSetup,

@@ -8932,20 +8932,14 @@ void LLVOAvatar::updateSoftwareSkinnedVertices(const LLMeshSkinInfo* skin, const
 			final_mat.add(src);
 		}
 		
-		LLVector4a& v = vol_face.mPositions[j];
-		LLVector4a t;
-		LLVector4a dst;
-		bind_shape_matrix.affineTransform(v, t);
-		final_mat.affineTransform(t, dst);
-		pos[j] = dst;
+		final_mat.mul(bind_shape_matrix);
+		final_mat.affineTransform(vol_face.mPositions[j], pos[j]);
 
 		if (norm)
 		{
-			LLVector4a& n = vol_face.mNormals[j];
-			bind_shape_matrix.rotate(n, t);
-			final_mat.rotate(t, dst);
-			dst.normalize3fast();
-			norm[j] = dst;
+			final_mat.invert();
+			final_mat.transpose();
+			final_mat.affineTransform(vol_face.mNormals[j], norm[j]);
 		}
 	}
 }

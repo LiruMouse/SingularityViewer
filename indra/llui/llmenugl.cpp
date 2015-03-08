@@ -564,8 +564,9 @@ void LLMenuItemGL::draw( void )
 		std::string::size_type offset = upper_case_label.find(mJumpKey);
 		if (offset != std::string::npos)
 		{
-			S32 x_begin = LEFT_PLAIN_PIXELS + mFont->getWidth(mLabel, 0, offset);
-			S32 x_end = LEFT_PLAIN_PIXELS + mFont->getWidth(mLabel, 0, offset + 1);
+			const LLWString& utf32text = mLabel.getWString();
+			S32 x_begin = LEFT_PLAIN_PIXELS + mFont->getWidth(utf32text, 0, offset);
+			S32 x_end = LEFT_PLAIN_PIXELS + mFont->getWidth(utf32text, 0, offset + 1);
 			gl_line_2d(x_begin, (MENU_ITEM_PADDING / 2) + 1, x_end, (MENU_ITEM_PADDING / 2) + 1);
 		}
 	}
@@ -1826,9 +1827,10 @@ void LLMenuItemBranchDownGL::draw( void )
 		std::string::size_type offset = upper_case_label.find(getJumpKey());
 		if (offset != std::string::npos)
 		{
-			S32 x_offset = llmath::llround((F32)getRect().getWidth() / 2.f - getFont()->getWidthF32(mLabel.getString(), 0, S32_MAX) / 2.f);
-			S32 x_begin = x_offset + getFont()->getWidth(mLabel, 0, offset);
-			S32 x_end = x_offset + getFont()->getWidth(mLabel, 0, offset + 1);
+			const LLWString& utf32text = mLabel.getWString();
+			S32 x_offset = llmath::llround((F32)getRect().getWidth() / 2.f - getFont()->getWidthF32(utf32text, 0, S32_MAX) / 2.f);
+			S32 x_begin = x_offset + getFont()->getWidth(utf32text, 0, offset);
+			S32 x_end = x_offset + getFont()->getWidth(utf32text, 0, offset + 1);
 			gl_line_2d(x_begin, LABEL_BOTTOM_PAD_PIXELS, x_end, LABEL_BOTTOM_PAD_PIXELS);
 		}
 	}

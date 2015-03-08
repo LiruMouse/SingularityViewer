@@ -155,6 +155,13 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 		return 0;
 	} 
 
+	if (max_chars == -1)
+		max_chars = S32_MAX;
+
+	const S32 max_index = llmin(llmax(max_chars, begin_offset + max_chars), S32(wstr.length()));
+	if (max_index <= 0 || begin_offset >= max_index || max_pixels <= 0)
+		return 0;
+
 	gGL.getTexUnit(0)->enable(LLTexUnit::TT_TEXTURE);
 
 	S32 scaled_max_pixels = max_pixels == S32_MAX ? S32_MAX : llceil((F32)max_pixels * sScaleX);
@@ -186,16 +193,7 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 
 	S32 chars_drawn = 0;
 	S32 i;
-	S32 length;
-
-	if (-1 == max_chars)
-	{
-		length = (S32)wstr.length() - begin_offset;
-	}
-	else
-	{
-		length = llmin((S32)wstr.length() - begin_offset, max_chars );
-	}
+	S32 length = max_index - begin_offset;
 
 	F32 cur_x, cur_y, cur_render_x, cur_render_y;
 
@@ -256,7 +254,7 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 	if (use_ellipses && halign == LEFT)
 	{
 		// check for too long of a string
-		S32 string_width = llmath::llround(getWidthF32(wstr.c_str(), begin_offset, max_chars) * sScaleX);
+		S32 string_width = llmath::llround(getWidthF32(wstr, begin_offset, max_chars) * sScaleX);
 		if (string_width > scaled_max_pixels)
 		{
 			// use four dots for ellipsis width to generate padding
@@ -490,24 +488,9 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 	return chars_drawn;
 }
 
-S32 LLFontGL::render(const LLWString &text, S32 begin_offset, F32 x, F32 y, const LLColor4 &color) const
-{
-	return render(text, begin_offset, x, y, color, LEFT, BASELINE, NORMAL, NO_SHADOW, S32_MAX, S32_MAX, NULL, FALSE);
-}
-
 S32 LLFontGL::renderUTF8(const std::string &text, S32 begin_offset, F32 x, F32 y, const LLColor4 &color, HAlign halign,  VAlign valign, U8 style, ShadowType shadow, S32 max_chars, S32 max_pixels,  F32* right_x, BOOL use_ellipses) const
 {
 	return render(utf8str_to_wstring(text), begin_offset, x, y, color, halign, valign, style, shadow, max_chars, max_pixels, right_x, use_ellipses);
-}
-
-S32 LLFontGL::renderUTF8(const std::string &text, S32 begin_offset, S32 x, S32 y, const LLColor4 &color) const
-{
-	return renderUTF8(text, begin_offset, (F32)x, (F32)y, color, LEFT, BASELINE, NORMAL, NO_SHADOW, S32_MAX, S32_MAX, NULL, FALSE);
-}
-
-S32 LLFontGL::renderUTF8(const std::string &text, S32 begin_offset, S32 x, S32 y, const LLColor4 &color, HAlign halign, VAlign valign, U8 style, ShadowType shadow) const
-{
-	return renderUTF8(text, begin_offset, (F32)x, (F32)y, color, halign, valign, style, shadow, S32_MAX, S32_MAX, NULL, FALSE);
 }
 
 // font metrics - override for LLFontFreetype that returns units of virtual pixels
@@ -526,66 +509,45 @@ F32 LLFontGL::getLineHeight() const
 	return (F32)llmath::llround(mFontFreetype->getLineHeight() / sScaleY);
 }
 
-S32 LLFontGL::getWidth(const std::string& utf8text) const
+S32 LLFontGL::getWidth(const std::string& utf8text, const S32 begin_offset, const S32 max_chars, BOOL use_embedded) const
 {
-	LLWString wtext = utf8str_to_wstring(utf8text);
-	return getWidth(wtext.c_str(), 0, S32_MAX);
+	return getWidth(utf8str_to_wstring(utf8text), begin_offset, max_chars, use_embedded);
 }
 
-S32 LLFontGL::getWidth(const llwchar* wchars) const
+S32 LLFontGL::getWidth(const LLWString& utf32text, const S32 begin_offset, const S32 max_chars, BOOL use_embedded) const
 {
-	return getWidth(wchars, 0, S32_MAX);
-}
-
-S32 LLFontGL::getWidth(const std::string& utf8text, const S32 begin_offset, const S32 max_chars) const
-{
-	LLWString wtext = utf8str_to_wstring(utf8text);
-	return getWidth(wtext.c_str(), begin_offset, max_chars);
-}
-
-S32 LLFontGL::getWidth(const llwchar* wchars, const S32 begin_offset, const S32 max_chars, BOOL use_embedded) const
-{
-	F32 width = getWidthF32(wchars, begin_offset, max_chars, use_embedded);
+	F32 width = getWidthF32(utf32text, begin_offset, max_chars, use_embedded);
 	return llmath::llround(width);
 }
 
-F32 LLFontGL::getWidthF32(const std::string& utf8text) const
+F32 LLFontGL::getWidthF32(const std::string& utf8text, const S32 begin_offset, const S32 max_chars, BOOL use_embedded) const
 {
-	LLWString wtext = utf8str_to_wstring(utf8text);
-	return getWidthF32(wtext.c_str(), 0, S32_MAX);
+	return getWidthF32(utf8str_to_wstring(utf8text), begin_offset, max_chars, use_embedded);
 }
 
-F32 LLFontGL::getWidthF32(const llwchar* wchars) const
-{
-	return getWidthF32(wchars, 0, S32_MAX);
-}
-
-F32 LLFontGL::getWidthF32(const std::string& utf8text, const S32 begin_offset, const S32 max_chars ) const
-{
-	LLWString wtext = utf8str_to_wstring(utf8text);
-	return getWidthF32(wtext.c_str(), begin_offset, max_chars);
-}
-
-F32 LLFontGL::getWidthF32(const llwchar* wchars, const S32 begin_offset, const S32 max_chars, BOOL use_embedded) const
+F32 LLFontGL::getWidthF32(const LLWString& utf32text, const S32 begin_offset, const S32 max_chars, BOOL use_embedded) const
 {
 	const S32 LAST_CHARACTER = LLFontFreetype::LAST_CHAR_FULL;
 
+	const S32 max_index = llmin(llmax(max_chars, begin_offset + max_chars), S32(utf32text.length()));
+	if (max_index <= 0 || begin_offset >= max_index)
+		return 0;
+
 	F32 cur_x = 0;
-	const S32 max_index = begin_offset + max_chars;
 
 	const LLFontGlyphInfo* next_glyph = NULL;
 
 	F32 width_padding = 0.f;
-	for (S32 i = begin_offset; i < max_index && wchars[i] != 0; i++)
+	for (S32 i = begin_offset; i < max_index; i++)
 	{
-		const llwchar wch = wchars[i];
+		const llwchar wch = utf32text[i];
 		const embedded_data_t* ext_data = use_embedded ? getEmbeddedCharData(wch) : NULL;
 		if (ext_data)
 		{
 			// Handle crappy embedded hack
 			cur_x += getEmbeddedCharAdvance(ext_data);
 
-			if( ((i+1) < max_chars) && (i+1 < max_index))
+			if( ((i+1) < max_index) && (i+1 < max_index))
 			{
 				cur_x += EXT_KERNING * sScaleX;
 			}
@@ -609,15 +571,15 @@ F32 LLFontGL::getWidthF32(const llwchar* wchars, const S32 begin_offset, const S
 									(F32)(fgi->mWidth + fgi->mXBearing) - advance);	// difference between width of this character and advance to next character
 
 			cur_x += advance;
-			llwchar next_char = wchars[i+1];
-
-			if (((i + 1) < begin_offset + max_chars) 
-				&& next_char 
-				&& (next_char < LAST_CHARACTER))
+			if ((i + 1) < max_index)
 			{
-				// Kern this puppy.
-				next_glyph = mFontFreetype->getGlyphInfo(next_char);
-				cur_x += mFontFreetype->getXKerning(fgi, next_glyph);
+				llwchar next_char = utf32text[i+1];
+				if (next_char < LAST_CHARACTER)
+				{
+					// Kern this puppy.
+					next_glyph = mFontFreetype->getGlyphInfo(next_char);
+					cur_x += mFontFreetype->getXKerning(fgi, next_glyph);
+				}
 			}
 			// Round after kerning.
 			cur_x = (F32)llmath::llround(cur_x);
@@ -633,20 +595,13 @@ F32 LLFontGL::getWidthF32(const llwchar* wchars, const S32 begin_offset, const S
 
 
 // Returns the max number of complete characters from text (up to max_chars) that can be drawn in max_pixels
-S32 LLFontGL::maxDrawableChars(const llwchar* wchars, F32 max_pixels, S32 max_chars,
+S32 LLFontGL::maxDrawableChars(const LLWString& utf32text, F32 max_pixels, S32 max_chars,
 							   EWordWrapStyle end_on_word_boundary, const BOOL use_embedded,
 							   F32* drawn_pixels) const
 {
-	if (!wchars || !wchars[0] || max_chars == 0)
-	{
+	const S32 max_index = llmin(max_chars, S32(utf32text.length()));
+	if (max_index <= 0 || max_pixels <= 0.f)
 		return 0;
-	}
-
-	//llassert(max_pixels >= 0.f);
-	//llassert(max_chars >= 0);	
-	if(max_pixels < 0.f || max_chars < 0) {
-		return 0;
-	}
 	
 	BOOL clip = FALSE;
 	F32 cur_x = 0;
@@ -662,15 +617,9 @@ S32 LLFontGL::maxDrawableChars(const llwchar* wchars, F32 max_pixels, S32 max_ch
 	LLFontGlyphInfo* next_glyph = NULL;
 
 	S32 i;
-	for (i=0; (i < max_chars); i++)
+	for (i=0; (i < max_index); i++)
 	{
-		llwchar wch = wchars[i];
-
-		if(wch == 0)
-		{
-			// Null terminator.  We're done.
-			break;
-		}
+		llwchar wch = utf32text[i];
 			
 		const embedded_data_t* ext_data = use_embedded ? getEmbeddedCharData(wch) : NULL;
 		if (ext_data)
@@ -691,7 +640,7 @@ S32 LLFontGL::maxDrawableChars(const llwchar* wchars, F32 max_pixels, S32 max_ch
 				break;
 			}
 			
-			if (((i+1) < max_chars) && wchars[i+1])
+			if ((i+1) < max_index)
 			{
 				cur_x += EXT_KERNING * sScaleX;
 			}
@@ -741,10 +690,10 @@ S32 LLFontGL::maxDrawableChars(const llwchar* wchars, F32 max_pixels, S32 max_ch
 				break;
 			}
 
-			if (((i+1) < max_chars) && wchars[i+1])
+			if ((i+1) < max_index)
 			{
 				// Kern this puppy.
-				next_glyph = mFontFreetype->getGlyphInfo(wchars[i+1]);
+				next_glyph = mFontFreetype->getGlyphInfo(utf32text[i + 1]);
 				cur_x += mFontFreetype->getXKerning(fgi, next_glyph);
 			}
 		}
@@ -782,22 +731,21 @@ S32 LLFontGL::maxDrawableChars(const llwchar* wchars, F32 max_pixels, S32 max_ch
 }
 
 
-S32	LLFontGL::firstDrawableChar(const llwchar* wchars, F32 max_pixels, S32 text_len, S32 start_pos, S32 max_chars) const
+S32	LLFontGL::firstDrawableChar(const LLWString& utf32text, F32 max_pixels, S32 start_pos, S32 max_chars) const
 {
-	if (!wchars || !wchars[0] || max_chars == 0)
-	{
+	const S32 max_index = llmin(llmax(max_chars, start_pos + max_chars), S32(utf32text.length()));
+	if (max_index <= 0 || start_pos >= max_index || max_pixels <= 0.f || start_pos < 0)
 		return 0;
-	}
 	
 	F32 total_width = 0.0;
 	S32 drawable_chars = 0;
 
 	F32 scaled_max_pixels =	max_pixels * sScaleX;
 
-	S32 start = llmin(start_pos, text_len - 1);
+	S32 start = llmin(start_pos, max_index - 1);
 	for (S32 i = start; i >= 0; i--)
 	{
-		llwchar wch = wchars[i];
+		llwchar wch = utf32text[i];
 
 		const embedded_data_t* ext_data = getEmbeddedCharData(wch);
 		F32 width = 0;
@@ -825,7 +773,7 @@ S32	LLFontGL::firstDrawableChar(const llwchar* wchars, F32 max_pixels, S32 text_
 		total_width += width;
 		drawable_chars++;
 
-		if( max_chars >= 0 && drawable_chars >= max_chars )
+		if( max_index >= 0 && drawable_chars >= max_index )
 		{
 			break;
 		}
@@ -833,7 +781,7 @@ S32	LLFontGL::firstDrawableChar(const llwchar* wchars, F32 max_pixels, S32 text_
 		if ( i > 0 )
 		{
 			// kerning
-			total_width += ext_data ? (EXT_KERNING * sScaleX) : mFontFreetype->getXKerning(wchars[i-1], wch);
+			total_width += ext_data ? (EXT_KERNING * sScaleX) : mFontFreetype->getXKerning(utf32text[i - 1], wch);
 		}
 
 		// Round after kerning.
@@ -854,19 +802,15 @@ S32	LLFontGL::firstDrawableChar(const llwchar* wchars, F32 max_pixels, S32 text_
 }
 
 
-S32 LLFontGL::charFromPixelOffset(const llwchar* wchars, const S32 begin_offset, F32 target_x, F32 max_pixels, S32 max_chars, BOOL round, BOOL use_embedded) const
+S32 LLFontGL::charFromPixelOffset(const LLWString& utf32text, const S32 begin_offset, F32 target_x, F32 max_pixels, S32 max_chars, BOOL round, BOOL use_embedded) const
 {
-	if (!wchars || !wchars[0] || max_chars == 0)
-	{
+	const S32 max_index = llmin(llmax(max_chars,begin_offset + max_chars), S32(utf32text.length()));
+	if (max_index <= 0 || begin_offset >= max_index || max_pixels <= 0.f)
 		return 0;
-	}
 	
 	F32 cur_x = 0;
 
 	target_x *= sScaleX;
-
-	// max_chars is S32_MAX by default, so make sure we don't get overflow
-	const S32 max_index = begin_offset + llmin(S32_MAX - begin_offset, max_chars);
 
 	F32 scaled_max_pixels =	max_pixels * sScaleX;
 	
@@ -875,7 +819,7 @@ S32 LLFontGL::charFromPixelOffset(const llwchar* wchars, const S32 begin_offset,
 	S32 pos;
 	for (pos = begin_offset; pos < max_index; pos++)
 	{
-		llwchar wch = wchars[pos];
+		llwchar wch = utf32text[pos];
 		if (!wch)
 		{
 			break; // done
@@ -912,8 +856,7 @@ S32 LLFontGL::charFromPixelOffset(const llwchar* wchars, const S32 begin_offset,
 
 		cur_x += char_width;
 
-		if (((pos + 1) < max_index)
-			&& (wchars[(pos + 1)]))
+		if ((pos + 1) < max_index)
 		{
 			
 			if(ext_data)
@@ -922,7 +865,7 @@ S32 LLFontGL::charFromPixelOffset(const llwchar* wchars, const S32 begin_offset,
 			}
 			else
 			{
-				next_glyph = mFontFreetype->getGlyphInfo(wchars[pos + 1]);
+				next_glyph = mFontFreetype->getGlyphInfo(utf32text[pos + 1]);
 				cur_x += mFontFreetype->getXKerning(glyph, next_glyph);
 			}
 		}
@@ -933,7 +876,7 @@ S32 LLFontGL::charFromPixelOffset(const llwchar* wchars, const S32 begin_offset,
 		
 	}
 
-	return llmin(max_chars, pos - begin_offset);
+	return pos - begin_offset;
 }
 
 const LLFontDescriptor& LLFontGL::getFontDesc() const

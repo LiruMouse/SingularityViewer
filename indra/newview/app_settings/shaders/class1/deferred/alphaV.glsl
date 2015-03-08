@@ -74,8 +74,7 @@ void main()
 	
 	//transform vertex
 #ifdef HAS_SKIN
-	mat4 trans = getObjectSkinnedTransform();
-	trans = modelview_matrix * trans;
+	mat4 trans = modelview_matrix * getObjectSkinnedTransform();
 	
 	pos = trans * vec4(position.xyz, 1.0);
 	

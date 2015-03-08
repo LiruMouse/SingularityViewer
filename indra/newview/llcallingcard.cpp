@@ -69,6 +69,7 @@
 ///----------------------------------------------------------------------------
 /// Local function declarations, constants, enums, and typedefs
 ///----------------------------------------------------------------------------
+const S32& friend_name_system();
 
 class LLTrackingData
 {
@@ -639,7 +640,7 @@ void LLAvatarTracker::processChange(LLMessageSystem* msg)
 				{
 					std::string fullname;
 					LLSD args;
-					if (LLAvatarNameCache::getNSName(agent_id, fullname))
+					if (LLAvatarNameCache::getNSName(agent_id, fullname, friend_name_system()))
 						args["NAME"] = fullname;
 
 					LLSD payload;
@@ -658,7 +659,7 @@ void LLAvatarTracker::processChange(LLMessageSystem* msg)
 				{
 					std::string fullname;
 					LLSD args;
-					if (LLAvatarNameCache::getNSName(agent_id, fullname))
+					if (LLAvatarNameCache::getNSName(agent_id, fullname, friend_name_system()))
 						args["NAME"] = fullname;
 
 					LLSD payload;
@@ -750,13 +751,9 @@ static void on_avatar_name_cache_notify(const LLUUID& agent_id,
 {
 	// Popup a notify box with online status of this agent
 
-	// xantispam
-	// FIXME: use real name instead of fake name
-	std::string name = av_name.getNSName();
-
 	// Use display name only because this user is your friend
 	LLSD args;
-	args["NAME"] = name;
+	args["NAME"] = av_name.getNSName(friend_name_system());
 	args["STATUS"] = online ? LLTrans::getString("OnlineStatus") : LLTrans::getString("OfflineStatus");
 
 	boost::algorithm::trim(name);
@@ -923,7 +920,7 @@ bool LLCollectMappableBuddies::operator()(const LLUUID& buddy_id, LLRelationship
 {
 	LLAvatarName av_name;
 	LLAvatarNameCache::get( buddy_id, &av_name);
-	buddy_map_t::value_type value(av_name.getDisplayName(), buddy_id);
+	buddy_map_t::value_type value(av_name.getNSName(friend_name_system()), buddy_id);
 	if(buddy->isOnline() && buddy->isRightGrantedFrom(LLRelationship::GRANT_MAP_LOCATION))
 	{
 		mMappable.insert(value);
@@ -942,7 +939,6 @@ bool LLCollectOnlineBuddies::operator()(const LLUUID& buddy_id, LLRelationship* 
 	return true;
 }
 
-const S32& friend_name_system();
 bool LLCollectAllBuddies::operator()(const LLUUID& buddy_id, LLRelationship* buddy)
 {
 	LLAvatarName av_name;

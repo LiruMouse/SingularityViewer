@@ -79,7 +79,7 @@ BOOL LLFloaterObjectIMInfo::postBuild()
 {
 	getChild<LLUICtrl>("Mute")->setCommitCallback(boost::bind(&LLFloaterObjectIMInfo::onClickMute, this));
 	getChild<LLTextBox>("OwnerName")->setClickedCallback(boost::bind(boost::ref(mGroupOwned) ? boost::bind(LLGroupActions::show, boost::ref(mOwnerID)) : boost::bind(show_avatar_profile, boost::ref(mOwnerID))));
-	getChild<LLTextBox>("Slurl")->setClickedCallback(boost::bind(LLUrlAction::showLocationOnMap, "secondlife://" + static_cast<std::string>(boost::ref(mSLurl))));
+	getChild<LLTextBox>("Slurl")->setClickedCallback(boost::bind(LLUrlAction::executeSLURL, boost::bind(std::plus<std::string>(), "secondlife:///app/worldmap/", boost::ref(mSLurl))));
 
 	return true;
 }
@@ -104,7 +104,11 @@ void LLFloaterObjectIMInfo::update(const LLSD& data)
 	childSetVisible("Slurl",have_slurl);
 
 	childSetText("ObjectName",mName);
-	childSetText("Slurl",mSLurl);
+	std::string slurl(mSLurl);
+	std::string::size_type i = slurl.rfind("?owner_not_object");
+	if (i != std::string::npos)
+		slurl.erase(i) += getString("owner");
+	childSetText("Slurl", slurl);
 	childSetText("OwnerName", LLStringUtil::null);
 	getChildView("ObjectID")->setValue(data["object_id"].asUUID());
 

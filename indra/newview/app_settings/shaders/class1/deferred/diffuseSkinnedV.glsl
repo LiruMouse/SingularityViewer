@@ -41,9 +41,8 @@ void main()
 {
 	vary_texcoord0 = (texture_matrix0 * vec4(texcoord0,0,1)).xy;
 	
-	mat4 mat = getObjectSkinnedTransform();
+	mat4 mat = modelview_matrix * getObjectSkinnedTransform();
 	
-	mat = modelview_matrix * mat;
 	vec3 pos = (mat*vec4(position.xyz, 1.0)).xyz;
 	
 	vec4 norm = vec4(position.xyz, 1.0);

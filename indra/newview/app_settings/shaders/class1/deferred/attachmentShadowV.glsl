@@ -34,9 +34,8 @@ mat4 getObjectSkinnedTransform();
 void main()
 {
 	//transform vertex
-	mat4 mat = getObjectSkinnedTransform();
+	mat4 mat = modelview_matrix * getObjectSkinnedTransform();
 	
-	mat = modelview_matrix * mat;
 	vec3 pos = (mat*vec4(position.xyz, 1.0)).xyz;
 	
 

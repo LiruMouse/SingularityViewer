@@ -277,27 +277,6 @@ void LLPanelAvatarSecondLife::enableControls(BOOL self)
 	childSetEnabled("?", self);
 }
 
-void LLPanelAvatarFirstLife::onClickImage()
-{
-	const LLUUID& id(getChild<LLTextureCtrl>("img")->getImageAssetID());
-	llinfos << "LLPanelAvatarFirstLife::onClickImage" << llendl;
-	if (!LLPreview::show(id))
-	{
-		// There isn't one, so make a new preview
-		S32 left, top;
-		gFloaterView->getNewFloaterPosition(&left, &top);
-		LLRect rect = gSavedSettings.getRect("PreviewTextureRect");
-		rect.translate( left - rect.mLeft, rect.mTop - top ); // Changed to avoid textures being sunken below the window border.
-		LLPreviewTexture* preview = new LLPreviewTexture("preview task texture",
-													rect,
-													std::string("Profile First Life Picture"),
-													id);
-		preview->setFocus(TRUE);
-		//preview->mIsCopyable=FALSE;
-		//preview->canSaveAs
-	}
-}
-
 // virtual
 void LLPanelAvatarFirstLife::processProperties(void* data, EAvatarProcessorType type)
 {
@@ -310,29 +289,6 @@ void LLPanelAvatarFirstLife::processProperties(void* data, EAvatarProcessorType 
 			getChildView("about")->setValue(pAvatarData->fl_about_text);
 			getChild<LLTextureCtrl>("img")->setImageAssetID(pAvatarData->fl_image_id);
 		}
-	}
-}
-
-void LLPanelAvatarSecondLife::onClickImage()
-{
-	const LLUUID& id = getChild<LLTextureCtrl>("img")->getImageAssetID();
-	llinfos << "LLPanelAvatarSecondLife::onClickImage" << llendl;
-	if (!LLPreview::show(id))
-	{
-		// There isn't one, so make a new preview
-		S32 left, top;
-		gFloaterView->getNewFloaterPosition(&left, &top);
-		LLRect rect = gSavedSettings.getRect("PreviewTextureRect");
-		rect.translate(left - rect.mLeft, rect.mTop - top); // Changed to avoid textures being sunken below the window border.
-		LLPreviewTexture* preview = new LLPreviewTexture("preview task texture",
-												 rect,
-												 std::string("Profile Picture: ") +	getChild<LLNameEditor>("dnname")->getText(),
-												 id);
-		preview->setFocus(TRUE);
-		//preview->mIsCopyable=FALSE;
-		/*open_texture(LLUUID::null,//id,
-			std::string("Profile Picture: ") + getChild<LLNameEditor>("dnname")->getText() + "and image id is " + id.asString()
-			, FALSE, id, TRUE);*/
 	}
 }
 
@@ -370,6 +326,8 @@ void LLPanelAvatarFirstLife::enableControls(BOOL self)
 // postBuild
 //-----------------------------------------------------------------------------
 
+void show_picture(const LLUUID& id, const std::string& name);
+static std::string profile_picture_title(const std::string& str) { return "Profile Picture: " + str; }
 static void show_partner_help() { LLNotificationsUtil::add("ClickPartnerHelpAvatar", LLSD(), LLSD(), boost::bind(LLPanelAvatarSecondLife::onClickPartnerHelpLoadURL, _1, _2)); }
 BOOL LLPanelAvatarSecondLife::postBuild()
 {
@@ -410,10 +368,11 @@ BOOL LLPanelAvatarSecondLife::postBuild()
 	getChild<LLUICtrl>("Offer Teleport...")->setCommitCallback(boost::bind(static_cast<void(*)(const LLUUID&)>(LLAvatarActions::offerTeleport), boost::bind(&LLPanelAvatar::getAvatarID, pa)));
 
 	getChild<LLScrollListCtrl>("groups")->setDoubleClickCallback(boost::bind(&LLPanelAvatarSecondLife::onDoubleClickGroup,this));
-	
-	getChild<LLUICtrl>("bigimg")->setCommitCallback(boost::bind(&LLPanelAvatarSecondLife::onClickImage, this));
-	
-	getChild<LLTextureCtrl>("img")->setFallbackImageName("default_profile_picture.j2c");
+
+	LLTextureCtrl* ctrl = getChild<LLTextureCtrl>("img");
+	ctrl->setFallbackImageName("default_profile_picture.j2c");
+
+	getChild<LLUICtrl>("bigimg")->setCommitCallback(boost::bind(boost::bind(show_picture, boost::bind(&LLTextureCtrl::getImageAssetID, ctrl), boost::bind(profile_picture_title, boost::bind(&LLView::getValue, getChild<LLNameEditor>("dnname"))))));
 
 	return TRUE;
 }
@@ -423,9 +382,10 @@ BOOL LLPanelAvatarFirstLife::postBuild()
 	BOOL own_avatar = (getPanelAvatar()->getAvatarID() == gAgent.getID() );
 	enableControls(own_avatar);
 
-	getChild<LLTextureCtrl>("img")->setFallbackImageName("default_profile_picture.j2c");
+	LLTextureCtrl* ctrl = getChild<LLTextureCtrl>("img");
+	ctrl->setFallbackImageName("default_profile_picture.j2c");
 
-	getChild<LLUICtrl>("flbigimg")->setCommitCallback(boost::bind(&LLPanelAvatarFirstLife::onClickImage, this));
+	getChild<LLUICtrl>("flbigimg")->setCommitCallback(boost::bind(boost::bind(boost::bind(show_picture, boost::bind(&LLTextureCtrl::getImageAssetID, ctrl), "First Life Picture"))));
 	return TRUE;
 }
 

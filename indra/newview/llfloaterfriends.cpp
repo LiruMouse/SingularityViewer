@@ -460,7 +460,9 @@ void LLPanelFriends::updateFriendItem(const LLUUID& agent_id, const LLRelationsh
 	itemp->getColumn(LIST_EDIT_THEIRS)->setValue(info->isRightGrantedFrom(LLRelationship::GRANT_MODIFY_OBJECTS));
 
 	// enable this item, in case it was disabled after user input
-	itemp->setEnabled(true);
+	itemp->getColumn(LIST_VISIBLE_ONLINE)->setEnabled(true);
+	itemp->getColumn(LIST_VISIBLE_MAP)->setEnabled(true);
+	itemp->getColumn(LIST_EDIT_MINE)->setEnabled(true);
 
 	mFriendsList->setNeedsSort();
 
@@ -960,7 +962,10 @@ void LLPanelFriends::applyRightsToFriends()
 			rights_updates.insert(std::make_pair(id, rights));
 			// disable these ui elements until response from server
 			// to avoid race conditions
-			(*itr)->setEnabled(false);
+			LLScrollListItem& item = *(*itr);
+			item.getColumn(LIST_VISIBLE_ONLINE)->setEnabled(false);
+			item.getColumn(LIST_VISIBLE_MAP)->setEnabled(false);
+			item.getColumn(LIST_EDIT_MINE)->setEnabled(false);
 		}
 	}
 

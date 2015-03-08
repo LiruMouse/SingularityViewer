@@ -187,6 +187,8 @@ public:
 		return mCurrentGridChangeSignal->connect(cb);
 	}
 
+	void parseUrl();
+
 private:
 	friend class HippoGridInfo;
 	std::map<std::string, HippoGridInfo*> mGridInfo;
@@ -200,7 +202,6 @@ private:
 	void cleanup();
 	void loadFromFile();
 	void parseFile(const std::string& fileName, bool mergeIfNewer);
-	void parseUrl(const std::string url, bool mergeIfNewer);
 	void parseData(LLSD &gridInfo, bool mergeIfNewer);
 };
 

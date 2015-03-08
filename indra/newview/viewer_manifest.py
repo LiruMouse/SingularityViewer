@@ -773,7 +773,7 @@ class LinuxManifest(ViewerManifest):
         if self.prefix(src="", dst="bin/llplugin"):
             self.path2basename("../plugins/filepicker", "libbasic_plugin_filepicker.so")
             self.path2basename("../plugins/webkit", "libmedia_plugin_webkit.so")
-            self.path("../plugins/gstreamer010", "libmedia_plugin_gstreamer.so")
+            self.path("../plugins/gstreamer010/libmedia_plugin_gstreamer010.so", "libmedia_plugin_gstreamer.so")
             self.end_prefix("bin/llplugin")
 
         # llcommon

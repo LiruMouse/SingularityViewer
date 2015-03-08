@@ -45,7 +45,6 @@
 
 #include "llappviewer.h"
 
-#include "hippogridmanager.h"
 #include "aicurleasyrequeststatemachine.h"
 
 #ifdef CWDEBUG
@@ -213,6 +212,7 @@ LLXMLRPCValue XMLRPCResponder::responseValue(void) const
 }
 
 #ifdef AI_UNUSED
+#include "hippogridmanager.h"
 void LLXMLRPCTransaction::Impl::setStatus(Status status,
 	const std::string& message, const std::string& uri)
 {

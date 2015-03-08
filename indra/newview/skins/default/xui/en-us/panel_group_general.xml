@@ -53,8 +53,8 @@ Hover your mouse over the options for more help.
 	     mouse_opaque="true" name="insignia" tool_tip="Click to choose a picture"
 	     width="128" />
 	<text_editor bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom_delta="-14" drop_shadow_visible="false" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="144"
+	     bottom_delta="-19" drop_shadow_visible="false" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="149"
 	     hide_scrollbar="true" max_length="511" mouse_opaque="true" name="charter"
 	     right="410" v_pad="0"
 	     width="265" word_wrap="true" spell_check="true">
@@ -62,11 +62,12 @@ Hover your mouse over the options for more help.
 	</text_editor>
 	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
 	     height="22" label="Join ([CURRENCY]0)" label_selected="Join ([CURRENCY]0)" left="7"
-	     mouse_opaque="true" name="join_button" width="128" />
+	     mouse_opaque="true" name="join_button" width="106" />
 	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
 	     height="22" label="Detailed View" label_selected="Detailed View"
-	     left_delta="0" mouse_opaque="true" name="info_button" width="128" />
-	<text bottom_delta="-16" font="SansSerif" name="text_owners_and_visible_members">
+	     left_delta="0" mouse_opaque="true" name="info_button" width="106" />
+	<button bottom_delta="0" follows="left|top" height="22" label="" left_delta="106"  width="22" scale_image="true" image_selected="tool_zoom.tga" image_unselected="tool_zoom.tga" image_hover_selected="tool_zoom_active.tga" image_hover_unselected="tool_zoom_active.tga" name="bigimg"/>
+	<text bottom_delta="-16" left_delta="-106" font="SansSerif" name="text_owners_and_visible_members">
 		Owners &amp; Visible Members
 	</text>
 	<text bottom_delta="-16" font="SansSerifSmall" left_delta="0"

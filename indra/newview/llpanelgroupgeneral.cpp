@@ -128,6 +128,8 @@ BOOL LLPanelGroupGeneral::postBuild()
 	{
 		mInsignia->setCommitCallback(boost::bind(&LLPanelGroupGeneral::onCommitAny,this));
 		mDefaultIconID = mInsignia->getImageAssetID();
+		void show_picture(const LLUUID& id, const std::string& name);
+		getChild<LLUICtrl>("bigimg")->setCommitCallback(boost::bind(boost::bind(show_picture, boost::bind(&LLTextureCtrl::getImageAssetID, mInsignia), "Group Insignia")));
 	}
 	
 	mEditCharter = getChild<LLTextEditor>("charter", recurse);

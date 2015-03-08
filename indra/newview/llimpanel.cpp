@@ -466,9 +466,6 @@ LLFloaterIMPanel::~LLFloaterIMPanel()
 	
 	delete mVoiceChannel;
 	mVoiceChannel = NULL;
-
-	//delete focus lost callback
-	mFocusLostSignal.disconnect();
 }
 
 // virtual
@@ -506,7 +503,7 @@ BOOL LLFloaterIMPanel::postBuild()
 		mInputEditor = getChild<LLLineEditor>("chat_editor");
 		mInputEditor->setAutoreplaceCallback(boost::bind(&LLAutoReplace::autoreplaceCallback, LLAutoReplace::getInstance(), _1, _2, _3, _4, _5));
 		mInputEditor->setFocusReceivedCallback( boost::bind(&LLFloaterIMPanel::onInputEditorFocusReceived, this) );
-		mFocusLostSignal = mInputEditor->setFocusLostCallback(boost::bind(&LLFloaterIMPanel::setTyping, this, false));
+		mInputEditor->setFocusLostCallback(boost::bind(&LLFloaterIMPanel::setTyping, this, false));
 		mInputEditor->setKeystrokeCallback( boost::bind(&LLFloaterIMPanel::onInputEditorKeystroke, this, _1) );
 		mInputEditor->setCommitCallback( boost::bind(&LLFloaterIMPanel::onSendMsg,this) );
 		mInputEditor->setCommitOnFocusLost( FALSE );

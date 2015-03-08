@@ -786,9 +786,6 @@ void HippoGridManager::loadFromFile()
 	parseFile(gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "grids_sg1.xml"), false);
 	// merge default grid info, if newer. Force load, if list of grids is empty.
 	parseFile(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "default_grids.xml"), !mGridInfo.empty());
-	// merge grid info from web site, if newer. Force load, if list of grids is empty.
-	if (gSavedSettings.getBOOL("CheckForGridUpdates"))
-		parseUrl(gSavedSettings.getString("GridUpdateList"), !mGridInfo.empty());
 
 	std::string last_grid = gSavedSettings.getString("LastSelectedGrid");
 	if (last_grid.empty()) last_grid = gSavedSettings.getString("DefaultGrid");
@@ -796,8 +793,9 @@ void HippoGridManager::loadFromFile()
 	setCurrentGrid(last_grid);
 }
 
-void HippoGridManager::parseUrl(const std::string url, bool mergeIfNewer)
+void HippoGridManager::parseUrl()
 {
+	const std::string& url(gSavedSettings.getString("GridUpdateList"));
 	if (url.empty()) return;
 
 	llinfos << "Loading grid info from '" << url << "'." << llendl;
@@ -816,8 +814,8 @@ void HippoGridManager::parseUrl(const std::string url, bool mergeIfNewer)
 		return;
 	}
 
-	LLSD gridInfo = response["body"];
-	parseData(gridInfo, mergeIfNewer);
+	// Force load, if list of grids is empty.
+	parseData(response["body"], !mGridInfo.empty());
 }
 
 void HippoGridManager::parseFile(const std::string& fileName, bool mergeIfNewer)

@@ -92,8 +92,6 @@ public:
 	/*virtual*/ BOOL postBuild();
 	/*virtual*/ void processProperties(void* data, EAvatarProcessorType type);
 
-	void onClickImage();
-
 	void enableControls(BOOL own_avatar);
 };
 
@@ -113,7 +111,6 @@ public:
 	/*virtual*/ void onChange() {}
 	/*virtual*/ void onChangeDetailed(const LLMute& mute);
 
-	void onClickImage();
 	void onClickFriends();
 	void onDoubleClickGroup();
 	static bool onClickPartnerHelpLoadURL(const LLSD& notification, const LLSD& response);

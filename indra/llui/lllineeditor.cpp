@@ -396,15 +396,16 @@ void LLLineEditor::setCursor( S32 pos )
 	S32 pixels_after_scroll = findPixelNearestPos();
 	if( pixels_after_scroll > mMaxHPixels )
 	{
-		S32 width_chars_to_left = mGLFont->getWidth(mText.getWString().c_str(), 0, mScrollHPos);
-		S32 last_visible_char = mGLFont->maxDrawableChars(mText.getWString().c_str(), llmax(0.f, (F32)(mMaxHPixels - mMinHPixels + width_chars_to_left))); 
+		const LLWString& utf32text = mText.getWString();
+		S32 width_chars_to_left = mGLFont->getWidth(utf32text, 0, mScrollHPos);
+		S32 last_visible_char = mGLFont->maxDrawableChars(utf32text, llmax(0.f, (F32)(mMaxHPixels - mMinHPixels + width_chars_to_left)));
 		// character immediately to left of cursor should be last one visible (SCROLL_INCREMENT_ADD will scroll in more characters)
 		// or first character if cursor is at beginning
 		S32 new_last_visible_char = llmax(0, getCursor() - 1);
-		S32 min_scroll = mGLFont->firstDrawableChar(mText.getWString().c_str(), (F32)(mMaxHPixels - mMinHPixels - UI_LINEEDITOR_CURSOR_THICKNESS - UI_LINEEDITOR_H_PAD), mText.length(), new_last_visible_char);
+		S32 min_scroll = mGLFont->firstDrawableChar(utf32text, (F32)(mMaxHPixels - mMinHPixels - UI_LINEEDITOR_CURSOR_THICKNESS - UI_LINEEDITOR_H_PAD), new_last_visible_char);
 		if (old_cursor_pos == last_visible_char)
 		{
-			mScrollHPos = llmin(mText.length(), llmax(min_scroll, mScrollHPos + SCROLL_INCREMENT_ADD));
+			mScrollHPos = llmin(utf32text.length(), LLWString::size_type(llmax(min_scroll, mScrollHPos + SCROLL_INCREMENT_ADD)));
 		}
 		else
 		{

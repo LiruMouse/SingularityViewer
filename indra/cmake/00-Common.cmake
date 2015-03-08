@@ -96,15 +96,20 @@ if (WINDOWS)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /wd4267 /wd4250 /wd4244")
   endif(WORD_SIZE EQUAL 32)
 
-  if (MSVC12)
-    # configure win32 API for windows vista+ compatibility
-    set(WINVER "0x0600" CACHE STRING "Win32 API Target version (see http://msdn.microsoft.com/en-us/library/aa383745%28v=VS.85%29.aspx)")
-    add_definitions("/DWINVER=${WINVER}" "/D_WIN32_WINNT=${WINVER}")
-  else (MSVC12)
+  if (WORD_SIZE EQUAL 32)
     # configure win32 API for windows XP+ compatibility
     set(WINVER "0x0501" CACHE STRING "Win32 API Target version (see http://msdn.microsoft.com/en-us/library/aa383745%28v=VS.85%29.aspx)")
     add_definitions("/DWINVER=${WINVER}" "/D_WIN32_WINNT=${WINVER}")
-  endif (MSVC12)
+  else (WORD_SIZE EQUAL 32)
+    # configure win32 API for windows vista+ compatibility
+    set(WINVER "0x0600" CACHE STRING "Win32 API Target version (see http://msdn.microsoft.com/en-us/library/aa383745%28v=VS.85%29.aspx)")
+    add_definitions("/DWINVER=${WINVER}" "/D_WIN32_WINNT=${WINVER}")
+  endif (WORD_SIZE EQUAL 32)
+
+  # Use special XP-compatible toolchain on 32-bit builds
+  if (MSVC12 AND (WORD_SIZE EQUAL 32))
+    set(CMAKE_GENERATOR_TOOLSET "v120xp")
+  endif (MSVC12 AND (WORD_SIZE EQUAL 32))
 
   # Are we using the crummy Visual Studio KDU build workaround?
   if (NOT DISABLE_FATAL_WARNINGS)

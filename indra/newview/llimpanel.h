@@ -246,9 +246,6 @@ private:
 	// Timer to detect when user has stopped typing.
 	LLFrameTimer mLastKeystrokeTimer;
 
-	boost::signals2::connection mFocusLostSignal;
-
-
 	CachedUICtrl<LLUICtrl> mVolumeSlider;
 	CachedUICtrl<LLUICtrl> mEndCallBtn;
 	CachedUICtrl<LLUICtrl> mStartCallBtn;

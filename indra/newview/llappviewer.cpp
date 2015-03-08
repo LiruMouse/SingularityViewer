@@ -1130,6 +1130,11 @@ bool LLAppViewer::mainLoop()
 	joystick->setNeedsReset(true);
 
     LLEventPump& mainloop(LLEventPumps::instance().obtain("mainloop"));
+
+	// merge grid info from web site, if newer.
+	if (gSavedSettings.getBOOL("CheckForGridUpdates"))
+		gHippoGridManager->parseUrl();
+
     // As we do not (yet) send data on the mainloop LLEventPump that varies
     // with each frame, no need to instantiate a new LLSD event object each
     // time. Obviously, if that changes, just instantiate the LLSD at the

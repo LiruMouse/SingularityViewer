@@ -572,7 +572,7 @@ S32 LLScrollListCtrl::calcMaxContentWidth()
 		{
 			mColumnWidthsDirty = false;
 			// update max content width for this column, by looking at all items
-			column->mMaxContentWidth = column->mHeader ? LLFontGL::getFontSansSerifSmall()->getWidth(column->mLabel) + mColumnPadding + HEADING_TEXT_PADDING : 0;
+			column->mMaxContentWidth = column->mHeader ? LLFontGL::getFontSansSerifSmall()->getWidth(column->mLabel.getWString()) + mColumnPadding + HEADING_TEXT_PADDING : 0;
 			item_list::iterator iter;
 			for (iter = mItemList.begin(); iter != mItemList.end(); iter++)
 			{

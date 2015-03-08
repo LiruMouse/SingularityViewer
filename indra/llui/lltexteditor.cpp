@@ -3699,12 +3699,12 @@ void LLTextEditor::drawText()
 		{
 			const LLFontGL *num_font = LLFontGL::getFontMonospace();
 			F32 y_top = text_y + ((F32)llmath::llround(num_font->getLineHeight()) / 2);
-			const LLWString ltext = utf8str_to_wstring(llformat("%*d", UI_TEXTEDITOR_LINE_NUMBER_DIGITS, cur_line_num ));
 			BOOL is_cur_line = getCurrentLine() == cur_line_num;
 			const U8 style = is_cur_line ? LLFontGL::BOLD : LLFontGL::NORMAL;
 			const LLColor4 fg_color = is_cur_line ? mCursorColor : mReadOnlyFgColor;
-			num_font->render( 
-				ltext, // string to draw
+
+			num_font->renderUTF8(
+				llformat("%*d", UI_TEXTEDITOR_LINE_NUMBER_DIGITS, cur_line_num), // string to draw
 				0, // begin offset
 				3., // x
 				y_top, // y
@@ -3714,7 +3714,8 @@ void LLTextEditor::drawText()
 				style, 
 				LLFontGL::NO_SHADOW,
 				S32_MAX, // max chars
-				UI_TEXTEDITOR_LINE_NUMBER_MARGIN); // max pixels
+				UI_TEXTEDITOR_LINE_NUMBER_MARGIN,
+				NULL); // max pixels
 		}
 
 		S32 seg_start = line_start;

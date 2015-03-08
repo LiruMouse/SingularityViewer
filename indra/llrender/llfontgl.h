@@ -111,27 +111,19 @@ public:
 				BOOL use_embedded = FALSE,
 				BOOL use_ellipses = FALSE) const;
 
-	S32 render(const LLWString &text, S32 begin_offset, F32 x, F32 y, const LLColor4 &color) const;
-
 	// renderUTF8 does a conversion, so is slower!
-	S32 renderUTF8(const std::string &text, S32 begin_offset, F32 x, F32 y, const LLColor4 &color, HAlign halign,  VAlign valign, U8 style, ShadowType shadow, S32 max_chars, S32 max_pixels,  F32* right_x, BOOL use_ellipses) const;
-	S32 renderUTF8(const std::string &text, S32 begin_offset, S32 x, S32 y, const LLColor4 &color) const;
-	S32 renderUTF8(const std::string &text, S32 begin_offset, S32 x, S32 y, const LLColor4 &color, HAlign halign, VAlign valign, U8 style = NORMAL, ShadowType shadow = NO_SHADOW) const;
+	S32 renderUTF8(const std::string &text, S32 begin_offset, F32 x, F32 y, const LLColor4 &color, HAlign halign = LEFT, VAlign valign = BASELINE, U8 style = NORMAL, ShadowType shadow = NO_SHADOW, S32 max_chars = S32_MAX, S32 max_pixels = S32_MAX, F32* right_x = NULL, BOOL use_ellipses = FALSE) const;
 
 	// font metrics - override for LLFont that returns units of virtual pixels
 	F32 getAscenderHeight() const;
 	F32 getDescenderHeight() const;
 	F32 getLineHeight() const;
 	
-	S32 getWidth(const std::string& utf8text) const;
-	S32 getWidth(const llwchar* wchars) const;
-	S32 getWidth(const std::string& utf8text, const S32 offset, const S32 max_chars ) const;
-	S32 getWidth(const llwchar* wchars, const S32 offset, const S32 max_chars, BOOL use_embedded = FALSE) const;
+	S32 getWidth(const std::string& utf8str, const S32 offset = 0, const S32 max_chars = S32_MAX, BOOL use_embedded = FALSE) const;
+	S32 getWidth(const LLWString& utf32str, const S32 offset = 0, const S32 max_chars = S32_MAX, BOOL use_embedded = FALSE) const;
 
-	F32 getWidthF32(const std::string& utf8text) const;
-	F32 getWidthF32(const llwchar* wchars) const;
-	F32 getWidthF32(const std::string& text, const S32 offset, const S32 max_chars ) const;
-	F32 getWidthF32(const llwchar* wchars, const S32 offset, const S32 max_chars, BOOL use_embedded = FALSE ) const;
+	F32 getWidthF32(const std::string& utf8str, const S32 offset = 0, const S32 max_chars = S32_MAX, BOOL use_embedded = FALSE) const;
+	F32 getWidthF32(const LLWString& utf32str, const S32 offset = 0, const S32 max_chars = S32_MAX, BOOL use_embedded = FALSE) const;
 
 	// The following are called often, frequently with large buffers, so do not use a string interface
 	
@@ -142,15 +134,15 @@ public:
 		WORD_BOUNDARY_IF_POSSIBLE,
 		ANYWHERE
 	} EWordWrapStyle ;
-	S32	maxDrawableChars(const llwchar* wchars, F32 max_pixels, S32 max_chars = S32_MAX, EWordWrapStyle end_on_word_boundary = ANYWHERE,
+	S32	maxDrawableChars(const LLWString& utf32str, F32 max_pixels = F32_MAX, S32 max_chars = S32_MAX, EWordWrapStyle end_on_word_boundary = ANYWHERE,
 	 const BOOL use_embedded = FALSE, F32* drawn_pixels = NULL) const;
 
 	// Returns the index of the first complete characters from text that can be drawn in max_pixels
 	// given that the character at start_pos should be the last character (or as close to last as possible).
-	S32	firstDrawableChar(const llwchar* wchars, F32 max_pixels, S32 text_len, S32 start_pos=S32_MAX, S32 max_chars = S32_MAX) const;
+	S32	firstDrawableChar(const LLWString& utf32str, F32 max_pixels = F32_MAX, S32 start_pos = S32_MAX, S32 max_chars = S32_MAX) const;
 
 	// Returns the index of the character closest to pixel position x (ignoring text to the right of max_pixels and max_chars)
-	S32 charFromPixelOffset(const llwchar* wchars, const S32 char_offset, F32 x, F32 max_pixels=F32_MAX, S32 max_chars = S32_MAX, BOOL round = TRUE, BOOL use_embedded = FALSE) const;
+	S32 charFromPixelOffset(const LLWString& utf32str, const S32 char_offset, F32 x, F32 max_pixels = F32_MAX, S32 max_chars = S32_MAX, BOOL round = TRUE, BOOL use_embedded = FALSE) const;
 
 	const LLFontDescriptor& getFontDesc() const;
 

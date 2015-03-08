@@ -1727,6 +1727,7 @@ BOOL LLTextureCtrl::doDrop(LLInventoryItem* item)
 	// no callback installed, so just set the image ids and carry on.
 	setImageAssetID( item->getAssetUUID() );
 	mImageItemID = item->getUUID();
+	mDirty = true;
 	return TRUE;
 }
 

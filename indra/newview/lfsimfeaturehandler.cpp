@@ -84,12 +84,12 @@ void LFSimFeatureHandler::setSupportedFeatures()
 			//if (hg)
 			{
 				has_feature_or_default(mDestinationGuideURL, extras, "destination-guide-url");
-				mMapServerURL = extras.has("map-server-url") ? extras["map-server-url"].asString() : "";
+				mMapServerURL = extras.has("map-server-url") ? extras["map-server-url"].asString() : LLStringUtil::null;
 				has_feature_or_default(mSearchURL, extras, "search-server-url");
 				if (extras.has("GridName"))
 				{
 					const std::string& grid_name(extras["GridName"]);
-					mGridName = gHippoGridManager->getConnectedGrid()->getGridName() != grid_name ? grid_name : "";
+					mGridName = gHippoGridManager->getConnectedGrid()->getGridName() != grid_name ? grid_name : LLStringUtil::null;
 				}
 			}
 			has_feature_or_default(mSayRange, extras, "say-range");
@@ -102,7 +102,7 @@ void LFSimFeatureHandler::setSupportedFeatures()
 			//if (hg)
 			{
 				mDestinationGuideURL.reset();
-				mMapServerURL = "";
+				mMapServerURL = LLStringUtil::null;
 				mSearchURL.reset();
 				mGridName.reset();
 			}

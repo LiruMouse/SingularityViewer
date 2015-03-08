@@ -202,14 +202,18 @@ void LLPanelPermissions::disableAll()
 	getChildView("button set group")->setEnabled(FALSE);
 	getChildView("button open group")->setEnabled(FALSE);
 
-	getChild<LLUICtrl>("Object Name")->setValue(LLStringUtil::null);
-	getChildView("Object Name")->setEnabled(FALSE);
+	LLLineEditor* ed = getChild<LLLineEditor>("Object Name");
+	ed->setValue(LLStringUtil::null);
+	ed->setEnabled(FALSE);
+	ed->setLabel(LLStringUtil::null);
 	getChildView("Name:")->setEnabled(FALSE);
 	//getChild<LLUICtrl>("Group Name")->setValue(LLStringUtil::null);
 	//getChildView("Group Name")->setEnabled(FALSE);
 	getChildView("Description:")->setEnabled(FALSE);
-	getChild<LLUICtrl>("Object Description")->setValue(LLStringUtil::null);
-	getChildView("Object Description")->setEnabled(FALSE);
+	ed = getChild<LLLineEditor>("Object Description");
+	ed->setEnabled(FALSE);
+	ed->setValue(LLStringUtil::null);
+	ed->setLabel(LLStringUtil::null);
 
 	getChildView("Permissions:")->setEnabled(FALSE);
 		
@@ -510,7 +514,7 @@ void LLPanelPermissions::refresh()
 	{
 		if(keyboard_focus_view != LineEditorObjectName)
 		{
-			getChild<LLUICtrl>("Object Name")->setValue(nodep->mName);
+			LineEditorObjectName->setValue(nodep->mName);
 		}
 
 		if(LineEditorObjectDesc)
@@ -523,25 +527,26 @@ void LLPanelPermissions::refresh()
 	}
 	else
 	{
-		getChild<LLUICtrl>("Object Name")->setValue(LLStringUtil::null);
+		LineEditorObjectName->setText(LLStringUtil::null);
 		LineEditorObjectDesc->setText(LLStringUtil::null);
 	}
 
 	// figure out the contents of the name, description, & category
-	BOOL edit_name_desc = FALSE;
-	if(is_one_object && objectp->permModify() && !objectp->isPermanentEnforced())
+	// Singu Note: It was requested that the user be able to bulk change description
 	{
-		edit_name_desc = TRUE;
+		const std::string& str(object_count > 1 ? getString("multiple_objects_selected") : LLStringUtil::null);
+		LineEditorObjectName->setLabel(str);
+		LineEditorObjectDesc->setLabel(str);
 	}
-	if(edit_name_desc)
+	if (/*is_one_object &&*/ objectp->permModify() && !objectp->isPermanentEnforced())
 	{
-		getChildView("Object Name")->setEnabled(TRUE);
-		getChildView("Object Description")->setEnabled(TRUE);
+		LineEditorObjectName->setEnabled(TRUE);
+		LineEditorObjectDesc->setEnabled(TRUE);
 	}
 	else
 	{
-		getChildView("Object Name")->setEnabled(FALSE);
-		getChildView("Object Description")->setEnabled(FALSE);
+		LineEditorObjectName->setEnabled(FALSE);
+		LineEditorObjectDesc->setEnabled(FALSE);
 	}
 
 	S32 total_sale_price = 0;

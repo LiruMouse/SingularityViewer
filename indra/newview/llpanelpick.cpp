@@ -63,8 +63,10 @@ void show_picture(const LLUUID& id, const std::string& name)
 	// Try to show and focus existing preview
 	if (LLPreview::show(id)) return;
 	// If there isn't one, make a new preview
-	LLPreview* preview = new LLPreviewTexture("preview texture", gSavedSettings.getRect("PreviewTextureRect"), name, id);
-	preview->setFocus(true);
+	S32 left, top;
+	gFloaterView->getNewFloaterPosition(&left, &top);
+	LLRect rect = gSavedSettings.getRect("PreviewTextureRect");
+	(new LLPreviewTexture("preview texture", rect.translate(left - rect.mLeft, rect.mTop - top), name, id))->setFocus(true);
 }
 
 //static
