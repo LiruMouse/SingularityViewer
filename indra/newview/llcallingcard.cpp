@@ -756,6 +756,7 @@ static void on_avatar_name_cache_notify(const LLUUID& agent_id,
 	args["NAME"] = av_name.getNSName(friend_name_system());
 	args["STATUS"] = online ? LLTrans::getString("OnlineStatus") : LLTrans::getString("OfflineStatus");
 
+	std::string name = args["NAME"];
 	boost::algorithm::trim(name);
 	xantispam_check(agent_id.asString(), (online ? "&-ExecFriendIsOnline!" : "&-ExecFriendIsOffline!"), (online ? name + " is online" : name + " is offline"));
 
