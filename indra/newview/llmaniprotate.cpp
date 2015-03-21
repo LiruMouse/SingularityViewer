@@ -373,9 +373,9 @@ void LLManipRotate::render()
 	LLQuaternion object_rot = first_object->getRotationEdit();
 	object_rot.getEulerAngles(&(euler_angles.mV[VX]), &(euler_angles.mV[VY]), &(euler_angles.mV[VZ]));
 	euler_angles *= RAD_TO_DEG;
-	euler_angles.mV[VX] = llmath::llround(fmodf(euler_angles.mV[VX] + 360.f, 360.f), 0.05f);
-	euler_angles.mV[VY] = llmath::llround(fmodf(euler_angles.mV[VY] + 360.f, 360.f), 0.05f);
-	euler_angles.mV[VZ] = llmath::llround(fmodf(euler_angles.mV[VZ] + 360.f, 360.f), 0.05f);
+	euler_angles.mV[VX] = ll_round(fmodf(euler_angles.mV[VX] + 360.f, 360.f), 0.05f);
+	euler_angles.mV[VY] = ll_round(fmodf(euler_angles.mV[VY] + 360.f, 360.f), 0.05f);
+	euler_angles.mV[VZ] = ll_round(fmodf(euler_angles.mV[VZ] + 360.f, 360.f), 0.05f);
 
 	renderXYZ(euler_angles);
 }
@@ -1500,7 +1500,7 @@ LLQuaternion LLManipRotate::dragConstrained( S32 x, S32 y )
 				F32 mouse_angle = fmodf(atan2(projected_mouse * axis1, projected_mouse * axis2) * RAD_TO_DEG + 360.f, 360.f);
 				
 				F32 relative_mouse_angle = fmodf(mouse_angle + (SNAP_ANGLE_DETENTE / 2), SNAP_ANGLE_INCREMENT);
-				//fmodf(llmath::llround(mouse_angle * RAD_TO_DEG, 7.5f) + 360.f, 360.f);
+				//fmodf(ll_round(mouse_angle * RAD_TO_DEG, 7.5f) + 360.f, 360.f);
 	
 				LLVector3 object_axis;
 				getObjectAxisClosestToMouse(object_axis);
@@ -1584,7 +1584,7 @@ LLQuaternion LLManipRotate::dragConstrained( S32 x, S32 y )
 			F32 mouse_angle = fmodf(atan2(projected_mouse * axis1, projected_mouse * axis2) * RAD_TO_DEG + 360.f, 360.f);
 			
 			F32 relative_mouse_angle = fmodf(mouse_angle + (SNAP_ANGLE_DETENTE / 2), SNAP_ANGLE_INCREMENT);
-			//fmodf(llmath::llround(mouse_angle * RAD_TO_DEG, 7.5f) + 360.f, 360.f);
+			//fmodf(ll_round(mouse_angle * RAD_TO_DEG, 7.5f) + 360.f, 360.f);
 
 			LLVector3 object_axis;
 			getObjectAxisClosestToMouse(object_axis);

@@ -251,7 +251,10 @@ public:
 		UUID	asUUID() const;
 		Date	asDate() const;
 		URI		asURI() const;
-		Binary	asBinary() const;
+		const Binary&	asBinary() const;
+
+		// asStringRef on any non-string type will return a ref to an empty string.
+		const String&	asStringRef() const;
 
 		operator Boolean() const	{ return asBoolean(); }
 		operator Integer() const	{ return asInteger(); }
@@ -323,11 +326,15 @@ public:
 		
 		typedef std::vector<LLSD>::iterator			array_iterator;
 		typedef std::vector<LLSD>::const_iterator	array_const_iterator;
+		typedef std::vector<LLSD>::reverse_iterator reverse_array_iterator;
 		
 		array_iterator			beginArray();
 		array_iterator			endArray();
 		array_const_iterator	beginArray() const;
 		array_const_iterator	endArray() const;
+
+		reverse_array_iterator	rbeginArray();
+		reverse_array_iterator	rendArray();
 	//@}
 	
 	/** @name Type Testing */
@@ -390,13 +397,7 @@ public:
 		class Impl;
 private:
 		Impl* impl;
-	//@}
-	
-	/** @name Unit Testing Interface */
-	//@{
-public:
-		static U32 allocationCount();	///< how many Impls have been made
-		static U32 outstandingCount();	///< how many Impls are still alive
+		friend class LLSD::Impl;
 	//@}
 
 private:
@@ -408,6 +409,10 @@ private:
 		/// Returns Notation version of llsd -- only to be called from debugger
 		static const char *dump(const LLSD &llsd);
 	//@}
+
+public:
+
+	static std::string		typeString(Type type);		// Return human-readable type as a string
 };
 
 struct llsd_select_bool : public std::unary_function<LLSD, LLSD::Boolean>
@@ -454,6 +459,29 @@ struct llsd_select_string : public std::unary_function<LLSD, LLSD::String>
 };
 
 LL_COMMON_API std::ostream& operator<<(std::ostream& s, const LLSD& llsd);
+
+namespace llsd
+{
+
+#ifdef LLSD_DEBUG_INFO
+/** @name Unit Testing Interface */
+//@{
+	LL_COMMON_API void dumpStats(const LLSD&);	///< Output information on object and usage
+
+	/// @warn THE FOLLOWING COUNTS WILL NOT BE ACCURATE IN A MULTI-THREADED
+	/// ENVIRONMENT.
+	///
+	/// These counts track LLSD::Impl (hidden) objects.
+	LL_COMMON_API U32 allocationCount();	///< how many Impls have been made
+	LL_COMMON_API U32 outstandingCount();	///< how many Impls are still alive
+
+	/// These counts track LLSD (public) objects.
+	LL_COMMON_API extern S32 sLLSDAllocationCount;	///< Number of LLSD objects ever created
+	LL_COMMON_API extern S32 sLLSDNetObjects;		///< Number of LLSD objects that exist
+#endif
+//@}
+
+} // namespace llsd
 
 /** QUESTIONS & TO DOS
 	- Would Binary be more convenient as unsigned char* buffer semantics?

@@ -170,7 +170,7 @@ CMD_SCRIPT(gettext)
 
 #include "llphysicsmotion.h"
 
-void cmdline_printchat(std::string message);
+void cmdline_printchat(const std::string& message);
 CMD_CHAT(physparams)
 {
 	//args[1] = avatar name

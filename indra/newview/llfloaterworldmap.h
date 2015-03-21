@@ -132,6 +132,7 @@ protected:
 	void			onShowTargetBtn();
 	void			onShowAgentBtn();
 	void			onCopySLURL();
+	void			onTrackRegion();
 
 	void			centerOnTarget(BOOL animate);
 	void			updateLocation();

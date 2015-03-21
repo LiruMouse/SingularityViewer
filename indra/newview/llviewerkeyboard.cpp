@@ -71,7 +71,7 @@ void agent_jump( EKeystate s )
 {
 	if( KEYSTATE_UP == s  ) return;
 	F32 time = gKeyboard->getCurKeyElapsedTime();
-	S32 frame_count = llmath::llround(gKeyboard->getCurKeyElapsedFrameCount());
+	S32 frame_count = ll_round(gKeyboard->getCurKeyElapsedFrameCount());
 
 	if( time < FLY_TIME 
 		|| frame_count <= FLY_FRAMES 
@@ -148,7 +148,7 @@ static void agent_push_forwardbackward( EKeystate s, S32 direction, LLAgent::EDo
 	if (KEYSTATE_UP == s) return;
 
 	F32 time = gKeyboard->getCurKeyElapsedTime();
-	S32 frame_count = llmath::llround(gKeyboard->getCurKeyElapsedFrameCount());
+	S32 frame_count = ll_round(gKeyboard->getCurKeyElapsedFrameCount());
 
 	if( time < NUDGE_TIME || frame_count <= NUDGE_FRAMES)
 	{
@@ -176,7 +176,7 @@ static void agent_slide_leftright( EKeystate s, S32 direction, LLAgent::EDoubleT
 	agent_handle_doubletap_run(s, mode);
 	if( KEYSTATE_UP == s ) return;
 	F32 time = gKeyboard->getCurKeyElapsedTime();
-	S32 frame_count = llmath::llround(gKeyboard->getCurKeyElapsedFrameCount());
+	S32 frame_count = ll_round(gKeyboard->getCurKeyElapsedFrameCount());
 
 	if( time < NUDGE_TIME || frame_count <= NUDGE_FRAMES)
 	{

@@ -80,8 +80,8 @@
 		#define LL_CLANG 1
 	#endif
 #elif defined (__ICC)
-	#ifndef LL_ICC
-		#define LL_ICC 1
+	#ifndef LL_INTELC
+		#define LL_INTELC 1
 	#endif
 #elif defined(__GNUC__)
 	#define GCC_VERSION (__GNUC__ * 10000 \
@@ -93,9 +93,6 @@
 #elif defined(__MSVC_VER__) || defined(_MSC_VER)
 	#ifndef LL_MSVC
 		#define LL_MSVC 1
-	#endif
-	#if _MSC_VER < 1400
-		#define LL_MSVC7 //Visual C++ 2003 or earlier
 	#endif
 #endif
 
@@ -112,6 +109,16 @@
 
 #endif
 
+// Check for C++11 support
+#if __cplusplus >= 201100L || _MSC_VER >= 1800
+#  define LL_CPP11
+#endif
+
+#if LL_WINDOWS
+# define LL_THREAD_LOCAL __declspec(thread)
+#else
+# define LL_THREAD_LOCAL __thread
+#endif
 
 // Static linking with apr on windows needs to be declared.
 #if LL_WINDOWS && !LL_COMMON_LINK_SHARED
@@ -142,7 +149,7 @@
 #pragma warning( 3       : 4265 )	// "class has virtual functions, but destructor is not virtual"
 #pragma warning( 3      :  4266 )	// 'function' : no override available for virtual member function from base 'type'; function is hidden
 #pragma warning (disable : 4180)	// qualifier applied to function type has no meaning; ignored
-#pragma warning( disable : 4284 )	// silly MS warning deep inside their <map> include file
+//#pragma warning( disable : 4284 )	// silly MS warning deep inside their <map> include file
 #pragma warning( disable : 4503 )	// 'decorated name length exceeded, name was truncated'. Does not seem to affect compilation.
 #pragma warning( disable : 4800 )	// 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
 #pragma warning( disable : 4996 )	// warning: deprecated
@@ -161,6 +168,12 @@
 
 #pragma warning (disable : 4251) // member needs to have dll-interface to be used by clients of class
 #pragma warning (disable : 4275) // non dll-interface class used as base for dll-interface class
+//#pragma warning (disable : 4018) // '<' : signed/unsigned mismatch
+
+#if _WIN64
+#pragma warning (disable : 4267) // member needs to have dll-interface to be used by clients of class
+#endif
+
 #endif	//	LL_MSVC
 
 #if LL_WINDOWS
@@ -196,6 +209,25 @@
 #else // Linux
 #define ll_thread_local __thread
 #endif
+#endif
+
+#if defined(LL_WINDOWS) || __cplusplus >= 201103L
+#  define LL_TYPEOF(exp) decltype(exp)
+#else
+#  define LL_TYPEOF(exp) typeof(exp)
+#endif
+
+#define LL_TO_STRING_HELPER(x) #x
+#define LL_TO_STRING(x) LL_TO_STRING_HELPER(x)
+#define LL_FILE_LINENO_MSG(msg) __FILE__ "(" LL_TO_STRING(__LINE__) ") : " msg
+#define LL_GLUE_IMPL(x, y) x##y
+#define LL_GLUE_TOKENS(x, y) LL_GLUE_IMPL(x, y)
+
+#if LL_WINDOWS
+#define LL_COMPILE_TIME_MESSAGE(msg) __pragma(message(LL_FILE_LINENO_MSG(msg)))
+#else
+// no way to get gcc 4.2 to print a user-defined diagnostic message only when a macro is used
+#define LL_COMPILE_TIME_MESSAGE(msg)
 #endif
 
 #endif	//	not LL_LINDEN_PREPROCESSOR_H

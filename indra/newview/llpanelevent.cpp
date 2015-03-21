@@ -154,9 +154,9 @@ void LLPanelEvent::processEventInfoReply(LLMessageSystem *msg, void **)
 		F32 global_x = (F32)self->mEventInfo.mPosGlobal.mdV[VX];
 		F32 global_y = (F32)self->mEventInfo.mPosGlobal.mdV[VY];
 
-		S32 region_x = llmath::llround(global_x) % REGION_WIDTH_UNITS;
-		S32 region_y = llmath::llround(global_y) % REGION_WIDTH_UNITS;
-		S32 region_z = llmath::llround((F32)self->mEventInfo.mPosGlobal.mdV[VZ]);
+		S32 region_x = ll_round(global_x) % REGION_WIDTH_UNITS;
+		S32 region_y = ll_round(global_y) % REGION_WIDTH_UNITS;
+		S32 region_z = ll_round((F32)self->mEventInfo.mPosGlobal.mdV[VZ]);
 		
 		std::string desc = self->mEventInfo.mSimName + llformat(" (%d, %d, %d)", region_x, region_y, region_z);
 		self->mTBLocation->setText(desc);

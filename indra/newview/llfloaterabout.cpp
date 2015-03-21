@@ -70,11 +70,6 @@
 #include "lldxhardware.h"
 #endif
 
-
-
-
-
-
 extern LLMemoryInfo gSysMemory;
 extern U32 gPacketsIn;
 
@@ -158,7 +153,7 @@ LLFloaterAbout::LLFloaterAbout()
     support.append(llformat("Built with Clang version %d\n\n", CLANG_VERSION));
 #endif
 
-#if LL_ICC
+#if LL_INTELC
     support.append(llformat("Built with ICC version %d\n\n", __ICC));
 #endif
 

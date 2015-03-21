@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="directory" title="Buscar en Second Life">
+<floater name="directory" title="Buscar">
 	<tab_container name="Directory Tabs">
 		<!-- ======================== -->
 		<panel label="Todos (Clásico)" name="find_all_old_panel">
@@ -43,7 +43,7 @@
 			<text name="find">
 				Buscar:
 			</text>
-			<line_editor label="Buscar" name="search_editor" tool_tip="Buscar en Second Life"/>
+			<line_editor label="Buscar" name="search_editor" tool_tip="Buscar"/>
 			<button label="Buscar" name="search_btn"/>
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">

@@ -30,6 +30,7 @@
 // Project includes
 #include "llsdparam.h"
 #include "llsdutil.h"
+#include "boost/bind.hpp"
 
 static 	LLInitParam::Parser::parser_read_func_map_t sReadFuncs;
 static 	LLInitParam::Parser::parser_write_func_map_t sWriteFuncs;
@@ -42,7 +43,8 @@ LLFastTimer::DeclareTimer FTM_SD_PARAM_ADAPTOR("LLSD to LLInitParam conversion")
 // LLParamSDParser
 //
 LLParamSDParser::LLParamSDParser()
-: Parser(sReadFuncs, sWriteFuncs, sInspectFuncs)
+: Parser(sReadFuncs, sWriteFuncs, sInspectFuncs),
+  mCurReadSD(NULL), mCurWriteSD(NULL), mWriteRootSD(NULL)
 {
 	using boost::bind;
 
@@ -102,13 +104,13 @@ void LLParamSDParser::readSD(const LLSD& sd, LLInitParam::BaseBlock& block, bool
 	//readSDValues(sd, block);
 }
 
-void LLParamSDParser::writeSD(LLSD& sd, const LLInitParam::BaseBlock& block)
+void LLParamSDParser::writeSDImpl(LLSD& sd, const LLInitParam::BaseBlock& block, const LLInitParam::predicate_rule_t rules, const LLInitParam::BaseBlock* diff_block)
 {
 	mNameStack.clear();
 	mWriteRootSD = &sd;
 
 	name_stack_t name_stack;
-	block.serializeBlock(*this, name_stack);
+	block.serializeBlock(*this, name_stack, rules, diff_block);
 }
 
 /*virtual*/ std::string LLParamSDParser::getCurrentElementName()
@@ -329,13 +331,14 @@ namespace LLInitParam
 		p.writeValue<LLSD::String>(sd.asString(), name_stack);
 	}
 
-	void ParamValue<LLSD, NOT_BLOCK>::serializeBlock(Parser& p, Parser::name_stack_t& name_stack, const BaseBlock* diff_block) const
+	bool ParamValue<LLSD, NOT_BLOCK>::serializeBlock(Parser& p, Parser::name_stack_t& name_stack_range, const predicate_rule_t predicate_rule, const BaseBlock* diff_block) const
 	{
 		// attempt to write LLSD out directly
-		if (!p.writeValue<LLSD>(mValue, name_stack))
+		if (!p.writeValue<LLSD>(mValue, name_stack_range))
 		{
 			// otherwise read from LLSD value and serialize out to parser (which could be LLSD, XUI, etc)
-			LLParamSDParserUtilities::readSDValues(boost::bind(&serializeElement, boost::ref(p), _1, _2), mValue, name_stack);
+			LLParamSDParserUtilities::readSDValues(boost::bind(&serializeElement, boost::ref(p), _1, _2), mValue, name_stack_range);
 		}
+		return true;
 	}
 }

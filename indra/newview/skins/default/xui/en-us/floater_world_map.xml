@@ -88,13 +88,13 @@
 	     name="events_mature_icon" width="16" />
 	<check_box bottom="-136" control_name="MapShowMatureEvents" follows="top|right"
 	     font="SansSerifSmall" height="16" initial_value="true" label="Mature"
-	     left_delta="20" mouse_opaque="true" name="event_mature_chk" width="55" />
+	     left_delta="20" mouse_opaque="true" name="events_mature_chk" width="55" />
 	<icon bottom="-156" color="1, 1, 1, 1" follows="top|right" height="16"
 	     image_name="map_event_adult.tga" left="1151" mouse_opaque="true"
 	     name="events_adult_icon" width="16" />
 	<check_box bottom="-156" control_name="MapShowAdultEvents" follows="top|right"
 	     font="SansSerifSmall" height="16" initial_value="false" label="Adult"
-	     left_delta="20" mouse_opaque="true" name="event_adult_chk" width="55" />
+	     left_delta="20" mouse_opaque="true" name="events_adult_chk" width="55" />
 	<icon bottom="-180" color="0.5, 0, 0, 1" follows="top|right" height="16"
 	     image_name="map_track_16.tga" left="1013" mouse_opaque="true"
 	     name="avatar_icon" width="16" />
@@ -204,11 +204,15 @@
 		function="WMap.ShowAgent" />
     </button>
 	<button bottom_delta="-24" enabled="false" follows="bottom|right" font="SansSerif"
-	     height="20" label="Copy SLURL to clipboard" left="-230" name="copy_slurl"
+	     height="20" label="Copy SLURL" left="-230" name="copy_slurl"
 	     tool_tip="Copies current location as SLURL to be used on the web."
-	     width="222">
+	     width="90">
 		<button.commit_callback
 		function="WMap.CopySLURL" />
+    </button>
+    <button bottom_delta="0" follows="right|bottom" height="20" label="Track Region" left_delta="100" name="track_region" tool_tip="Add the region to the region tracker" width="125">
+      <button.commit_callback
+       function="WMap.TrackRegion" />
     </button>
 	<slider bottom="-697" can_edit_text="false" decimal_digits="3" follows="right|bottom"
 	     height="16" increment="0.2" initial_val="-2" label="Zoom" left="-230"

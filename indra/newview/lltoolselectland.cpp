@@ -226,8 +226,8 @@ void LLToolSelectLand::handleDeselect()
 
 void LLToolSelectLand::roundXY(LLVector3d &vec)
 {
-	vec.mdV[VX] = llmath::llround( vec.mdV[VX], (F64)PARCEL_GRID_STEP_METERS );
-	vec.mdV[VY] = llmath::llround( vec.mdV[VY], (F64)PARCEL_GRID_STEP_METERS );
+	vec.mdV[VX] = ll_round( vec.mdV[VX], (F64)PARCEL_GRID_STEP_METERS );
+	vec.mdV[VY] = ll_round( vec.mdV[VY], (F64)PARCEL_GRID_STEP_METERS );
 }
 
 

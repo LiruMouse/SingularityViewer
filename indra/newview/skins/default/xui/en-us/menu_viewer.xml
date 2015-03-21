@@ -1030,11 +1030,19 @@
 		<menu_item_call label="Animation Override..." mouse_opaque="true" name="Animation Override ...">
 			<on_click function="ShowFloater" userdata="ao"/>
 		</menu_item_call>
+		<menu_item_check label="Pose Stand" mouse_opaque="true" name="Pose Stand">
+			<on_click function="PoseStand"/>
+			<on_check function="CheckPoseStand"/>
+		</menu_item_check>
 		<menu_item_check label="Nimble" mouse_opaque="true" name="Nimble">
 			<on_click function="ToggleControl" userdata="Nimble"/>
 			<on_check control="Nimble"/>
 		</menu_item_check>
 		<menu_item_separator mouse_opaque="true" name="separators3"/>
+		<menu_item_check label="Region Tracker" name="Region Tracker">
+			<on_click function="ShowFloater" userdata="region_tracker"/>
+			<on_check function="FloaterVisible" userdata="region_tracker"/>
+		</menu_item_check>
 		<menu_item_check label="Object Area Search" mouse_opaque="true" name="Object Area Search">
 			<on_click function="ShowFloater" userdata="areasearch"/>
 			<on_check function="FloaterVisible" userdata="areasearch"/>
@@ -1055,10 +1063,6 @@
 			<on_click function="ShowFloater" userdata="media ticker"/>
 			<on_check function="FloaterVisible" userdata="media ticker"/>
 			<on_enable function="EnableStreamingAudioDisplay"/>
-		</menu_item_check>
-		<menu_item_check label="Pose Stand" mouse_opaque="true" name="Pose Stand">
-			<on_click function="PoseStand"/>
-			<on_check function="CheckPoseStand"/>
 		</menu_item_check>
 		<menu_item_check label="Region Debug Console" mouse_opaque="true" name="Region Debug Console">
 			<on_click function="ShowFloater" userdata="RegionDebugConsole"/>

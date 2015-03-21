@@ -535,7 +535,7 @@ S32 LLFolderView::arrange( S32* unused_width, S32* unused_height, S32 filter_gen
 	updateRenamerPosition();
 
 	mTargetHeight = (F32)target_height;
-	return llmath::llround(mTargetHeight);
+	return ll_round(mTargetHeight);
 }
 
 const std::string LLFolderView::getFilterSubString(BOOL trim)
@@ -2041,7 +2041,7 @@ void LLFolderView::scrollToShowItem(LLFolderViewItem* item, const LLRect& constr
 		LLRect item_scrolled_rect; // item position relative to display area of scroller
 		
 		S32 icon_height = mIcon.isNull() ? 0 : mIcon->getHeight(); 
-		S32 label_height = llmath::llround(getLabelFontForStyle(mLabelStyle)->getLineHeight()); 
+		S32 label_height = ll_round(getLabelFontForStyle(mLabelStyle)->getLineHeight()); 
 		// when navigating with keyboard, only move top of opened folder on screen, otherwise show whole folder
 		S32 max_height_to_show = item->isOpen() && mScrollContainer->hasFocus() ? (llmax( icon_height, label_height ) + ICON_PAD) : local_rect.getHeight(); 
 		

@@ -32,9 +32,9 @@
 		<icon name="event"/>
 		<check_box label="PG" name="event_chk"/>
 		<icon name="events_mature_icon"/>
-		<check_box label="Mature" name="event_mature_chk"/>
+		<check_box label="Mature" name="events_mature_chk"/>
 		<icon name="events_adult_icon"/>
-		<check_box label="Adulto" name="event_adult_chk"/>
+		<check_box label="Adulto" name="events_adult_chk"/>
 		<icon name="avatar_icon"/>
 		<combo_box label="Amigos Conectados" name="friend combo" tool_tip="Mostrar amigos en el mapa">
 			<combo_item name="none_selected">

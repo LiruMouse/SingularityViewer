@@ -602,7 +602,7 @@ bool LLScrollListCtrl::updateColumnWidths()
 		S32 new_width = column->getWidth();
 		if (column->mRelWidth >= 0)
 		{
-			new_width = (S32)llmath::llround(column->mRelWidth*mItemListRect.getWidth());
+			new_width = (S32)ll_round(column->mRelWidth*mItemListRect.getWidth());
 		}
 		else if (column->mDynamicWidth)
 		{
@@ -2604,9 +2604,11 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 
 	LLSD columns;
 	S32 index = 0;
+	const std::string nodename(std::string(node->getName()->mString) + '.');
+	const std::string kidcolumn(nodename + "columns");
 	for (LLXMLNodePtr child = node->getFirstChild(); child.notNull(); child = child->getNextSibling())
 	{
-		if (child->hasName("column"))
+		if (child->hasName("column") || child->hasName(kidcolumn))
 		{
 			std::string labelname("");
 			if (child->getAttributeString("label", labelname))
@@ -2666,9 +2668,11 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 		scroll_list->sortByColumnIndex(sort_column, sort_ascending);
 	}
 
+	const std::string kidrow(nodename + "row");
+	const std::string kidrows(nodename + "rows");
 	for (LLXMLNodePtr child = node->getFirstChild(); child.notNull(); child = child->getNextSibling())
 	{
-		if (child->hasName("row") || child->hasName("rows"))
+		if (child->hasName("row") || child->hasName(kidrow) || child->hasName("rows") || child->hasName(kidrows))
 		{
 			LLUUID id;
 			LLSD row;
@@ -2829,7 +2833,7 @@ void LLScrollListCtrl::addColumn(const LLScrollListColumn::Params& column_params
 			}
 			if (new_column->mRelWidth >= 0)
 			{
-				new_column->setWidth((S32)llmath::llround(new_column->mRelWidth*mItemListRect.getWidth()));
+				new_column->setWidth((S32)ll_round(new_column->mRelWidth*mItemListRect.getWidth()));
 			}
 			else if(new_column->mDynamicWidth)
 			{

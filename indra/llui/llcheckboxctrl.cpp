@@ -83,7 +83,7 @@ LLCheckBoxCtrl::LLCheckBoxCtrl(const std::string& name, const LLRect& rect,
 	// Label (add a little space to make sure text actually renders)
 	const S32 FUDGE = 10;
 	S32 text_width = mFont->getWidth( label ) + FUDGE;
-	S32 text_height = llmath::llround(mFont->getLineHeight());
+	S32 text_height = ll_round(mFont->getLineHeight());
 	LLRect label_rect;
 	label_rect.setOriginAndSize(
 		LLCHECKBOXCTRL_HPAD + LLCHECKBOXCTRL_BTN_SIZE + LLCHECKBOXCTRL_SPACING,
@@ -187,7 +187,7 @@ void LLCheckBoxCtrl::reshape(S32 width, S32 height, BOOL called_from_parent)
 	//stretch or shrink bounding rectangle of label when rebuilding UI at new scale
 	const S32 FUDGE = 10;
 	S32 text_width = mFont->getWidth( mLabel->getText() ) + FUDGE;
-	S32 text_height = llmath::llround(mFont->getLineHeight());
+	S32 text_height = ll_round(mFont->getLineHeight());
 	LLRect label_rect;
 	label_rect.setOriginAndSize(
 		LLCHECKBOXCTRL_HPAD + LLCHECKBOXCTRL_BTN_SIZE + LLCHECKBOXCTRL_SPACING,

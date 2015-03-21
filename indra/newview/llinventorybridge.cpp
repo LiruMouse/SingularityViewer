@@ -1520,43 +1520,39 @@ void LLItemBridge::restoreItem()
 	}
 }
 
-void LLItemBridge::restoreToWorld()
+void restore_to_world(LLViewerInventoryItem* itemp, bool no_copy, bool response = true)
 {
-	//Similar functionality to the drag and drop rez logic
-	bool remove_from_inventory = false;
+	if (!response) return;
+	LLMessageSystem* msg = gMessageSystem;
+	msg->newMessage("RezRestoreToWorld");
+	msg->nextBlockFast(_PREHASH_AgentData);
+	msg->addUUIDFast(_PREHASH_AgentID, gAgentID);
+	msg->addUUIDFast(_PREHASH_SessionID, gAgentSessionID);
 
-	LLViewerInventoryItem* itemp = static_cast<LLViewerInventoryItem*>(getItem());
-	if (itemp)
-	{
-		LLMessageSystem* msg = gMessageSystem;
-		msg->newMessage("RezRestoreToWorld");
-		msg->nextBlockFast(_PREHASH_AgentData);
-		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+	msg->nextBlockFast(_PREHASH_InventoryData);
+	itemp->packMessage(msg);
+	msg->sendReliable(gAgent.getRegion()->getHost());
 
-		msg->nextBlockFast(_PREHASH_InventoryData);
-		itemp->packMessage(msg);
-		msg->sendReliable(gAgent.getRegion()->getHost());
-
-		//remove local inventory copy, sim will deal with permissions and removing the item
-		//from the actual inventory if its a no-copy etc
-		if(!itemp->getPermissions().allowCopyBy(gAgent.getID()))
-		{
-			remove_from_inventory = true;
-		}
-
-		// Check if it's in the trash. (again similar to the normal rez logic)
-		const LLUUID trash_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_TRASH);
-		if(gInventory.isObjectDescendentOf(itemp->getUUID(), trash_id))
-		{
-			remove_from_inventory = true;
-		}
-	}
-
-	if(remove_from_inventory)
+	//remove local inventory copy, sim will deal with permissions and removing the item
+	//from the actual inventory if it's a no-copy etc
+	// Check if it's in the trash. (again similar to the normal rez logic)
+	if (no_copy || gInventory.isObjectDescendentOf(itemp->getUUID(), gInventory.findCategoryUUIDForType(LLFolderType::FT_TRASH)))
 	{
 		gInventory.deleteObject(itemp->getUUID());
 		gInventory.notifyObservers();
+	}
+}
+
+void LLItemBridge::restoreToWorld()
+{
+	if (LLViewerInventoryItem* itemp = static_cast<LLViewerInventoryItem*>(getItem()))
+	{
+		//Similar functionality to the drag and drop rez logic
+		bool no_copy = !itemp->getPermissions().allowCopyBy(gAgentID);
+		if (no_copy && gHippoGridManager->getCurrentGrid()->isSecondLife())
+			LLNotificationsUtil::add("RestoreToWorldConfirm", LLSD(), LLSD(), boost::bind(restore_to_world, itemp, true, !boost::bind(LLNotification::getSelectedOption, _1, _2)));
+		else
+			restore_to_world(itemp, no_copy);
 	}
 }
 

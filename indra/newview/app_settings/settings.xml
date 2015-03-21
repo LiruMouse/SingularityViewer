@@ -18730,6 +18730,22 @@ This should be as low as possible, but too low may break functionality</string>
         <integer>0</integer>
       </array>
     </map>    
+    <key>FloaterRegionTrackerRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for Region Tracker Floater</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>500</integer>
+        <integer>450</integer>
+        <integer>850</integer>
+        <integer>400</integer>
+      </array>
+    </map>
     <key>WindEnabled</key>
     <map>
       <key>Comment</key>
@@ -18954,7 +18970,7 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Type</key>
       <string>U32</string>
       <key>Value</key>
-      <integer>2</integer>
+      <integer>0</integer>
     </map>
   </map>
 </llsd>

@@ -135,6 +135,39 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>AlchemyMouselookIFF</key>
+    <map>
+      <key>Comment</key>
+      <string>Display user that is currently focused upon by crosshair in mouselook</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>AlchemyMouselookIFFRange</key>
+    <map>
+      <key>Comment</key>
+      <string>Range of IFF display</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>380.0</real>
+    </map>
+    <key>AlchemyMouselookInstructions</key>
+    <map>
+      <key>Comment</key>
+      <string>Draw Mouselook Instructions</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
     <key>AlchemyRainbowEffects</key>
     <map>
       <key>Comment</key>
@@ -1707,6 +1740,17 @@
     <map>
       <key>Comment</key>
       <string>Whether or not the button for the region debug console is on the toolbar</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>ToolbarVisibleRegionTracker</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not the button for the region tracker is on the toolbar</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

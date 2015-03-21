@@ -303,7 +303,7 @@ Hubo un problema al subir la foto por la siguiente razón: [REASON]
 Estos miembros no pueden ser removidos de este rol.
 Los miembros deberán abandonar el rol por si mismos.
 ¿Estás seguro que quieres continuar?
-		<usetemplate ignoretext="Cuando se añaden miembros del grupo al rol de propietario" name="okcancelignore" notext="No" yestext="Sí"/>
+		<usetemplate ignoretext="Confirmar antes de añadir un nuevo propietario de grupo" name="okcancelignore" notext="No" yestext="Sí"/>
 	</notification>
 	
 	<notification name="AssignDangerousActionWarning">
@@ -835,7 +835,11 @@ La calidad gráfica puede configurarse en Preferencias &gt; Gráficos.
 	<notification name="RegionNoTerraforming">
 		En la región [REGION] no se permite modificar el terreno.
 	</notification>
-	
+
+	<notification name="ParcelNoTerraforming">
+		No tienes permitido terraformar en la parcela [PARCEL].
+	</notification>
+
 	<notification name="CannotCopyWarning">
 		No tiene permiso para copiar los siguientes ítems.
 [ITEMS]		
@@ -1225,7 +1229,6 @@ No ha seleccionado un grupo.
 	<notification name="CannotDeedLandNoRegion">
 		No se ha podido transferir el terreno:
 Ha sido imposible encontrar en qué región está.
-Por favor, para informar de esto usa Herramientas -&gt; Informar de un fallo.
 	</notification>
 	
 	<notification name="CannotDeedLandMultipleSelected">
@@ -1279,8 +1282,6 @@ Las parcelas de tu propiedad se muestran en verde.
 	<notification name="CannotReleaseLandRegionNotFound">
 		No se ha podido abandonar el terreno:
 Ha sido imposible encontrar en qué región está.
-
-Por favor, para informar de esto usa Herramientas &gt; Informar de un fallo.
 	</notification>
 	
 	<notification name="CannotReleaseLandNoTransfer">
@@ -1326,15 +1327,11 @@ Inténtalo seleccionando una parte de la parcela.
 	<notification name="CannotDivideLandNoRegion">
 		No se ha podido dividir el terreno:
 Ha sido imposible encontrar en qué región está.
-
-Por favor, para informar de esto usa Herramientas -&gt; Informar de un fallo.
 	</notification>
 	
 	<notification name="CannotJoinLandNoRegion">
 		No se ha podido unir el terreno:
 Ha sido imposible encontrar en qué región está.
-
-Por favor, para informar de esto usa Herramientas -&gt; Informar de un fallo.
 	</notification>
 	
 	<notification name="CannotJoinLandNothingSelected">
@@ -1405,14 +1402,11 @@ Gris = Público
 	<notification name="CannotSaveToAssetStore">
 		No se ha podido guardar [NAME] en la base central de almacenamiento.
 Esto es, generalmente, un fallo temporal. Por favor, reinténtalo en unos pocos minutos.
-
-Si persiste el problema, por favor, pulsa en en el menú &apos;Herramientas &gt; Informar de un fallo&apos; y aporta detalles sobre la configuración de tu conexión.
 	</notification>
 	
 	<notification name="YouHaveBeenLoggedOut">
-		Se ha cerrado tu sesión en [SECOND_LIFE]:
+		Maldición. Se ha cerrado tu sesión en [SECOND_LIFE]:
             [MESSAGE]
-Aún puedes ver el chat y los MI existentes pulsando &apos;Ver MI y Chat&apos;. Si no, pulsa &apos;Salir&apos; para cerrar [APP_NAME]  inmediatemente.
 		<usetemplate name="okcancelbuttons" notext="Salir" yestext="Ver MI y Chat"/>
 	</notification>
 	
@@ -1621,6 +1615,7 @@ Si se vende una parcela transferida, el precio de venta se dividirá a partes ig
 	
 	<notification name="ErrorMessage">
 		[ERROR_MESSAGE]
+		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
 
 	<notification name="AvatarMovedDesired">
@@ -1655,7 +1650,7 @@ Puedes usar normalmente [SECOND_LIFE], los demás residentes te verán correctam
 
 Si esta es la primera vez que usas [SECOND_LIFE], deberás crear una cuenta antes de poder iniciar una sesión.
 ¿Volver a www.secondlife.com para crear una cuenta nueva?
-		<usetemplate name="okcancelbuttons" notext="Continuar" yestext="Cuenta nueva..."/>
+		<usetemplate name="okcancelbuttons" notext="Continuar" yestext="Crear Cuenta..."/>
 	</notification>
 	
 	<notification name="LoginPacketNeverReceived">
@@ -1689,7 +1684,7 @@ Por favor, elige el avatar masculino o femenino. Puedes cambiar más adelante tu
 	</notification>
 	
 	<notification name="GrantedModifyRights">
-		Se te ha concedido el privilegio de modificar los objetos de [NAME].
+		[NAME] te ha concedido permisos para modificar sus objetos .
 	</notification>
 	
 	<notification name="RevokedModifyRights">
@@ -1811,7 +1806,28 @@ Esta actualización no es obligatoria, pero te sugerimos instalarla para mejorar
 Esta actualización no es obligatoria, pero te sugerimos instalarla para mejorar el rendimiento y la estabilidad.
 		<usetemplate name="okcancelbuttons" notext="Continuar" yestext="Descargar"/>
 	</notification>
-	
+
+	<notification name="DownloadLinuxMandatory">
+		Está disponible una nueva versión de [APP_NAME].
+[MESSAGE]
+Debes descargar esta actualización para usar [APP_NAME].
+		<usetemplate name="okcancelbuttons" notext="Salir" yestext="Descargar"/>
+	</notification>
+
+	<notification name="DownloadLinux">
+		Está disponible una versión actualizada de [APP_NAME].
+[MESSAGE]
+Esta actualización no es obligatoria, pero te sugerimos instalarla para mejorar el rendimiento y la estabilidad.
+		<usetemplate name="okcancelbuttons" notext="Continuar" yestext="Descargar"/>
+	</notification>
+
+	<notification name="DownloadLinuxReleaseForDownload">
+		Está disponible una versión actualizada de [APP_NAME].
+[MESSAGE]
+Esta actualización no es obligatoria, pero te sugerimos instalarla para mejorar el rendimiento y la estabilidad.
+		<usetemplate name="okcancelbuttons" notext="Continuar" yestext="Descargar"/>
+	</notification>
+
 	<notification name="DownloadMacMandatory">
 		Está disponible una versión nueva de [APP_NAME].
 [MESSAGE]
@@ -1849,6 +1865,11 @@ Esta actualización no es obligatoria, pero te sugerimos instalarla para mejorar
 		¿Abrir el navegador de tu sistema para ver este contenido?
 		<usetemplate ignoretext="Cuando se abra el navegador de tu sistema para ver una página web" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
 	</notification>
+
+	<notification name="WebLaunchGridStatus">
+		¿Ir a la página oficial de Estado del Grid de [SECOND_LIFE]?
+		<usetemplate ignoretext="Cuando se abra el navegador para ver el estado del grid" name="okcancelignore" notext="Cancelar" yestext="Aceptar"/>
+  </notification>
 	
 	<notification name="WebLaunchJoinNow">
 		¿Ir a www.secondlife.com para administrar tu cuenta?
@@ -2243,7 +2264,7 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 		<form name="form">
 			<button name="OK" text="Cambiar preferencias"/>
 			<button default="true" name="Cancel" text="Cancelar"/>
-			<ignore name="ignore" text="Cuando paso a otra región: tus preferencias de contenido no te permiten visitar la región que has seleccionado."/>
+			<ignore name="ignore" text="Cruce de Región: La región que pretendes visitar contiene contenido excluido en tus preferencias."/>
 		</form>
 	</notification>
 	
@@ -2264,7 +2285,7 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 		<url name="url">
 			http://wiki.secondlife.com/wiki/Linden_Lab_Official:Maturity_ratings:_an_overview
 		</url>
-		<usetemplate ignoretext="Cuando teletransportarse: la región que intentas visitar tiene un contenido solo accesible para los adultos." name="okcancelignore" notext="Cerrar" yestext="Ir a la Base de Conocimientos"/>
+		<usetemplate name="okcancelignore" yestext="Ir a la Base de Conocimientos" notext="Cerrar" ignoretext="Teleportar: La región que intentas visitar tiene contenido solo accesible para los adultos."/>
 	</notification>
 	
 	<notification name="TeleportEntryAccessBlocked_Notify">
@@ -2280,7 +2301,7 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 		<form name="form">
 			<button name="OK" text="Cambiar y continuar"/>
 			<button name="Cancel" text="Cancelar"/>
-			<ignore name="ignore" text="Cuando teletransportarse (reiniciable): tus preferencias de contenido no te permiten visitar la región que has seleccionado."/>
+			<ignore name="ignore" text="Teleportar (reiniciable): Tus preferencias de contenido no te permiten visitar la región que has seleccionado."/>
 		</form>
 	</notification>
 	
@@ -2289,7 +2310,7 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 		<form name="form">
 			<button name="OK" text="Cambiar preferencias"/>
 			<button name="Cancel" text="Cancelar"/>
-			<ignore name="ignore" text="Cuando teletransportarse (no reiniciable): tus preferencias de contenido no te permiten visitar la región que has seleccionado."/>
+			<ignore name="ignore" text="Teleportar (no reiniciable): Tus preferencias de contenido no te permiten visitar la región que has seleccionado."/>
 		</form>
 	</notification>
 	
@@ -2297,6 +2318,11 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 		Estamos experimentando dificultades técnicas con el teleporte porque tus preferencias no están sincronizadas con el servidor.
 		<usetemplate name="okbutton" yestext="Aceptar"/>
 	</notification>
+
+	<notification name="RegionTPSpecialUsageBlocked">
+		No se puede entrar a la región. '[REGION_NAME]' es una región Skill Gaming y debes reunir ciertos requisitos para poder ingresar en ella. Para más detalles, por favor ve a [http://wiki.secondlife.com/wiki/Linden_Lab_Official:Skill_Gaming_in_Second_Life Skill Gaming FAQ].
+		<usetemplate name="okbutton" yestext="Aceptar"/>
+  </notification>
 	
 	<notification name="PreferredMaturityChanged">
 		No recibirás más notificaciones cuando vayas a visitar una región con un contenido [RATING]. En el futuro, puedes cambiar tus preferencias de contenido en Editar &gt; Preferencias &gt; General en la barra de menús.
@@ -2320,7 +2346,7 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 		<url name="url">
 			http://wiki.secondlife.com/wiki/Linden_Lab_Official:Maturity_ratings:_an_overview
 		</url>
-		<usetemplate ignoretext="Cuando solo adultos pueden reclamar este terreno." name="okcancelignore" notext="Cerrar" yestext="Ir a la Base de Conocimientos"/>
+		<usetemplate ignoretext="Sólo adultos pueden reclamar este terreno." name="okcancelignore" notext="Cerrar" yestext="Ir a la Base de Conocimientos"/>
 	</notification>
 	
 	<notification name="LandClaimAccessBlocked_Notify">
@@ -2332,11 +2358,13 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 	</notification>
 	
 	<notification name="LandClaimAccessBlocked_Change">
-		El terreno que intentas reclamar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos. Podemos cambiar tus preferencias y después puedes volver a intentar reclamar el terreno.
+		El terreno que intentas reclamar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos. 
+
+Puedes pulsar ahora &apos;Cambiar preferencias&apos; para elevar tus preferencias de calificación de contenido para permitirte entrar. Serás capaz de buscar y acceder al contenido [REGIONMATURITY] desde ahora. Si luego quieres volver al contenido actual, ve a Editar &gt; Preferencias... &gt; General.
 		<form name="form">
 			<button name="OK" text="Cambiar preferencias"/>
 			<button name="Cancel" text="Cancelar"/>
-			<ignore name="ignore" text="Cuando tus preferencias de contenido no te permiten reclamar el terreno que has seleccionado."/>
+			<ignore name="ignore" text="El terrano que estás reclamando contiene contenido excluido por tus preferencias."/>
 		</form>
 	</notification>
 	
@@ -2364,11 +2392,13 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 	</notification>
 	
 	<notification name="LandBuyAccessBlocked_Change">
-		El terreno que intentas comprar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos. Podemos cambiar tus preferencias y después puedes volver a intentar comprar el terreno.
+		El terreno que intentas comprar tiene un contenido [REGIONMATURITY], pero tus preferencias actuales no te autorizan a ver este tipo de contenidos. 
+
+Puedes pulsar ahora &apos;Cambiar preferencias&apos; para elevar tus preferencias de calificación de contenido para permitirte entrar. Serás capaz de buscar y acceder al contenido [REGIONMATURITY] desde ahora. Si luego quieres volver al contenido actual, ve a Editar &gt; Preferencias... &gt; General.
 		<form name="form">
 			<button name="OK" text="Cambiar preferencias"/>
 			<button name="Cancel" text="Cancelar"/>
-			<ignore name="ignore" text="Cuando tus preferencias de contenido no te permiten comprar el terreno que has seleccionado."/>
+			<ignore name="ignore" text="El terreno que intentas comprar contiene contenido excluido por tus preferencias."/>
 		</form>
 	</notification>
 	
@@ -2385,6 +2415,11 @@ Puedes pulsar &apos;Cambiar preferencia&apos; para aumentar tu nivel de califica
 	<notification name="ProblemAddingEstateManager">
 		Hay problemas al añadir un administrador nuevo del estado. Uno o más estados deben de tener llena la lista de administradores.
 	</notification>
+
+	<notification name="ProblemAddingEstateBanManager">
+		Incapaz de añadir a un Propietario o Administrador de Estado a la lista de Prohibición.
+    <tag>fail</tag>
+  </notification>
 	
 	<notification name="ProblemAddingEstateGeneric">
 		Hay problemas en añadir a la lista del estado. Uno o más estados deben de tener llena la lista.
@@ -3383,16 +3418,12 @@ Ya existe un grid con el mismo nombre.
 		Asunto: [SUBJECT], Mensaje: [MESSAGE]
 	</notification>
 	
-	<notification name="FriendOnline">
-		[NAME] está conectado
-	</notification>
-	
-	<notification name="FriendOffline">
-		[NAME] no está conectado
+	<notification name="FriendOnlineOffline">
+		[NAME] está [STATUS]
 	</notification>
 	
 	<notification name="AddSelfFriend">
-		No puedes añadirte a ti mismo como amigo.
+		Aunque seas muy simpático, no puedes añadirte a ti mismo como amigo.
 	</notification>
 	
 	<notification name="UploadingAuctionSnapshot">
@@ -3434,8 +3465,9 @@ Por favor, vuelve a intentarlo.
 	</notification>
 	
 	<notification name="CapsKeyOn">
-		Tienes pulsada la tecla de bloqueo de mayúsculas, lo que influirá en cómo escribas la contraseña.
-Quizá quieras soltar esa tecla.
+		La tecla de bloqueo de mayúsculas está activada.
+Esto puede influir en tu contraseña.
+
 	</notification>
 	
 	<notification name="NotecardMissing">
@@ -3443,11 +3475,19 @@ Quizá quieras soltar esa tecla.
 	</notification>
 	
 	<notification name="NotecardNoPermissions">
-		No tienes permisos suficientes para ver la nota.
+		No tienes permisos para ver la nota.
 	</notification>
 	
 	<notification name="RezItemNoPermissions">
 		No tienes permisos suficientes para rezear el objeto.
+	</notification>
+
+	<notification name="IMAcrossParentEstates">
+		Incapaz de enviar MI a través de estados matrices.
+	</notification>
+
+	<notification name="TransferInventoryAcrossParentEstates">
+		Incapaz de transferir inventario a través de estados matrices.
 	</notification>
 	
 	<notification name="UnableToLoadNotecard">
@@ -3503,7 +3543,7 @@ Por favor, elige sólo uno.
 	</notification>
 	
 	<notification name="ObjectNotForSale">
-		El objeto no aparece como puesto a la venta.
+		Este objeto no está a la venta.
 	</notification>
 	
 	<notification name="EnteringGodMode">
@@ -3511,15 +3551,15 @@ Por favor, elige sólo uno.
 	</notification>
 	
 	<notification name="LeavingGodMode">
-		Saliendo del modo administrativo, nivel [LEVEL]
+		Saliendo ahora del modo administrativo, nivel [LEVEL]
 	</notification>
 	
 	<notification name="CopyFailed">
-		No se ha hecho la copia porque no tienes permiso para hacerla
+		No tienes permisos para copiar esto.
 	</notification>
 	
 	<notification name="InventoryAccepted">
-		[NAME] ha aceptado tu oferta del inventario.
+		[NAME] ha recibido tu oferta del inventario.
 	</notification>
 	
 	<notification name="InventoryDeclined">
@@ -5685,6 +5725,15 @@ porque la parcela está llena.
 		Los cambios no surtirán efecto hasta reiniciar [APP_NAME].
   </notification>
 
+	<!-- Alchemy Notifications-->
+	<notification name="RevokedMapRights" >
+		Tus privilegios para encontrar a [NAME] en el mapa han sido revocados.
+	</notification>
+  
+	<notification name="GrantedMapRights">
+		[NAME] te ha concedido permisos para ubicarlo/a en el mapa.
+	</notification>
+
 <!-- Singu TODO: Migrate our special notifications to here -->	
 	<notification name="AntiSpamBlock">
 		AntiSpam: [SOURCE] ha sido bloqueado por espamear [TYPE]s [AMOUNT] veces en [TIME] segundos.
@@ -5703,6 +5752,11 @@ porque la parcela está llena.
 		Un objeto de tu propiedad ha solicitado claves de tu radar.
 ¿Deseas habilitar anunciar claves a los objetos en el sim?
 		<usetemplate name="yesnocancelbuttons" yestext="Si" notext="No" canceltext="No, ¡no volver a preguntar!"/>
+	</notification>
+
+	<notification name="RezRestoreToWorld">
+		El objeto que intentas restaurar en el mundo es no copiable, si no tienes derechos de construcción en las coordenadas &lt;0, 0, 0&gt; ¡perderás dicho objeto!
+		<usetemplate ignoretext="Confirmar antes de restaurar en el mundo objetos no copiables" name="okcancelignore" notext="¡No Rezear!" yestext="¿Proceder?"/>
 	</notification>
 	
 	<notification name="WavefrontExportPartial">

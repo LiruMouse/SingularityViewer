@@ -142,6 +142,7 @@ void LLWorld::destroyClass()
 		LLViewerRegion* region_to_delete = *region_it++;
 		removeRegion(region_to_delete->getHost());
 	}
+
 	if(LLVOCache::hasInstance())
 	{
 		LLVOCache::getInstance()->destroyClass() ;
@@ -181,7 +182,8 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 		if (host != old_host)
 		{
 			llwarns << "LLWorld::addRegion exists, but old host " << old_host
-					<< " does not match new host " << host << llendl;
+					<< " does not match new host " << host
+					<< ", removing old region and creating new" << LL_ENDL;
 		}
 		if (!regionp->isAlive())
 		{
@@ -207,7 +209,7 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 	S32 y = (S32)(jindex/256); //MegaRegion
 // </FS:CR> Aurora Sim
 	llinfos << "Adding new region (" << x << ":" << y << ")"
-		<< " on host: " << host << llendl;
+		<< " on host: " << host << LL_ENDL;
 
 	LLVector3d origin_global;
 
@@ -321,12 +323,12 @@ void LLWorld::removeRegion(const LLHost &host)
 			llwarns << "RegionDump: " << reg->getName()
 				<< " " << reg->getHost()
 				<< " " << reg->getOriginGlobal()
-				<< llendl;
+				<< LL_ENDL;
 		}
 
 		llwarns << "Agent position global " << gAgent.getPositionGlobal() 
 			<< " agent " << gAgent.getPositionAgent()
-			<< llendl;
+			<< LL_ENDL;
 
 		llwarns << "Regions visited " << gAgent.getRegionsVisited() << llendl;
 
@@ -349,13 +351,13 @@ void LLWorld::removeRegion(const LLHost &host)
 
 	mRegionRemovedSignal(regionp);
 
+	updateWaterObjects();
+
 	//double check all objects of this region are removed.
 	gObjectList.clearAllMapObjectsInRegion(regionp) ;
 	//llassert_always(!gObjectList.hasMapObjectInRegion(regionp)) ;
 
-	updateWaterObjects();
-
-	delete regionp;
+	delete regionp; // <alchemy/> - Use after free fix?
 }
 
 
@@ -698,7 +700,8 @@ void LLWorld::updateVisibilities()
 		if (part)
 		{
 			LLSpatialGroup* group = (LLSpatialGroup*) part->mOctree->getListener(0);
-			if (LLViewerCamera::getInstance()->AABBInFrustum(group->mBounds[0], group->mBounds[1]))
+			const LLVector4a* bounds = group->mBounds;
+			if (LLViewerCamera::getInstance()->AABBInFrustum(bounds[0], bounds[1]))
 			{
 				mCulledRegionList.erase(curiter);
 				mVisibleRegionList.push_back(regionp);
@@ -721,13 +724,11 @@ void LLWorld::updateVisibilities()
 		if (part)
 		{
 			LLSpatialGroup* group = (LLSpatialGroup*) part->mOctree->getListener(0);
-			if (LLViewerCamera::getInstance()->AABBInFrustum(group->mBounds[0], group->mBounds[1]))
+			const LLVector4a* bounds = group->mBounds;
+			if (LLViewerCamera::getInstance()->AABBInFrustum(bounds[0], bounds[1]))
 			{
 				regionp->calculateCameraDistance();
-				if (!gNoRender)
-				{
-					regionp->getLand().updatePatchVisibilities(gAgent);
-				}
+				regionp->getLand().updatePatchVisibilities(gAgent);
 			}
 			else
 			{
@@ -910,7 +911,7 @@ void LLWorld::printPacketsLost()
 			LLVector3d range = regionp->getCenterGlobal() - gAgent.getPositionGlobal();
 				
 			llinfos << regionp->getHost() << ", range: " << range.length()
-					<< " packets lost: " << cdp->getPacketsLost() << llendl;
+					<< " packets lost: " << cdp->getPacketsLost() << LL_ENDL;
 		}
 	}
 }
@@ -1124,7 +1125,7 @@ void LLWorld::updateWaterObjects()
 				// Count the found coastline.
 				F32 new_water_height = water_heights[index];
 				LL_DEBUGS("WaterHeight") << "  This is void; counting coastline with water height of " << new_water_height << LL_ENDL;
-				S32 new_water_height_cm = llmath::llround(new_water_height * 100);
+				S32 new_water_height_cm = ll_round(new_water_height * 100);
 				int count = (water_height_counts[new_water_height_cm] += 1);
 				// Just use the lowest water height: this is mainly about the horizon water,
 				// and whatever we do, we don't want it to be possible to look under the water
@@ -1358,8 +1359,9 @@ void process_enable_simulator(LLMessageSystem *msg, void **user_data)
 	if (!gAgent.getRegion())
 		return;
 
-	static const LLCachedControl<bool> connectToNeighbors(gSavedSettings, "AlchemyConnectToNeighbors");
-	if (!connectToNeighbors && ((gAgent.getTeleportState() == LLAgent::TELEPORT_LOCAL) || (gAgent.getTeleportState() == LLAgent::TELEPORT_NONE)))
+	static LLCachedControl<bool> connectToNeighbors(gSavedSettings, "AlchemyConnectToNeighbors");
+	if ((!connectToNeighbors) && ((gAgent.getTeleportState() == LLAgent::TELEPORT_LOCAL)
+		|| (gAgent.getTeleportState() == LLAgent::TELEPORT_NONE)))
 		return;
 
 	// enable the appropriate circuit for this simulator and 
@@ -1428,7 +1430,7 @@ public:
 		if (!regionp)
 		{
 			llwarns << "Got EstablishAgentCommunication for unknown region "
-					<< sim << llendl;
+					<< sim << LL_ENDL;
 			return;
 		}
 		regionp->setSeedCapability(input["body"]["seed-capability"]);
@@ -1441,7 +1443,7 @@ void process_disable_simulator(LLMessageSystem *mesgsys, void **user_data)
 {	
 	LLHost host = mesgsys->getSender();
 
-	//llinfos << "Disabling simulator with message from " << host << llendl;
+	//LL_INFOS() << "Disabling simulator with message from " << host << LL_ENDL;
 	LLWorld::getInstance()->removeRegion(host);
 
 	mesgsys->disableCircuit(host);
@@ -1455,7 +1457,7 @@ void process_region_handshake(LLMessageSystem* msg, void** user_data)
 	if (!regionp)
 	{
 		llwarns << "Got region handshake for unknown region "
-			<< host << llendl;
+			<< host << LL_ENDL;
 		return;
 	}
 
@@ -1539,7 +1541,7 @@ static LLVector3d unpackLocalToGlobalPosition(U32 compact_local, const LLVector3
 	return region_origin + pos_local;
 }
 
-void LLWorld::getAvatars(std::vector<LLUUID>* avatar_ids, std::vector<LLVector3d>* positions, const LLVector3d& relative_to, F32 radius) const
+void LLWorld::getAvatars(uuid_vec_t* avatar_ids, std::vector<LLVector3d>* positions, const LLVector3d& relative_to, F32 radius) const
 {
 	F32 radius_squared = radius * radius;
 	
@@ -1578,8 +1580,8 @@ void LLWorld::getAvatars(std::vector<LLUUID>* avatar_ids, std::vector<LLVector3d
 		}
 	}
 	// region avatars added for situations where radius is greater than RenderFarClip
-	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin();
-		iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
+	for (LLWorld::region_list_t::const_iterator iter = getRegionList().begin();
+		iter != getRegionList().end(); ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 		const LLVector3d& origin_global = regionp->getOriginGlobal();
@@ -1598,6 +1600,56 @@ void LLWorld::getAvatars(std::vector<LLUUID>* avatar_ids, std::vector<LLVector3d
 						positions->push_back(pos_global);
 					}
 					avatar_ids->push_back(uuid);
+				}
+			}
+		}
+	}
+}
+
+void LLWorld::getAvatars(pos_map_t* umap, const LLVector3d& relative_to, F32 radius) const
+{
+	F32 radius_squared = radius * radius;
+
+	if (!umap->empty())
+	{
+		umap->clear();
+	}
+	// get the list of avatars from the character list first, so distances are correct
+	// when agent is above 1020m and other avatars are nearby
+	for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
+		 iter != LLCharacter::sInstances.end(); ++iter)
+	{
+		LLVOAvatar* pVOAvatar = (LLVOAvatar*) *iter;
+
+		if (!pVOAvatar->isDead() && !pVOAvatar->isSelf() && !pVOAvatar->mIsDummy)
+		{
+			LLVector3d pos_global = pVOAvatar->getPositionGlobal();
+			LLUUID uuid = pVOAvatar->getID();
+
+			if (!uuid.isNull()
+				&& dist_vec_squared(pos_global, relative_to) <= radius_squared)
+			{
+				umap->emplace(uuid, pos_global);
+			}
+		}
+	}
+	// region avatars added for situations where radius is greater than RenderFarClip
+	for (LLWorld::region_list_t::const_iterator iter = getRegionList().begin();
+		 iter != getRegionList().end(); ++iter)
+	{
+		LLViewerRegion* regionp = *iter;
+		const LLVector3d& origin_global = regionp->getOriginGlobal();
+		S32 count = regionp->mMapAvatars.count();
+		for (S32 i = 0; i < count; i++)
+		{
+			LLVector3d pos_global = unpackLocalToGlobalPosition(regionp->mMapAvatars.get(i), origin_global);
+			if(dist_vec_squared(pos_global, relative_to) <= radius_squared)
+			{
+				LLUUID uuid = regionp->mMapAvatarIDs.get(i);
+				// if this avatar doesn't already exist in the list, add it
+				if(uuid.notNull())
+				{
+					umap->emplace(uuid, pos_global);
 				}
 			}
 		}

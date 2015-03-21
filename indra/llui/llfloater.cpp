@@ -1449,7 +1449,7 @@ void LLFloater::draw()
 		}
 		gl_drop_shadow(left, top, right, bottom, 
 			shadow_color, 
-			llmath::llround(shadow_offset));
+			ll_round(shadow_offset));
 
 		// No transparent windows in simple UI
 		if (isBackgroundOpaque())
@@ -1614,16 +1614,16 @@ void LLFloater::updateButtons()
 				btn_rect.setLeftTopAndSize(
 					LLPANEL_BORDER_WIDTH,
 					getRect().getHeight() - CLOSE_BOX_FROM_TOP - (LLFLOATER_CLOSE_BOX_SIZE + 1) * button_count,
-					llmath::llround((F32)LLFLOATER_CLOSE_BOX_SIZE * mButtonScale),
-					llmath::llround((F32)LLFLOATER_CLOSE_BOX_SIZE * mButtonScale));
+					ll_round((F32)LLFLOATER_CLOSE_BOX_SIZE * mButtonScale),
+					ll_round((F32)LLFLOATER_CLOSE_BOX_SIZE * mButtonScale));
 			}
 			else
 			{
 				btn_rect.setLeftTopAndSize(
 					getRect().getWidth() - LLPANEL_BORDER_WIDTH - (LLFLOATER_CLOSE_BOX_SIZE + 1) * button_count,
 					getRect().getHeight() - CLOSE_BOX_FROM_TOP,
-					llmath::llround((F32)LLFLOATER_CLOSE_BOX_SIZE * mButtonScale),
-					llmath::llround((F32)LLFLOATER_CLOSE_BOX_SIZE * mButtonScale));
+					ll_round((F32)LLFLOATER_CLOSE_BOX_SIZE * mButtonScale),
+					ll_round((F32)LLFLOATER_CLOSE_BOX_SIZE * mButtonScale));
 			}
 
 			mButtons[i]->setRect(btn_rect);
@@ -1650,16 +1650,16 @@ void LLFloater::buildButtons()
 			btn_rect.setLeftTopAndSize(
 				LLPANEL_BORDER_WIDTH,
 				getRect().getHeight() - CLOSE_BOX_FROM_TOP - (LLFLOATER_CLOSE_BOX_SIZE + 1) * (i + 1),
-				llmath::llround(LLFLOATER_CLOSE_BOX_SIZE * mButtonScale),
-				llmath::llround(LLFLOATER_CLOSE_BOX_SIZE * mButtonScale));
+				ll_round(LLFLOATER_CLOSE_BOX_SIZE * mButtonScale),
+				ll_round(LLFLOATER_CLOSE_BOX_SIZE * mButtonScale));
 		}
 		else
 		{
 			btn_rect.setLeftTopAndSize(
 				getRect().getWidth() - LLPANEL_BORDER_WIDTH - (LLFLOATER_CLOSE_BOX_SIZE + 1) * (i + 1),
 				getRect().getHeight() - CLOSE_BOX_FROM_TOP,
-				llmath::llround(LLFLOATER_CLOSE_BOX_SIZE * mButtonScale),
-				llmath::llround(LLFLOATER_CLOSE_BOX_SIZE * mButtonScale));
+				ll_round(LLFLOATER_CLOSE_BOX_SIZE * mButtonScale),
+				ll_round(LLFLOATER_CLOSE_BOX_SIZE * mButtonScale));
 		}
 
 		LLButton* buttonp = new LLButton(

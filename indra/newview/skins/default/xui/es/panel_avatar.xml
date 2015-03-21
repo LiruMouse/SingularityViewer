@@ -7,7 +7,9 @@
 [PAYMENTINFO]
 [AGEVERIFICATION]
 			</string>
-			<flyout_button label="Copiar:" tool_tip="Copyiar key al portapapeles" name="copy_flyout"/>
+			<flyout_button label="Copiar:" tool_tip="Copiar key al portapapeles, presiona la flecha para otras opciones de copia" name="copy_flyout">
+				<flyout_button_item label="Copiar SLURL" name="copy_slurl_item"/>
+			</flyout_button>
 			<name_editor name="avatar_key"/>
 			<button name="web_profile" label="Perfil Web"/>
 			<text name="Name:" >

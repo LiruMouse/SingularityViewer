@@ -39,6 +39,7 @@
 
 #include "llfloaterworldmap.h"
 
+#include "alfloaterregiontracker.h"
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llbutton.h"
@@ -268,6 +269,7 @@ LLFloaterWorldMap::LLFloaterWorldMap()
 	mCommitCallbackRegistrar.add("WMap.ShowAgent",		boost::bind(&LLFloaterWorldMap::onShowAgentBtn, this));
 	mCommitCallbackRegistrar.add("WMap.Clear",			boost::bind(&LLFloaterWorldMap::onClearBtn, this));
 	mCommitCallbackRegistrar.add("WMap.CopySLURL",		boost::bind(&LLFloaterWorldMap::onCopySLURL, this));
+	mCommitCallbackRegistrar.add("WMap.TrackRegion",	boost::bind(&LLFloaterWorldMap::onTrackRegion, this));
 
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_world_map.xml", &getFactoryMap());
 	gSavedSettings.getControl("PreferredMaturity")->getSignal()->connect(boost::bind(&LLFloaterWorldMap::onChangeMaturity, this));
@@ -535,8 +537,10 @@ void LLFloaterWorldMap::draw()
 
 	getChildView("Teleport")->setEnabled((BOOL)tracking_status);
 	//	getChildView("Clear")->setEnabled((BOOL)tracking_status);
-	getChildView("Show Destination")->setEnabled((BOOL)tracking_status || LLWorldMap::getInstance()->isTracking());
+	bool is_tracking((BOOL)tracking_status || LLWorldMap::instance().isTracking());
+	getChildView("Show Destination")->setEnabled(is_tracking);
 	getChildView("copy_slurl")->setEnabled((mSLURL.isValid()) );
+	getChild<LLButton>("track_region")->setEnabled(is_tracking);
 
 	setMouseOpaque(TRUE);
 	getDragHandle()->setMouseOpaque(TRUE);
@@ -709,9 +713,9 @@ void LLFloaterWorldMap::trackLocation(const LLVector3d& pos_global)
 // </FS:CR>
 	std::string full_name = llformat("%s (%d, %d, %d)", 
 								  sim_name.c_str(),
-								  llmath::llround(region_x), 
-								  llmath::llround(region_y),
-								  llmath::llround((F32)pos_global.mdV[VZ]));
+								  ll_round(region_x), 
+								  ll_round(region_y),
+								  ll_round((F32)pos_global.mdV[VZ]));
 
 	std::string tooltip("");
 	mTrackedStatus = LLTracker::TRACKING_LOCATION;
@@ -1427,6 +1431,28 @@ void LLFloaterWorldMap::onCopySLURL()
 	LLNotificationsUtil::add("CopySLURL", args);
 }
 
+void LLFloaterWorldMap::onTrackRegion()
+{
+	ALFloaterRegionTracker* floaterp = ALFloaterRegionTracker::getInstance();
+	if (floaterp)
+	{
+		if (LLTracker::getTrackingStatus() != LLTracker::TRACKING_NOTHING)
+		{
+			std::string sim_name;
+			LLWorldMap::getInstance()->simNameFromPosGlobal(LLTracker::getTrackedPositionGlobal(), sim_name);
+			if (!sim_name.empty())
+			{
+				const std::string& temp_label = floaterp->getRegionLabelIfExists(sim_name);
+				LLSD args, payload;
+				args["REGION"] = sim_name;
+				args["LABEL"] = !temp_label.empty() ? temp_label : sim_name;
+				payload["name"] = sim_name;
+				LLNotificationsUtil::add("RegionTrackerAdd", args, payload, boost::bind(&ALFloaterRegionTracker::onRegionAddedCallback, floaterp, _1, _2));
+			}
+		}
+	}
+}
+
 // protected
 void LLFloaterWorldMap::centerOnTarget(BOOL animate)
 {
@@ -1741,10 +1767,10 @@ void LLFloaterWorldMap::onChangeMaturity()
 	bool can_access_adult = gAgent.canAccessAdult();
 	
 	getChildView("events_mature_icon")->setVisible( can_access_mature);
-	getChildView("event_mature_chk")->setVisible( can_access_mature);
+	getChildView("events_mature_chk")->setVisible( can_access_mature);
 
 	getChildView("events_adult_icon")->setVisible( can_access_adult);
-	getChildView("event_adult_chk")->setVisible( can_access_adult);
+	getChildView("events_adult_chk")->setVisible( can_access_adult);
 
 	// disable mature / adult events.
 	if (!can_access_mature)

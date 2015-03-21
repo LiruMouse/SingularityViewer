@@ -115,13 +115,13 @@ void LLUIImage::drawBorder(S32 x, S32 y, S32 width, S32 height, const LLColor4& 
 S32 LLUIImage::getWidth() const
 { 
 	// return clipped dimensions of actual image area
-	return llmath::llround((F32)mImage->getWidth(0) * mClipRegion.getWidth()); 
+	return ll_round((F32)mImage->getWidth(0) * mClipRegion.getWidth()); 
 }
 
 S32 LLUIImage::getHeight() const
 { 
 	// return clipped dimensions of actual image area
-	return llmath::llround((F32)mImage->getHeight(0) * mClipRegion.getHeight()); 
+	return ll_round((F32)mImage->getHeight(0) * mClipRegion.getHeight()); 
 }
 
 S32 LLUIImage::getTextureWidth() const

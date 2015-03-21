@@ -1392,7 +1392,7 @@ integer llScriptDanger(vector pos)
 Returns TRUE if pos is over public land, sandbox land, land that doesn&apos;t allow everyone to edit and build, or land that doesn&apos;t allow outside scripts
 	</string>
 	<string name="LSLTipText_llDialog">
-llDialog(key avatar, string message, list buttons, integer chat_channel
+llDialog(key avatar, string message, list buttons, integer chat_channel)
 Shows a dialog box on the avatar&apos;s screen with a message and up to 12 buttons.
 If a button is pressed, the avatar says the text of the button label on chat_channel.
 	</string>
@@ -1761,7 +1761,7 @@ integer llGetRegionAgentCount()
 Returns the number of avatars in the region
 	</string>
 	<string name="LSLTipText_llTextBox">
-llTextBox(key avatar, string message, integer chat_channel
+llTextBox(key avatar, string message, integer chat_channel)
 Shows a dialog box on the avatar&apos;s screen with the message.
 It contains a text box for input, and if entered that text is chatted on chat_channel.
 	</string>
@@ -3390,6 +3390,13 @@ Where tag = tag string to match.  Removes bot's matching the tag.
 	<!-- panel contents -->
 	<string name="PanelContentsNewScript">Nuevo Script</string>
 
+	<!-- Mute -->
+	<string name="MuteByName">(Por nombre)</string>
+	<string name="MuteAgent">(Residente)</string>
+	<string name="MuteObject">(Objeto)</string>
+	<string name="MuteGroup">(Grupo)</string>
+	<string name="MuteExternal">(Externo)</string>
+
 	<!-- Region/Estate Covenant -->
 	<string name="RegionNoCovenant">No hay un Convenio provisto para este Estado.</string>
 	<string name="RegionNoCovenantOtherOwner">No hay un Convenio provisto para este Estado. El terreno de este Estado está siendo vendido por el propietario del Estado, no por Linden Lab. Por favor, contacta al propietario del Estado para más detalles.</string>
@@ -3501,10 +3508,6 @@ Error:
 Esto puede ser porque de alguna manera tienes varias copias en ejecución, o tu sistema de forma incorrecta piensa que un archivo está abierto.
 Si este mensaje persiste, reinicia el equipo y vuelve a intentarlo.
 Si persiste, puede que tengas que desinstalar completamente [APP_NAME] y volver a instalarlo.
-	</string>
-	
-	<string name="MBRequiresAltiVec">
-		[APP_NAME] requiere un procesador con AltiVec (G4 o posterior).
 	</string>
 	
 	<string name="MBAlreadyRunning">
@@ -4134,6 +4137,9 @@ Si continuas recibiendo este mensaje, contacta con [SUPPORT_SITE].
 	<string name="RightClick">Click Derecho</string>
 	<string name="PowerUser4">Destruir Objetos - Borra en forma inmediata y permanente un objeto, cuando no tienes paciencia para esperar la respuesta del servidor.</string>
 	<string name="PowerUser5">Explotar Objetos - Convierte un objeto Físico en temporal y desenlaza sus partes.</string>
+	<string name="OnlineStatus">Conectado</string>
+  <string name="OfflineStatus">Desconectado</string>
+
 
 	<!-- voice calls -->
 

@@ -164,7 +164,7 @@ LLFloaterEditUI::LLFloaterEditUI()
 
 	spin = new LLSpinCtrl(std::string("width_spin"), LLRect(x, y+20, x+100, y),
 		std::string("Width:"), LLFontGL::getFontSansSerifSmall(),
-		boost::bind(&LLFloaterEditUI::onCommitHeight,_1),
+		boost::bind(&LLFloaterEditUI::onCommitWidth,_1),
 		0.f,
 		2.f,
 		1000.f,

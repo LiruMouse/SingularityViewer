@@ -289,16 +289,16 @@ void LLPanelPlace::processParcelInfo(const LLParcelData& parcel_data)
 	}
 
 	// Just use given region position for display
-	S32 region_x = llmath::llround(mPosRegion.mV[0]);
-	S32 region_y = llmath::llround(mPosRegion.mV[1]);
-	S32 region_z = llmath::llround(mPosRegion.mV[2]);
+	S32 region_x = ll_round(mPosRegion.mV[0]);
+	S32 region_y = ll_round(mPosRegion.mV[1]);
+	S32 region_z = ll_round(mPosRegion.mV[2]);
 
 	// If the region position is zero, grab position from the global
 	if(mPosRegion.isExactlyZero())
 	{
-		region_x = llmath::llround(parcel_data.global_x) % REGION_WIDTH_UNITS;
-		region_y = llmath::llround(parcel_data.global_y) % REGION_WIDTH_UNITS;
-		region_z = llmath::llround(parcel_data.global_z);
+		region_x = ll_round(parcel_data.global_x) % REGION_WIDTH_UNITS;
+		region_y = ll_round(parcel_data.global_y) % REGION_WIDTH_UNITS;
+		region_z = ll_round(parcel_data.global_z);
 	}
 
 	if(mPosGlobal.isExactlyZero())

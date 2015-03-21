@@ -80,6 +80,11 @@
         <button.commit_callback function="ShowFloater" parameter="radar"/>
       </button>
     </layout_panel>
+    <layout_panel name="panelregiontracker" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleRegionTracker">
+      <button bottom="0" height="24" label="Region Tracker" image_overlay="icn_toolbar_region_tracker.png" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" name="region_tracker_btn" tool_tip="Track various regions status" width="50" follows="left|right">
+        <button.commit_callback function="ShowFloater" parameter="region_tracker"/>
+      </button>
+    </layout_panel>
     <layout_panel name="panelcameracontrols" height="24" width="50" user_resize="false" visibility_control="ToolbarVisibleCameraControls">
       <button bottom="0" height="24" label="Camera Controls" name="camera_controls_btn" image_overlay="icn_toolbar_camera_controls.tga" image_overlay_alignment="left" image_selected="toolbar_btn_selected.tga" image_unselected="toolbar_btn_enabled.tga" image_disabled="toolbar_btn_disabled.tga" scale_image="true" width="50" follows="left|right">
         <button.commit_callback function="ShowFloater" parameter="camera controls"/>

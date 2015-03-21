@@ -66,9 +66,9 @@
 #include "llchat.h"
 
 #include "llfloaterchat.h"
+#include "rlvhandler.h"
 
-
-void cmdline_printchat(std::string message);
+void cmdline_printchat(const std::string& message);
 void cmdline_rezplat(bool use_saved_value = true, F32 visual_radius = 30.0);
 void cmdline_tp2name(std::string target);
 
@@ -623,11 +623,11 @@ void cmdline_rezplat(bool use_saved_value, F32 visual_radius) //cmdline_rezplat(
 	msg->sendReliable(gAgent.getRegionHost());
 }
 
-void cmdline_printchat(std::string message)
+void cmdline_printchat(const std::string& message)
 {
-	LLChat chat;
-	chat.mText = message;
+	LLChat chat(message);
 	chat.mSourceType = CHAT_SOURCE_SYSTEM;
-	LLFloaterChat::addChat(chat, FALSE, FALSE);
+	if (rlv_handler_t::isEnabled()) chat.mRlvLocFiltered = chat.mRlvNamesFiltered = true;
+	LLFloaterChat::addChat(chat);
 }
 

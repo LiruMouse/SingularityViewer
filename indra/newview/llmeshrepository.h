@@ -32,7 +32,6 @@
 #include "lluuid.h"
 #include "llviewertexture.h"
 #include "llvolume.h"
-#include "sguuidhash.h"
 
 #define LLCONVEXDECOMPINTER_STATIC 1
 

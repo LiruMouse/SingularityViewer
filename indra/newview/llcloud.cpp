@@ -189,7 +189,7 @@ void LLCloudGroup::updatePuffCount()
 		return;
 	}
 	S32 i;
-	S32 target_puff_count = llmath::llround(CLOUD_DENSITY * mDensity);
+	S32 target_puff_count = ll_round(CLOUD_DENSITY * mDensity);
 	target_puff_count = llmax(0, target_puff_count);
 	target_puff_count = llmin(CLOUD_COUNT_MAX, target_puff_count);
 	S32 current_puff_count = (S32) mCloudPuffs.size();

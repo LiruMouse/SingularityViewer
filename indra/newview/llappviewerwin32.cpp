@@ -38,9 +38,10 @@
 # endif
 #endif
 
+#include "llwindowwin32.h" // *FIX: for setting gIconResource.
+
 #include "llappviewerwin32.h"
 
-#include "llwindowwin32.h" // *FIX: for setting gIconResource.
 #include "llgl.h"
 #include "res/resource.h" // *FIX: for setting gIconResource.
 
@@ -49,6 +50,7 @@
 #include <errorrep.h>	// for AddERExcludedApplicationA()
 #include <process.h>	// _spawnl()
 #include <tchar.h>		// For TCHAR support
+#include <Werapi.h>
 
 #include "llviewercontrol.h"
 #include "lldxhardware.h"

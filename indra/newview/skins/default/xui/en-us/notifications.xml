@@ -10362,6 +10362,27 @@ Changes won't take effect until after you restart [APP_NAME].
 
   <!-- Alchemy Notifications-->
   <notification
+   icon="alert.tga"
+   name="RegionTrackerAdd"
+   type="alert">
+What label would you like to use for
+the region &quot;[REGION]&quot;?
+    <tag>confirm</tag>
+    <form name="form">
+      <input name="label" type="text">[LABEL]</input>
+      <button
+       default="true"
+       index="0"
+       name="OK"
+       text="OK"/>
+      <button
+       index="1"
+       name="Cancel"
+       text="Cancel"/>
+    </form>
+  </notification>
+
+  <notification
     icon="alertmodal.tga"
     name="RevokedMapRights"
     persist="true"
@@ -10416,6 +10437,18 @@ Would you like to enable announcing keys to objects in the sim?
      yestext="Yes"
      notext="No"
      canceltext="No, don't ask again!"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="RezRestoreToWorld"
+   type="alertmodal">
+The object you're attempting to restore in world is no copy, if you do not have rez rights at &lt;0, 0, 0&gt;, you will lose this object!!
+    <usetemplate
+     ignoretext="Confirm before restoring no-copy objects to world"
+     name="okcancelignore"
+     notext="Don't Rez!"
+     yestext="Proceed?"/>
   </notification>
 
   <notification

@@ -129,6 +129,7 @@
 				Descripción:
 			</text>
 			<line_editor name="Object Description"/>
+			<string name="multiple_objects_selected" value="Múltiple (Modo Cambio Masivo)"/>
 			<text name="Creator:">
 				Creador:
 			</text>

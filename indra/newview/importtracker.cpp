@@ -87,7 +87,7 @@ void ImportTracker::expectRez()
 	state = IDLE;
 	finish();
 }
-void cmdline_printchat(std::string message);*/
+void cmdline_printchat(const std::string& message);*/
 LLViewerObject* find(U32 local)
 {
 	S32 i;

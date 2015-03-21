@@ -812,7 +812,7 @@ void LLDrawable::updateDistance(LLCamera& camera, bool force_update)
 		}
 
 		pos -= camera.getOrigin();	
-		mDistanceWRTCamera = llmath::llround(pos.magVec(), 0.01f);
+		mDistanceWRTCamera = ll_round(pos.magVec(), 0.01f);
 		mVObjp->updateLOD();
 	}
 }

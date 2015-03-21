@@ -11,8 +11,8 @@
 	<text name="groupdesc">
 		Tu grupo activo se muestra en Itálica.
 	</text>
-	<text name="groupcount">
-		Perteneces a [COUNT] grupos (de un máximo de [MAX]).
+	<text name="groupcount" width="320">
+		Perteneces a [COUNT] grupos (de un máximo de [MAX], cupo restante [LEFT]).
 	</text>
 	<button label="MI/Llamar" name="IM" tool_tip="Abrir sesión de Mensajes Instantáneos"/>
 	<button label="Info" name="Info"/>

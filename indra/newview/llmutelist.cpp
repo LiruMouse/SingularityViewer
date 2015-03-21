@@ -500,7 +500,7 @@ BOOL LLMuteList::autoRemove(const LLUUID& agent_id, const EAutoReason reason)
 {
 	BOOL removed = FALSE;
 
-	if (isMuted(agent_id) && !(reason == AR_INVENTORY && gSavedSettings.getBOOL("AutoresponseMutedItem")))
+	if (isMuted(agent_id) && !(reason == AR_INVENTORY && gSavedPerAccountSettings.getBOOL("AutoresponseMutedItem")))
 	{
 		LLMute automute(agent_id, LLStringUtil::null, LLMute::AGENT);
 		removed = TRUE;

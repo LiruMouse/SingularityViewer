@@ -29,6 +29,8 @@
 #include <iostream>
 #include <set>
 #include <vector>
+#include <functional>
+#include <boost/functional/hash.hpp>
 #include "stdtypes.h"
 #include "llpreprocessor.h"
 
@@ -116,6 +118,19 @@ public:
 	U16 getCRC16() const;
 	U32 getCRC32() const;
 
+	inline size_t hash() const
+	{
+		size_t seed = 0;
+		for (U8 i = 0; i < 4; ++i)
+		{
+			seed ^= static_cast<size_t>(mData[i * 4]) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+			seed ^= static_cast<size_t>(mData[i * 4 + 1]) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+			seed ^= static_cast<size_t>(mData[i * 4 + 2]) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+			seed ^= static_cast<size_t>(mData[i * 4 + 3]) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		}
+		return seed;
+	}
+
 	static BOOL validate(const std::string& in_string); // Validate that the UUID string is legal.
 
 	static const LLUUID null;
@@ -129,8 +144,6 @@ public:
 	U8 mData[UUID_BYTES];
 };
 
-typedef std::vector<LLUUID> uuid_vec_t;
-
 // Construct
 inline LLUUID::LLUUID()
 {
@@ -141,38 +154,20 @@ inline LLUUID::LLUUID()
 // Faster than copying from memory
 inline void LLUUID::setNull()
 {
-	U32 *word = (U32 *)mData;
-	word[0] = 0;
-	word[1] = 0;
-	word[2] = 0;
-	word[3] = 0;
+	memset(mData, 0, sizeof(mData)); // <alchemy/>
 }
 
 
 // Compare
 inline bool LLUUID::operator==(const LLUUID& rhs) const
 {
-	U32 *tmp = (U32 *)mData;
-	U32 *rhstmp = (U32 *)rhs.mData;
-	// Note: binary & to avoid branching
-	return 
-		(tmp[0] == rhstmp[0]) &  
-		(tmp[1] == rhstmp[1]) &
-		(tmp[2] == rhstmp[2]) &
-		(tmp[3] == rhstmp[3]);
+	return !memcmp(mData, rhs.mData, sizeof(mData)); // <alchemy/>
 }
 
 
 inline bool LLUUID::operator!=(const LLUUID& rhs) const
 {
-	U32 *tmp = (U32 *)mData;
-	U32 *rhstmp = (U32 *)rhs.mData;
-	// Note: binary | to avoid branching
-	return 
-		(tmp[0] != rhstmp[0]) |
-		(tmp[1] != rhstmp[1]) |
-		(tmp[2] != rhstmp[2]) |
-		(tmp[3] != rhstmp[3]);
+	return !!memcmp(mData, rhs.mData, sizeof(mData)); // <alchemy/>
 }
 
 /*
@@ -187,28 +182,20 @@ inline LLUUID::operator bool() const
 
 inline BOOL LLUUID::notNull() const
 {
-	U32 *word = (U32 *)mData;
-	return (word[0] | word[1] | word[2] | word[3]) > 0;
+	return !!memcmp(mData, null.mData, sizeof(mData)); // <alchemy/>
 }
 
 // Faster than == LLUUID::null because doesn't require
 // as much memory access.
 inline BOOL LLUUID::isNull() const
 {
-	U32 *word = (U32 *)mData;
-	// If all bits are zero, return !0 == TRUE
-	return !(word[0] | word[1] | word[2] | word[3]);
+	return !memcmp(mData, null.mData, sizeof(mData)); // <alchemy/>
 }
 
 // Copy constructor
 inline LLUUID::LLUUID(const LLUUID& rhs)
 {
-	U32 *tmp = (U32 *)mData;
-	U32 *rhstmp = (U32 *)rhs.mData;
-	tmp[0] = rhstmp[0];
-	tmp[1] = rhstmp[1];
-	tmp[2] = rhstmp[2];
-	tmp[3] = rhstmp[3];
+	memcpy(mData, rhs.mData, sizeof(mData)); // <alchemy/>
 }
 
 inline LLUUID::~LLUUID()
@@ -218,14 +205,7 @@ inline LLUUID::~LLUUID()
 // Assignment
 inline LLUUID& LLUUID::operator=(const LLUUID& rhs)
 {
-	// No need to check the case where this==&rhs.  The branch is slower than the write.
-	U32 *tmp = (U32 *)mData;
-	U32 *rhstmp = (U32 *)rhs.mData;
-	tmp[0] = rhstmp[0];
-	tmp[1] = rhstmp[1];
-	tmp[2] = rhstmp[2];
-	tmp[3] = rhstmp[3];
-	
+	memcpy(mData, rhs.mData, sizeof(mData)); // <alchemy/>
 	return *this;
 }
 
@@ -298,13 +278,25 @@ inline U16 LLUUID::getCRC16() const
 
 inline U32 LLUUID::getCRC32() const
 {
-	U32 *tmp = (U32*)mData;
-	return tmp[0] + tmp[1] + tmp[2] + tmp[3];
+	// <alchemy/>
+	U32 ret = 0;
+	for(U32 i = 0;i < 4;++i)
+	{
+		ret += (mData[i*4]) | (mData[i*4+1]) << 8 | (mData[i*4+2]) << 16 | (mData[i*4+3]) << 24;
+	}
+	return ret;
+	// </alchemy>
 }
 
+typedef std::vector<LLUUID> uuid_vec_t;
+typedef std::set<LLUUID> uuid_set_t;
 
-// Helper structure for ordering lluuids in stl containers.
-// eg: 	std::map<LLUUID, LLWidget*, lluuid_less> widget_map;
+// Helper structure for ordering lluuids in stl containers.  eg:
+// std::map<LLUUID, LLWidget*, lluuid_less> widget_map;
+//
+// (isn't this the default behavior anyway? I think we could
+// everywhere replace these with uuid_set_t, but someone should
+// verify.)
 struct lluuid_less
 {
 	bool operator()(const LLUUID& lhs, const LLUUID& rhs) const
@@ -314,6 +306,31 @@ struct lluuid_less
 };
 
 typedef std::set<LLUUID, lluuid_less> uuid_list_t;
+
+
+#ifdef LL_CPP11
+namespace std {
+	template <> struct hash<LLUUID>
+{
+	public:
+		size_t operator()(const LLUUID & id) const
+		{
+			return id.hash();
+		}
+	};
+}
+#endif
+
+namespace boost {
+	template<> class hash<LLUUID>
+{
+	public:
+		size_t operator()(const LLUUID& id) const
+	{
+			return id.hash();
+	}
+};
+}
 
 /*
  * Sub-classes for keeping transaction IDs and asset IDs
@@ -331,3 +348,5 @@ public:
 };
 
 #endif
+
+

@@ -33,8 +33,8 @@
   <button label="" name="pf_dirty" tool_tip="Los Objectos que se mueven pueden no tener un comportamiento correcto en esta región hasta que se haga un rebake de la misma."/>
   <button label="" name="pf_disabled" tool_tip="El Pathfinding Dinámico no está habilitado en esta región."/>
 	<button name="buyland" tool_tip="Comprar esta parcela" />
-	<line_editor label="Buscar" name="search_editor" tool_tip="Buscar en Second Life"/>
-	<button name="search_btn" tool_tip="Buscar en Second Life"/>
+	<line_editor label="Buscar" name="search_editor" tool_tip="Buscar"/>
+	<button name="search_btn" tool_tip="Buscar"/>
 	<string name="packet_loss_tooltip">
 		Paquetes Perdidos
 	</string>

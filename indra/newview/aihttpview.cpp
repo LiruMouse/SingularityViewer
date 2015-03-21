@@ -190,7 +190,7 @@ class AIGLHTTPHeaderBar : public LLView
 	AIGLHTTPHeaderBar(std::string const& name, AIHTTPView* httpview) :
 		LLView(name, FALSE), mHTTPView(httpview)
 	{
-	  sLineHeight = llmath::llround(LLFontGL::getFontMonospace()->getLineHeight());
+	  sLineHeight = ll_round(LLFontGL::getFontMonospace()->getLineHeight());
 	  setRect(LLRect(0, 0, 200, sLineHeight * number_of_header_lines));
 	}
 

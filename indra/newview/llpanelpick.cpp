@@ -180,9 +180,9 @@ void LLPanelPick::processProperties(void* data, EAvatarProcessorType type)
 		self->mImporting = false;
 	}
 
-    S32 region_x = llmath::llround((F32)pick_info->pos_global.mdV[VX]) % REGION_WIDTH_UNITS;
-    S32 region_y = llmath::llround((F32)pick_info->pos_global.mdV[VY]) % REGION_WIDTH_UNITS;
-	S32 region_z = llmath::llround((F32)pick_info->pos_global.mdV[VZ]);
+    S32 region_x = ll_round((F32)pick_info->pos_global.mdV[VX]) % REGION_WIDTH_UNITS;
+    S32 region_y = ll_round((F32)pick_info->pos_global.mdV[VY]) % REGION_WIDTH_UNITS;
+	S32 region_z = ll_round((F32)pick_info->pos_global.mdV[VZ]);
     location_text.append(llformat("(%d, %d, %d)", region_x, region_y, region_z));
 
 	mDataReceived = true;
@@ -403,9 +403,9 @@ void LLPanelPick::onClickSet()
 
 	std::string location_text("(will update after save), " + mSimName);
 
-    S32 region_x = llmath::llround((F32)mPosGlobal.mdV[VX]) % REGION_WIDTH_UNITS;
-    S32 region_y = llmath::llround((F32)mPosGlobal.mdV[VY]) % REGION_WIDTH_UNITS;
-	S32 region_z = llmath::llround((F32)mPosGlobal.mdV[VZ]);
+    S32 region_x = ll_round((F32)mPosGlobal.mdV[VX]) % REGION_WIDTH_UNITS;
+    S32 region_y = ll_round((F32)mPosGlobal.mdV[VY]) % REGION_WIDTH_UNITS;
+	S32 region_z = ll_round((F32)mPosGlobal.mdV[VZ]);
     location_text.append(llformat(" (%d, %d, %d)", region_x, region_y, region_z));
 
 	// if sim name in pick is different from current sim name

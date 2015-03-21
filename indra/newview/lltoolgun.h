@@ -54,6 +54,9 @@ public:
 	virtual BOOL	clipMouseWhenDown()		{ return FALSE; }
 private:
 	BOOL mIsSelected;
+
+	// <alchemy> - UI Caching
+	LLUIImagePtr	mCrosshairp;
 };
 
 #endif

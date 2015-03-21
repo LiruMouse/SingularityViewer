@@ -72,14 +72,16 @@
   <check_box label="Consola de Cuadros" name="frame_console_btn"/>
   <check_box label="Consola HTTP" name="http_console_btn"/>
   <check_box label="Consola de Texturas" name="texture_console_btn"/>
-  <check_box label="Consola de Categorías de Texturas" name="texture_category_console_btn"/>
-  <check_box label="Consola de Tamaño de Texturas" name="texture_size_console_btn"/>
+  <check_box label="Consola Categorías Texturas" name="texture_category_console_btn"/>
+  <check_box label="Consola Tamaño Texturas" name="texture_size_console_btn"/>
   <check_box label="Inventario" name="directory_btn"/>
+  <check_box label="Avatares Predeterminados" name="default_avatars_btn"/>
   <check_box label="Hacer Vestuario" name="make_outfit_btn"/>
   <check_box label="Vestuarios" name="outfits_btn"/>
   <check_box label="Favoritos" name="favs_btn"/>
   <check_box label="Buzón de Salida" name="outbox_btn"/>
   <check_box label="Preferencias" name="preferences_btn"/>
+  <check_box label="Configuración Joystick" name="joystick_btn"/>
   <check_box label="Reemplazo Automático" name="auto_replace_btn"/>
   <check_box label="Nombre a Mostrar" name="display_name_btn"/>
   <check_box label="Prueba Flotantes" name="floater_test_btn"/>

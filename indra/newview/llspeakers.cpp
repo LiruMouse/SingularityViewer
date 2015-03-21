@@ -42,6 +42,8 @@
 
 #include "rlvhandler.h"
 
+#include <boost/foreach.hpp>
+
 extern AIHTTPTimeoutPolicy moderationResponder_timeout;
 
 const LLColor4 INACTIVE_COLOR(0.3f, 0.3f, 0.3f, 0.5f);
@@ -580,7 +582,8 @@ void LLSpeakerMgr::updateSpeakerList()
 						LLGroupMemberData* member = member_it->second;
 						LLUUID id = member_it->first;
 						// Add only members who are online and not already in the list
-						if ((member->getOnlineStatus() == "Online") && (mSpeakers.find(id) == mSpeakers.end()))
+						const std::string& localized_online();
+						if ((member->getOnlineStatus() == localized_online()) && (mSpeakers.find(id) == mSpeakers.end()))
 						{
 							LLPointer<LLSpeaker> speakerp = setSpeaker(id, "", LLSpeaker::STATUS_VOICE_ACTIVE, LLSpeaker::SPEAKER_AGENT);
 							speakerp->mIsModerator = ((member->getAgentPowers() & GP_SESSION_MODERATOR) == GP_SESSION_MODERATOR);
@@ -1040,11 +1043,10 @@ void LLLocalSpeakerMgr::updateSpeakerList()
 
 	// pick up non-voice speakers in chat range
 	uuid_vec_t avatar_ids;
-	std::vector<LLVector3d> positions;
-	LLWorld::getInstance()->getAvatars(&avatar_ids, &positions, gAgent.getPositionGlobal(), CHAT_NORMAL_RADIUS);
-	for(U32 i=0; i<avatar_ids.size(); i++)
+	LLWorld::getInstance()->getAvatars(&avatar_ids, NULL, gAgent.getPositionGlobal(), CHAT_NORMAL_RADIUS);
+	BOOST_FOREACH(const LLUUID& id, avatar_ids)
 	{
-		setSpeaker(avatar_ids[i]);
+		setSpeaker(id);
 	}
 
 	// check if text only speakers have moved out of chat range

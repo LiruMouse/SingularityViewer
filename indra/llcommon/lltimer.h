@@ -55,7 +55,7 @@ public:
 protected:	
 	U64 mLastClockCount;
 	U64 mExpirationTicks;
-	BOOL mStarted;
+	bool mStarted;
 
 public:
 	LLTimer();
@@ -97,7 +97,7 @@ public:
 	F32 getElapsedTimeF32() const;			// Returns elapsed time in seconds
 	F64 getElapsedTimeF64() const;			// Returns elapsed time in seconds
 
-	BOOL getStarted() const { return mStarted; }
+	bool getStarted() const { return mStarted; }
 
 
 	static U64 getCurrentClockCount();		// Returns the raw clockticks

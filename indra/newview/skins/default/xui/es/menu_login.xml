@@ -4,10 +4,17 @@
 		<menu_item_call name="Quit" label="Salir"/>
 	</menu>
 	<menu name="Edit" label="Editar" >
-		<menu_item_call name="Preferences..." label="Preferencias..."/>
+		<menu_item_call label="Deshacer" name="Undo"/>
+		<menu_item_call label="Rehacer" name="Redo"/>
+		<menu_item_call label="Cortar" name="Cut"/>
+		<menu_item_call label="Copiar" name="Copy"/>
+		<menu_item_call label="Pegar" name="Paste"/>
+		<menu_item_call label="Borrar" name="Delete"/>
+		<menu_item_call label="Preferencias..." name="Preferences..."/>
 	</menu>
 	<menu name="Help" label="Ayuda" >
 		<menu_item_call name="Second Life Help" label="Ayuda de [SECOND_LIFE]"/>
 		<menu_item_call name="About Second Life..." label="Acerca de [SHORT_APP_NAME]..."/>
+		<menu_item_call label="Estado del Grid..." name="Grid Status..."/>
 	</menu>
 </menu_bar>

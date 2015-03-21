@@ -84,7 +84,7 @@ void LLProgressBar::draw()
 	bar_bg_imagep->draw(getLocalRect(), background_color  % alpha);
 
 	LLRect progress_rect = getLocalRect();
-	progress_rect.mRight = llmath::llround(getRect().getWidth() * (mPercentDone / 100.f));
+	progress_rect.mRight = ll_round(getRect().getWidth() * (mPercentDone / 100.f));
 	bar_fg_imagep->draw(progress_rect, LLColor4::white % alpha);
 }
 

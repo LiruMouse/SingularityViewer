@@ -26,11 +26,11 @@
 
 #include "linden_common.h"
 #include "llsdserialize_xml.h"
+#include "llbase64.h"
 
 #include <iostream>
 #include <deque>
 
-#include "apr_base64.h"
 #include <boost/regex.hpp>
 
 extern "C"
@@ -133,11 +133,7 @@ S32 LLSDXMLFormatter::format_impl(const LLSD& data, std::ostream& ostr, U32 opti
 	case LLSD::TypeBoolean:
 		ostr << pre << "<boolean>";
 		if(mBoolAlpha ||
-#if( LL_WINDOWS || __GNUC__ > 2)
 		   (ostr.flags() & std::ios::boolalpha)
-#else
-		   (ostr.flags() & 0x0100)
-#endif
 			)
 		{
 			ostr << (data.asBoolean() ? "true" : "false");
@@ -172,8 +168,8 @@ S32 LLSDXMLFormatter::format_impl(const LLSD& data, std::ostream& ostr, U32 opti
 		break;
 
 	case LLSD::TypeString:
-		if(data.asString().empty()) ostr << pre << "<string />" << post;
-		else ostr << pre << "<string>" << escapeString(data.asString()) <<"</string>" << post;
+		if(data.asStringRef().empty()) ostr << pre << "<string />" << post;
+		else ostr << pre << "<string>" << escapeString(data.asStringRef()) <<"</string>" << post;
 		break;
 
 	case LLSD::TypeDate:
@@ -186,24 +182,15 @@ S32 LLSDXMLFormatter::format_impl(const LLSD& data, std::ostream& ostr, U32 opti
 
 	case LLSD::TypeBinary:
 	{
-		LLSD::Binary buffer = data.asBinary();
+		const LLSD::Binary& buffer = data.asBinary();
 		if(buffer.empty())
 		{
 			ostr << pre << "<binary />" << post;
 		}
 		else
 		{
-			// *FIX: memory inefficient.
-			// *TODO: convert to use LLBase64
 			ostr << pre << "<binary encoding=\"base64\">";
-			int b64_buffer_length = apr_base64_encode_len(buffer.size());
-			char* b64_buffer = new char[b64_buffer_length];
-			b64_buffer_length = apr_base64_encode_binary(
-				b64_buffer,
-				&buffer[0],
-				buffer.size());
-			ostr.write(b64_buffer, b64_buffer_length - 1);
-			delete[] b64_buffer;
+			ostr << LLBase64::encode(&buffer[0], buffer.size());
 			ostr << "</binary>" << post;
 		}
 		break;
@@ -254,7 +241,7 @@ std::string LLSDXMLFormatter::escapeString(const std::string& in)
 class LLSDXMLParser::Impl
 {
 public:
-	Impl();
+	Impl(bool emit_errors);
 	~Impl();
 	
 	S32 parse(std::istream& input, LLSD& data);
@@ -298,6 +285,7 @@ private:
 	
 	static const XML_Char* findAttribute(const XML_Char* name, const XML_Char** pairs);
 	
+	bool mEmitErrors;
 
 	XML_Parser	mParser;
 
@@ -319,7 +307,8 @@ private:
 };
 
 
-LLSDXMLParser::Impl::Impl()
+LLSDXMLParser::Impl::Impl(bool emit_errors)
+	: mEmitErrors(emit_errors)
 {
 	mParser = XML_ParserCreate(NULL);
 	reset();
@@ -348,9 +337,10 @@ void clear_eol(std::istream& input)
 static unsigned get_till_eol(std::istream& input, char *buf, unsigned bufsize)
 {
 	unsigned count = 0;
+	char c;
 	while (count < bufsize && input.good())
 	{
-		char c = input.get();
+		input.get(c);
 		buf[count++] = c;
 		if (is_eol(c))
 			break;
@@ -377,13 +367,10 @@ S32 LLSDXMLParser::Impl::parse(std::istream& input, LLSD& data)
 		{
 			break;
 		}
+		count = get_till_eol(input, (char *)buffer, BUFFER_SIZE);
+		if (!count)
 		{
-		
-			count = get_till_eol(input, (char *)buffer, BUFFER_SIZE);
-			if (!count)
-			{
-				break;
-			}
+			break;
 		}
 		status = XML_ParseBuffer(mParser, count, false);
 
@@ -406,7 +393,10 @@ S32 LLSDXMLParser::Impl::parse(std::istream& input, LLSD& data)
 		{
 			((char*) buffer)[count ? count - 1 : 0] = '\0';
 		}
-		llinfos << "LLSDXMLParser::Impl::parse: XML_STATUS_ERROR parsing:" << (char*) buffer << llendl;
+		if (mEmitErrors)
+		{
+			llinfos << "LLSDXMLParser::Impl::parse: XML_STATUS_ERROR parsing:" << (char*) buffer << llendl;
+		}
 		data = LLSD();
 		return LLSDParser::PARSE_FAILURE;
 	}
@@ -484,7 +474,10 @@ S32 LLSDXMLParser::Impl::parseLines(std::istream& input, LLSD& data)
 	if (status == XML_STATUS_ERROR  
 		&& !mGracefullStop)
 	{
-		llinfos << "LLSDXMLParser::Impl::parseLines: XML_STATUS_ERROR" << llendl;
+		if (mEmitErrors)
+		{
+			llinfos << "LLSDXMLParser::Impl::parseLines: XML_STATUS_ERROR" << llendl;
+		}
 		return LLSDParser::PARSE_FAILURE;
 	}
 
@@ -508,12 +501,7 @@ void LLSDXMLParser::Impl::reset()
 	
 	mSkipping = false;
 	
-#if( LL_WINDOWS || __GNUC__ > 2)
 	mCurrentKey.clear();
-#else
-	mCurrentKey = std::string();
-#endif
-
 	
 	XML_ParserReset(mParser, "utf-8");
 	XML_SetUserData(mParser, this);
@@ -641,11 +629,7 @@ void LLSDXMLParser::Impl::startElementHandler(const XML_Char* name, const XML_Ch
 		LLSD& newElement = map[mCurrentKey];
 		mStack.push_back(&newElement);		
 
-#if( LL_WINDOWS || __GNUC__ > 2)
 		mCurrentKey.clear();
-#else
-		mCurrentKey = std::string();
-#endif
 	}
 	else if (mStack.back()->isArray())
 	{
@@ -787,10 +771,10 @@ void LLSDXMLParser::Impl::endElementHandler(const XML_Char* name)
 			boost::regex r;
 			r.assign("\\s");
 			std::string stripped = boost::regex_replace(mCurrentContent, r, "");
-			S32 len = apr_base64_decode_len(stripped.c_str());
+			size_t len = LLBase64::requiredDecryptionSpace(stripped);
 			std::vector<U8> data;
 			data.resize(len);
-			len = apr_base64_decode_binary(&data[0], stripped.c_str());
+			len = LLBase64::decode(stripped, &data[0], len);
 			data.resize(len);
 			value = data;
 			break;
@@ -910,7 +894,7 @@ LLSDXMLParser::Impl::Element LLSDXMLParser::Impl::readElement(const XML_Char* na
 /**
  * LLSDXMLParser
  */
-LLSDXMLParser::LLSDXMLParser() : impl(* new Impl)
+LLSDXMLParser::LLSDXMLParser(bool emit_errors /* = true */) : impl(* new Impl(emit_errors))
 {
 }
 

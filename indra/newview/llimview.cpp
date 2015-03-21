@@ -53,6 +53,7 @@
 #include "llmutelist.h"
 #include "llspeakers.h"
 #include "llvoavatar.h" // For mIdleTimer reset
+#include "llviewerobjectlist.h"
 #include "llviewerregion.h"
 
 // [RLVa:KB] - Checked: 2013-05-10 (RLVa-1.4.9)
@@ -97,9 +98,10 @@ LLColor4 agent_chat_color(const LLUUID& id, const std::string& name, bool local_
 	static const LLCachedControl<bool> color_eo_chat("ColorEstateOwnerChat");
 	if (color_eo_chat)
 	{
-		const LLViewerRegion* parent_estate = gAgent.getRegion();
-		if (parent_estate && id == parent_estate->getOwner())
-			return gSavedSettings.getColor4("AscentEstateOwnerColor");
+		const LLViewerObject* obj = gObjectList.findObject(id); // Nearby?
+		if (const LLViewerRegion* parent_estate = obj ? obj->getRegion() : gAgent.getRegion())
+			if (id == parent_estate->getOwner())
+				return gSavedSettings.getColor4("AscentEstateOwnerColor");
 	}
 
 	return local_chat ? gSavedSettings.getColor4("AgentChatColor") : gSavedSettings.getColor("IMChatColor");

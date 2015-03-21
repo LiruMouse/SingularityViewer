@@ -140,10 +140,6 @@ const	U32		DEFAULT_CGI_SERVICES_PORT		= 12045;
 // on a single host for map tile generation. JC
 const	U32		DEFAULT_MAPSERVER_PORT			= 12124;
 
-// For automatic port discovery when running multiple viewers on one host
-const	U32		PORT_DISCOVERY_RANGE_MIN		= 13000;
-const	U32		PORT_DISCOVERY_RANGE_MAX		= PORT_DISCOVERY_RANGE_MIN + 50;
-
 const	char	LAND_LAYER_CODE					= 'L';
 const	char	WATER_LAYER_CODE				= 'W';
 const	char	WIND_LAYER_CODE					= '7';

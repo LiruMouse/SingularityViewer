@@ -32,9 +32,9 @@
 	<icon left="1121" name="event"/>
 	<check_box label="Général" name="event_chk"/>
 	<icon left="1121" name="events_mature_icon"/>
-	<check_box label="Modéré" name="event_mature_chk"/>
+	<check_box label="Modéré" name="events_mature_chk"/>
 	<icon left="1121" name="events_adult_icon"/>
-	<check_box label="Adulte" name="event_adult_chk"/>
+	<check_box label="Adulte" name="events_adult_chk"/>
 	<icon left="973" name="avatar_icon"/>
 	<combo_box label="Amis connectés" name="friend combo" tool_tip="Ami(e)(s) à afficher sur la carte" width="232">
 		<combo_item name="none_selected">

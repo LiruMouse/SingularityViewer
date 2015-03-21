@@ -40,7 +40,7 @@
 #include "llvoavatar.h"
 #include "stringize.h"
 
-void cmdline_printchat(std::string chat);
+void cmdline_printchat(const std::string& message);
 
 LLVOAvatar* find_avatar_from_object( LLViewerObject* object );
 

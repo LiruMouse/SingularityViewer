@@ -68,6 +68,13 @@
 			<check_box label="Mostrar barra de chat local en ventana flotante (Requiere reiniciar)" tool_tip="Mostrar o no la barra de entrada de texto inferior en la barra flotante de chat." name="show_local_chat_floater_bar"/>
 			<check_box label="Usar botones horizontales para la ventana de contactos (Requiere Reiniciar)" tool_tip="Habilitado, los botones en los paneles de Amigos y Grupos se colocarán en la parte inferior del panel, ordendados horizontalmente, en vez de verticales a la derecha." name="horiz_butt"/>
 			<text name="namesystems_text_box">Formato de nombres en las listas de:</text>
+			<text name="chat_tabs_namesystem_text_box">Pestañas de Chat:</text>
+				<combo_box name="chat_tabs_namesystem_combobox" width="230">
+					<combo_item name="Old Names">Nombres Antiguos</combo_item>
+					<combo_item name="Display Names (with Username)">Nombre a Mostrar (c/Nombre de Usuario)</combo_item>
+					<combo_item name="Display Names only">Solamente Nombre a Mostrar</combo_item>
+					<combo_item name="Old Names (with Display Names)">Nombres Antiguos  (c/Nombre a Mostrar)</combo_item>
+				</combo_box>
 			<text name="friends_namesystem_text_box">Amigos:</text>
 				<combo_box name="friends_namesystem_combobox" width="230">
 					<combo_item name="Old Names">Nombres Antiguos</combo_item>

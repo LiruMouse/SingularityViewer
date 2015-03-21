@@ -254,7 +254,7 @@ BOOL LLScrollListText::getVisible() const
 //virtual
 S32 LLScrollListText::getHeight() const
 {
-	return llmath::llround(mFont->getLineHeight());
+	return ll_round(mFont->getLineHeight());
 }
 
 
@@ -326,7 +326,7 @@ void LLScrollListText::draw(const LLColor4& color, const LLColor4& highlight_col
 			break;
 		}
 		LLRect highlight_rect(left - 2,
-				llmath::llround(mFont->getLineHeight()) + 1,
+				ll_round(mFont->getLineHeight()) + 1,
 				left + mFont->getWidth(mText.getString(), mHighlightOffset, mHighlightCount) + 1,
 				1);
 		mRoundedRectImage->draw(highlight_rect, highlight_color);

@@ -30,8 +30,6 @@
 
 #include "u64.h"
 
-#include "lldate.h"
-
 #if LL_WINDOWS
 #	define WIN32_LEAN_AND_MEAN
 #	include <winsock2.h>
@@ -192,7 +190,7 @@ U64 get_clock_count()
 	return clock_count.QuadPart - offset;
 }
 
-F64 calc_clock_frequency(void)
+F64 calc_clock_frequency()
 {
 	__int64 freq;
 	QueryPerformanceFrequency((LARGE_INTEGER *) &freq);
@@ -203,9 +201,9 @@ F64 calc_clock_frequency(void)
 
 #if LL_LINUX || LL_DARWIN || LL_SOLARIS
 // Both Linux and Mac use gettimeofday for accurate time
-F64 calc_clock_frequency(void)
+F64 calc_clock_frequency()
 {
-	return 1000000.0; // microseconds, so 1 Mhz.
+	return 1000000.0; // microseconds, so 1 MHz.
 }
 
 U64 get_clock_count()
@@ -229,7 +227,7 @@ void update_clock_frequencies()
 ///////////////////////////////////////////////////////////////////////////////
 
 // returns a U64 number that represents the number of 
-// microseconds since the unix epoch - Jan 1, 1970
+// microseconds since the Unix epoch - Jan 1, 1970
 U64 totalTime()
 {
 	U64 current_clock_count = get_clock_count();
@@ -450,7 +448,7 @@ BOOL LLTimer::knownBadTimer()
 			{
 				if (!wcscmp(pci_id, bad_pci_list[check]))
 				{
-//					llwarns << "unreliable PCI chipset found!! " << pci_id << endl;
+//					LL_WARNS() << "unreliable PCI chipset found!! " << pci_id << endl;
 					failed = TRUE;
 					break;
 				}
@@ -567,8 +565,5 @@ void timeStructToFormattedString(struct tm * time, std::string format, std::stri
 	strftime(buffer, 255, format.c_str(), time);
 	timestr = (const char*)buffer;
 }
-
-
-
 
 

@@ -49,10 +49,10 @@
 #      define LL_X86 1
 #elif LL_MSVC && _M_IX86
 #      define LL_X86 1
-#elif LL_GNUC || LL_ICC || LL_CLANG && ( defined(__amd64__) || defined(__x86_64__) )
+#elif LL_GNUC || LL_CLANG || LL_INTELC && ( defined(__amd64__) || defined(__x86_64__) )
 #      define LL_X86_64 1
 #      define LL_X86 1
-#elif LL_GNUC || LL_ICC || LL_CLANG && ( defined(__i386__) )
+#elif LL_GNUC || LL_CLANG || LL_INTELC  && ( defined(__i386__) )
 #      define LL_X86 1
 #elif LL_GNUC && ( defined(__powerpc__) || defined(__ppc__) )
 #      define LL_PPC 1
@@ -202,6 +202,7 @@ namespace
 		case 6: return "AMD K7";
 		case 0xF: return "AMD K8";
 		case 0x10: return "AMD K8L";
+		case 0x15: return "AMD Bulldozer";
 		}
    		return "Unknown";
 	}
@@ -418,8 +419,8 @@ static F64 calculate_cpu_frequency(U32 measure_msecs)
 	HANDLE hThread = GetCurrentThread();
 	unsigned long dwCurPriorityClass = GetPriorityClass(hProcess);
 	int iCurThreadPriority = GetThreadPriority(hThread);
-	unsigned long dwProcessMask, dwSystemMask, dwNewMask = 1;
-	GetProcessAffinityMask(hProcess, (PDWORD_PTR)&dwProcessMask, (PDWORD_PTR)&dwSystemMask);
+	DWORD_PTR dwProcessMask, dwSystemMask, dwNewMask = 1; // <alchemy/>
+	GetProcessAffinityMask(hProcess, &dwProcessMask, &dwSystemMask);
 
 	SetPriorityClass(hProcess, REALTIME_PRIORITY_CLASS);
 	SetThreadPriority(hThread, THREAD_PRIORITY_TIME_CRITICAL);

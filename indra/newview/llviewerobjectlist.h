@@ -39,7 +39,6 @@
 // common includes
 #include "llstat.h"
 #include "llstring.h"
-#include "sguuidhash.h"
 
 // project includes
 #include "llviewerobject.h"

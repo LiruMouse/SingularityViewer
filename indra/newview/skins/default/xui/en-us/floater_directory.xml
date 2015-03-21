@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater can_close="true" can_drag_on_left="false" can_minimize="true"
      can_resize="true" height="570" min_height="570" min_width="780"
-     name="directory" rect_control="FloaterFindRect2" title="Search Second Life"
+     name="directory" rect_control="FloaterFindRect2" title="Search"
      width="780">
 	<tab_container bottom="-570" follows="left|top|right|bottom" height="550" left="0"
 	     mouse_opaque="false" name="Directory Tabs" tab_position="top" width="780">
@@ -83,7 +83,7 @@
 			     font="SansSerif" handle_edit_keys_directly="false" height="18"
 			     label="Search" left_delta="56" max_length="254" mouse_opaque="true"
 			     name="search_editor" select_all_on_focus_received="false"
-			     select_on_focus="false" tab_group="1" tool_tip="Search Second Life"
+			     select_on_focus="false" tab_group="1" tool_tip="Search"
 			     width="160" spell_check="true" />
       <button bottom="-26" follows="top|right" font="SansSerifSmall" height="25"
            label="" left="230" name="back_btn" width="25" image_overlay="go-previous.png"/>

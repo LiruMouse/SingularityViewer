@@ -964,6 +964,17 @@ static void formatDateString(std::string &date_string)
 	}
 }
 
+const std::string& localized_online()
+{
+	static const std::string online(LLTrans::getString("group_member_status_online"));
+	return online;
+}
+const std::string& localized_unknown()
+{
+	static const std::string unknown(LLTrans::getString("group_member_status_unknown"));
+	return unknown;
+}
+
 // static
 void LLGroupMgr::processGroupMembersReply(LLMessageSystem* msg, void** data)
 {
@@ -1015,13 +1026,11 @@ void LLGroupMgr::processGroupMembersReply(LLMessageSystem* msg, void** data)
 			{
 				if (online_status == "Online")
 				{
-					static std::string localized_online(LLTrans::getString("group_member_status_online"));
-					online_status = localized_online;
+					online_status = localized_online();
 				}
 				else if (online_status == "unknown")
 				{
-					static std::string localized_unknown(LLTrans::getString("group_member_status_unknown"));
-					online_status = localized_unknown;
+					online_status = localized_unknown();
 				}
 				else
 				{
@@ -2214,7 +2223,7 @@ void LLGroupMgr::processCapGroupMembersRequest(const LLSD& content)
 	for ( ; member_iter_start != member_iter_end; ++member_iter_start)
 	{
 		// Reset defaults
-		online_status = LLTrans::getString("group_member_status_unknown");
+		online_status = localized_unknown();
 		title = titles[0].asString();
 		contribution = 0;
 		member_powers = default_powers;
@@ -2227,9 +2236,9 @@ void LLGroupMgr::processCapGroupMembersRequest(const LLSD& content)
 		{
 			online_status = member_info["last_login"].asString();
 			if (online_status == "Online")
-				online_status = LLTrans::getString("group_member_status_online");
+				online_status = localized_online();
 			else if (online_status == "unknown")
-				online_status = LLTrans::getString("group_member_status_unknown");
+				online_status = localized_unknown();
 			else
 				formatDateString(online_status);
 		}

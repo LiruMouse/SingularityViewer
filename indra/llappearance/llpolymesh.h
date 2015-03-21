@@ -36,7 +36,7 @@
 #include "llquaternion.h"
 #include "llpolymorph.h"
 #include "lljoint.h"
-//#include "lldarray.h"
+#include "lldarray.h"
 
 class LLSkinJoint;
 class LLAvatarAppearance;

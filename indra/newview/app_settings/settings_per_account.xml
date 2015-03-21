@@ -393,6 +393,17 @@
       <key>Value</key>
       <string>This is an autoresponse!</string>
     </map>
+    <key>AutoresponseMutedShow</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether to show that AutoresponseMuted's were sent</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>AutoresponseOnlyIfAway</key>
     <map>
       <key>Comment</key>

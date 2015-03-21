@@ -4,31 +4,25 @@
  * @date 2006-02-26
  * @brief Declaration of parsers and formatters for LLSD
  *
- * $LicenseInfo:firstyear=2006&license=viewergpl$
- * 
- * Copyright (c) 2006-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2006&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -306,7 +300,7 @@ public:
 	/** 
 	 * @brief Constructor
 	 */
-	LLSDXMLParser();
+	LLSDXMLParser(bool emit_errors=true);
 
 protected:
 	/** 
@@ -422,7 +416,8 @@ public:
 	typedef enum e_formatter_options_type
 	{
 		OPTIONS_NONE = 0,
-		OPTIONS_PRETTY = 1
+		OPTIONS_PRETTY = 1,
+		OPTIONS_PRETTY_BINARY = 2
 	} EFormatterOptions;
 
 	/** 
@@ -513,6 +508,17 @@ public:
 	 * @return Returns The number of LLSD objects fomatted out
 	 */
 	virtual S32 format(const LLSD& data, std::ostream& ostr, U32 options = LLSDFormatter::OPTIONS_NONE) const;
+
+protected:
+
+	/** 
+	 * @brief Implementation to format the data. This is called recursively.
+	 *
+	 * @param data The data to write.
+	 * @param ostr The destination stream for the data.
+	 * @return Returns The number of LLSD objects fomatted out
+	 */
+	S32 format_impl(const LLSD& data, std::ostream& ostr, U32 options, U32 level) const;
 };
 
 
@@ -638,6 +644,11 @@ protected:
  *	params << "[{'version':i1}," << LLSDOStreamer<LLSDNotationFormatter>(sd)
  *    << "]";
  *  </code>
+ *
+ * *NOTE - formerly this class inherited from its template parameter Formatter,
+ * but all instantiations passed in LLRefCount subclasses.  This conflicted with
+ * the auto allocation intended for this class template (demonstrated in the
+ * example above).  -brad
  */
 template <class Formatter>
 class LLSDOStreamer
@@ -721,6 +732,18 @@ public:
 		LLPointer<LLSDNotationFormatter> f = new LLSDNotationFormatter;
 		return f->format(sd, str, LLSDFormatter::OPTIONS_NONE);
 	}
+	static S32 toPrettyNotation(const LLSD& sd, std::ostream& str)
+	{
+		LLPointer<LLSDNotationFormatter> f = new LLSDNotationFormatter;
+		return f->format(sd, str, LLSDFormatter::OPTIONS_PRETTY);
+	}
+	static S32 toPrettyBinaryNotation(const LLSD& sd, std::ostream& str)
+	{
+		LLPointer<LLSDNotationFormatter> f = new LLSDNotationFormatter;
+		return f->format(sd, str, 
+				LLSDFormatter::OPTIONS_PRETTY | 
+				LLSDFormatter::OPTIONS_PRETTY_BINARY);
+	}
 	static S32 fromNotation(LLSD& sd, std::istream& str, S32 max_bytes)
 	{
 		LLPointer<LLSDNotationParser> p = new LLSDNotationParser;
@@ -748,25 +771,25 @@ public:
 		return f->format(sd, str, LLSDFormatter::OPTIONS_PRETTY);
 	}
 
-	static S32 fromXMLEmbedded(LLSD& sd, std::istream& str)
+	static S32 fromXMLEmbedded(LLSD& sd, std::istream& str, bool emit_errors=true)
 	{
 		// no need for max_bytes since xml formatting is not
 		// subvertable by bad sizes.
-		LLPointer<LLSDXMLParser> p = new LLSDXMLParser;
+		LLPointer<LLSDXMLParser> p = new LLSDXMLParser(emit_errors);
 		return p->parse(str, sd, LLSDSerialize::SIZE_UNLIMITED);
 	}
 	// Line oriented parser, 30% faster than fromXML(), but can
 	// only be used when you know you have the complete XML
 	// document available in the stream.
-	static S32 fromXMLDocument(LLSD& sd, std::istream& str)
+	static S32 fromXMLDocument(LLSD& sd, std::istream& str, bool emit_errors=true)
 	{
-		LLPointer<LLSDXMLParser> p = new LLSDXMLParser();
+		LLPointer<LLSDXMLParser> p = new LLSDXMLParser(emit_errors);
 		return p->parseLines(str, sd);
 	}
-	static S32 fromXML(LLSD& sd, std::istream& str)
+	static S32 fromXML(LLSD& sd, std::istream& str, bool emit_errors=true)
 	{
-		return fromXMLEmbedded(sd, str);
-//		return fromXMLDocument(sd, str);
+		return fromXMLEmbedded(sd, str, emit_errors);
+//		return fromXMLDocument(sd, str, emit_errors);
 	}
 
 	/*

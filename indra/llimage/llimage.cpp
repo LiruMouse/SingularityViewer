@@ -1178,13 +1178,13 @@ void LLImageRaw::copyLineScaled( U8* in, U8* out, S32 in_pixel_len, S32 out_pixe
 			a *= norm_factor;  // skip conditional
 
 			S32 t4 = x * out_pixel_step * components;
-			out[t4 + 0] = U8(llmath::llround(r));
+			out[t4 + 0] = U8(ll_round(r));
 			if (components >= 2)
-				out[t4 + 1] = U8(llmath::llround(g));
+				out[t4 + 1] = U8(ll_round(g));
 			if (components >= 3)
-				out[t4 + 2] = U8(llmath::llround(b));
+				out[t4 + 2] = U8(ll_round(b));
 			if( components == 4)
-				out[t4 + 3] = U8(llmath::llround(a));
+				out[t4 + 3] = U8(ll_round(a));
 		}
 	}
 }
@@ -1259,10 +1259,10 @@ void LLImageRaw::compositeRowScaled4onto3( U8* in, U8* out, S32 in_pixel_len, S3
 			b *= norm_factor;
 			a *= norm_factor;
 
-			in_scaled_r = U8(llmath::llround(r));
-			in_scaled_g = U8(llmath::llround(g));
-			in_scaled_b = U8(llmath::llround(b));
-			in_scaled_a = U8(llmath::llround(a));
+			in_scaled_r = U8(ll_round(r));
+			in_scaled_g = U8(ll_round(g));
+			in_scaled_b = U8(ll_round(b));
+			in_scaled_a = U8(ll_round(a));
 		}
 
 		if( in_scaled_a )

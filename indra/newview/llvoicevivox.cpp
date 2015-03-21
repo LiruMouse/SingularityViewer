@@ -80,10 +80,10 @@ const int MAX_LOGIN_RETRIES = 12;
 
 // Defines the maximum number of times(in a row) "stateJoiningSession" case for spatial channel is reached in stateMachine()
 // which is treated as normal. If this number is exceeded we suspect there is a problem with connection
-// to voice server (EXT-4313). When voice works correctly, there is from 1 to 15 times. 50 was chosen
+// to voice server (EXT-4313). When voice works correctly, there is from 1 to 15 times. 1500 was chosen
 // to make sure we don't make mistake when slight connection problems happen- situation when connection to server is
 // blocked is VERY rare and it's better to sacrifice response time in this situation for the sake of stability.
-const int MAX_NORMAL_JOINING_SPATIAL_NUM = 50;
+const int MAX_NORMAL_JOINING_SPATIAL_NUM = 1500;
 
 // How often to check for expired voice fonts in seconds
 const F32 VOICE_FONT_EXPIRY_INTERVAL = 10.f;
@@ -478,17 +478,21 @@ bool LLVivoxVoiceClient::writeString(const std::string &str)
 				(const char*)str.data(),
 				&written);
 
-		if(err == 0)
+		if (err == 0 && written == size)
 		{
 			// Success.
 			result = true;
 		}
-		// TODO: handle partial writes (written is number of bytes written)
-		// Need to set socket to non-blocking before this will work.
-//		else if(APR_STATUS_IS_EAGAIN(err))
-//		{
-//			//
-//		}
+		else if (err == 0 && written != size)
+		{
+			// Did a short write,  log it for now
+			LL_WARNS("Voice") << ") short write on socket sending data to vivox daemon." << "Sent " << written << "bytes instead of " << size << LL_ENDL;
+		}
+		else if (APR_STATUS_IS_EAGAIN(err))
+		{
+			char buf[MAX_STRING];
+			LL_WARNS("Voice") << "EAGAIN error " << err << " (" << apr_strerror(err, buf, MAX_STRING) << ") sending data to vivox daemon." << LL_ENDL;
+		}
 		else
 		{
 			// Assume any socket error means something bad.  For now, just close the socket.
@@ -1126,8 +1130,8 @@ void LLVivoxVoiceClient::stateMachine()
 				}
 				else
 				{
-					// duration parameter is currently unused, per Mike S.
-					tuningCaptureStartSendMessage(10000);
+					// loop mic back to render device.
+					tuningCaptureStartSendMessage(1);  // 1-loop, zero, don't loop
 
 					setState(stateMicTuningRunning);
 				}
@@ -1564,6 +1568,8 @@ void LLVivoxVoiceClient::stateMachine()
 		//MARK: stateSessionJoined
 		case stateSessionJoined:		// session handle received
 
+			if (mSpatialJoiningNum > 100)
+				llwarns << "There seems to be problem with connecting to a voice channel. Frames to join were " << mSpatialJoiningNum << LL_ENDL;
 
 			mSpatialJoiningNum = 0;
 			// It appears that I need to wait for BOTH the SessionGroup.AddSession response and the SessionStateChangeEvent with state 4
@@ -1662,7 +1668,7 @@ void LLVivoxVoiceClient::stateMachine()
 		//MARK: stateLeavingSession
 		case stateLeavingSession:		// waiting for terminate session response
 			// The handler for the Session.Terminate response will transition from here to stateSessionTerminated.
-		break;
+		// Fall through and clean up session before getting terminated event.
 
 		//MARK: stateSessionTerminated
 		case stateSessionTerminated:
@@ -1672,6 +1678,7 @@ void LLVivoxVoiceClient::stateMachine()
 
 			if(mAudioSession)
 			{
+				leaveAudioSession();
 				sessionState *oldSession = mAudioSession;
 
 				mAudioSession = NULL;
@@ -1831,6 +1838,7 @@ void LLVivoxVoiceClient::loginSendMessage()
 		<< "<AccountPassword>" << mAccountPassword << "</AccountPassword>"
 		<< "<AudioSessionAnswerMode>VerifyAnswer</AudioSessionAnswerMode>"
 		<< "<EnableBuddiesAndPresence>false</EnableBuddiesAndPresence>"
+		<< "<EnablePresencePersistence>0</EnablePresencePersistence>"
 		<< "<BuddyManagementMode>Application</BuddyManagementMode>"
 		<< "<ParticipantPropertyFrequency>5</ParticipantPropertyFrequency>"
 		<< (autoPostCrashDumps?"<AutopostCrashDumps>true</AutopostCrashDumps>":"")
@@ -2031,6 +2039,7 @@ void LLVivoxVoiceClient::leaveAudioSession()
 			case stateJoiningSession:
 			case stateSessionJoined:
 			case stateRunning:
+			case stateSessionTerminated:
 				if(!mAudioSession->mHandle.empty())
 				{
 
@@ -2061,10 +2070,12 @@ void LLVivoxVoiceClient::leaveAudioSession()
 			case stateJoinSessionFailed:
 			case stateJoinSessionFailedWaiting:
 				setState(stateSessionTerminated);
+				break;
+			case stateLeavingSession:  // managed to get back to this case statement before the media gets disconnected.
 			break;
 
 			default:
-				LL_WARNS("Voice") << "called from unknown state" << LL_ENDL;
+				LL_WARNS("Voice") << "called from unknown state " << getState() << LL_ENDL;
 			break;
 		}
 	}
@@ -2117,6 +2128,7 @@ void LLVivoxVoiceClient::sessionMediaDisconnectSendMessage(sessionState *session
 
 }
 
+/* obsolete 
 void LLVivoxVoiceClient::sessionTextDisconnectSendMessage(sessionState *session)
 {
 	std::ostringstream stream;
@@ -2130,6 +2142,7 @@ void LLVivoxVoiceClient::sessionTextDisconnectSendMessage(sessionState *session)
 
 	writeString(stream.str());
 }
+*/
 
 void LLVivoxVoiceClient::getCaptureDevicesSendMessage()
 {
@@ -2281,14 +2294,15 @@ void LLVivoxVoiceClient::tuningRenderStopSendMessage()
 	writeString(stream.str());
 }
 
-void LLVivoxVoiceClient::tuningCaptureStartSendMessage(int duration)
+void LLVivoxVoiceClient::tuningCaptureStartSendMessage(int loop)
 {
 	LL_DEBUGS("Voice") << "sending CaptureAudioStart" << LL_ENDL;
 
 	std::ostringstream stream;
 	stream
 	<< "<Request requestId=\"" << mCommandCookie++ << "\" action=\"Aux.CaptureAudioStart.1\">"
-	<< "<Duration>" << duration << "</Duration>"
+	<< "<Duration>-1</Duration>"
+	<< "<LoopToRenderDevice>" << loop << "</LoopToRenderDevice>"
 	<< "</Request>\n\n\n";
 
 	writeString(stream.str());
@@ -2502,6 +2516,8 @@ void LLVivoxVoiceClient::sendPositionalUpdate(void)
 {
 	std::ostringstream stream;
 
+	if (getState() != stateRunning) return;   // don't send position updates if we are transitioning between out of running.
+
 	if(mSpatialCoordsDirty)
 	{
 		LLVector3 l, u, a, vel;
@@ -2647,7 +2663,7 @@ void LLVivoxVoiceClient::sendPositionalUpdate(void)
 				if(!p->mIsSelf)
 				{
 					// scale from the range 0.0-1.0 to vivox volume in the range 0-100
-					S32 volume = llmath::llround(p->mVolume / VOLUME_SCALE_VIVOX);
+					S32 volume = ll_round(p->mVolume / VOLUME_SCALE_VIVOX);
 					bool mute = p->mOnMuteList;
 
 					if(mute)
@@ -2934,15 +2950,25 @@ void LLVivoxVoiceClient::sessionGroupAddSessionResponse(std::string &requestId, 
 void LLVivoxVoiceClient::sessionConnectResponse(std::string &requestId, int statusCode, std::string &statusString)
 {
 	sessionState *session = findSession(requestId);
-	if(statusCode != 0)
+	// 1026 is session already has media,  somehow mediaconnect was called twice on the same session.
+	// set the session info to reflect that the user is already connected.
+	if (statusCode == 1026)
+	{
+		session->mVoiceEnabled = true;
+		session->mMediaConnectInProgress = false;
+		session->mMediaStreamState = streamStateConnected;
+		//session->mTextStreamState = streamStateConnected;
+		session->mErrorStatusCode = 0;
+	}
+	else if (statusCode != 0)
 	{
 		LL_WARNS("Voice") << "Session.Connect response failure (" << statusCode << "): " << statusString << LL_ENDL;
-		if(session)
+		if (session)
 		{
 			session->mMediaConnectInProgress = false;
 			session->mErrorStatusCode = statusCode;
 			session->mErrorStatusString = statusString;
-			if(session == mAudioSession)
+			if (session == mAudioSession)
 				setState(stateJoinSessionFailed);
 		}
 	}
@@ -3138,7 +3164,7 @@ void LLVivoxVoiceClient::sessionRemovedEvent(
 
 		// Reset the media state (we now have no info)
 		session->mMediaStreamState = streamStateUnknown;
-		session->mTextStreamState = streamStateUnknown;
+		//session->mTextStreamState = streamStateUnknown;
 
 		// Conditionally delete the session
 		reapSession(session);
@@ -3349,8 +3375,9 @@ void LLVivoxVoiceClient::mediaStreamUpdatedEvent(
 
 		switch(state)
 		{
+			case streamStateDisconnecting:
 			case streamStateIdle:
-				// Standard "left audio session"
+				// Standard "left audio session", Vivox state 'disconnected'
 				session->mVoiceEnabled = false;
 				session->mMediaConnectInProgress = false;
 				leftAudioSession(session);
@@ -3360,6 +3387,7 @@ void LLVivoxVoiceClient::mediaStreamUpdatedEvent(
 				session->mVoiceEnabled = true;
 				session->mMediaConnectInProgress = false;
 				joinedAudioSession(session);
+			case streamStateConnecting: // do nothing, but prevents a warning getting into the logs.
 			break;
 
 			case streamStateRinging:
@@ -3394,6 +3422,7 @@ void LLVivoxVoiceClient::mediaStreamUpdatedEvent(
 	}
 }
 
+/* Obsolete 
 void LLVivoxVoiceClient::textStreamUpdatedEvent(
 	std::string &sessionHandle,
 	std::string &sessionGroupHandle,
@@ -3440,6 +3469,7 @@ void LLVivoxVoiceClient::textStreamUpdatedEvent(
 		}
 	}
 }
+ obsolete */
 
 void LLVivoxVoiceClient::participantAddedEvent(
 		std::string &sessionHandle,
@@ -4260,7 +4290,7 @@ LLVivoxVoiceClient::sessionState* LLVivoxVoiceClient::startUserIMSession(const L
 	if(session->mHandle.empty())
 	{
 		// Session isn't active -- start it up.
-		sessionCreateSendMessage(session, false, true);
+		sessionCreateSendMessage(session, false, false);
 	}
 	else
 	{
@@ -4271,6 +4301,7 @@ LLVivoxVoiceClient::sessionState* LLVivoxVoiceClient::startUserIMSession(const L
 	return session;
 }
 
+/* obsolete
 BOOL LLVivoxVoiceClient::sendTextMessage(const LLUUID& participant_id, const std::string& message)
 {
 	bool result = false;
@@ -4295,7 +4326,8 @@ BOOL LLVivoxVoiceClient::sendTextMessage(const LLUUID& participant_id, const std
 
 	return result;
 }
-
+*/
+/* obsolete
 void LLVivoxVoiceClient::sendQueuedTextMessages(sessionState *session)
 {
 	if(session->mTextStreamState == 1)
@@ -4324,7 +4356,9 @@ void LLVivoxVoiceClient::sendQueuedTextMessages(sessionState *session)
 		// Session isn't connected yet, defer until later.
 	}
 }
+ obsolete */
 
+/*
 void LLVivoxVoiceClient::endUserIMSession(const LLUUID &uuid)
 {
 	// Figure out if a session with the user exists
@@ -4334,7 +4368,7 @@ void LLVivoxVoiceClient::endUserIMSession(const LLUUID &uuid)
 		// found the session
 		if(!session->mHandle.empty())
 		{
-			sessionTextDisconnectSendMessage(session);
+			// sessionTextDisconnectSendMessage(session);  // a SLim leftover,  not used any more.
 		}
 	}
 	else
@@ -4342,6 +4376,7 @@ void LLVivoxVoiceClient::endUserIMSession(const LLUUID &uuid)
 		LL_DEBUGS("Voice") << "Session not found for participant ID " << uuid << LL_ENDL;
 	}
 }
+*/
 bool LLVivoxVoiceClient::isValidChannel(std::string &sessionHandle)
 {
 	return(findSession(sessionHandle) != NULL);
@@ -4685,6 +4720,8 @@ void LLVivoxVoiceClient::enforceTether(void)
 
 void LLVivoxVoiceClient::updatePosition(void)
 {
+	// Throttle the position updates to one every 1/10 of a second if we are in an audio session at all
+	if (mAudioSession == NULL) return;
 
 	LLViewerRegion *region = gAgent.getRegion();
 	if(region && isAgentAvatarValid())
@@ -6800,6 +6837,10 @@ void LLVivoxProtocolParser::processResponse(std::string tag)
 		{
 			LLVivoxVoiceClient::getInstance()->sessionRemovedEvent(sessionHandle, sessionGroupHandle);
 		}
+		else if (!stricmp(eventTypeCstr, "SessionGroupUpdatedEvent"))
+		{
+			//TODO, we don't process this event, but we should not WARN that we have received it.
+		}
 		else if (!stricmp(eventTypeCstr, "SessionGroupAddedEvent"))
 		{
 			LLVivoxVoiceClient::getInstance()->sessionGroupAddedEvent(sessionGroupHandle);
@@ -6828,19 +6869,11 @@ void LLVivoxProtocolParser::processResponse(std::string tag)
 			*/
 			LLVivoxVoiceClient::getInstance()->mediaCompletionEvent(sessionGroupHandle, mediaCompletionType);
 		}
+		/* obsolete, let else statement complain if a text message arrives
 		else if (!stricmp(eventTypeCstr, "TextStreamUpdatedEvent"))
 		{
-			/*
-			 <Event type="TextStreamUpdatedEvent">
-			 <SessionGroupHandle>c1_m1000xFnPP04IpREWNkuw1cOXlhw==_sg1</SessionGroupHandle>
-			 <SessionHandle>c1_m1000xFnPP04IpREWNkuw1cOXlhw==1</SessionHandle>
-			 <Enabled>true</Enabled>
-			 <State>1</State>
-			 <Incoming>true</Incoming>
-			 </Event>
-			 */
 			LLVivoxVoiceClient::getInstance()->textStreamUpdatedEvent(sessionHandle, sessionGroupHandle, enabled, state, incoming);
-		}
+		} */
 		else if (!stricmp(eventTypeCstr, "ParticipantAddedEvent"))
 		{
 			/*

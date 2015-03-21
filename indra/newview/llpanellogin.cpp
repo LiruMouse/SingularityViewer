@@ -503,14 +503,14 @@ void LLPanelLogin::setFields(const std::string& firstname,
 		// fill it with MAX_PASSWORD characters so we get a 
 		// nice row of asterixes.
 		const std::string filler("123456789!123456");
-		sInstance->childSetText("password_edit", filler);
+		sInstance->getChild<LLUICtrl>("password_edit")->setValue(filler);
 		sInstance->mIncomingPassword = filler;
 		sInstance->mMungedPassword = password;
 	}
 	else
 	{
 		// this is a normal text password
-		sInstance->childSetText("password_edit", password);
+		sInstance->getChild<LLUICtrl>("password_edit")->setValue(password);
 		sInstance->mIncomingPassword = password;
 		LLMD5 pass((unsigned char *)password.c_str());
 		char munged_password[MD5HEX_STR_SIZE];
@@ -533,7 +533,7 @@ void LLPanelLogin::setFields(const LLSavedLoginEntry& entry, bool takeFocus)
 	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("username_combo");
 	login_combo->setTextEntry(fullname);
 	login_combo->resetTextDirty();
-	//sInstance->childSetText("username_combo", fullname);
+	//sInstance->getChild<LLUICtrl>("username_combo")->setValue(fullname);
 
 	std::string grid = entry.getGrid();
 	//grid comes via LLSavedLoginEntry, which uses full grid names, not nicks
@@ -544,13 +544,13 @@ void LLPanelLogin::setFields(const LLSavedLoginEntry& entry, bool takeFocus)
 	
 	if (entry.getPassword().empty())
 	{
-		sInstance->childSetText("password_edit", std::string(""));
+		sInstance->getChild<LLUICtrl>("password_edit")->setValue(LLStringUtil::null);
 		remember_pass_check->setValue(LLSD(false));
 	}
 	else
 	{
 		const std::string filler("123456789!123456");
-		sInstance->childSetText("password_edit", filler);
+		sInstance->getChild<LLUICtrl>("password_edit")->setValue(filler);
 		sInstance->mIncomingPassword = filler;
 		sInstance->mMungedPassword = entry.getPassword();
 		remember_pass_check->setValue(LLSD(true));
@@ -902,10 +902,8 @@ void LLPanelLogin::refreshLoginPage()
 
 	sInstance->updateGridCombo();
 
-	sInstance->childSetVisible("create_new_account_text",
-		!gHippoGridManager->getCurrentGrid()->getRegisterUrl().empty());
-	sInstance->childSetVisible("forgot_password_text",
-		!gHippoGridManager->getCurrentGrid()->getPasswordUrl().empty());
+	sInstance->getChildView("create_new_account_text")->setVisible(!gHippoGridManager->getCurrentGrid()->getRegisterUrl().empty());
+	sInstance->getChildView("forgot_password_text")->setVisible(!gHippoGridManager->getCurrentGrid()->getPasswordUrl().empty());
 
 	std::string login_page = gHippoGridManager->getCurrentGrid()->getLoginPage();
 	if (!login_page.empty())
@@ -996,7 +994,7 @@ void LLPanelLogin::onLoginComboLostFocus(LLComboBox* combo_box)
 {
 	if (combo_box->isTextDirty())
 	{
-		childSetText("password_edit", mIncomingPassword = mMungedPassword = LLStringUtil::null);
+		getChild<LLUICtrl>("password_edit")->setValue(mIncomingPassword = mMungedPassword = LLStringUtil::null);
 		combo_box->resetTextDirty();
 	}
 }

@@ -26,7 +26,7 @@
 
 #include "linden_common.h"
 
-#include "net.h"
+//#include "net.h"
 
 // system library includes
 #include <stdexcept>
@@ -36,7 +36,6 @@
 	#include <winsock2.h>
 	#include <windows.h>
 #else
-    #include <unistd.h>
 	#include <sys/types.h>
 	#include <sys/socket.h>
 	#include <netinet/in.h>
@@ -370,7 +369,7 @@ BOOL send_packet(int hSocket, const char *sendBuffer, int size, U32 recipient, i
 					return TRUE;
 				}
 				llinfos << "sendto() failed to " << u32_to_ip_string(recipient) << ":" << nPort 
-					<< ", Error " << last_error << llendl;
+					<< ", Error " << last_error << LL_ENDL;
 			}
 		}
 	} while (  (nRet == SOCKET_ERROR)
@@ -414,7 +413,7 @@ S32 start_net(S32& socket_out, int& nPort)
 		if (nRet < 0)
 		{
 			llwarns << "Failed to bind on an OS assigned port error: "
-					<< nRet << llendl;
+					<< nRet << LL_ENDL;
 		}
 		else
 		{
@@ -596,7 +595,7 @@ int receive_packet(int hSocket, char * receiveBuffer)
 	}
 
 	// Uncomment for testing if/when implementing for Mac or Windows:
-	// llinfos << "Received datagram to in addr " << u32_to_ip_string(get_receiving_interface_ip()) << llendl;
+	// LL_INFOS() << "Received datagram to in addr " << u32_to_ip_string(get_receiving_interface_ip()) << LL_ENDL;
 
 	return nRet;
 }

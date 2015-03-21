@@ -324,6 +324,23 @@ public:
 	BOOL			hasSortOrder() const;
 	void			clearSortOrder();
 
+	template<typename T> S32 selectMultiple(const std::vector<T>& vec)
+	{
+		size_t count = 0;
+		for (item_list::iterator iter = mItemList.begin(); iter != mItemList.end(); ++iter)
+		{
+			LLScrollListItem* item = *iter;
+			for (std::vector<T>::const_iterator titr = vec.begin(); titr != vec.end(); ++titr)
+				if (item->getEnabled() && static_cast<T>(item->getValue()) == (*titr))
+				{
+					selectItem(item, false);
+					++count;
+					break;
+				}
+		}
+		if (mCommitOnSelectionChange) commitIfChanged();
+		return count;
+	}
 	S32		selectMultiple( uuid_vec_t ids );
 	// conceptually const, but mutates mItemList
 	void			updateSort() const;

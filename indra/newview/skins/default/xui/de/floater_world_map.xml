@@ -22,9 +22,9 @@
 	
 	<check_box label="PG" name="event_chk"/>
 	
-	<check_box label="Mature" name="event_mature_chk"/>
+	<check_box label="Mature" name="events_mature_chk"/>
 	
-	<check_box label="Adult" name="event_adult_chk"/>
+	<check_box label="Adult" name="events_adult_chk"/>
 	
 	<combo_box label="Online-Freunde" name="friend combo" tool_tip="Freund, der auf Karte angezeigt werden soll">
 		<combo_item name="none_selected">Online-Freunde</combo_item>

@@ -3,14 +3,22 @@
 	<text name="LabelItemNameTitle">
 		Objeto:
 	</text>
+	<text left="80" name="ObjectName"/>
 	<text name="LabelSlurlTitle">
 		Ubicación:
 	</text>
+	<text left="80" name="Slurl"/>
 	<text name="Unknown_Slurl">
 		(Información de la ubicación no disponible)
 	</text>
 	<text name="LabelOwnerNameTitle">
 		Propietario:
 	</text>
+	<text left="80" name="OwnerName"/>
+	<text name="LabelObjectID">
+		Clave Id.:
+	</text>
+	<line_editor name="ObjectID" left="80"/>
 	<button label="Ignorar al Propietario" label_selected="Ignorar al Propietario" name="Mute"/>
+	<string name="owner" value=" (Propietario)"/>
 </floater>

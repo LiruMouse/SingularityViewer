@@ -4,10 +4,30 @@
         (cargando...)
     </panel.string>
     <panel.string name="ban_selection_too_large">
-        Prohibiciones de Grupo no enviadas: Demasiados residentes seleccionados. La Prohibición de Grupo está limitada a 100 residentes por requerimiento.
+        Prohibición de Grupo no enviada: Demasiados residentes seleccionados. La Prohibición de Grupo está limitada a 100 residentes por requerimiento.
     </panel.string>
-    <panel.string name="already_banned">
-        Invitación al Grupo no enviada: el residente '[RESIDENT]' se encuentra prohibido.
+    <panel.string name="ban_not_permitted">
+        Prohibición de Grupo no enviada: No tienes la capacidad "Administrar lista de prohibición".
+    </panel.string>
+    <panel.string name="ban_limit_fail">
+        Prohibición de Grupo no enviada: Tu grupo ha alcanzado el límite de registros de prohibiciones.
+    </panel.string>
+    <panel.string name="partial_ban">
+        Algunas prohibiciones en el grupo no han sido enviadas:
+[REASONS]
+    </panel.string>
+    <panel.string name="ban_failed">
+        Prohibiciones de Grupo no enviadas: 
+[REASONS]
+    </panel.string>
+    <panel.string name="residents_already_banned">
+        - Los siguientes residentes ya se encuentran prohibidos: [RESIDENTS].
+    </panel.string>
+    <panel.string name="ban_limit_reached">
+        - Límite de prohibiciones alcanzado, los siguientes agentes no fueron prohibidos: [RESIDENTS].
+    </panel.string>
+    <panel.string name="cant_ban_yourself">
+        No puedes prohibirte a ti mismo del grupo.
     </panel.string>
     <text name="help_text">
         Puedes seleccionar múltiples residentesYou can select multiple Residents to

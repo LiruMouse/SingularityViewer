@@ -55,6 +55,7 @@
 #include "llviewerwindow.h"
 #include "llviewercontrol.h"
 // </edit>
+#include "rlvhandler.h"
 
 
 // packet layout
@@ -553,6 +554,8 @@ void LLHUDEffectLookAt::render()
 		if (!LLAvatarNameCache::getNSName(static_cast<LLVOAvatar*>(mSourceObject.get())->getID(), text, lookAtNames)) return;
 		if (text.length() > 9 && 0 == text.compare(text.length() - 9, 9, " Resident"))
 			text.erase(text.length() - 9);
+		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
+			text = RlvStrings::getAnonym(text);
 		LLVector3 offset = gAgentCamera.getCameraPositionAgent() - target;
 		offset.normalize();
 		LLVector3 shadow_offset = offset * 0.49f;

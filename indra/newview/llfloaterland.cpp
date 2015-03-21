@@ -1228,7 +1228,7 @@ void LLPanelLandObjects::refresh()
 	{
 		S32 sw_max = parcel->getSimWideMaxPrimCapacity();
 		S32 sw_total = parcel->getSimWidePrimCount();
-		S32 max = llmath::llround(parcel->getMaxPrimCapacity() * parcel->getParcelPrimBonus());
+		S32 max = ll_round(parcel->getMaxPrimCapacity() * parcel->getParcelPrimBonus());
 		S32 total = parcel->getPrimCount();
 		S32 owned = parcel->getOwnerPrimCount();
 		S32 group = parcel->getGroupPrimCount();
@@ -1574,8 +1574,7 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 
 	LLVector3d mypos = gAgent.getPositionGlobal();
 	std::vector<LLUUID> avatar_ids;
-	std::vector<LLVector3d> positions;
-	LLWorld::instance().getAvatars(&avatar_ids, &positions, mypos, F32_MAX);
+	LLWorld::instance().getAvatars(&avatar_ids, NULL, mypos, F32_MAX);
 
 	for(S32 i = 0; i < rows; ++i)
 	{
@@ -2106,9 +2105,9 @@ void LLPanelLandOptions::refresh()
 		else
 		{
 			mLocationText->setTextArg("[LANDING]",llformat("%d, %d, %d",
-														   llmath::llround(pos.mV[VX]),
-														   llmath::llround(pos.mV[VY]),
-														   llmath::llround(pos.mV[VZ])));
+														   ll_round(pos.mV[VX]),
+														   ll_round(pos.mV[VY]),
+														   ll_round(pos.mV[VZ])));
 		}
 
 		mSetBtn->setEnabled( can_change_landing_point );

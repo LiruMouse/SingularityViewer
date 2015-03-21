@@ -513,7 +513,7 @@ std::vector<S32> LLLineEditor::getMisspelledWordsPositions()
 			{	
 				//misspelled word here, and you have just right clicked on it!
 				//get the center of this word..
-				//S32 center =  llmath::llround( (wordEnd-wordStart)/2 ) + wordStart;
+				//S32 center =  ll_round( (wordEnd-wordStart)/2 ) + wordStart;
 				//turn this cursor position into a pixel pos
 				//center = findPixelNearestPos(center-getCursor());
 
@@ -770,7 +770,7 @@ BOOL LLLineEditor::handleHover(S32 x, S32 y, MASK mask)
 		// Scroll if mouse cursor outside of bounds
 		if (mScrollTimer.hasExpired())
 		{
-			S32 increment = llmath::llround(mScrollTimer.getElapsedTimeF32() / AUTO_SCROLL_TIME);
+			S32 increment = ll_round(mScrollTimer.getElapsedTimeF32() / AUTO_SCROLL_TIME);
 			mScrollTimer.reset(AUTO_SCROLL_TIME);
 			if( (x < mMinHPixels) && (mScrollHPos > 0 ) )
 			{
@@ -1930,7 +1930,7 @@ void LLLineEditor::draw()
 				LLFontGL::NORMAL,
 				LLFontGL::NO_SHADOW,
 				select_left - mScrollHPos,
-				mMaxHPixels - llmath::llround(rendered_pixels_right),
+				mMaxHPixels - ll_round(rendered_pixels_right),
 				&rendered_pixels_right);
 		}
 		
@@ -1939,8 +1939,8 @@ void LLLineEditor::draw()
 			LLColor4 color(1.f - bg_color.mV[0], 1.f - bg_color.mV[1], 1.f - bg_color.mV[2], alpha );
 			// selected middle
 			S32 width = mGLFont->getWidth(mText.getWString().c_str(), mScrollHPos + rendered_text, select_right - mScrollHPos - rendered_text);
-			width = llmin(width, mMaxHPixels - llmath::llround(rendered_pixels_right));
-			gl_rect_2d(llmath::llround(rendered_pixels_right), cursor_top, llmath::llround(rendered_pixels_right)+width, cursor_bottom, color);
+			width = llmin(width, mMaxHPixels - ll_round(rendered_pixels_right));
+			gl_rect_2d(ll_round(rendered_pixels_right), cursor_top, ll_round(rendered_pixels_right)+width, cursor_bottom, color);
 
 			LLColor4 tmp_color( 1.f - text_color.mV[0], 1.f - text_color.mV[1], 1.f - text_color.mV[2], alpha );
 			rendered_text += mGLFont->render( 
@@ -1951,7 +1951,7 @@ void LLLineEditor::draw()
 				LLFontGL::NORMAL,
 				LLFontGL::NO_SHADOW,
 				select_right - mScrollHPos - rendered_text,
-				mMaxHPixels - llmath::llround(rendered_pixels_right),
+				mMaxHPixels - ll_round(rendered_pixels_right),
 				&rendered_pixels_right);
 		}
 
@@ -1966,7 +1966,7 @@ void LLLineEditor::draw()
 				LLFontGL::NORMAL,
 				LLFontGL::NO_SHADOW,
 				S32_MAX,
-				mMaxHPixels - llmath::llround(rendered_pixels_right),
+				mMaxHPixels - ll_round(rendered_pixels_right),
 				&rendered_pixels_right);
 		}
 	}
@@ -1980,7 +1980,7 @@ void LLLineEditor::draw()
 			LLFontGL::NORMAL,
 			LLFontGL::NO_SHADOW,
 			S32_MAX,
-			mMaxHPixels - llmath::llround(rendered_pixels_right),
+			mMaxHPixels - ll_round(rendered_pixels_right),
 			&rendered_pixels_right);
 	}
 #if 0 // for when we're ready for image art.
@@ -2048,7 +2048,7 @@ void LLLineEditor::draw()
 							LLFontGL::NORMAL,
 							LLFontGL::NO_SHADOW,
 							S32_MAX,
-							mMaxHPixels - llmath::llround(rendered_pixels_right),
+							mMaxHPixels - ll_round(rendered_pixels_right),
 							&rendered_pixels_right, FALSE);
 		}
 
@@ -2073,7 +2073,7 @@ void LLLineEditor::draw()
 							LLFontGL::NORMAL,
 							LLFontGL::NO_SHADOW,
 							S32_MAX,
-							mMaxHPixels - llmath::llround(rendered_pixels_right),
+							mMaxHPixels - ll_round(rendered_pixels_right),
 							&rendered_pixels_right, FALSE);
 		}
 		// Draw children (border)
@@ -3022,7 +3022,7 @@ void LLLineEditor::markAsPreedit(S32 position, S32 length)
 
 S32 LLLineEditor::getPreeditFontSize() const
 {
-	return llmath::llround(mGLFont->getLineHeight() * LLUI::getScaleFactor().mV[VY]);
+	return ll_round(mGLFont->getLineHeight() * LLUI::getScaleFactor().mV[VY]);
 }
 
 void LLLineEditor::setReplaceNewlinesWithSpaces(BOOL replace)

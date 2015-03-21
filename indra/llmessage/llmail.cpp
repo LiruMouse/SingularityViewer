@@ -200,7 +200,7 @@ std::string LLMail::buildSMTPTransaction(
 	if(!from_address || !to_address)
 	{
 		llinfos << "send_mail build_smtp_transaction reject: missing to and/or"
-			<< " from address." << llendl;
+			<< " from address." << LL_ENDL;
 		return std::string();
 	}
 	if(!valid_subject_chars(subject))
@@ -208,7 +208,7 @@ std::string LLMail::buildSMTPTransaction(
 		llinfos << "send_mail build_smtp_transaction reject: bad subject header: "
 			<< "to=<" << to_address
 			<< ">, from=<" << from_address << ">"
-			<< llendl;
+			<< LL_ENDL;
 		return std::string();
 	}
 	std::ostringstream from_fmt;
@@ -266,7 +266,7 @@ bool LLMail::send(
 	if(!from_address || !to_address)
 	{
 		llinfos << "send_mail reject: missing to and/or from address."
-			<< llendl;
+			<< LL_ENDL;
 		return false;
 	}
 
@@ -278,7 +278,7 @@ bool LLMail::send(
 	std::string good_string = "\n..\n";
 	while (1)
 	{
-		int index = message.find(bad_string);
+		size_t index = message.find(bad_string);
 		if (index == std::string::npos) break;
 		message.replace(index, bad_string.size(), good_string);
 	}
@@ -305,7 +305,7 @@ bool LLMail::send(
 	{
 		llinfos << "send_mail reject: mail system is disabled: to=<"
 			<< to_address << ">, from=<" << from_address
-			<< ">" << llendl;
+			<< ">" << LL_ENDL;
 		// Any future interface to SMTP should return this as an
 		// error.  --mark
 		return true;
@@ -314,7 +314,7 @@ bool LLMail::send(
 	{
 		llwarns << "send_mail reject: mail system not initialized: to=<"
 			<< to_address << ">, from=<" << from_address
-			<< ">" << llendl;
+			<< ">" << LL_ENDL;
 		return false;
 	}
 
@@ -322,7 +322,7 @@ bool LLMail::send(
 	{
 		llwarns << "send_mail reject: SMTP connect failure: to=<"
 			<< to_address << ">, from=<" << from_address
-			<< ">" << llendl;
+			<< ">" << LL_ENDL;
 		return false;
 	}
 
@@ -342,20 +342,20 @@ bool LLMail::send(
 			<< "to=<" << to_address
 			<< ">, from=<" << from_address << ">"
 			<< ", bytes=" << original_size
-			<< ", sent=" << send_size << llendl;
+			<< ", sent=" << send_size << LL_ENDL;
 		return false;
 	}
 	if(send_size >= LL_MAX_KNOWN_GOOD_MAIL_SIZE)
 	{
 		llwarns << "send_mail message has been shown to fail in testing "
 			<< "when sending messages larger than " << LL_MAX_KNOWN_GOOD_MAIL_SIZE
-			<< " bytes. The next log about success is potentially a lie." << llendl;
+			<< " bytes. The next log about success is potentially a lie." << LL_ENDL;
 	}
 	lldebugs << "send_mail success: "
 		<< "to=<" << to_address
 		<< ">, from=<" << from_address << ">"
 		<< ", bytes=" << original_size
-		<< ", sent=" << send_size << llendl;
+		<< ", sent=" << send_size << LL_ENDL;
 
 #if LL_LOG_ENTIRE_MAIL_MESSAGE_ON_SEND
 	llinfos << rfc2822_msg.str() << llendl;

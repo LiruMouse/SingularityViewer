@@ -846,8 +846,8 @@ BOOL LLViewerWindow::handleAnyMouseClick(LLWindow *window,  LLCoordGL pos, MASK 
 	BOOL handled = FALSE;
 	S32 x = pos.mX;
 	S32 y = pos.mY;
-	x = llmath::llround((F32)x / mDisplayScale.mV[VX]);
-	y = llmath::llround((F32)y / mDisplayScale.mV[VY]);
+	x = ll_round((F32)x / mDisplayScale.mV[VX]);
+	y = ll_round((F32)y / mDisplayScale.mV[VY]);
 
 	if (down)
 		{
@@ -1021,8 +1021,8 @@ BOOL LLViewerWindow::handleRightMouseDown(LLWindow *window,  LLCoordGL pos, MASK
 {
 	S32 x = pos.mX;
 	S32 y = pos.mY;
-	x = llmath::llround((F32)x / mDisplayScale.mV[VX]);
-	y = llmath::llround((F32)y / mDisplayScale.mV[VY]);
+	x = ll_round((F32)x / mDisplayScale.mV[VX]);
+	y = ll_round((F32)y / mDisplayScale.mV[VY]);
 
 	LLView::sMouseHandlerMessage.clear();
 
@@ -1220,8 +1220,8 @@ void LLViewerWindow::handleMouseMove(LLWindow *window,  LLCoordGL pos, MASK mask
 	S32 x = pos.mX;
 	S32 y = pos.mY;
 
-	x = llmath::llround((F32)x / mDisplayScale.mV[VX]);
-	y = llmath::llround((F32)y / mDisplayScale.mV[VY]);
+	x = ll_round((F32)x / mDisplayScale.mV[VX]);
+	y = ll_round((F32)y / mDisplayScale.mV[VY]);
 
 	mMouseInWindow = TRUE;
 
@@ -1716,7 +1716,7 @@ LLViewerWindow::LLViewerWindow(
 		LLCoordWindow size;
 		mWindow->getSize(&size);
 		mWindowRectRaw.set(0, size.mY, size.mX, 0);
-		mWindowRectScaled.set(0, llmath::llround((F32)size.mY / mDisplayScale.mV[VY]), llmath::llround((F32)size.mX / mDisplayScale.mV[VX]), 0);
+		mWindowRectScaled.set(0, ll_round((F32)size.mY / mDisplayScale.mV[VY]), ll_round((F32)size.mX / mDisplayScale.mV[VX]), 0);
 	}
 	
 	LLFontManager::initClass();
@@ -2398,8 +2398,8 @@ void LLViewerWindow::reshape(S32 width, S32 height)
 		LLUI::setScaleFactor(mDisplayScale);
 
 		// update our window rectangle
-		mWindowRectScaled.mRight = mWindowRectScaled.mLeft + llmath::llround((F32)width / mDisplayScale.mV[VX]);
-		mWindowRectScaled.mTop = mWindowRectScaled.mBottom + llmath::llround((F32)height / mDisplayScale.mV[VY]);
+		mWindowRectScaled.mRight = mWindowRectScaled.mLeft + ll_round((F32)width / mDisplayScale.mV[VX]);
+		mWindowRectScaled.mTop = mWindowRectScaled.mBottom + ll_round((F32)height / mDisplayScale.mV[VY]);
 
 		setup2DViewport();
 
@@ -2560,8 +2560,8 @@ void LLViewerWindow::draw()
 		microsecondsToTimecodeString(gFrameTime,text);
 		const LLFontGL* font = LLFontGL::getFontSansSerif();
 		font->renderUTF8(text, 0,
-						llmath::llround((getWindowWidthScaled()/2)-100.f),
-						llmath::llround((getWindowHeightScaled()-60.f)),
+						ll_round((getWindowWidthScaled()/2)-100.f),
+						ll_round((getWindowHeightScaled()-60.f)),
 			LLColor4( 1.f, 1.f, 1.f, 1.f ),
 			LLFontGL::LEFT, LLFontGL::TOP);
 	}
@@ -2601,7 +2601,8 @@ void LLViewerWindow::draw()
 		// Draw tool specific overlay on world
 		LLToolMgr::getInstance()->getCurrentTool()->draw();
 
-		if( gAgentCamera.cameraMouselook() )
+		static LLCachedControl<bool> drawMouselookInst(gSavedSettings, "AlchemyMouselookInstructions", true);
+		if (drawMouselookInst && (gAgentCamera.cameraMouselook()))
 		{
 			drawMouselookInstructions();
 			stop_glerror();
@@ -2661,7 +2662,7 @@ void LLViewerWindow::draw()
 			const S32 DIST_FROM_TOP = 20;
 			LLFontGL::getFontSansSerifBig()->renderUTF8(
 				mOverlayTitle, 0,
-				llmath::llround( getWindowWidthScaled() * 0.5f),
+				ll_round( getWindowWidthScaled() * 0.5f),
 				getWindowHeightScaled() - DIST_FROM_TOP,
 				LLColor4(1, 1, 1, 0.4f),
 				LLFontGL::HCENTER, LLFontGL::TOP);
@@ -3514,7 +3515,7 @@ void LLViewerWindow::updateMouseDelta()
 		fdx = fdx + ((F32) dx - fdx) * llmin(gFrameIntervalSeconds*amount,1.f);
 		fdy = fdy + ((F32) dy - fdy) * llmin(gFrameIntervalSeconds*amount,1.f);
 
-		mCurrentMouseDelta.set(llmath::llround(fdx), llmath::llround(fdy));
+		mCurrentMouseDelta.set(ll_round(fdx), ll_round(fdy));
 		mouse_vel.setVec(fdx,fdy);
 	}
 	else
@@ -4804,10 +4805,10 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 	// However, if the buffer turns out to be too large, then clamp it to max_size.
 		scale_factor = llmin(max_size / snapshot_width, max_size / snapshot_height))	// Clamp
 	{
-		image_buffer_x = llmath::llround(unscaled_image_buffer_x * scale_factor);
-		image_buffer_y = llmath::llround(unscaled_image_buffer_y * scale_factor);
-		S32 image_size_x = llmath::llround(snapshot_width * scale_factor);
-		S32 image_size_y = llmath::llround(snapshot_width * scale_factor);
+		image_buffer_x = ll_round(unscaled_image_buffer_x * scale_factor);
+		image_buffer_y = ll_round(unscaled_image_buffer_y * scale_factor);
+		S32 image_size_x = ll_round(snapshot_width * scale_factor);
+		S32 image_size_y = ll_round(snapshot_width * scale_factor);
 		if (llmax(image_size_x, image_size_y) > max_size &&		// Boundary check to avoid memory overflow.
 			internal_scale <= 1.f && !reset_deferred)				// SHY_MOD: If supersampling... Don't care about max_size.
 		{
@@ -5051,44 +5052,52 @@ void LLViewerWindow::destroyWindow()
 
 void LLViewerWindow::drawMouselookInstructions()
 {
-	static const F32 INSTRUCTIONS_OPAQUE_TIME = 10.f;
-	static const F32 INSTRUCTIONS_FADE_TIME = 5.f;
-
-	F32 mouselook_duration = gAgentCamera.getMouseLookDuration();
-	if( mouselook_duration >= (INSTRUCTIONS_OPAQUE_TIME+INSTRUCTIONS_OPAQUE_TIME) )
-		return;
-
-	F32 alpha = 1.f;
-
-	if( mouselook_duration > INSTRUCTIONS_OPAQUE_TIME)	//instructions are fading
-	{
-		alpha = (F32) sqrt(1.f-pow(((mouselook_duration-INSTRUCTIONS_OPAQUE_TIME)/INSTRUCTIONS_FADE_TIME),2.f));
-	}
-
+	// <alchemy>
 	// Draw instructions for mouselook ("Press ESC to leave Mouselook" in a box at the top of the screen.)
-	const std::string instructions = LLTrans::getString("LeaveMouselook");
-	const LLFontGL* font = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF );
+	const LLFontGL* font = LLFontGL::getFontSansSerifBig();
 
-	const S32 INSTRUCTIONS_PAD = 5;
-	LLRect instructions_rect;
-	instructions_rect.setLeftTopAndSize( 
-		INSTRUCTIONS_PAD,
-		getWindowHeight() - INSTRUCTIONS_PAD,
-		font->getWidth( instructions ) + 2 * INSTRUCTIONS_PAD,
-		llmath::llround(font->getLineHeight() + 2 * INSTRUCTIONS_PAD));
-
+	//to be on top of Bottom bar when it is opened
+	const S32 INSTRUCTIONS_PAD = getWorldViewRectScaled().mTop - 15;
+	const S32 text_pos_start = getWorldViewRectScaled().getCenterX() - 150;
+	if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
 	{
-		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-		gGL.color4f( 0.9f, 0.9f, 0.9f, alpha );
-		gl_rect_2d( instructions_rect );
+		const LLVector3& vec = gAgent.getPositionAgent();
+		font->renderUTF8(
+			llformat("X: %.2f", vec.mV[VX]), 0,
+			text_pos_start,
+			INSTRUCTIONS_PAD,
+			LLColor4(1.0f, 0.5f, 0.5f, 0.5),
+			LLFontGL::HCENTER, LLFontGL::TOP,
+			LLFontGL::BOLD, LLFontGL::DROP_SHADOW_SOFT);
+		font->renderUTF8(
+			llformat("Y: %.2f", vec.mV[VX]), 0,
+			text_pos_start + 100,
+			INSTRUCTIONS_PAD,
+			LLColor4(0.5f, 1.0f, 0.5f, 0.5),
+			LLFontGL::HCENTER, LLFontGL::TOP,
+			LLFontGL::BOLD, LLFontGL::DROP_SHADOW_SOFT);
+		font->renderUTF8(
+			llformat("Z: %.2f", vec.mV[VX]), 0,
+			text_pos_start + 200,
+			INSTRUCTIONS_PAD,
+			LLColor4(0.5f, 0.5f, 1.0f, 0.5),
+			LLFontGL::HCENTER, LLFontGL::TOP,
+			LLFontGL::BOLD, LLFontGL::DROP_SHADOW_SOFT);
 	}
-
-	font->renderUTF8( 
-		instructions, 0,
-		instructions_rect.mLeft + INSTRUCTIONS_PAD,
-		instructions_rect.mTop - INSTRUCTIONS_PAD,
-		LLColor4( 0.0f, 0.0f, 0.0f, alpha ),
-		LLFontGL::LEFT, LLFontGL::TOP);
+	const LLViewerParcelMgr& vpm = LLViewerParcelMgr::instance();
+	const bool allow_damage = vpm.allowAgentDamage(gAgent.getRegion(), vpm.getAgentParcel());
+	if (allow_damage)
+	{
+		const S32 health = gStatusBar ? gStatusBar->getHealth() : -1;
+		font->renderUTF8(
+			llformat("HP: %d%%", health), 0,
+			text_pos_start + 300,
+			INSTRUCTIONS_PAD,
+			LLColor4(1.0f, 1.0f, 1.0f, 0.5),
+			LLFontGL::HCENTER, LLFontGL::TOP,
+			LLFontGL::BOLD, LLFontGL::DROP_SHADOW_SOFT);
+	}
+	// </alchemy>
 }
 
 void* LLViewerWindow::getPlatformWindow() const
@@ -5685,8 +5694,8 @@ void LLViewerWindow::calcDisplayScale()
 
 	if (mWindow->getFullscreen())
 	{
-		display_scale.mV[0] = llmath::llround(display_scale.mV[0], 2.0f/(F32) mWindowRectRaw.getWidth());
-		display_scale.mV[1] = llmath::llround(display_scale.mV[1], 2.0f/(F32) mWindowRectRaw.getHeight());
+		display_scale.mV[0] = ll_round(display_scale.mV[0], 2.0f/(F32) mWindowRectRaw.getWidth());
+		display_scale.mV[1] = ll_round(display_scale.mV[1], 2.0f/(F32) mWindowRectRaw.getHeight());
 	}
 
 	if (display_scale != mDisplayScale)
@@ -5970,8 +5979,8 @@ void LLPickInfo::updateXYCoords()
 		LLPointer<LLViewerTexture> imagep = LLViewerTextureManager::getFetchedTexture(tep->getID());
 		if(mUVCoords.mV[VX] >= 0.f && mUVCoords.mV[VY] >= 0.f && imagep.notNull())
 		{
-			mXYCoords.mX = llmath::llround(mUVCoords.mV[VX] * (F32)imagep->getWidth());
-			mXYCoords.mY = llmath::llround((1.f - mUVCoords.mV[VY]) * (F32)imagep->getHeight());
+			mXYCoords.mX = ll_round(mUVCoords.mV[VX] * (F32)imagep->getWidth());
+			mXYCoords.mY = ll_round((1.f - mUVCoords.mV[VY]) * (F32)imagep->getHeight());
 		}
 	}
 }
@@ -6000,7 +6009,7 @@ void LLPickInfo::getSurfaceInfo()
 
 	if (objectp)
 	{
-		if (gViewerWindow->cursorIntersect(llmath::llround((F32)mMousePt.mX), llmath::llround((F32)mMousePt.mY), 1024.f,
+		if (gViewerWindow->cursorIntersect(ll_round((F32)mMousePt.mX), ll_round((F32)mMousePt.mY), 1024.f,
 										   objectp, -1, mPickTransparent,
 										   &mObjectFace,
 										   &intersection,
@@ -6058,8 +6067,8 @@ LLVector2 LLPickInfo::pickUV()
 		objectp->mDrawable.notNull() && objectp->getPCode() == LL_PCODE_VOLUME &&
 		mObjectFace < objectp->mDrawable->getNumFaces())
 	{
-		S32 scaled_x = llmath::llround((F32)mPickPt.mX * gViewerWindow->getDisplayScale().mV[VX]);
-		S32 scaled_y = llmath::llround((F32)mPickPt.mY * gViewerWindow->getDisplayScale().mV[VY]);
+		S32 scaled_x = ll_round((F32)mPickPt.mX * gViewerWindow->getDisplayScale().mV[VX]);
+		S32 scaled_y = ll_round((F32)mPickPt.mY * gViewerWindow->getDisplayScale().mV[VY]);
 		const S32 UV_PICK_WIDTH = 5;
 		const S32 UV_PICK_HALF_WIDTH = (UV_PICK_WIDTH - 1) / 2;
 		U8 uv_pick_buffer[UV_PICK_WIDTH * UV_PICK_WIDTH * 4];

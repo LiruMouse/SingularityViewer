@@ -269,7 +269,7 @@ void LLKeyboardWin32::scanKeyboard()
 				// keydown in highest bit
 				if (!mControllerKeys[key] && !pending_key_events && !(GetAsyncKeyState(virtual_key) & 0x8000))
 				{
- 					//llinfos << "Key up event missed, resetting" << llendl;
+ 					//LL_INFOS() << "Key up event missed, resetting" << LL_ENDL;
 					mKeyLevel[key] = FALSE;
 				}
 			}

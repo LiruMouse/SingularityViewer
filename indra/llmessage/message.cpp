@@ -2765,7 +2765,7 @@ void LLMessageSystem::dumpReceiveCounts()
 			if (mt->mReceiveCount > 0)
 			{
 				LL_INFOS("Messaging") << "Num: " << std::setw(3) << mt->mReceiveCount << " Bytes: " << std::setw(6) << mt->mReceiveBytes
-						<< " Invalid: " << std::setw(3) << mt->mReceiveInvalid << " " << mt->mName << " " << llmath::llround(100 * mt->mDecodeTimeThisFrame / mReceiveTime) << "%" << llendl;
+						<< " Invalid: " << std::setw(3) << mt->mReceiveInvalid << " " << mt->mName << " " << ll_round(100 * mt->mDecodeTimeThisFrame / mReceiveTime) << "%" << llendl;
 			}
 		}
 	}

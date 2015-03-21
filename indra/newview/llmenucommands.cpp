@@ -35,6 +35,7 @@
 #include "llmenucommands.h"
 
 #include "aihttpview.h"
+#include "alfloaterregiontracker.h"
 #include "floaterao.h"
 #include "floaterlocalassetbrowse.h"
 #include "hbfloatergrouptitles.h"
@@ -239,6 +240,7 @@ struct MenuFloaterDict : public LLSingleton<MenuFloaterDict>
 		registerFloater<LLFloaterPathfindingLinksets>	("pathfinding_linksets");
 		registerFloater<LLFloaterPermsDefault>			("perm prefs");
 		registerFloater<LLFloaterAvatarList>			("radar");
+		registerFloater<ALFloaterRegionTracker>			("region_tracker");
 		registerFloater<LLFloaterScriptLimits>			("script info");
 		registerFloater<LLFloaterStats>					("stat bar");
 		registerFloater<LLFloaterTeleportHistory>		("teleport history");

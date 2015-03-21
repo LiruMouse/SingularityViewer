@@ -51,7 +51,6 @@
 #include "lltabcontainer.h"
 #include "lltextbox.h"
 #include "lltexteditor.h"
-#include "lltrans.h"
 #include "llviewertexturelist.h"
 #include "llviewerwindow.h"
 #include "llfocusmgr.h"
@@ -1670,10 +1669,9 @@ void LLPanelGroupMembersSubTab::update(LLGroupChange gc)
 
 bool is_online_status_string(const std::string& status)
 {
-	static const std::string online(LLTrans::getString("group_member_status_online"));
-	if (status == online) return true;
-	static const std::string unknown(LLTrans::getString("group_member_status_unknown"));
-	return status == unknown;
+	const std::string& localized_online();
+	const std::string& localized_unknown();
+	return status == localized_online() || status == localized_unknown();
 }
 
 void LLPanelGroupMembersSubTab::addMemberToList(LLGroupMemberData* data)

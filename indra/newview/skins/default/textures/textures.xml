@@ -162,8 +162,6 @@
   
   <texture name="map_avatar_16.tga"/>
   <texture name="map_avatar_8.tga"/>
-  <texture name="map_event.tga"/>
-  <texture name="map_event_mature.tga"/>
   <texture name="map_home.tga"/>
   <texture name="map_infohub.tga"/>
   <texture name="map_telehub.tga"/>
@@ -416,4 +414,7 @@
   <texture name="Inv_WaterLight.png" preload="true"/>
 
   <texture name="Refresh_Off" file_name="Refresh_Off.png" preload="true" />
+  <texture name="Parcel_PG_Light" file_name="map_event.tga" preload="true" />
+  <texture name="Parcel_M_Dark" file_name="map_event_mature.tga" preload="true" />
+  <texture name="Parcel_R_Light" file_name="map_event_adult.tga" preload="true" />
 </textures>

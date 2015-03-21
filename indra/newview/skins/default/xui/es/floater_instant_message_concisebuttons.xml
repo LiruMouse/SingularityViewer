@@ -45,6 +45,8 @@
 	<string name="rp mode off" value="Modo RP (Apagado)"/>
 	<string name="add friend" value="Añadir Contacto"/>
 	<string name="remove friend" value="Eliminar Contacto"/>
+    <string name="mute" value="Ignorar"/>
+    <string name="unmute" value="No Ignorar"/>
 	<button label="Llamar" left_delta="67" name="start_call_btn" width="60"/>
 	<button label="Finalizar" name="end_call_btn" width="24"/>
 	<panel left_delta="16" name="speaker_controls" width="60">

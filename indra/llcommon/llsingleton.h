@@ -102,10 +102,10 @@ private:
 	// stores pointer to singleton instance
 	struct SingletonLifetimeManager
 	{
-		SingletonLifetimeManager()
+		/*SingletonLifetimeManager()
 		{
 			construct();
-		}
+		}*/
 
 		static void construct()
 		{
@@ -115,14 +115,14 @@ private:
 			sData.mInitState = INITIALIZING;
 		}
 
-		~SingletonLifetimeManager()
+		/*~SingletonLifetimeManager()
 		{
 			SingletonData& sData(getData());
 			if (sData.mInitState != DELETED)
 			{
 				deleteSingleton();
 			}
-		}
+		}*/
 	};
 
 public:
@@ -178,33 +178,28 @@ public:
 
 	static DERIVED_TYPE* getInstance()
 	{
-		static SingletonLifetimeManager sLifeTimeMgr;
+		//static SingletonLifetimeManager sLifeTimeMgr;
 		SingletonData& sData(getData());
 
 		switch (sData.mInitState)
 		{
-		case UNINITIALIZED:
-			// should never be uninitialized at this point
-			llassert(false);
-			return NULL;
 		case CONSTRUCTING:
 			llerrs << "Tried to access singleton " << typeid(DERIVED_TYPE).name() << " from singleton constructor!" << LL_ENDL;
 			return NULL;
 		case INITIALIZING:
-			// go ahead and flag ourselves as initialized so we can be reentrant during initialization
-			sData.mInitState = INITIALIZED;	
-			// initialize singleton after constructing it so that it can reference other singletons which in turn depend on it,
-			// thus breaking cyclic dependencies
-			sData.mInstance->initSingleton(); 
+			llwarns << "Using singleton " << typeid(DERIVED_TYPE).name() << " during its own initialization, before its initialization completed!" << LL_ENDL;
 			return sData.mInstance;
 		case INITIALIZED:
 			return sData.mInstance;
 		case DELETED:
 			llwarns << "Trying to access deleted singleton " << typeid(DERIVED_TYPE).name() << " creating new instance" << LL_ENDL;
+		case UNINITIALIZED:
+			// This must be the first time we get here.
 			SingletonLifetimeManager::construct();
 			// same as first time construction
-			sData.mInitState = INITIALIZED;	
+			// Singu note: LL sets the state to INITIALIZED here *already* - which avoids the warning below, but is clearly total bullshit.
 			sData.mInstance->initSingleton(); 
+			sData.mInitState = INITIALIZED;
 			return sData.mInstance;
 		}
 

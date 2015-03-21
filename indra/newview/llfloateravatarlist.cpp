@@ -530,25 +530,22 @@ void LLFloaterAvatarList::updateAvatarList()
 	}
 
 	{
-		std::vector<LLUUID> avatar_ids;
-		std::vector<LLUUID> sorted_avatar_ids;
-		std::vector<LLVector3d> positions;
-
+		LLWorld::pos_map_t avs;
 		LLVector3d mypos = gAgent.getPositionGlobal();
 		static const LLCachedControl<F32> radar_range_radius("RadarRangeRadius", 0);
-		LLWorld::instance().getAvatars(&avatar_ids, &positions, mypos, radar_range_radius ? radar_range_radius : F32_MAX);
+		LLWorld::instance().getAvatars(&avs, mypos, radar_range_radius ? radar_range_radius : F32_MAX);
 
 		static LLCachedControl<bool> announce(gSavedSettings, "RadarChatKeys");
 		std::queue<LLUUID> announce_keys;
 
-		for (size_t i = 0, count = avatar_ids.size(); i < count; ++i)
+		for (LLWorld::pos_map_t::const_iterator i = avs.cbegin(), end = avs.cend(); i != end; ++i)
 		{
-			const LLUUID& avid = avatar_ids[i];
+			const LLUUID& avid = i->first;
 			std::string name;
 			static const LLCachedControl<S32> namesystem("RadarNameSystem");
 			if (!LLAvatarNameCache::getNSName(avid, name, namesystem)) continue; //prevent (Loading...)
 
-			LLVector3d position = positions[i];
+			LLVector3d position = i->second;
 
 			LLVOAvatar* avatarp = gObjectList.findAvatar(avid);
 			if (avatarp) position = gAgent.getPosGlobalFromAgent(avatarp->getCharacterPosition());
@@ -653,7 +650,7 @@ void LLFloaterAvatarList::updateAvatarSorting()
 	}
 }
 
-bool mm_getMarkerColor(const LLUUID&, LLColor4&);
+bool getCustomColor(const LLUUID& id, LLColor4& color, LLViewerRegion* parent_estate);
 
 /**
  * Redraws the avatar list
@@ -740,37 +737,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 			}
 
 			//<edit> custom colors for certain types of avatars!
-			//Changed a bit so people can modify them in settings. And since they're colors, again it's possibly account-based. Starting to think I need a function just to determine that. - HgB
-			//name.color = gColors.getColor( "MapAvatar" );
-			LLUUID estate_owner = LLUUID::null;
-			if (LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(entry->getPosition()))
-				if (parent_estate->isAlive())
-					estate_owner = parent_estate->getOwner();
-
-			//Lindens are always more Linden than your friend, make that take precedence
-			if (mm_getMarkerColor(av_id, color)) {}
-			else if (LLMuteList::getInstance()->isLinden(av_id))
-			{
-				static const LLCachedControl<LLColor4> ascent_linden_color("AscentLindenColor", LLColor4(0.f,0.f,1.f,1.f));
-				color = ascent_linden_color;
-			}
-			//check if they are an estate owner at their current position
-			else if (estate_owner.notNull() && av_id == estate_owner)
-			{
-				static const LLCachedControl<LLColor4> ascent_estate_owner_color("AscentEstateOwnerColor", LLColor4(1.f,0.6f,1.f,1.f));
-				color = ascent_estate_owner_color;
-			}
-			//without these dots, SL would suck.
-			else if (LLAvatarActions::isFriend(av_id))
-			{
-				static const LLCachedControl<LLColor4> ascent_friend_color("AscentFriendColor", LLColor4(1.f,1.f,0.f,1.f));
-				color = ascent_friend_color;
-			}
-			//big fat jerkface who is probably a jerk, display them as such.
-			else if (LLMuteList::getInstance()->isMuted(av_id))
-			{
-				color = ascent_muted_color;
-			}
+			getCustomColor(av_id, color, LLWorld::getInstance()->getRegionFromPosGlobal(entry->getPosition()));
 			name.color = color*0.5f + unselected_color*0.5f;
 			element.columns.add(name);
 		}

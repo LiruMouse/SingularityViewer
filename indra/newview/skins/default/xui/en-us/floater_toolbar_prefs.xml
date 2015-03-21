@@ -14,9 +14,10 @@
   <check_box bottom_delta="-20" label="Gestures" name="gestures_btn" follows="left|right" control_name="ToolbarVisibleGestures"/>
   <check_box bottom_delta="-20" label="Beacons" name="beacons_btn" follows="left|right" control_name="ToolbarVisibleBeacons"/>
   <check_box bottom_delta="-20" label="Radar" name="radar_list_btn" follows="left|right" control_name="ToolbarVisibleRadar"/>
+  <check_box bottom_delta="-20" label="Region Tracker" name="region_tracker_btn" follows="left|right" control_name="ToolbarVisibleRegionTracker"/>
   <check_box bottom_delta="-20" label="Camera Controls" name="camera_controls_btn" follows="left|right" control_name="ToolbarVisibleCameraControls"/>
-  <check_box bottom_delta="-20" label="Movement Controls" name="movement_controls_btn" follows="left|right" control_name="ToolbarVisibleMovementControls"/>
-  <check_box bottom="-38" label="Mouselook" name="look_btn" follows="left|right" control_name="ToolbarVisibleMouselook" left_delta="160"/>
+  <check_box bottom="-38" label="Movement Controls" name="movement_controls_btn" follows="left|right" control_name="ToolbarVisibleMovementControls" left_delta="160"/>
+  <check_box bottom_delta="-20" label="Mouselook" name="look_btn" follows="left|right" control_name="ToolbarVisibleMouselook"/>
   <check_box bottom_delta="-20" label="Fly" name="fly_btn" follows="left|right" control_name="ToolbarVisibleFly"/>
   <check_box bottom_delta="-20" label="Sit" name="sit_btn" follows="left|right" control_name="ToolbarVisibleSit"/>
   <check_box bottom_delta="-20" label="Run" name="run_btn" follows="left|right" control_name="ToolbarVisibleAlwaysRun"/>
@@ -31,8 +32,8 @@
   <check_box bottom_delta="-20" label="AO Settings" name="ao_btn" follows="left|right" control_name="ToolbarVisibleAO"/>
   <check_box bottom_delta="-20" label="Debug Settings" name="debug_settings_btn" follows="left|right" control_name="ToolbarVisibleDebugSettings"/>
   <check_box bottom_delta="-20" label="Debug Avatar" name="debug_avatar_btn" follows="left|right" control_name="ToolbarVisibleDebugAvatar"/>
-  <check_box bottom_delta="-20" label="Anims Explorer" name="anims_explorer_btn" follows="left|right" control_name="ToolbarVisibleAnimsExplorer"/>
-  <check_box bottom="-38" label="Sound Explorer" name="sound_explorer_btn" follows="left|right" control_name="ToolbarVisibleSoundExplorer" left_delta="160"/>
+  <check_box bottom="-38" label="Anims Explorer" name="anims_explorer_btn" follows="left|right" control_name="ToolbarVisibleAnimsExplorer" left_delta="160"/>
+  <check_box bottom_delta="-20" label="Sound Explorer" name="sound_explorer_btn" follows="left|right" control_name="ToolbarVisibleSoundExplorer"/>
   <check_box bottom_delta="-20" label="Area Search" name="areasearch_btn" follows="left|right" control_name="ToolbarVisibleAreaSearch"/>
   <check_box bottom_delta="-20" label="Inspect" name="inspect_btn" follows="left|right" control_name="ToolbarVisibleInspect"/>
   <check_box bottom_delta="-20" label="Characters" name="pathing_characters_btn" follows="left|right" control_name="ToolbarVisiblePathfindingCharacters"/>
@@ -47,8 +48,8 @@
   <check_box bottom_delta="-20" label="Windlight" name="windlight_btn" follows="left|right" control_name="ToolbarVisibleWindlight"/>
   <check_box bottom_delta="-20" label="Water Editor" name="water_editor_btn" follows="left|right" control_name="ToolbarVisibleWaterSettings"/>
   <check_box bottom_delta="-20" label="Post-Process FX" name="post_process_btn" follows="left|right" control_name="ToolbarVisiblePostProcess"/>
-  <check_box bottom_delta="-20" label="Buy [CURRENCY]" name="buy_currency_btn" follows="left|right" control_name="ToolbarVisibleBuyCurrency"/>
-  <check_box bottom="-38" label="Buy Land" name="buy_land_btn" follows="left|right" control_name="ToolbarVisibleBuyLand" left_delta="160"/>
+  <check_box bottom="-38" label="Buy [CURRENCY]" name="buy_currency_btn" follows="left|right" control_name="ToolbarVisibleBuyCurrency" left_delta="160"/>
+  <check_box bottom_delta="-20" label="Buy Land" name="buy_land_btn" follows="left|right" control_name="ToolbarVisibleBuyLand"/>
   <check_box bottom_delta="-20" label="My Land" name="my_land_btn" follows="left|right" control_name="ToolbarVisibleMyLand"/>
   <check_box bottom_delta="-20" label="About Land" name="about_land_btn" follows="left|right" control_name="ToolbarVisibleAboutLand"/>
   <check_box bottom_delta="-20" label="Script Info" name="script_info_btn" follows="left|right" control_name="ToolbarVisibleScriptInfo"/>
@@ -65,8 +66,8 @@
   <check_box bottom_delta="-20" label="Memory Leak" name="memleak_btn" follows="left|right" control_name="ToolbarVisibleMemLeak" visibility_control="QAMode"/>
   <check_box bottom_delta="-20" label="Message Log" name="message_log_btn" follows="left|right" control_name="ToolbarVisibleMessageLog"/>
   <check_box bottom_delta="-20" label="Statistics" name="stats_btn" follows="left|right" control_name="ToolbarVisibleStatBar"/>
-  <check_box bottom_delta="-20" label="Notifications Console" name="notifications_console_btn" follows="left|right" control_name="ToolbarVisibleNotificationsConsole"/>
-  <check_box bottom="-38" label="Debug Console" name="debug_console_btn" follows="left|right" control_name="ToolbarVisibleDebugConsole" left_delta="160"/>
+  <check_box bottom="-38" label="Notifications Console" name="notifications_console_btn" follows="left|right" control_name="ToolbarVisibleNotificationsConsole" left_delta="160"/>
+  <check_box bottom_delta="-20" label="Debug Console" name="debug_console_btn" follows="left|right" control_name="ToolbarVisibleDebugConsole"/>
   <check_box bottom_delta="-20" label="Region Console" name="region_console_btn" follows="left|right" control_name="ToolbarVisibleRegionDebugConsole"/>
   <check_box bottom_delta="-20" label="Fast Timers" name="fast_timers_btn" follows="left|right" control_name="ToolbarVisibleFastTimers"/>
   <check_box bottom_delta="-20" label="Frame Console" name="frame_console_btn" follows="left|right" control_name="ToolbarVisibleFrameConsole"/>
@@ -81,8 +82,8 @@
   <check_box bottom_delta="-20" label="Favorites" name="favs_btn" follows="left|right" control_name="ToolbarVisibleInventoryFavs"/>
   <check_box bottom_delta="-20" label="Outbox" name="outbox_btn" follows="left|right" control_name="ToolbarVisibleOutbox"/>
   <check_box bottom_delta="-20" label="Preferences" name="preferences_btn" follows="left|right" control_name="ToolbarVisiblePreferences"/>
-  <check_box bottom_delta="-20" label="Joystick Config" name="joystick_btn" follows="left|right" control_name="ToolbarVisibleJoystick"/>
-  <check_box bottom="-38" label="Autoreplace" name="auto_replace_btn" follows="left|right" control_name="ToolbarVisibleAutoReplace" left_delta="160"/>
+  <check_box bottom="-38" label="Joystick Config" name="joystick_btn" follows="left|right" control_name="ToolbarVisibleJoystick" left_delta="160"/>
+  <check_box bottom_delta="-20" label="Autoreplace" name="auto_replace_btn" follows="left|right" control_name="ToolbarVisibleAutoReplace"/>
   <check_box bottom_delta="-20" label="Display Name" name="display_name_btn" follows="left|right" control_name="ToolbarVisibleDisplayName"/>
   <check_box bottom_delta="-20" label="Floater Test" name="floater_test_btn" follows="left|right" control_name="ToolbarVisibleTest"/>
   <check_box bottom_delta="-20" label="Edit UI" name="edit_ui_btn" follows="left|right" control_name="ToolbarVisibleEditUI"/>

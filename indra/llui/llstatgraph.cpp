@@ -120,7 +120,7 @@ void LLStatGraph::draw()
 	
 	color = mThresholdColors[i];
 	gGL.color4fv(color.mV);
-	gl_rect_2d(1, llmath::llround(frac*getRect().getHeight()), getRect().getWidth() - 1, 0, TRUE);
+	gl_rect_2d(1, ll_round(frac*getRect().getHeight()), getRect().getWidth() - 1, 0, TRUE);
 }
 
 void LLStatGraph::setValue(const LLSD& value)

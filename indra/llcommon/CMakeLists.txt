@@ -69,6 +69,7 @@ set(llcommon_SOURCE_FILES
     llmetrics.cpp
     llmortician.cpp
     lloptioninterface.cpp
+    llpredicate.cpp
     llprocesslauncher.cpp
     llprocessor.cpp
     llptrto.cpp 
@@ -177,7 +178,6 @@ set(llcommon_HEADER_FILES
     llformat.h
     llframetimer.h
     llhandle.h
-    llhash.h
     llheartbeat.h
     llhttpstatuscodes.h
     llindexedqueue.h
@@ -199,6 +199,7 @@ set(llcommon_HEADER_FILES
     llnametable.h
     lloptioninterface.h
     llpointer.h
+    llpredicate.h
     llpreprocessor.h
     llpriqueuemap.h
     llprocesslauncher.h
@@ -241,7 +242,6 @@ set(llcommon_HEADER_FILES
     lltypeinfolookup.h
     lluri.h
     lluuid.h
-    sguuidhash.h
     llversionviewer.h.in
     llworkerthread.h
     metaclass.h

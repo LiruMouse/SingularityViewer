@@ -909,48 +909,55 @@ const LLUUID SHClientTagMgr::getClientID(const LLVOAvatar* pAvatar) const
 	}
 	return tag.asUUID();
 }
+bool getColorFor(const LLUUID& id, LLViewerRegion* parent_estate, LLColor4& color, bool name_restricted = false)
+{
+	static const LLCachedControl<LLColor4> ascent_linden_color("AscentLindenColor");
+	static const LLCachedControl<LLColor4> ascent_estate_owner_color("AscentEstateOwnerColor" );
+	static const LLCachedControl<LLColor4> ascent_friend_color("AscentFriendColor");
+	static const LLCachedControl<LLColor4> ascent_muted_color("AscentMutedColor");
+	//Lindens are always more Linden than your friend, make that take precedence
+	if (LLMuteList::getInstance()->isLinden(id))
+		color = ascent_linden_color;
+	//check if they are an estate owner at their current position
+	else if (parent_estate && parent_estate->isAlive() && id.notNull() && id == parent_estate->getOwner())
+		color = ascent_estate_owner_color;
+	//without these dots, SL would suck.
+	else if (!name_restricted && LLAvatarTracker::instance().isBuddy(id))
+		color = ascent_friend_color;
+	//big fat jerkface who is probably a jerk, display them as such.
+	else if (LLMuteList::getInstance()->isMuted(id))
+		color = ascent_muted_color;
+	else
+		return false;
+	return true;
+}
 bool mm_getMarkerColor(const LLUUID&, LLColor4&);
+bool getCustomColor(const LLUUID& id, LLColor4& color, LLViewerRegion* parent_estate)
+{
+	return mm_getMarkerColor(id, color) || getColorFor(id, parent_estate, color);
+}
+bool getCustomColorRLV(const LLUUID& id, LLColor4& color, LLViewerRegion* parent_estate, bool name_restricted)
+{
+	return mm_getMarkerColor(id, color) || getColorFor(id, parent_estate, color, name_restricted);
+}
 bool SHClientTagMgr::getClientColor(const LLVOAvatar* pAvatar, bool check_status, LLColor4& color) const
 {
-	if (mm_getMarkerColor(pAvatar->getID(), color)) return true;
+	const LLUUID& id(pAvatar->getID());
+	if (mm_getMarkerColor(id, color)) return true;
 	static const LLCachedControl<bool> ascent_use_status_colors("AscentUseStatusColors",true);
 	static const LLCachedControl<bool> ascent_show_self_tag_color("AscentShowSelfTagColor");
 	static const LLCachedControl<bool> ascent_show_others_tag_color("AscentShowOthersTagColor");
 
-	if(check_status && ascent_use_status_colors && !pAvatar->isSelf())
+	if (check_status && ascent_use_status_colors && !pAvatar->isSelf())
 	{
-		LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(pAvatar->getPositionGlobal());
-		if(LLMuteList::getInstance()->isLinden(pAvatar->getFullname()))
-		{
-			static const LLCachedControl<LLColor4> ascent_linden_color( "AscentLindenColor" );
-			color = ascent_linden_color.get();
+		if (getColorFor(id, pAvatar->getRegion(), color, false))
 			return true;
-		}
-		else if(pAvatar->getID().notNull() && parent_estate && parent_estate->isAlive() && pAvatar->getID() == parent_estate->getOwner())
-		{
-			static const LLCachedControl<LLColor4> ascent_estate_owner_color( "AscentEstateOwnerColor" );
-			color = ascent_estate_owner_color.get();
-			return true;
-		}
-		else if(LLAvatarTracker::instance().isBuddy(pAvatar->getID()))
-		{
-			static const LLCachedControl<LLColor4> ascent_friend_color( "AscentFriendColor" );
-			color = ascent_friend_color.get();
-			return true;
-		}
-		else if(LLMuteList::getInstance()->isMuted(pAvatar->getID()))
-		{
-			static const LLCachedControl<LLColor4> ascent_muted_color( "AscentMutedColor" );
-			color = ascent_muted_color.get();
-			return true;
-		}
 	}
 	std::map<LLUUID, LLSD>::const_iterator it;
 	LLSD tag;
 	if(
-		((pAvatar->isSelf() && ascent_show_self_tag_color) ||
-		(!pAvatar->isSelf() && ascent_show_others_tag_color)) &&
-		 (it = mAvatarTags.find(pAvatar->getID()))!=mAvatarTags.end() &&
+		(pAvatar->isSelf() ? ascent_show_self_tag_color : ascent_show_others_tag_color) &&
+		 (it = mAvatarTags.find(id))!=mAvatarTags.end() &&
 		 (tag = it->second.get("color")).isDefined())
 	{
 		color.setValue(tag);
@@ -8008,7 +8015,7 @@ void LLVOAvatar::parseAppearanceMessage(LLMessageSystem* mesgsys, LLAppearanceMe
 		if (it != contents.mParams.end())
 		{
 			S32 index = it - contents.mParams.begin();
-			contents.mParamAppearanceVersion = llmath::llround(contents.mParamWeights[index]);
+			contents.mParamAppearanceVersion = ll_round(contents.mParamWeights[index]);
 			LL_DEBUGS("Avatar") << "appversion req by appearance_version param: " << contents.mParamAppearanceVersion << LL_ENDL;
 		}
 	}
