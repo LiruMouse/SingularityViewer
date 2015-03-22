@@ -330,7 +330,7 @@ public:
 		for (item_list::iterator iter = mItemList.begin(); iter != mItemList.end(); ++iter)
 		{
 			LLScrollListItem* item = *iter;
-			for (std::vector<T>::const_iterator titr = vec.begin(); titr != vec.end(); ++titr)
+			for (typename std::vector<T>::const_iterator titr = vec.begin(); titr != vec.end(); ++titr)
 				if (item->getEnabled() && static_cast<T>(item->getValue()) == (*titr))
 				{
 					selectItem(item, false);

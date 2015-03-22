@@ -118,7 +118,7 @@ void ALFloaterRegionTracker::refresh()
 		return;
 	}
 
-	std::vector<const std::string> saved_selected_values;
+	std::vector<std::string> saved_selected_values;
 	BOOST_FOREACH(const LLScrollListItem* item, mRegionScrollList->getAllSelected())
 	{
 		saved_selected_values.push_back(item->getValue().asString());
