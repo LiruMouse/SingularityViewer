@@ -1505,7 +1505,7 @@ public:
 			time_t timestamp =
 				(time_t) message_params["timestamp"].asInteger();
 
-			BOOL is_busy = gAgent.getBusy();
+			bool is_do_not_disturb = gAgent.isDoNotDisturb();
 			BOOL is_muted = LLMuteList::getInstance()->isMuted(
 				from_id,
 				name,
@@ -1528,7 +1528,7 @@ public:
 			chat.mFromID = from_id;
 			chat.mFromName = name;
 
-			if (!is_linden && (is_busy || is_muted))
+			if (!is_linden && (is_do_not_disturb || is_muted))
 			{
 				return;
 			}

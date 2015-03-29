@@ -322,7 +322,7 @@ void LLOverlayBar::refresh()
 		}
 		buttons_changed = true;
 	}
-	buttons_changed |= updateButtonVisiblity(mNotBusy,gAgent.getBusy()) != NULL;
+	buttons_changed |= updateButtonVisiblity(mNotBusy, gAgent.isDoNotDisturb()) != NULL;
 	buttons_changed |= updateButtonVisiblity(mFlyCam,LLViewerJoystick::getInstance()->getOverrideCamera()) != NULL;
 	buttons_changed |= updateButtonVisiblity(mMouseLook,gAgent.isControlGrabbed(CONTROL_ML_LBUTTON_DOWN_INDEX)||gAgent.isControlGrabbed(CONTROL_ML_LBUTTON_UP_INDEX)) != NULL;
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
@@ -374,7 +374,7 @@ void LLOverlayBar::onClickIMReceived(void*)
 // static
 void LLOverlayBar::onClickSetNotBusy(void*)
 {
-	gAgent.clearBusy();
+	gAgent.setDoNotDisturb(false);
 }
 
 

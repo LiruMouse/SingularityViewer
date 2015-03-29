@@ -106,13 +106,13 @@ public:
 	{
 		if (LLViewerRegion* region = gAgent.getRegion())
 		{
-			if (region->getFeaturesReceived())
+			if (region->simulatorFeaturesReceived())
 			{
 				setMarketplaceURL(container);
 			}
 			else
 			{
-				region->setFeaturesReceivedCallback(boost::bind(&LLPanelDirMarket::setMarketplaceURL, this, container));
+				region->setSimulatorFeaturesReceivedCallback(boost::bind(&LLPanelDirMarket::setMarketplaceURL, this, container));
 			}
 		}
 	}

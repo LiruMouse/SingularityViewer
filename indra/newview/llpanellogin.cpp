@@ -381,12 +381,6 @@ void LLPanelLogin::draw()
 // virtual
 BOOL LLPanelLogin::handleKeyHere(KEY key, MASK mask)
 {
-	if (( KEY_RETURN == key ) && (MASK_ALT == mask))
-	{
-		gViewerWindow->toggleFullscreen(FALSE);
-		return TRUE;
-	}
-
 	if (('T' == key) && (MASK_CONTROL == mask))
 	{
 		new LLFloaterSimple("floater_test.xml");

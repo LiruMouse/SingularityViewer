@@ -105,7 +105,8 @@ LLTexParamGlobalColor::LLTexParamGlobalColor(LLTexGlobalColor* tex_global_color)
 
 void LLTexParamGlobalColor::onGlobalColorChanged(bool upload_bake)
 {
-	mAvatarAppearance->onGlobalColorChanged(mTexGlobalColor, upload_bake);
+	if (mAvatarAppearance)
+		mAvatarAppearance->onGlobalColorChanged(mTexGlobalColor, upload_bake);
 }
 
 //-----------------------------------------------------------------------------

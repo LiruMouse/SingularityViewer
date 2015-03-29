@@ -1076,6 +1076,9 @@ private:
 extern const F32 SELF_ADDITIONAL_PRI;
 extern const S32 MAX_TEXTURE_VIRTUAL_SIZE_RESET_INTERVAL;
 
+extern const F32 MAX_HOVER_Z;
+extern const F32 MIN_HOVER_Z;
+
 void dump_sequential_xml(const std::string outprefix, const LLSD& content);
 
 #endif // LL_VOAVATAR_H

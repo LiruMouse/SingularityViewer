@@ -396,7 +396,8 @@ LLAgent::LLAgent() :
 	mShowAvatar(TRUE),
 	mFrameAgent(),
 
-	mIsBusy(FALSE),
+	mIsAwaySitting(false),
+	mIsDoNotDisturb(false),
 
 	mControlFlags(0x00000000),
 	mbFlagsDirty(FALSE),
@@ -1427,12 +1428,13 @@ void LLAgent::setAFK()
 	{
 		sendAnimationRequest(ANIM_AGENT_AWAY, ANIM_REQUEST_START);
 		setControlFlags(AGENT_CONTROL_AWAY | AGENT_CONTROL_STOP);
-		LL_INFOS("AFK") << "Setting Away" << LL_ENDL;
 		gAwayTimer.start();
+
+		if (isAgentAvatarValid() && !gAgentAvatarp->isSitting() && gSavedSettings.getBOOL("AlchemySitOnAway"))
+			gAgent.setSitDownAway(true);
+
 		if (gAFKMenu)
-		{
 			gAFKMenu->setLabel(LLTrans::getString("AvatarSetNotAway"));
-		}
 	}
 }
 
@@ -1452,12 +1454,25 @@ void LLAgent::clearAFK()
 	{
 		sendAnimationRequest(ANIM_AGENT_AWAY, ANIM_REQUEST_STOP);
 		clearControlFlags(AGENT_CONTROL_AWAY);
-		LL_INFOS("AFK") << "Clearing Away" << LL_ENDL;
+
+		if (isAgentAvatarValid() && gAgentAvatarp->isSitting() && gAgent.isAwaySitting())
+			gAgent.setSitDownAway(false);
+
 		if (gAFKMenu)
-		{
 			gAFKMenu->setLabel(LLTrans::getString("AvatarSetAway"));
-		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+// setSitDownAway(bool)
+//-----------------------------------------------------------------------------
+void LLAgent::setSitDownAway(bool go_away)
+{
+	if (go_away)
+		gAgent.sitDown();
+	else
+		gAgent.standUp();
+	mIsAwaySitting = go_away;
 }
 
 //-----------------------------------------------------------------------------
@@ -1469,39 +1484,25 @@ BOOL LLAgent::getAFK() const
 }
 
 //-----------------------------------------------------------------------------
-// setBusy()
+// setDoNotDisturb()
 //-----------------------------------------------------------------------------
-void LLAgent::setBusy()
+void LLAgent::setDoNotDisturb(bool pIsDoNotDisturb)
 {
-	sendAnimationRequest(ANIM_AGENT_BUSY, ANIM_REQUEST_START);
-	mIsBusy = TRUE;
+	sendAnimationRequest(ANIM_AGENT_BUSY, pIsDoNotDisturb ? ANIM_REQUEST_START : ANIM_REQUEST_STOP);
+	mIsDoNotDisturb = pIsDoNotDisturb;
 	if (gBusyMenu)
 	{
-		gBusyMenu->setLabel(LLTrans::getString("AvatarSetNotBusy"));
+		gBusyMenu->setLabel(LLTrans::getString(pIsDoNotDisturb ? "AvatarSetNotBusy" : "AvatarSetBusy"));
 	}
 	LLFloaterMute::getInstance()->updateButtons();
 }
 
 //-----------------------------------------------------------------------------
-// clearBusy()
+// isDoNotDisturb()
 //-----------------------------------------------------------------------------
-void LLAgent::clearBusy()
+bool LLAgent::isDoNotDisturb() const
 {
-	mIsBusy = FALSE;
-	sendAnimationRequest(ANIM_AGENT_BUSY, ANIM_REQUEST_STOP);
-	if (gBusyMenu)
-	{
-		gBusyMenu->setLabel(LLTrans::getString("AvatarSetBusy"));
-	}
-	LLFloaterMute::getInstance()->updateButtons();
-}
-
-//-----------------------------------------------------------------------------
-// getBusy()
-//-----------------------------------------------------------------------------
-BOOL LLAgent::getBusy() const
-{
-	return mIsBusy;
+	return mIsDoNotDisturb;
 }
 
 

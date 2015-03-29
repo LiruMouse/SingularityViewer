@@ -43,7 +43,7 @@
 	<volume_slider control_name="AudioLevelMic" bottom_delta="-12" left_delta="-6" follows="left|top" height="17"
 	     increment="0.05" initial_val="1.0" max_val="2" min_val="0"
 	     mouse_opaque="true" name="mic_volume_slider"
-	     tool_tip="Change the mic level using this slider" width="120" />
+	     tool_tip="Change the volume using this slider" width="120" />
 	<text bottom_delta="-4" follows="left|top" height="20" left_delta="120"
 	     name="wait_text" width="200">
 		Please wait

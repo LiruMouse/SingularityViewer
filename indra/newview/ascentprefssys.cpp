@@ -73,6 +73,8 @@ LLPrefsAscentSys::LLPrefsAscentSys()
 	getChild<LLUICtrl>("SinguCmdLineAway")->setCommitCallback(lineEditorControl);
 	getChild<LLUICtrl>("SinguCmdLineRegionSay")->setCommitCallback(lineEditorControl);
 	getChild<LLUICtrl>("SinguCmdLineURL")->setCommitCallback(lineEditorControl);
+	getChild<LLUICtrl>("AlchemyChatCommandResyncAnim")->setCommitCallback(lineEditorControl);
+	getChild<LLUICtrl>("AlchemyChatCommandHoverHeight")->setCommitCallback(lineEditorControl);
 
 	//Security ----------------------------------------------------------------------------
 	getChild<LLUICtrl>("UISndRestart")->setCommitCallback(lineEditorControl);
@@ -113,10 +115,8 @@ void LLPrefsAscentSys::onCommitCheckBox(LLUICtrl* ctrl, const LLSD& value)
 			LLVector3d lpos_global = gAgent.getPositionGlobal();
 			if(gAudiop)
 				gAudiop->triggerSound(LLUUID("58a38e89-44c6-c52b-deb8-9f1ddc527319"), gAgent.getID(), 1.0f, LLAudioEngine::AUDIO_TYPE_UI, lpos_global);
-			LLChat chat;
-			chat.mSourceType = CHAT_SOURCE_SYSTEM;
-			chat.mText = LLTrans::getString("PowerUser1") + "\n" + LLTrans::getString("PowerUser2") + "\n" + LLTrans::getString("Unlocked:") + "\n" + LLTrans::getString("PowerUser3") + "\n- " + LLTrans::getString("RightClick") + " > " + LLTrans::getString("PowerUser4") + "\n- " + LLTrans::getString("RightClick") + " > " + LLTrans::getString("PowerUser5");
-			LLFloaterChat::addChat(chat);
+			void cmdline_printchat(const std::string& message);
+			cmdline_printchat(LLTrans::getString("PowerUser1") + '\n' + LLTrans::getString("PowerUser2") + '\n' + LLTrans::getString("Unlocked:") + '\n' + LLTrans::getString("PowerUser3") + "\n- " + LLTrans::getString("RightClick") + " > " + LLTrans::getString("PowerUser4") + "\n- " + LLTrans::getString("RightClick") + " > " + LLTrans::getString("PowerUser5"));
 		}
 	}
 	else if (name == "next_owner_copy")
@@ -186,6 +186,8 @@ void LLPrefsAscentSys::refreshValues()
     mCmdLineAway                = gSavedSettings.getString("SinguCmdLineAway");
 	mCmdLineRegionSay           = gSavedSettings.getString("SinguCmdLineRegionSay");
 	mCmdLineURL                 = gSavedSettings.getString("SinguCmdLineURL");
+	mCmdLineResync              = gSavedSettings.getString("AlchemyChatCommandResyncAnim");
+	mCmdLineHover               = gSavedSettings.getString("AlchemyChatCommandHoverHeight");
 
     //Security ----------------------------------------------------------------------------
     mBroadcastViewerEffects		= gSavedSettings.getBOOL("BroadcastViewerEffects");
@@ -196,6 +198,7 @@ void LLPrefsAscentSys::refreshValues()
 	mLookAtLines				= gSavedSettings.getBOOL("AlchemyLookAtLines");
 	mQuietSnapshotsToDisk		= gSavedSettings.getBOOL("QuietSnapshotsToDisk");
 	mAnnounceBumps				= gSavedSettings.getBOOL("AnnounceBumps");
+	mSitOnAway				= gSavedSettings.getBOOL("AlchemySitOnAway");
 	mDetachBridge				= gSavedSettings.getBOOL("SGDetachBridge");
     mRevokePermsOnStandUp		= gSavedSettings.getBOOL("RevokePermsOnStandUp");
     mDisableClickSit			= gSavedSettings.getBOOL("DisableClickSit");
@@ -257,6 +260,8 @@ void LLPrefsAscentSys::refresh()
     childSetValue("SinguCmdLineAway",           mCmdLineAway);
 	childSetValue("SinguCmdLineRegionSay",      mCmdLineRegionSay);
 	childSetValue("SinguCmdLineURL",            mCmdLineURL);
+	childSetValue("AlchemyChatCommandResyncAnim",            mCmdLineResync);
+	childSetValue("AlchemyChatCommandHoverHeight",            mCmdLineHover);
 
 	//Security ----------------------------------------------------------------------------
 	getChildView("UISndRestart")->setValue(mRestartSound);
@@ -328,6 +333,8 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setString("SinguCmdLineAway",			mCmdLineAway);
 	gSavedSettings.setString("SinguCmdLineRegionSay",		mCmdLineRegionSay);
 	gSavedSettings.setString("SinguCmdLineURL",				mCmdLineURL);
+	gSavedSettings.setString("AlchemyChatCommandResyncAnim",				mCmdLineResync);
+	gSavedSettings.setString("AlchemyChatCommandHoverHeight",				mCmdLineHover);
 
     //Security ----------------------------------------------------------------------------
     gSavedSettings.setBOOL("BroadcastViewerEffects",        mBroadcastViewerEffects);
@@ -338,6 +345,7 @@ void LLPrefsAscentSys::cancel()
 	gSavedSettings.setBOOL("AlchemyLookAtLines",            mLookAtLines);
     gSavedSettings.setBOOL("QuietSnapshotsToDisk",			mQuietSnapshotsToDisk);
     gSavedSettings.setBOOL("AnnounceBumps",    			mAnnounceBumps);
+    gSavedSettings.setBOOL("AlchemySitOnAway",    			mSitOnAway);
     gSavedSettings.setBOOL("SGDetachBridge",    			mDetachBridge);
     gSavedSettings.setBOOL("RevokePermsOnStandUp",          mRevokePermsOnStandUp);
     gSavedSettings.setBOOL("DisableClickSit",               mDisableClickSit);

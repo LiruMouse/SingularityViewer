@@ -5892,15 +5892,10 @@ class LLWorldSetBusy : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (gAgent.getBusy())
-		{
-			gAgent.clearBusy();
-		}
-		else
-		{
-			gAgent.setBusy();
+		bool busy = !gAgent.isDoNotDisturb();
+		gAgent.setDoNotDisturb(busy);
+		if (busy)
 			LLNotificationsUtil::add("BusyModeSet");
-		}
 		return true;
 	}
 };
@@ -6033,7 +6028,7 @@ bool complete_give_money(const LLSD& notification, const LLSD& response, LLObjec
 	S32 option = LLNotification::getSelectedOption(notification, response);
 	if (option == 0)
 	{
-		gAgent.clearBusy();
+		gAgent.setDoNotDisturb(false);
 	}
 
 	LLViewerObject* objectp = selection->getPrimaryObject();
@@ -6069,7 +6064,7 @@ void handle_give_money_dialog()
 	LLNotification::Params params("BusyModePay");
 	params.functor(boost::bind(complete_give_money, _1, _2, LLSelectMgr::getInstance()->getSelection()));
 
-	if (gAgent.getBusy())
+	if (gAgent.isDoNotDisturb())
 	{
 		// warn users of being in busy mode during a transaction
 		LLNotifications::instance().add(params);
@@ -9559,13 +9554,13 @@ void region_change()
 	LLViewerRegion* regionp = gAgent.getRegion();
 	if (!regionp) return;
 
-	if (regionp->getFeaturesReceived())
+	if (regionp->simulatorFeaturesReceived())
 	{
 		parse_simulator_features();
 	}
 	else
 	{
-		regionp->setFeaturesReceivedCallback(boost::bind(&parse_simulator_features));
+		regionp->setSimulatorFeaturesReceivedCallback(boost::bind(&parse_simulator_features));
 	}
 }
 

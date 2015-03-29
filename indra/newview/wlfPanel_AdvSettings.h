@@ -79,14 +79,20 @@ protected:
 	// void populateDayCyclePresetsList();
 	void updateTimeSlider();
 
+	void onRegionChanged();
+	void onSimulatorFeaturesReceived(const LLUUID& region_id);
+	void updateEditHoverEnabled();
+
 	LLComboBox*		mWaterPresetCombo;
 	LLComboBox*		mSkyPresetCombo;
 	// LLComboBox*		mDayCyclePresetCombo;
 	LLSliderCtrl*		mTimeSlider;
+	LLSliderCtrl*		mHoverHeight;
 
 	bool mExpanded;
 
 	boost::ptr_list<boost::signals2::scoped_connection> mConnections;
+	boost::signals2::connection mRegionChangedSlot;
 };
 
 #endif // LL_wlfPanel_AdvSettings_H

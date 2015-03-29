@@ -46,13 +46,13 @@ void LFSimFeatureHandler::handleRegionChange()
 {
 	if (LLViewerRegion* region = gAgent.getRegion())
 	{
-		if (region->getFeaturesReceived())
+		if (region->simulatorFeaturesReceived())
 		{
 			setSupportedFeatures();
 		}
 		else
 		{
-			region->setFeaturesReceivedCallback(boost::bind(&LFSimFeatureHandler::setSupportedFeatures, this));
+			region->setSimulatorFeaturesReceivedCallback(boost::bind(&LFSimFeatureHandler::setSupportedFeatures, this));
 		}
 	}
 }

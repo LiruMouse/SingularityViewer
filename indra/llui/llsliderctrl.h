@@ -62,7 +62,7 @@ public:
 		F32 initial_value, F32 min_value, F32 max_value, F32 increment,
 		const std::string& control_which = LLStringUtil::null );
 
-	virtual ~LLSliderCtrl() {} // Children all cleaned up by default view destructor.
+	virtual ~LLSliderCtrl();
 
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
@@ -99,6 +99,7 @@ public:
 
 	boost::signals2::connection setSliderMouseDownCallback(	const commit_signal_t::slot_type& cb );
 	boost::signals2::connection setSliderMouseUpCallback( const commit_signal_t::slot_type& cb );
+	boost::signals2::connection setSliderEditorCommitCallback(const commit_signal_t::slot_type& cb);
 
 	virtual void	onTabInto();
 
@@ -137,6 +138,8 @@ private:
 
 	LLColor4		mTextEnabledColor;
 	LLColor4		mTextDisabledColor;
+
+	commit_signal_t*	mEditorCommitSignal;
 };
 
 #endif  // LL_LLSLIDERCTRL_H

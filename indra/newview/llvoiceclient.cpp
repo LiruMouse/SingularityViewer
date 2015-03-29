@@ -354,7 +354,6 @@ BOOL LLVoiceClient::isSessionCallBackPossible(const LLUUID& id)
 	}
 }
 
-/*
 BOOL LLVoiceClient::sendTextMessage(const LLUUID& participant_id, const std::string& message)
 {
 	if (mVoiceModule)
@@ -374,7 +373,6 @@ void LLVoiceClient::endUserIMSession(const LLUUID& participant_id)
 		mVoiceModule->endUserIMSession(participant_id);
 	}
 }
-*/
 
 //----------------------------------------------
 // channels

@@ -314,7 +314,7 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 	mCacheDirty(FALSE),
 	mReleaseNotesRequested(FALSE),
 	mCapabilitiesReceived(false),
-	mFeaturesReceived(false),
+	mSimulatorFeaturesReceived(false),
 	mGamingFlags(0),
 // <FS:CR> Aurora Sim
 	mWidth(region_width_meters)
@@ -1318,6 +1318,26 @@ void LLViewerRegion::getInfo(LLSD& info)
 	info["Region"]["Handle"]["y"] = (LLSD::Integer)y;
 }
 
+boost::signals2::connection LLViewerRegion::setSimulatorFeaturesReceivedCallback(const caps_received_signal_t::slot_type& cb)
+{
+	return mSimulatorFeaturesReceivedSignal.connect(cb);
+}
+
+void LLViewerRegion::setSimulatorFeaturesReceived(bool received)
+{
+	mSimulatorFeaturesReceived = received;
+	if (received)
+	{
+		mSimulatorFeaturesReceivedSignal(getRegionID());
+		mSimulatorFeaturesReceivedSignal.disconnect_all_slots();
+	}
+}
+
+bool LLViewerRegion::simulatorFeaturesReceived() const
+{
+	return mSimulatorFeaturesReceived;
+}
+
 void LLViewerRegion::getSimulatorFeatures(LLSD& sim_features)
 {
 	sim_features = mSimulatorFeatures;
@@ -1331,9 +1351,7 @@ void LLViewerRegion::setSimulatorFeatures(const LLSD& sim_features)
 	LL_DEBUGS("SimFeatures") << "\n" << str.str() << LL_ENDL;
 	mSimulatorFeatures = sim_features;
 
-	mFeaturesReceived = true;
-	mFeaturesReceivedSignal(getRegionID());
-	mFeaturesReceivedSignal.disconnect_all_slots();
+	setSimulatorFeaturesReceived(true);
 }
 
 void LLViewerRegion::setGamingData(const LLSD& gaming_data)
@@ -2026,9 +2044,9 @@ void LLViewerRegion::setCapabilitiesReceived(bool received)
 		// in consumers by allowing them to expect this signal, regardless.
 		if (getCapability("SimulatorFeatures").empty())
 		{
-			mFeaturesReceived = true;
-			mFeaturesReceivedSignal(getRegionID());
-			mFeaturesReceivedSignal.disconnect_all_slots();
+			mSimulatorFeaturesReceived = true;
+			mSimulatorFeaturesReceivedSignal(getRegionID());
+			mSimulatorFeaturesReceivedSignal.disconnect_all_slots();
 		}
 	}
 }
@@ -2148,9 +2166,10 @@ bool LLViewerRegion::dynamicPathfindingEnabled() const
 			 mSimulatorFeatures["DynamicPathfindingEnabled"].asBoolean());
 }
 
-boost::signals2::connection LLViewerRegion::setFeaturesReceivedCallback(const features_received_signal_t::slot_type& cb)
+bool LLViewerRegion::avatarHoverHeightEnabled() const
 {
-	return mFeaturesReceivedSignal.connect(cb);
+	return ( mSimulatorFeatures.has("AvatarHoverHeightEnabled") &&
+			 mSimulatorFeatures["AvatarHoverHeightEnabled"].asBoolean());
 }
 
 void LLViewerRegion::resetMaterialsCapThrottle()

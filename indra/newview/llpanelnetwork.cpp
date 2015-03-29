@@ -67,7 +67,11 @@ BOOL LLPanelNetwork::postBuild()
 	childSetEnabled("connection_port", gSavedSettings.getBOOL("ConnectionPortEnabled"));
 	childSetCommitCallback("connection_port_enabled", onCommitPort, this);
 
-	childSetValue("cache_size", (F32)gSavedSettings.getU32("CacheSize"));
+	if (LLUICtrl* ctrl = getChild<LLUICtrl>("cache_size"))
+	{
+		ctrl->setValue((F32)gSavedSettings.getU32("CacheSize"));
+		ctrl->setCommitCallback(boost::bind(LLPanelNetwork::onClickClearCache, (void*)NULL));
+	}
 	childSetValue("max_bandwidth", gSavedSettings.getF32("ThrottleBandwidthKBPS"));
 	childSetValue("tex_bandwidth", gSavedSettings.getF32("HTTPThrottleBandwidth"));
 	childSetValue("http_textures", gSavedSettings.getBOOL("ImagePipelineUseHTTP"));

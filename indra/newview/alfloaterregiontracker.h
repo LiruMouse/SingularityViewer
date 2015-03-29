@@ -46,7 +46,7 @@ public:
 	/*virtual*/ void onClose(bool app_quitting);
 	/*virtual*/ void refresh();
 	/*virtual*/ BOOL tick();
-	using LLUIFactory::getInstance;
+	using LLFloaterSingleton<ALFloaterRegionTracker>::getInstance;
 
 private:
 	void updateHeader();

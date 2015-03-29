@@ -241,6 +241,8 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 	static LLCachedControl<std::string> sSinguCmdLineAway(gSavedSettings,  "SinguCmdLineAway");
 	static LLCachedControl<std::string> sSinguCmdLineRegionSay(gSavedSettings,  "SinguCmdLineRegionSay");
 	static LLCachedControl<std::string> sSinguCmdLineURL(gSavedSettings,  "SinguCmdLineURL");
+	static LLCachedControl<std::string> sResyncAnimCommand(gSavedSettings, "AlchemyChatCommandResyncAnim", "/resync");
+	static LLCachedControl<std::string> sHoverHeight(gSavedSettings, "AlchemyChatCommandHoverHeight", "/hover");
 
 	if(sAscentCmdLine)
 	{
@@ -460,6 +462,34 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					strings[3] = name;
 					strings[4] = revised_text.substr(command.length()+1); // [4] message
 					LLRegionInfoModel::sendEstateOwnerMessage(gMessageSystem, "simulatormessage", LLFloaterRegionInfo::getLastInvoice(), strings);
+				}
+				return false;
+			}
+			else if (command == utf8str_tolower(sHoverHeight)) // Hover height
+			{
+				F32 height;
+				if (i >> height)
+				{
+					gSavedPerAccountSettings.set("AvatarHoverOffsetZ",
+												 llclamp<F32>(height, MIN_HOVER_Z, MAX_HOVER_Z));
+					return false;
+				}
+			}
+			else if (command == utf8str_tolower(sResyncAnimCommand)) // Resync Animations
+			{
+				for (S32 i = 0; i < gObjectList.getNumObjects(); i++)
+				{
+					LLViewerObject* object = gObjectList.getObject(i);
+					if (object && object->isAvatar())
+					{
+						LLVOAvatar& avatarp = *(LLVOAvatar*)object;
+						for (LLVOAvatar::AnimIterator it = avatarp.mPlayingAnimations.begin(), end = avatarp.mPlayingAnimations.end(); it != end; ++it)
+						{
+							const std::pair<LLUUID, S32>& playpair = *it;
+							avatarp.stopMotion(playpair.first, TRUE);
+							avatarp.startMotion(playpair.first);
+						}
+					}
 				}
 				return false;
 			}

@@ -62,10 +62,11 @@
       <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" tool_tip="Clears the Chat History to prevent lag effects from chat spammers." name="AscentCmdLineClearChat" width="200"/>
       <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_16">Open url/slurl (usage: cmd slurl)</text>
       <line_editor enabled_control="AscentCmdLine" bottom_delta="-20" follows="top" height="20" max_length="256" name="SinguCmdLineURL" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="hover_txt">Resync Animations (usage: cmd)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AlchemyChatCommandResyncAnim" width="200"/>
       <!-- Column Split -->
-      <view_border enabled_control="AscentCmdLine" bevel_style="none" border_thickness="1" bottom_delta="-5" follows="top|left" height="333"
-        left="230" name="CmdDivisor" width="0"/>
-      <text enabled_control="AscentCmdLine" bottom_delta="315" follows="top" height="16" left_delta="10" name="cmd_line_text_9">Change Draw Distance (usage: cmd meters)</text>
+      <view_border enabled_control="AscentCmdLine" bevel_style="none" border_thickness="1" bottom_delta="-5" follows="top|left" height="371" left="230" name="CmdDivisor" width="0"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="353" follows="top" height="16" left_delta="10" name="cmd_line_text_9">Change Draw Distance (usage: cmd meters)</text>
       <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdLineDrawDistance" width="200"/>
       <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_10">Teleport to cam position (usage: cmd)</text>
       <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AscentCmdTeleportToCam" width="200"/>
@@ -82,6 +83,8 @@
       <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="SinguCmdLineAway" width="200"/>
       <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="cmd_line_text_15">Send region message (usage: cmd msg)</text>
       <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="SinguCmdLineRegionSay" tool_tip="Only works on permissive regions (Estate Managers only)" width="200"/>
+      <text enabled_control="AscentCmdLine" bottom_delta="-18" follows="top" height="16" name="hover_txt">Hover Height (usage: cmd height)</text>
+      <line_editor enabled_control="AscentCmdLine" bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="top" height="20" max_length="256" name="AlchemyChatCommandHoverHeight" width="200"/>
     </panel>
 
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="Security &amp; Privacy" name="Security">
@@ -98,6 +101,7 @@
       </combo_box>
       <check_box bottom_delta="-18" left="10" control_name="AlchemyLookAtLines" follows="top" label="Show a line from look at beacon to avatar" tool_tip="See a line connecting the camera focus point to the avatar. Useful to find where they are." name="lineslookat"/>
       <check_box bottom_delta="-20" control_name="AnnounceBumps" follows="top" label="Announce in chat when people bump you" name="announce_bumps"/>
+      <check_box bottom_delta="-20" control_name="AlchemySitOnAway" follows="top" label="Sit down when you go AFK" name="AlchemySitOnAway"/>
       <check_box bottom_delta="-20" control_name="SGDetachBridge" follows="top" initial_value="false" label="Auto detach LSL Bridge" tool_tip="Automatically detach LSL Bridge of Phoenix or Firestorm viewer." name="detach_bridge"/>
       <check_box bottom_delta="-20" follows="top" label="Render muted avatars" name="render_muted" control_name="LiruLegacyDisplayMuteds"/>
       <check_box bottom_delta="-20" control_name="QuietSnapshotsToDisk" follows="top" initial_value="false" label="Quiet Snapshots to Disk" tool_tip="Doesn't make a camera sound nor alert everyone when you take a snapshot to your computer." name="quiet_snapshots_check"/>

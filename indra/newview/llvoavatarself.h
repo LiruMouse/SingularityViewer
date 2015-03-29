@@ -84,6 +84,9 @@ protected:
 	// LLViewerObject interface and related
 	//--------------------------------------------------------------------
 public:
+	boost::signals2::connection                   mRegionChangedSlot;
+
+	void					onSimulatorFeaturesReceived(const LLUUID& region_id);
 	/*virtual*/ void 		updateRegion(LLViewerRegion *regionp);
 	/*virtual*/ void   	 	idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
 
@@ -355,6 +358,14 @@ public:
 	//--------------------------------------------------------------------
 public:
 	bool			sendAppearanceMessage(LLMessageSystem *mesgsys) const;
+
+	// -- care and feeding of hover height.
+	void 			setHoverIfRegionEnabled();
+	void			sendHoverHeight() const;
+	/*virtual*/ void setHoverOffset(const LLVector3& hover_offset, bool send_update=true);
+
+private:
+	mutable LLVector3 mLastHoverOffsetSent;
 
 public:
 	LLVector3		getLegacyAvatarOffset() const;

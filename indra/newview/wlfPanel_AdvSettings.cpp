@@ -47,12 +47,20 @@
 #include "llfloaterwindlight.h"
 #include "llfloaterwater.h"
 
+#include "llagent.h"
 #include "llagentcamera.h"
 #include "lldaycyclemanager.h"
 #include "llenvmanager.h"
+#include "llviewerregion.h"
+#include "llvoavatarself.h"
 #include "llwaterparammanager.h"
 #include "llwlparamset.h"
 #include "llwlparammanager.h"
+
+// Hover funcs
+void syncFromPreferenceSetting(LLSliderCtrl* sldrCtrl);
+void onHoverSliderMoved(const LLSD& val);
+void onHoverSliderFinalCommit(const LLSD& val);
 
 wlfPanel_AdvSettings::wlfPanel_AdvSettings() : mExpanded(false)
 {
@@ -76,6 +84,7 @@ void wlfPanel_AdvSettings::build()
 	mConnections.clear();
 	deleteAllChildren();
 	mExpanded = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
+	if (mRegionChangedSlot.connected()) mRegionChangedSlot.disconnect();
 	LLUICtrlFactory::instance().buildPanel(this, mExpanded ? "wlfPanel_AdvSettings_expanded.xml" : "wlfPanel_AdvSettings.xml", &getFactoryMap());
 }
 
@@ -140,6 +149,7 @@ BOOL wlfPanel_AdvSettings::postBuild()
 
 	if (mExpanded)
 	{
+		// Windlight
 		getChild<LLCheckBoxCtrl>("use_estate_wl")->setCommitCallback(boost::bind(&wlfPanel_AdvSettings::onUseRegionSettings, this, _2));
 
 		mWaterPresetCombo = getChild<LLComboBox>("WLWaterPresetsCombo");
@@ -174,6 +184,7 @@ BOOL wlfPanel_AdvSettings::postBuild()
 		updateTimeSlider();
 		updateRlvVisibility();
 
+		// Camera Presets
 		const U32 preset(gSavedSettings.getU32("CameraPreset"));
 		if (preset == CAMERA_PRESET_REAR_VIEW)
 			getChildView("Rear")->setValue(true);
@@ -181,6 +192,35 @@ BOOL wlfPanel_AdvSettings::postBuild()
 			getChildView("Front")->setValue(true);
 		else if (preset == CAMERA_PRESET_GROUP_VIEW)
 			getChildView("Group")->setValue(true);
+
+		// Hover height
+		mHoverHeight = getChild<LLSliderCtrl>("HoverHeightSlider");
+		mHoverHeight->setMinValue(MIN_HOVER_Z);
+		mHoverHeight->setMaxValue(MAX_HOVER_Z);
+		mHoverHeight->setSliderMouseUpCallback(boost::bind(onHoverSliderFinalCommit, _2));
+		mHoverHeight->setSliderEditorCommitCallback(boost::bind(onHoverSliderFinalCommit, _2));
+		mHoverHeight->setCommitCallback(boost::bind(onHoverSliderMoved, _2));
+
+		// Initialize slider from pref setting.
+		syncFromPreferenceSetting(mHoverHeight);
+		// Update slider on future pref changes.
+		if (LLControlVariable* control = gSavedPerAccountSettings.getControl("AvatarHoverOffsetZ"))
+		{
+			control->getCommitSignal()->connect(boost::bind(&syncFromPreferenceSetting, mHoverHeight));
+		}
+		else
+		{
+			llwarns << "Control not found for AvatarHoverOffsetZ" << LL_ENDL;
+		}
+
+		updateEditHoverEnabled();
+
+		if (!mRegionChangedSlot.connected())
+		{
+			mRegionChangedSlot = gAgent.addRegionChangedCallback(boost::bind(&wlfPanel_AdvSettings::onRegionChanged, this));
+		}
+		// Set up based on initial region.
+		onRegionChanged();
 	}
 	return TRUE;
 }
@@ -410,4 +450,72 @@ void wlfPanel_AdvSettings::updateTimeSlider()
 		val++;
 	}
 	mTimeSlider->setValue(val);
+}
+
+// Hover junk
+void syncFromPreferenceSetting(LLSliderCtrl* sldrCtrl)
+{
+	F32 value = gSavedPerAccountSettings.getF32("AvatarHoverOffsetZ");
+
+	sldrCtrl->setValue(value,FALSE);
+
+	if (isAgentAvatarValid())
+	{
+		LLVector3 offset(0.0, 0.0, llclamp(value,MIN_HOVER_Z,MAX_HOVER_Z));
+		LL_INFOS("Avatar") << "setting hover from preference setting " << offset[2] << LL_ENDL;
+		gAgentAvatarp->setHoverOffset(offset);
+	}
+}
+
+void onHoverSliderMoved(const LLSD& val)
+{
+	F32 value = val.asFloat();
+	LLVector3 offset(0.0, 0.0, llclamp(value,MIN_HOVER_Z,MAX_HOVER_Z));
+	LL_INFOS("Avatar") << "setting hover from slider moved" << offset[2] << LL_ENDL;
+	gAgentAvatarp->setHoverOffset(offset, false);
+}
+
+// Do send-to-the-server work when slider drag completes, or new
+// value entered as text.
+void onHoverSliderFinalCommit(const LLSD& val)
+{
+	F32 value = val.asFloat();
+	gSavedPerAccountSettings.setF32("AvatarHoverOffsetZ", value);
+
+	LLVector3 offset(0.0, 0.0, llclamp(value,MIN_HOVER_Z,MAX_HOVER_Z));
+	LL_INFOS("Avatar") << "setting hover from slider final commit " << offset[2] << LL_ENDL;
+	gAgentAvatarp->setHoverOffset(offset, true); // will send update this time.
+}
+
+void wlfPanel_AdvSettings::onRegionChanged()
+{
+	LLViewerRegion* region = gAgent.getRegion();
+	if (region && region->simulatorFeaturesReceived())
+	{
+		updateEditHoverEnabled();
+	}
+	else if (region)
+	{
+		region->setSimulatorFeaturesReceivedCallback(boost::bind(&wlfPanel_AdvSettings::onSimulatorFeaturesReceived, this, _1));
+	}
+}
+
+void wlfPanel_AdvSettings::onSimulatorFeaturesReceived(const LLUUID& region_id)
+{
+	const LLViewerRegion* region = gAgent.getRegion();
+	if (region && (region->getRegionID()==region_id))
+	{
+		updateEditHoverEnabled();
+	}
+}
+
+void wlfPanel_AdvSettings::updateEditHoverEnabled()
+{
+	const LLViewerRegion* region = gAgent.getRegion();
+	bool enabled = region && region->avatarHoverHeightEnabled();
+	mHoverHeight->setEnabled(enabled);
+	if (enabled)
+	{
+		syncFromPreferenceSetting(mHoverHeight);
+	}
 }

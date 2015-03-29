@@ -105,7 +105,6 @@ public:
 	} eObjectPartitions;
 
 	typedef boost::signals2::signal<void(const LLUUID& region_id)> caps_received_signal_t;
-	typedef boost::signals2::signal<void(const LLUUID& region_id)> features_received_signal_t;
 
 	LLViewerRegion(const U64 &handle,
 				   const LLHost &host,
@@ -284,9 +283,6 @@ public:
 	static bool isSpecialCapabilityName(const std::string &name);
 	void logActiveCapabilities() const;
 
-	boost::signals2::connection setFeaturesReceivedCallback(const features_received_signal_t::slot_type& cb);
-	bool getFeaturesReceived() const { return mFeaturesReceived; }
-
     /// Get LLEventPump on which we listen for capability requests
     /// (https://wiki.lindenlab.com/wiki/Viewer:Messaging/Messaging_Notes#Capabilities)
     LLEventPump& getCapAPI() const;
@@ -327,11 +323,18 @@ public:
 	bool meshRezEnabled() const;
 	bool meshUploadEnabled() const;
 
+	// has region received its simulator features list? Requires an additional query after caps received.
+	void setSimulatorFeaturesReceived(bool);
+	bool simulatorFeaturesReceived() const;
+	boost::signals2::connection setSimulatorFeaturesReceivedCallback(const caps_received_signal_t::slot_type& cb);
+
 	void getSimulatorFeatures(LLSD& info);	
 	void setSimulatorFeatures(const LLSD& info);
 
 	
 	bool dynamicPathfindingEnabled() const;
+
+	bool avatarHoverHeightEnabled() const;
 
 	typedef enum
 	{
@@ -480,9 +483,9 @@ private:
 
 	bool	mAlive;					// can become false if circuit disconnects
 	bool	mCapabilitiesReceived;
-	bool	mFeaturesReceived;
+	bool	mSimulatorFeaturesReceived;
 	caps_received_signal_t mCapabilitiesReceivedSignal;
-	features_received_signal_t mFeaturesReceivedSignal;
+	caps_received_signal_t mSimulatorFeaturesReceivedSignal;
 
 	BOOL mReleaseNotesRequested;
 	

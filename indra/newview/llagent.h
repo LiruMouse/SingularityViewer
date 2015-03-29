@@ -462,15 +462,20 @@ public:
 	/// @brief ground-sit at agent's current position
 	void			sitDown();
 
+	void			setSitDownAway(bool away);
+	bool			isAwaySitting() const { return mIsAwaySitting; }
+
+private:
+	bool			mIsAwaySitting;
+
 	//--------------------------------------------------------------------
-	// Busy
+	// Do Not Disturb
 	//--------------------------------------------------------------------
 public:
-	void			setBusy();
-	void			clearBusy();
-	BOOL			getBusy() const;
+	void			setDoNotDisturb(bool pIsDoNotDisturb);
+	bool			isDoNotDisturb() const;
 private:
-	BOOL			mIsBusy;
+	bool			mIsDoNotDisturb;
 
 	//--------------------------------------------------------------------
 	// Grab

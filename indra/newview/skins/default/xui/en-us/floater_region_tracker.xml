@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+ name="region_tracker"
+ title="Region Tracker"
+ help_topic="floater_region_tracker"
+ single_instance="true"
+ reuse_instance="true"
+ layout="topleft"
+ height="250"
+ width="408"
+ min_height="150"
+ min_width="380"
+ rect_control="FloaterRegionTrackerRect"
+ can_close="true"
+ can_resize="true">
+ <text
+  follows="left|top"
+  height="31"
+  left="5"
+  bottom="-56"
+  right="-8"
+  valign="center"
+  font="SansSerifBig"
+  name="region_label_text"
+  value="Add regions from the World Map" />
+  <button
+   right="-76"
+   bottom_delta="7"
+   halign="center"
+   height="31"
+   layout="topleft"
+   follows="top|right"
+   width="31"
+   mouse_opaque="true"
+   name="refresh"
+   label=""
+   image_overlay="Refresh_Off" />
+  <button
+   left_delta="36"
+   bottom_delta="0"
+   halign="center"
+   height="31"
+   layout="topleft"
+   follows="top|right"
+   width="31"
+   mouse_opaque="true"
+   name="remove"
+   label=""
+   image_overlay="inv_folder_trash.tga" />
+  <button
+   left_delta="36"
+   bottom_delta="0"
+   halign="center"
+   height="31"
+   layout="topleft"
+   follows="top|right"
+   width="31"
+   mouse_opaque="true"
+   name="open_map"
+   label=""
+   image_overlay="ff_visible_map.tga" />
+  <scroll_list
+   name="region_list"
+   tool_tip="Double click an entry to open it on the world map."
+   height="195"
+   width="400"
+   layout="topleft"
+   follows="all"
+   bottom_delta="-199"
+   left="4"
+   multi_select="true"
+   draw_heading="true"
+   column_padding="0"
+   search_column="0">
+   <scroll_list.columns
+    name="region_label"
+    label="Label"
+    dynamicwidth="true"
+    width="100" />
+   <scroll_list.columns
+    name="region_maturity_icon"
+    dynamicwidth="false"
+    width="26" />
+   <scroll_list.columns
+    name="region_name"
+    label="Region"
+    dynamicwidth="true"
+    width="130" />
+   <scroll_list.columns
+    name="region_agent_count"
+    label="Count"
+    dynamicwidth="false"
+    width="30" />
+  </scroll_list>
+ </floater>

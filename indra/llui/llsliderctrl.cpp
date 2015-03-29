@@ -75,7 +75,8 @@ LLSliderCtrl::LLSliderCtrl(const std::string& name, const LLRect& rect,
 	  mEditor( NULL ),
 	  mTextBox( NULL ),
 	  mTextEnabledColor( LLUI::sColorsGroup->getColor( "LabelTextColor" ) ),
-	  mTextDisabledColor( LLUI::sColorsGroup->getColor( "LabelDisabledColor" ) )
+	  mTextDisabledColor(LLUI::sColorsGroup->getColor("LabelDisabledColor")),
+	  mEditorCommitSignal(NULL)
 {
 	S32 top = getRect().getHeight();
 	S32 bottom = 0;
@@ -139,6 +140,11 @@ LLSliderCtrl::LLSliderCtrl(const std::string& name, const LLRect& rect,
 	}
 
 	updateText();
+}
+
+LLSliderCtrl::~LLSliderCtrl()
+{
+	delete mEditorCommitSignal;
 }
 
 void LLSliderCtrl::setValue(F32 v, BOOL from_event)
@@ -238,6 +244,8 @@ void LLSliderCtrl::onEditorCommit( LLUICtrl* ctrl, const LLSD& userdata )
 	if( success )
 	{
 		self->onCommit();
+		if (self->mEditorCommitSignal)
+			(*(self->mEditorCommitSignal))(self, self->getValueF32());
 	}
 	else
 	{
@@ -348,6 +356,12 @@ boost::signals2::connection LLSliderCtrl::setSliderMouseDownCallback( const comm
 boost::signals2::connection LLSliderCtrl::setSliderMouseUpCallback( const commit_signal_t::slot_type& cb )
 {
 	return mSlider->setMouseUpCallback( cb );
+}
+
+boost::signals2::connection LLSliderCtrl::setSliderEditorCommitCallback(const commit_signal_t::slot_type& cb)
+{
+	if (!mEditorCommitSignal) mEditorCommitSignal = new commit_signal_t();
+	return mEditorCommitSignal->connect(cb);
 }
 
 void LLSliderCtrl::onTabInto()
