@@ -21,7 +21,7 @@
 		Nivel de Entrada:
 	</text>
 	<volume_slider name="mic_volume_slider"
-	     tool_tip="Cambia el volumen usando este deslizable"/>
+	     tool_tip="Cambia el Nivel del Micrófno usando este deslizable"/>
 	<text name="wait_text">
 		Por favor, espera
 	</text>

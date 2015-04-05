@@ -12,7 +12,7 @@
       <check_box label="Permet d'utiliser &#x22;/me&#x22; aussi bien que &#x22;:&#x22;" name="allow_mu_pose_check"/>
       <check_box label="Ajoute les fins des commentaires (RP mode)" tool_tip="Ajoute automatiquement &#x22;))&#x22; &#xE0; chaque message commen&#xE7;ant par &#x22;((&#x22;, et vice-versa." name="close_ooc_check"/>
       <check_box label="Montre les changements de display name" tool_tip="" name="display_name_change"/>
-      <check_box label="Signale, au dessus de la t&#xEA;te, que vous &#xE9;crivez" name="use_typing_bubbles"/>
+      <check_box label="Signale, au dessus de la t&#xEA;te, si l'avatar écrit" name="use_typing_bubbles"/>
       <text name="objects_link_text_box3">Active un lien qui montre le nom du propri&#xE9;taire dans l'historique du chat pour :</text>
       <radio_group name="objects_link">
         <radio_item name="no_object">Aucun objet</radio_item>
@@ -89,18 +89,19 @@ Et aussi : #n Pour le nom classique, #d Pour le Display, #r Pour la SLURL de vô
     <check_box name="AutoresponseAnyone" label="Auto Réponse basique" tool_tip="Envoye à toute personne non mutée"/>
     <check_box name="AutoresponseAnyoneFriendsOnly" label="Amis seulement" tool_tip=""/>
     <check_box name="AutoresponseAnyoneItem" label="Envoyer un élément"/>
-    <check_box left_delta="120" name="AutoresponseAnyoneShow" label="Montrer l'envoi"/>
+    <check_box left_delta="125" name="AutoresponseAnyoneShow" label="Montrer l'envoi"/>
     <drop_target name="AutoresponseAnyoneItemID" tool_tip=""/>
     <check_box name="AutoresponseNonFriends" label="Auto Réponse aux 'non amis'" tool_tip=""/>
     <check_box left_delta="200" name="AutoresponseNonFriendsItem" label="Envoyer un élément"/>
-    <check_box left_delta="120" name="AutoresponseNonFriendsShow" label="Montrer l'envoi"/>
+    <check_box left_delta="125" name="AutoresponseNonFriendsShow" label="Montrer l'envoi"/>
     <drop_target name="AutoresponseNonFriendsItemID" tool_tip=""/>
     <check_box name="AutoresponseMuted" label="Auto Réponse aux mutés" tool_tip=""/>
     <check_box left_delta="200" name="AutoresponseMutedItem" label="Envoyer un élément"/>
     <drop_target name="AutoresponseMutedItemID" tool_tip=""/>
+    <check_box left_delta="125" name="AutoresponseMutedShow" label="Montrer l'envoi"/>
     <text name="BusyModeResponseText" tool_tip="">Mode Busy:</text>
     <check_box left_delta="200" name="BusyModeResponseItem" label="Envoyer un élément"/>
-    <check_box left_delta="120" name="BusyModeResponseShow" label="Montrer l'envoi"/>
+    <check_box left_delta="125" name="BusyModeResponseShow" label="Montrer l'envoi"/>
     <drop_target name="BusyModeResponseItemID" tool_tip=""/>
   </panel>
 

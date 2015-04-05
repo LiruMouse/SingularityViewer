@@ -8,6 +8,7 @@
 	<check_box label="Afficher les IM dans la console du chat" name="include_im_in_chat_console"/>
 	<check_box label="Afficher l'heure dans les IM" name="show_timestamps_check"/>
 	<check_box label="Me prévenir quand des ami(e)s se connectent" name="friends_online_notify_checkbox"/>
+    <check_box label="Bloquer les IM Conférences entrantes" name="block_conferences_checkbox"/>
 	<text name="text_box4">Enregistrements:</text>
 	<check_box label="Enregistrer les IM sur mon ordinateur" name="log_instant_messages"/>
 	<check_box label="Inclure les heures" name="log_instant_messages_timestamp"/>

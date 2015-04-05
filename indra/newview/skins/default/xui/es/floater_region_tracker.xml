@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="region_tracker" title="Monitor de Región">
+  <text name="region_label_text" value="Añadir regiones desde el Mapa Mundial"/>
+   <scroll_list name="region_list" tool_tip="Doble click sobre un ítem de la lista para abrirlo en el mapa mundial.">
+    <scroll_list.columns name="region_label" label="Etiqueta"/>
+    <scroll_list.columns name="region_name" label="Región"/>
+    <scroll_list.columns name="region_agent_count" label="Agentes"/>
+  </scroll_list>
+ </floater>

@@ -8,6 +8,8 @@
 	</text>
 	<check_box label="Invertir el Ratón" name="invert_mouse"/>
 	<check_box label="Acercamiento Instantáneo con Click derecho, no progresivo" name="instant_zoom"/>
+	<check_box label="Mostrar posición y salud del Avatar" name="AlchemyMouselookInstructions"/>
+    <check_box label="Mostrar nombres de avatares apuntados bajo el punto de mira" name="AlchemyMouselookIFF"/>
 	<check_box label="Mostrar Avatar en Vista Subjetiva" name="first_person_avatar_visible"/>
 	<check_box label="Usar comportamiento de Cámara 'realistico' en Vista Subjetiva" name="UseRealisticMouselook"/>
 	<text name="UI Hidden in mouselook:">Esconder Interface en Vista Subjetiva:</text>

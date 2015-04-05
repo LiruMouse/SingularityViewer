@@ -14,6 +14,7 @@
   <check_box label="Gestos" name="gestures_btn"/>
   <check_box label="Balizas" name="beacons_btn"/>
   <check_box label="Radar" name="radar_list_btn"/>
+  <check_box label="Monitor de Región" name="region_tracker_btn"/>
   <check_box label="Controles de Cámara" name="camera_controls_btn"/>
   <check_box label="Controles de Movimiento" name="movement_controls_btn"/>
   <check_box label="Vista Subjetiva" name="look_btn"/>

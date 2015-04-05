@@ -52,6 +52,9 @@
 		<layout_panel name="panel6">
 			<button label="Radar" name="radar_list_btn" tool_tip="Ver lista de avatares cercanos.(Ctrl-Shift-A)"/>
 		</layout_panel>
+		<layout_panel name="panelregiontracker">
+			<button label="Monitor Región" name="region_tracker_btn" tool_tip="Monitorear el estado de varias regiones"/>
+    </layout_panel>
 		<layout_panel name="panelcameracontrols">
 			<button label="Controles Cámara" name="camera_controls_btn"/>
 		</layout_panel>

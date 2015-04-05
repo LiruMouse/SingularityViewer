@@ -139,6 +139,7 @@ Puedes usar los siguientes comodines para personalizar tus respuestas: #n para n
 			<drop_target name="AutoresponseNonFriendsItemID" tool_tip="Arrastra un ítem del Inventario hasta aquí para entregarlo junto con tu respuesta automática."/>
 			<check_box name="AutoresponseMuted" label="Responder a personas que has ignorado" tool_tip="Envía el mensaje de la caja inferior a personas a quienes has ignorado."/>
 			<check_box name="AutoresponseMutedItem" label="Enviar ítem"/>
+			<check_box name="AutoresponseMutedShow" label="Mostrar respuesta enviada"/>
 			<text_editor name="AutoresponseMutedMessage"/>
 			<drop_target name="AutoresponseMutedItemID" tool_tip="Arrastra un ítem del Inventario hasta aquí para entregarlo junto con tu respuesta automática."/>
 			<text name="BusyModeResponseText" tool_tip="Envía el mensaje de la caja inferior a quienes te envían un mensaje estando tu ocupado.">Respuesta en Modo Ocupado:</text>

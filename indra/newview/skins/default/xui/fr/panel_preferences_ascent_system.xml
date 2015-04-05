@@ -78,6 +78,7 @@
       </combo_box>
     <check_box label="Montre une ligne de la cible du 'look at' à l'avatar et inversement" name="lineslookat"/>
     <check_box label="Annonce dans le chat quand on vous bouscule" name="announce_bumps"/>
+    <check_box label="S'assoir quand on est AFK" name="AlchemySitOnAway"/>
     <check_box label="Détache automatiquement ce rodjudju de LSL Bridge" tool_tip="détache le LSL Bridge de Phoenix et/ou Firestorm viewer." name="detach_bridge"/>
       <check_box label="Rendre visibles les avatars muted" name="render_muted"/>
       <check_box label="Prendre discr&#xE8;tement un photo, sur votre disque dur" tool_tip="Permet de prendre une photo en mode &#x22;espionnage&#x22;, sans bruit d'appareil, ni mouvement de cam&#xE9;ra, ni gesture. (Uniquement vers le disque dur)." name="quiet_snapshots_check"/>
