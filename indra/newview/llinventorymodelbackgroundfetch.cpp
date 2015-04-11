@@ -193,12 +193,17 @@ void LLInventoryModelBackgroundFetch::backgroundFetchCB(void *)
 	LLInventoryModelBackgroundFetch::instance().backgroundFetch();
 }
 
+bool use_http_inventory()
+{
+	return gHippoGridManager->getConnectedGrid()->isSecondLife() || gSavedSettings.getBOOL("UseHTTPInventory");
+}
+
 void LLInventoryModelBackgroundFetch::backgroundFetch()
 {
 	LLViewerRegion* region = gAgent.getRegion();
 	if (mBackgroundFetchActive && region && region->capabilitiesReceived())
 	{
-		if (gSavedSettings.getBOOL("UseHTTPInventory"))
+		if (use_http_inventory())
 		{
 			// If we'll be using the capability, we'll be sending batches and the background thing isn't as important.
 			std::string url = region->getCapability("FetchInventory2");

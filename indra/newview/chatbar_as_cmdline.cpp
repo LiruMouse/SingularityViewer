@@ -452,6 +452,12 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 			{
 				if (revised_text.length() > command.length() + 1)
 				{
+					const std::string& message = revised_text.substr(command.length()+1);
+					if (!gAgent.getRegion()->isEstateManager())
+					{
+						gChatBar->sendChatFromViewer(message, CHAT_TYPE_REGION, false);
+						return false;
+					}
 					std::vector<std::string> strings(5, "-1");
 					// [0] grid_x, unused here
 					// [1] grid_y, unused here
@@ -460,7 +466,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					std::string name;
 					LLAgentUI::buildFullname(name);
 					strings[3] = name;
-					strings[4] = revised_text.substr(command.length()+1); // [4] message
+					strings[4] = message; // [4] message
 					LLRegionInfoModel::sendEstateOwnerMessage(gMessageSystem, "simulatormessage", LLFloaterRegionInfo::getLastInvoice(), strings);
 				}
 				return false;

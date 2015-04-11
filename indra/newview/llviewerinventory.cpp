@@ -64,6 +64,7 @@
 #include "llfloatercustomize.h"
 // <edit>
 #include "llappviewer.h" // System Folders
+bool use_http_inventory(); // UseHTTPInventory replacement
 // </edit>
 
 // Two do-nothing ops for use in callbacks.
@@ -354,7 +355,7 @@ void LLViewerInventoryItem::fetchFromServer(void) const
 	{
 		std::string url; 
 
-		if (gSavedSettings.getBOOL("UseHTTPInventory"))
+		if (use_http_inventory())
 		{
 			LLViewerRegion* region = gAgent.getRegion();
 			// we have to check region. It can be null after region was destroyed. See EXT-245
@@ -656,13 +657,13 @@ bool LLViewerInventoryCategory::fetch()
 		{
 			llwarns << "agent region is null" << llendl;
 		}
-		if (!url.empty() && gSavedSettings.getBOOL("UseHTTPInventory")) //Capability found and HTTP inventory enabled.  Build up LLSD and use it.
+		if (!url.empty() && use_http_inventory()) //Capability found and HTTP inventory enabled.  Build up LLSD and use it.
 		{
 			LLInventoryModelBackgroundFetch::instance().start(mUUID, false);			
 		}
 		else
 		{	//We don't have a capability or the use of HTTP inventory is disabled, use the old system.
-			if (gSavedSettings.getBOOL("UseHTTPInventory"))
+			if (use_http_inventory())
 			{
 				llinfos << "FetchInventoryDescendents2 capability not found.  Using UDP message." << llendl;
 			}
