@@ -3200,7 +3200,7 @@ bool xantispam_check(const std::string& fromstr, const std::string& filtertype, 
 
 	// handle busy and afk situations gracefully
 	bool reenable_queries_busy = false;
-	if(gAgent.getBusy())
+	if(gAgent.isDoNotDisturb())
 	{
 		xantispam_request config;
 		config.from = gAgentID.asString();
@@ -3582,7 +3582,7 @@ bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_own
 
 
 void script_msg_api(const std::string& msg);
-bool inventory_offer_handler_answer_available^(LLOfferInfo *info)
+bool inventory_offer_handler_answer_available(LLOfferInfo *info)
 {
 	// NaCl - Antispam Registry
 	if (NACLAntiSpamRegistry::checkQueue((U32)NACLAntiSpamRegistry::QUEUE_INVENTORY,info->mFromID))
