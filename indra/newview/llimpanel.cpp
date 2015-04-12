@@ -1071,9 +1071,17 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 	}
 }
 
+extern bool xantispam_check(const std::string&, const std::string&, const std::string&);
 void show_log_browser(const std::string& name, const std::string& id)
 {
 	const std::string file(LLLogChat::makeLogFileName(name));
+
+	if(!xantispam_check(file, "&-IMLogHistoryExternal", file))
+	{
+		// start the external editor with the log and return
+		return;
+	}
+
 	if (gSavedSettings.getBOOL("LiruLegacyLogLaunch"))
 	{
 #if LL_WINDOWS || LL_DARWIN

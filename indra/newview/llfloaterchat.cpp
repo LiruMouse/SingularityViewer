@@ -552,37 +552,6 @@ void* LLFloaterChat::createChatPanel(void* data)
 	return new LLChatBar;
 }
 
-
-// xantispam
-// this function has disappeared
-
-// <<<<<<< HEAD
-
-// extern bool xantispam_check(const std::string&, const std::string&, const std::string&);
-
-// void show_log_browser(const std::string& name = "chat", const std::string& id = "chat");
-
-// // static
-// void LLFloaterChat::onClickChatHistoryOpen(void* userdata)
-// {
-// 	// see if the user wants full history file in external
-// 	// editor, which is what I always expected to happen
-// 	// from a button like this ...
-// 	std::string filename = LLLogChat::makeLogFileName("chat");
-// 	if(!xantispam_check(filename, "&-IMLogHistoryExternal", filename))
-// 	{
-// 		// ... and if so, this starts the external editor with the log, hence return
-// 		return;
-// 	}
-
-// 	show_log_browser();
-// }
-// =======
-// >>>>>>> 78131d2d53c57b7102c1a673c113587ebb8ee5dc
-
-// / xantispam
-
-
 //static 
 bool LLFloaterChat::visible(LLFloater* instance, const LLSD& key)
 {
