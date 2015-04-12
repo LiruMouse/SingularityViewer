@@ -618,7 +618,13 @@ void LLTextEditor::context_loadfile_picked(void *data, AIFilePicker* filepicker)
 
 void LLTextEditor::context_start_external(void *data)
 {
-	run_external_editor("");
+	// there's no file name here, so provide an artificial one
+	//
+	LLUUID uuid = LLUUID::generateNewID();
+	std::string filename;
+	filename = "singularity-edit-" + uuid.asString() + ".txt";
+
+	run_external_editor(filename);
 }
 // [/Ratany]
 
