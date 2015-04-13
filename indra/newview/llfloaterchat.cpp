@@ -239,7 +239,7 @@ void log_chat_text(const LLChat& chat)
 }
 // static
 void LLFloaterChat::addChatHistory(const LLChat& chat, bool log_to_file)
-{	
+{
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
 	if (rlv_handler_t::isEnabled())
 	{
@@ -264,7 +264,7 @@ void LLFloaterChat::addChatHistory(const LLChat& chat, bool log_to_file)
 	}
 // [/RLVa:KB]
 
-	if (gSavedPerAccountSettings.getBOOL("LogChat") && log_to_file)
+	if (log_to_file && gSavedPerAccountSettings.getBOOL("LogChat"))
 	{
 		log_chat_text(chat);
 	}
