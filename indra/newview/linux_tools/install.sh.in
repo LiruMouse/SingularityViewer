@@ -59,7 +59,7 @@ function homedir_install()
     fi
 
     install_to_prefix "$HOME/.@VIEWER_BRANDING_ID@-install"
-    $HOME/.@VIEWER_BRANDING_ID@-install/refresh_desktop_app_entry.sh
+    $HOME/.@VIEWER_BRANDING_ID@-install/etc/refresh_desktop_app_entry.sh
 }
 
 function root_install()

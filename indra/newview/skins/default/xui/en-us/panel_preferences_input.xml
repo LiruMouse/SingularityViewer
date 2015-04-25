@@ -6,7 +6,7 @@
 	<check_box bottom_delta="-18" follows="top" height="16" label="Invert Mouse" left="148" name="invert_mouse"/>
 	<check_box bottom_delta="-18" follows="top" height="16" control_name="LiruMouselookInstantZoom" label="Make rightclick zoom instantaneous, not smooth" name="instant_zoom"/>
     <check_box follows="left|top" height="16" label="Display position and avatar health" bottom_delta="-18" name="AlchemyMouselookInstructions" control_name="AlchemyMouselookInstructions"/>
-    <check_box follows="top" height="16" label="Display targeted avatars name under the crosshair" bottom_delta="-18" name="AlchemyMouselookIFF" control_name="AlchemyMouselookIFF"/>
+    <check_box follows="top" height="16" label="Display targeted avatar's name under the crosshair" bottom_delta="-18" name="AlchemyMouselookIFF" control_name="AlchemyMouselookIFF"/>
 	<check_box bottom_delta="-18" follows="top" height="16" initial_value="false" label="Show Avatar in Mouselook" name="first_person_avatar_visible"/>
 	<check_box bottom_delta="-18" follows="top" height="16" control_name="UseRealisticMouselook" label="Use 'realistic' Camera behavior in Mouselook" name="UseRealisticMouselook"/>
 	<text bottom_delta="-18" follows="top" height="16" name="UI Hidden in mouselook:">UI Hidden in mouselook:</text>

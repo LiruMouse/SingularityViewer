@@ -4428,6 +4428,17 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>LetterKeysFocusChatBar</key>
+    <map>
+      <key>Comment</key>
+      <string>When printable characters keys (possibly with Shift held) are pressed, the chatbar takes focus</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
     <key>ChatBubbleOpacity</key>
     <map>
       <key>Comment</key>
