@@ -91,9 +91,20 @@ std::string LLLogChat::timestamp(bool withdate)
 	// There's only one internal tm buffer.
 	struct tm* timep;
 
-	// Convert to Pacific, based on server's opinion of whether
-	// it's daylight savings time there.
-	timep = utc_to_pacific_time(utc_time, gPacificDaylightTime);
+	// PDT/PDS is totally irrelevant
+	static const LLCachedControl<bool> use_local_time("RtyChatUsesLocalTime");
+
+	if(use_local_time)
+	{
+		// use local time
+		timep = std::localtime(&utc_time);
+	}
+	else
+	{
+		// Convert to Pacific, based on server's opinion of whether
+		// it's daylight savings time there.
+		timep = utc_to_pacific_time(utc_time, gPacificDaylightTime);
+	}
 
 	static LLCachedControl<bool> withseconds("SecondsInLog");
 	std::string text;
