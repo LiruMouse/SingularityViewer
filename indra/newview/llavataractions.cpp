@@ -353,7 +353,14 @@ static void on_avatar_name_show_profile(const LLUUID& agent_id, const LLAvatarNa
 
 			// I'd rather have it remember its position ...
 			static LLCachedControl<bool> floater_centers("RtyFloaterProfileCenters");
-			if(floater_centers) floater->center();
+			if(floater_centers)
+			{
+				floater->center();
+			}
+			else
+			{
+				floater->center_right();
+			}
 		}
 
 		// ...bring that window to front

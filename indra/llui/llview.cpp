@@ -1841,6 +1841,16 @@ void LLView::centerWithin(const LLRect& bounds)
 	translate( left - getRect().mLeft, bottom - getRect().mBottom );
 }
 
+
+void LLView::centerRight(const LLRect& bounds)
+{
+	S32 left   = bounds.mLeft + (bounds.getWidth() - getRect().getWidth());
+	S32 bottom = bounds.mBottom + (bounds.getHeight() - getRect().getHeight()) / 2;
+
+	translate( left - getRect().mLeft, bottom - getRect().mBottom );
+}
+
+
 BOOL LLView::localPointToOtherView( S32 x, S32 y, S32 *other_x, S32 *other_y, LLView* other_view) const
 {
 	const LLView* cur_view = this;

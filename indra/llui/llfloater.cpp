@@ -705,6 +705,18 @@ void LLFloater::center()
 	centerWithin(gFloaterView->getRect());
 }
 
+
+void LLFloater::center_right()
+{
+	if(getHost())
+	{
+		// hosted floaters can't move
+		return;
+	}
+	centerRight(gFloaterView->getRect());
+}
+
+
 void LLFloater::applyRectControl()
 {
 	if (!getRectControl().empty())
