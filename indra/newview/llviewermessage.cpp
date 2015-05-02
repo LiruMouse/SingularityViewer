@@ -6807,10 +6807,10 @@ void send_agent_update(BOOL force_send, BOOL send_reliable)
 	U32 control_flags = gAgent.getControlFlags();
 
 	// <edit>
-	if(gSavedSettings.getBOOL("Nimble"))
-	{
+	// if(gSavedSettings.getBOOL("Nimble"))
+	// {
 		control_flags |= AGENT_CONTROL_FINISH_ANIM;
-	}
+	// }
 	// </edit>
 
 	MASK	key_mask = gKeyboard->currentMask(TRUE);
