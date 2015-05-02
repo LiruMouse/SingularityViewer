@@ -51,8 +51,8 @@
 const S32 LEADING_PAD = 5;
 const S32 TITLE_PAD = 8;
 const S32 BORDER_PAD = 1;
-const S32 LEFT_PAD = BORDER_PAD + TITLE_PAD + LEADING_PAD;
-const S32 RIGHT_PAD = BORDER_PAD + 32; // HACK: space for close btn and minimize btn
+const S32 LEFT_PAD = BORDER_PAD + TITLE_PAD + LEADING_PAD + 40;
+const S32 RIGHT_PAD = BORDER_PAD; // HACK: space for close btn and minimize btn
 
 S32 LLDragHandle::sSnapMargin = 5;
 
