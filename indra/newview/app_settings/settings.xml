@@ -940,6 +940,19 @@
       <key>Value</key>
       <boolean>0</boolean>
     </map>
+    <key>UISndRtyFriendOffer</key>
+    <map>
+      <key>Comment</key>
+      <string>Sound file for friendship offers (uuid for sound asset)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>00000000-0000-0000-0000-000000000116</string>
+      <key>IsCOA</key>
+      <integer>1</integer>
+    </map>
     <key>RtyChatUsesLocalTime</key>
     <map>
       <key>Comment</key>

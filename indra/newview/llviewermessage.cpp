@@ -5289,6 +5289,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 					args["[MESSAGE]"] = message;
 				    LLNotificationsUtil::add("OfferFriendship", args, payload);
 				}
+				make_ui_sound("UISndRtyFriendOffer");
 			}
 		}
 		break;
@@ -5308,6 +5309,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			LLSD payload;
 			payload["from_id"] = from_id;
 			LLAvatarNameCache::get(from_id, boost::bind(&notification_display_name_callback, _1, _2, "FriendshipAccepted", args, payload));
+			make_ui_sound("UISndRtyFriendOffer");
 		}
 		break;
 
