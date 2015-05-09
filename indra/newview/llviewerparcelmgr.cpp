@@ -910,6 +910,7 @@ void LLViewerParcelMgr::renderParcelCollision()
 	if (mCollisionTimer.getElapsedTimeF32() > PARCEL_COLLISION_DRAW_SECS)
 	{
 		mRenderCollision = FALSE;
+		return;
 	}
 
 	static const LLCachedControl<bool> ShowBanLines("ShowBanLines");
