@@ -15,7 +15,7 @@
 
 <!-- LABELS -->
 <!-- this for actual labels, not the text on buttons -->
-<LabelDisabledColor value="255, 255, 255, 64" />
+<LabelDisabledColor value="255, 255, 255, 96" />
 <LabelSelectedColor value="255, 255, 255, 200" />
 <LabelSelectedDisabledColor value="255, 255, 255, 128" />
 <LabelTextColor value="255, 255, 255, 255" />
