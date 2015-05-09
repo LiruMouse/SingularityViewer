@@ -929,6 +929,17 @@
       <key>Value</key>
       <boolean>0</boolean>
     </map>
+    <key>RtyShowBanLinesFar</key>
+    <map>
+      <key>Comment</key>
+      <string>Do not fade out ban lines with distance when enabled.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
     <key>RtyShowBothTimes</key>
     <map>
       <key>Comment</key>

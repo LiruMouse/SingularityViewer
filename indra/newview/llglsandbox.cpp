@@ -676,6 +676,8 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 	LLGLSUIDefault gls_ui;
 	LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE);
 	LLGLDisable cull(GL_CULL_FACE);
+
+	static const LLCachedControl<bool> RtyShowBanLinesFar("RtyShowBanLinesFar");
 	
 	if (mCollisionBanned == BA_BANNED ||
 		regionp->getRegionFlag(REGION_FLAGS_BLOCK_FLYOVER))
@@ -718,25 +720,29 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 				x2 = x1 + PARCEL_GRID_STEP_METERS;
 				y2 = y1;
 
-				dy = (pos_y - y1) + DIST_OFFSET;
+				if(RtyShowBanLinesFar) {
+					alpha = 1.f;
+				} else {
+					dy = (pos_y - y1) + DIST_OFFSET;
 
-				if (pos_x < x1)
-					dx = pos_x - x1;
-				else if (pos_x > x2)
-					dx = pos_x - x2;
-				else
-					dx = 0;
+					if (pos_x < x1)
+						dx = pos_x - x1;
+					else if (pos_x > x2)
+						dx = pos_x - x2;
+					else
+						dx = 0;
 
-				dist = dx*dx+dy*dy;
+					dist = dx*dx+dy*dy;
 
-				if (dist < MIN_DIST_SQ)
-					alpha = MAX_ALPHA;
-				else if (dist > MAX_DIST_SQ)
-					alpha = 0.0f;
-				else
-					alpha = 30/dist;
+					if (dist < MIN_DIST_SQ)
+						alpha = MAX_ALPHA;
+					else if (dist > MAX_DIST_SQ)
+						alpha = 0.0f;
+					else
+						alpha = 30/dist;
 
-				alpha = llclamp(alpha, 0.0f, MAX_ALPHA);
+					alpha = llclamp(alpha, 0.0f, MAX_ALPHA);
+				}
 
 				gGL.color4f(1.f, 1.f, 1.f, alpha);
 
@@ -745,7 +751,6 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 
 				// avoid Z fighting
 				renderOneSegment(x1+0.1f, y1+0.1f, x2+0.1f, y2+0.1f, collision_height, direction, regionp);
-
 			}
 
 			if (segment_mask & WEST_MASK)
@@ -756,26 +761,29 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 				x2 = x1;
 				y2 = y1 + PARCEL_GRID_STEP_METERS;
 
-				dx = (pos_x - x1) + DIST_OFFSET;
+				if(RtyShowBanLinesFar) {
+					alpha = 1.f;
+				} else {
+					dx = (pos_x - x1) + DIST_OFFSET;
 
-				if (pos_y < y1)
-					dy = pos_y - y1;
-				else if (pos_y > y2)
-					dy = pos_y - y2;
-				else
-					dy = 0;
+					if (pos_y < y1)
+						dy = pos_y - y1;
+					else if (pos_y > y2)
+						dy = pos_y - y2;
+					else
+						dy = 0;
 
-				dist = dx*dx+dy*dy;
+					dist = dx*dx+dy*dy;
 
-				if (dist < MIN_DIST_SQ)
-					alpha = MAX_ALPHA;
-				else if (dist > MAX_DIST_SQ)
-					alpha = 0.0f;
-				else
-					alpha = 30/dist;
+					if (dist < MIN_DIST_SQ)
+						alpha = MAX_ALPHA;
+					else if (dist > MAX_DIST_SQ)
+						alpha = 0.0f;
+					else
+						alpha = 30/dist;
 
-				alpha = llclamp(alpha, 0.0f, MAX_ALPHA);
-
+					alpha = llclamp(alpha, 0.0f, MAX_ALPHA);
+				}
 				gGL.color4f(1.f, 1.f, 1.f, alpha);
 
 				if ((pos_x - x1) > 0) direction = WEST_MASK;
@@ -783,7 +791,6 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 				
 				// avoid Z fighting
 				renderOneSegment(x1+0.1f, y1+0.1f, x2+0.1f, y2+0.1f, collision_height, direction, regionp);
-
 			}
 		}
 	}
