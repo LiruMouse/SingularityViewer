@@ -16,8 +16,8 @@
 <!-- LABELS -->
 <!-- this for actual labels, not the text on buttons -->
 <LabelDisabledColor value="255, 255, 255, 64" />
-<LabelSelectedColor value="255, 255, 255, 128" />
-<LabelSelectedDisabledColor value="255, 255, 255, 80" />
+<LabelSelectedColor value="255, 255, 255, 200" />
+<LabelSelectedDisabledColor value="255, 255, 255, 128" />
 <LabelTextColor value="255, 255, 255, 255" />
 
 <!-- LOGIN -->
@@ -31,8 +31,8 @@
 <!-- BUTTONS -->
 <ButtonLabelColor value="255, 255, 255, 255" /> 	<!-- Text labels for buttons, like the "OK" text -->
 <ButtonLabelSelectedColor value="255, 255, 255, 255" />
-<ButtonLabelDisabledColor value="255, 255, 255, 66" />
-<ButtonLabelSelectedDisabledColor value="255, 255, 255, 66" />
+<ButtonLabelDisabledColor value="255, 255, 255, 128" />
+<ButtonLabelSelectedDisabledColor value="255, 255, 255, 128" />
 <ButtonSelectedBgColor value="62, 62, 62, 255" />
 <ButtonSelectedColor value="255, 255, 255, 255" />
 <ButtonUnselectedBgColor value="62, 62, 62, 255" />
