@@ -307,14 +307,15 @@ LLTextEditor::LLTextEditor(
 	// reset desired x cursor position
 	mDesiredXPixel = -1;
 
-	if (font)
-	{
-		mGLFont = font;
-	}
-	else
-	{
-		mGLFont = LLFontGL::getFontSansSerif();
-	}
+	// if (font)
+	// {
+	// 	mGLFont = font;
+	// }
+	// else
+	// {
+	// 	mGLFont = LLFontGL::getFontSansSerif();
+	// }
+	mGLFont = LLFontGL::getFontSansSerifSmall();
 
 	updateTextRect();
 
