@@ -32,6 +32,7 @@
 #include "llparcel.h"
 #include "llstreamtools.h"
 
+#include "llcontrol.h"
 #include "llmath.h"
 #include "llsd.h"
 #include "llsdutil.h"
@@ -455,74 +456,80 @@ S32 LLParcel::blockAccess(const LLUUID& agent_id, const LLUUID& group_id,
                           const BOOL is_agent_transacted,
                           const BOOL is_agent_ageverified) const
 {
-    // Test ban list
-    if (isAgentBanned(agent_id))
-    {
-        return BA_BANNED;
-    }
+	// Test ban list
+	if (isAgentBanned(agent_id))
+	{
+		return BA_BANNED;
+	}
     
-    // Always allow owner on (unless he banned himself, useful for
-    // testing). We will also allow estate owners/managers in if they 
-    // are not explicitly banned.
-    if (agent_id == mOwnerID)
-    {
-        return BA_ALLOWED;
-    }
+	// Always allow owner on (unless he banned himself, useful for
+	// testing). We will also allow estate owners/managers in if they 
+	// are not explicitly banned.
+	if (agent_id == mOwnerID)
+	{
+		return BA_ALLOWED;
+	}
+
+	static const LLCachedControl<bool> RtyShowBanLinesFar("RtyShowBanLinesFar");
+	if(RtyShowBanLinesFar && !getParcelFlag(PF_ALLOW_ALL_OBJECT_ENTRY))
+	{
+		return BA_BANNED;
+	}
     
-    // Special case when using pass list where group access is being restricted but not 
-    // using access list.	 In this case group members are allowed only if they buy a pass.
-    // We return BA_NOT_IN_LIST if not in list
-    BOOL passWithGroup = getParcelFlag(PF_USE_PASS_LIST) && !getParcelFlag(PF_USE_ACCESS_LIST) 
-    && getParcelFlag(PF_USE_ACCESS_GROUP) && !mGroupID.isNull() && group_id == mGroupID;
+	// Special case when using pass list where group access is being restricted but not 
+	// using access list.	 In this case group members are allowed only if they buy a pass.
+	// We return BA_NOT_IN_LIST if not in list
+	BOOL passWithGroup = getParcelFlag(PF_USE_PASS_LIST) && !getParcelFlag(PF_USE_ACCESS_LIST) 
+		&& getParcelFlag(PF_USE_ACCESS_GROUP) && !mGroupID.isNull() && group_id == mGroupID;
     
     
-    // Test group list
-    if (getParcelFlag(PF_USE_ACCESS_GROUP)
-        && !mGroupID.isNull()
-        && group_id == mGroupID
-        && !passWithGroup)
-    {
-        return BA_ALLOWED;
-    }
+	// Test group list
+	if (getParcelFlag(PF_USE_ACCESS_GROUP)
+	    && !mGroupID.isNull()
+	    && group_id == mGroupID
+	    && !passWithGroup)
+	{
+		return BA_ALLOWED;
+	}
     
-    // Test access list
-    if (getParcelFlag(PF_USE_ACCESS_LIST) || passWithGroup )
-    {
-        if (mAccessList.find(agent_id) != mAccessList.end())
-        {
-            return BA_ALLOWED;
-        }
+	// Test access list
+	if (getParcelFlag(PF_USE_ACCESS_LIST) || passWithGroup )
+	{
+		if (mAccessList.find(agent_id) != mAccessList.end())
+		{
+			return BA_ALLOWED;
+		}
         
-        return BA_NOT_ON_LIST; 
-    }
+		return BA_NOT_ON_LIST; 
+	}
     
-    // If we're not doing any other limitations, all users
-    // can enter, unless
-    if (		 !getParcelFlag(PF_USE_ACCESS_GROUP)
-                 && !getParcelFlag(PF_USE_ACCESS_LIST))
-    { 
-        //If the land is group owned, and you are in the group, bypass these checks
-        if(getIsGroupOwned() && group_id == mGroupID)
-        {
-            return BA_ALLOWED;
-        }
+	// If we're not doing any other limitations, all users
+	// can enter, unless
+	if (		 !getParcelFlag(PF_USE_ACCESS_GROUP)
+			 && !getParcelFlag(PF_USE_ACCESS_LIST))
+	{ 
+		//If the land is group owned, and you are in the group, bypass these checks
+		if(getIsGroupOwned() && group_id == mGroupID)
+		{
+			return BA_ALLOWED;
+		}
         
-        // Test for "payment" access levels
-        // Anonymous - No Payment Info on File
-        if(getParcelFlag(PF_DENY_ANONYMOUS) && !is_agent_identified && !is_agent_transacted)
-        {
-            return BA_NO_ACCESS_LEVEL;
-        }
-        // AgeUnverified - Not Age Verified
-        if(getParcelFlag(PF_DENY_AGEUNVERIFIED) && !is_agent_ageverified)
-        {
+		// Test for "payment" access levels
+		// Anonymous - No Payment Info on File
+		if(getParcelFlag(PF_DENY_ANONYMOUS) && !is_agent_identified && !is_agent_transacted)
+		{
+			return BA_NO_ACCESS_LEVEL;
+		}
+		// AgeUnverified - Not Age Verified
+		if(getParcelFlag(PF_DENY_AGEUNVERIFIED) && !is_agent_ageverified)
+		{
 			return BA_NOT_AGE_VERIFIED;
-        }
+		}
     
-        return BA_ALLOWED;
-    }
+		return BA_ALLOWED;
+	}
     
-    return BA_NOT_IN_GROUP;
+	return BA_NOT_IN_GROUP;
     
 }
 

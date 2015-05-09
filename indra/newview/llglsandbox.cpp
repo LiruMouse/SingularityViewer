@@ -1,11 +1,11 @@
-/** 
+/**
  * @file llglsandbox.cpp
  * @brief GL functionality access
  *
  * $LicenseInfo:firstyear=2003&license=viewergpl$
- * 
+ *
  * Copyright (c) 2003-2009, Linden Research, Inc.
- * 
+ *
  * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
  * to you under the terms of the GNU General Public License, version 2.0
@@ -13,25 +13,25 @@
  * ("Other License"), formally executed by you and Linden Lab.  Terms of
  * the GPL can be found in doc/GPL-license.txt in this distribution, or
  * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
- * 
+ *
  * There are special exceptions to the terms and conditions of the GPL as
  * it is applied to this Source Code. View the full text of the exception
  * in the file doc/FLOSS-exception.txt in this software distribution, or
  * online at
  * http://secondlifegrid.net/programs/open_source/licensing/flossexception
- * 
+ *
  * By copying, modifying or distributing this software, you acknowledge
  * that you have read and understood your obligations described above,
  * and agree to abide by those obligations.
- * 
+ *
  * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
  * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
  * COMPLETENESS OR PERFORMANCE.
  * $/LicenseInfo$
  */
 
-/** 
- * Contains ALL methods which directly access GL functionality 
+/**
+ * Contains ALL methods which directly access GL functionality
  * except for core rendering engine functionality.
  */
 
@@ -82,8 +82,8 @@ void LLToolSelectRect::handleRectangleSelection(S32 x, S32 y, MASK mask)
 	// Block rectangle selection if:
 	//   - prevented from editing and no exceptions are set (see below for the case where exceptions are set)
 	//   - prevented from interacting at all
-	if ( (rlv_handler_t::isEnabled()) && 
-		 ( ((gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) && (!gRlvHandler.hasException(RLV_BHVR_EDIT))) || 
+	if ( (rlv_handler_t::isEnabled()) &&
+		 ( ((gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) && (!gRlvHandler.hasException(RLV_BHVR_EDIT))) ||
 		   (gRlvHandler.hasBehaviour(RLV_BHVR_INTERACT)) ) )
 	{
 		return;
@@ -175,8 +175,8 @@ void LLToolSelectRect::handleRectangleSelection(S32 x, S32 y, MASK mask)
 		select_dist_squared = 1.5f * 1.5f;
 	}
 // [/RLVa:KB]
-	LLViewerCamera::getInstance()->setPerspective(FOR_SELECTION, 
-							center_x-width/2, center_y-height/2, width, height, 
+	LLViewerCamera::getInstance()->setPerspective(FOR_SELECTION,
+							center_x-width/2, center_y-height/2, width, height,
 							limit_select_distance);
 
 	if (shrink_selection)
@@ -215,8 +215,8 @@ void LLToolSelectRect::handleRectangleSelection(S32 x, S32 y, MASK mask)
 	if (grow_selection)
 	{
 		std::vector<LLDrawable*> potentials;
-				
-		for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
+
+		for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin();
 			iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
 		{
 			LLViewerRegion* region = *iter;
@@ -224,12 +224,12 @@ void LLToolSelectRect::handleRectangleSelection(S32 x, S32 y, MASK mask)
 			{
 				LLSpatialPartition* part = region->getSpatialPartition(i);
 				if (part)
-				{	
+				{
 					part->cull(*LLViewerCamera::getInstance(), &potentials, TRUE);
 				}
 			}
 		}
-		
+
 		for (std::vector<LLDrawable*>::iterator iter = potentials.begin();
 			 iter != potentials.end(); iter++)
 		{
@@ -237,7 +237,7 @@ void LLToolSelectRect::handleRectangleSelection(S32 x, S32 y, MASK mask)
 			LLViewerObject* vobjp = drawable->getVObj();
 
 			if (!drawable || !vobjp ||
-				vobjp->getPCode() != LL_PCODE_VOLUME || 
+				vobjp->getPCode() != LL_PCODE_VOLUME ||
 				vobjp->isAttachment() ||
 				(deselect && !vobjp->isSelected()))
 			{
@@ -334,7 +334,7 @@ void LLWind::renderVectors()
 
 
 // Used by lltoolselectland
-void LLViewerParcelMgr::renderRect(const LLVector3d &west_south_bottom_global, 
+void LLViewerParcelMgr::renderRect(const LLVector3d &west_south_bottom_global,
 								   const LLVector3d &east_north_top_global )
 {
 	LLGLSUIDefault gls_ui;
@@ -606,8 +606,8 @@ void LLViewerParcelMgr::renderHighlightSegments(const U8* segments, LLViewerRegi
 	const S32 STRIDE = (mParcelsPerEdge+1);
 
 	// Cheat and give this the same pick-name as land
-	
-	
+
+
 	for (y = 0; y < STRIDE; y++)
 	{
 		for (x = 0; x < STRIDE; x++)
@@ -621,7 +621,7 @@ void LLViewerParcelMgr::renderHighlightSegments(const U8* segments, LLViewerRegi
 
 				x2 = x1 + PARCEL_GRID_STEP_METERS;
 				y2 = y1;
-				
+
 				if (!has_segments)
 				{
 					has_segments = true;
@@ -667,7 +667,7 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 	F32 collision_height;
 
 	const S32 STRIDE = (mParcelsPerEdge+1);
-	
+
 	LLVector3 pos = gAgent.getPositionAgent();
 
 	F32 pos_x = pos.mV[VX];
@@ -687,7 +687,7 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 		collision_height = PARCEL_HEIGHT;
 	}
 
-	
+
 	if (use_pass && (mCollisionBanned == BA_NOT_ON_LIST))
 	{
 		gGL.getTexUnit(0)->bind(mPassImage);
@@ -747,7 +747,7 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 				gGL.color4f(1.f, 1.f, 1.f, alpha);
 
 				if ((pos_y - y1) < 0) direction = SOUTH_MASK;
-				else 		direction = NORTH_MASK;
+				else		direction = NORTH_MASK;
 
 				// avoid Z fighting
 				renderOneSegment(x1+0.1f, y1+0.1f, x2+0.1f, y2+0.1f, collision_height, direction, regionp);
@@ -787,8 +787,8 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 				gGL.color4f(1.f, 1.f, 1.f, alpha);
 
 				if ((pos_x - x1) > 0) direction = WEST_MASK;
-				else 		direction = EAST_MASK;
-				
+				else		direction = EAST_MASK;
+
 				// avoid Z fighting
 				renderOneSegment(x1+0.1f, y1+0.1f, x2+0.1f, y2+0.1f, collision_height, direction, regionp);
 			}
@@ -849,7 +849,7 @@ void LLViewerObjectList::renderObjectBeacons()
 
 		S32 last_line_width = -1;
 		// gGL.begin(LLRender::LINES); // Always happens in (line_width != last_line_width)
-		
+
 		for (std::vector<LLDebugBeacon>::iterator iter = mDebugBeacons.begin(); iter != mDebugBeacons.end(); ++iter)
 		{
 			const LLDebugBeacon &debug_beacon = *iter;
@@ -864,7 +864,7 @@ void LLViewerObjectList::renderObjectBeacons()
 			}
 
 			const LLVector3 &thisline = debug_beacon.mPositionAgent;
-		
+
 			gGL.begin(LLRender::LINES);
 			gGL.color4fv(color.mV);
 			gGL.vertex3f(thisline.mV[VX],thisline.mV[VY],thisline.mV[VZ] - 50.f);
@@ -875,7 +875,7 @@ void LLViewerObjectList::renderObjectBeacons()
 			gGL.vertex3f(thisline.mV[VX],thisline.mV[VY] + 2.f,thisline.mV[VZ]);
 
 			draw_line_cube(0.10f, thisline);
-			
+
 			gGL.end();
 		}
 	}
@@ -883,10 +883,10 @@ void LLViewerObjectList::renderObjectBeacons()
 	{
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 		LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE);
-		
+
 		S32 last_line_width = -1;
 		// gGL.begin(LLRender::LINES); // Always happens in (line_width != last_line_width)
-		
+
 		for (std::vector<LLDebugBeacon>::iterator iter = mDebugBeacons.begin(); iter != mDebugBeacons.end(); ++iter)
 		{
 			const LLDebugBeacon &debug_beacon = *iter;
@@ -913,7 +913,7 @@ void LLViewerObjectList::renderObjectBeacons()
 
 			gGL.end();
 		}
-		
+
 		gGL.flush();
 		glLineWidth(1.f);
 
@@ -938,5 +938,3 @@ void LLViewerObjectList::renderObjectBeacons()
 		}
 	}
 }
-
-
