@@ -138,8 +138,20 @@ if (LINUX)
       -fvisibility=hidden
 #      -g
       -pthread
-      -march=native
-      -O3
+#      -march=native
+#
+      -maes
+      -mmmx
+      -mpopcnt
+      -msse
+      -msse2
+      -msse3
+      -msse4.1
+      -msse4.2
+      -mssse3
+#
+      -O2
+      -fstack-protector
       -fomit-frame-pointer
 
       -finline-functions
@@ -224,10 +236,10 @@ if (LINUX)
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
-    if (NOT STANDALONE)
-      # this stops us requiring a really recent glibc at runtime
-      add_definitions(-fno-stack-protector)
-    endif (NOT STANDALONE)
+    # if (NOT STANDALONE)
+    #   # this stops us requiring a really recent glibc at runtime
+    #   add_definitions(-fno-stack-protector)
+    # endif (NOT STANDALONE)
     if (${ARCH} STREQUAL "x86_64")
       add_definitions(-DLINUX64=1 -pipe)
       set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fomit-frame-pointer -ffast-math -funroll-loops")
@@ -246,10 +258,10 @@ if (LINUX)
       set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
     endif (${ARCH} STREQUAL "x86_64")
   elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    if (NOT STANDALONE)
-      # this stops us requiring a really recent glibc at runtime
-      add_definitions(-fno-stack-protector)
-    endif (NOT STANDALONE)
+    # if (NOT STANDALONE)
+    #   # this stops us requiring a really recent glibc at runtime
+    #   add_definitions(-fno-stack-protector)
+    # endif (NOT STANDALONE)
 
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}${MARCH_FLAG} -fno-inline -msse2")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}${MARCH_FLAG} -fno-inline -msse2")
@@ -259,10 +271,10 @@ if (LINUX)
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -msse2")
   elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
 
-    if (NOT STANDALONE)
-      # this stops us requiring a really recent glibc at runtime
-      add_definitions(-fno-stack-protector)
-    endif (NOT STANDALONE)
+    # if (NOT STANDALONE)
+    #   # this stops us requiring a really recent glibc at runtime
+    #   add_definitions(-fno-stack-protector)
+    # endif (NOT STANDALONE)
 
     if (NOT STANDALONE)
       set(MARCH_FLAG " -axsse4.1 -msse2")
