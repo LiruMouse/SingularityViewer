@@ -470,12 +470,6 @@ S32 LLParcel::blockAccess(const LLUUID& agent_id, const LLUUID& group_id,
 		return BA_ALLOWED;
 	}
 
-	static const LLCachedControl<bool> RtyShowBanLinesFar("RtyShowBanLinesFar");
-	if(RtyShowBanLinesFar && !getParcelFlag(PF_ALLOW_ALL_OBJECT_ENTRY))
-	{
-		return BA_BANNED;
-	}
-    
 	// Special case when using pass list where group access is being restricted but not 
 	// using access list.	 In this case group members are allowed only if they buy a pass.
 	// We return BA_NOT_IN_LIST if not in list

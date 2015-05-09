@@ -110,7 +110,6 @@ const S32 BA_NOT_ON_LIST = 2;
 const S32 BA_BANNED = 3;
 const S32 BA_NO_ACCESS_LEVEL = 4;
 const S32 BA_NOT_AGE_VERIFIED = 5;
-const S32 BA_ON_OBJECT = 6;
 
 // ParcelRelease flags
 const U32 PR_NONE		= 0x0;
