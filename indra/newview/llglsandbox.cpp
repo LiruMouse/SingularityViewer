@@ -677,8 +677,6 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 	LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE);
 	LLGLDisable cull(GL_CULL_FACE);
 
-	static const LLCachedControl<bool> RtyShowBanLinesFar("RtyShowBanLinesFar");
-	
 	if (mCollisionBanned == BA_BANNED ||
 		regionp->getRegionFlag(REGION_FLAGS_BLOCK_FLYOVER))
 	{
@@ -698,6 +696,8 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 	{
 		gGL.getTexUnit(0)->bind(mBlockedImage);
 	}
+
+	static const LLCachedControl<bool> RtyShowBanLinesFar("RtyShowBanLinesFar");
 
 	gGL.begin(LLRender::QUADS);
 
