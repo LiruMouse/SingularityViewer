@@ -29,7 +29,7 @@
 <LoginProgressBoxTextColor value="255, 255, 255, 255"/>
 
 <!-- BUTTONS -->
-<ButtonLabelColor value="255, 255, 255, 255" /> 	<!-- Text labels for buttons, like the "OK" text -->
+<ButtonLabelColor value="255, 255, 255, 200" /> 	<!-- Text labels for buttons, like the "OK" text -->
 <ButtonLabelSelectedColor value="255, 255, 255, 255" />
 <ButtonLabelDisabledColor value="255, 255, 255, 128" />
 <ButtonLabelSelectedDisabledColor value="255, 255, 255, 128" />
@@ -53,10 +53,10 @@
 <TextBgReadOnlyColor value="11, 11, 11, 160" />	        <!-- Text field background when read-only -->
 <TextBgWriteableColor value="11, 11, 11, 80" />	<!-- Text field background when not receiving input (unfocused) -->
 <TextCursorColor value="128, 128, 128, 200" />
-<TextFgColor value="255, 255, 255, 222" />
-<TextFgReadOnlyColor value="255, 255, 255, 80" />
-<TextFgTentativeColor value="255, 255, 255, 80" />
-<TextEmbeddedItemReadOnlyColor value="255, 255, 255, 80" />	<!-- i.e. About Land name that you don't own -->
+<TextFgColor value="255, 255, 255, 255" />
+<TextFgReadOnlyColor value="255, 255, 255, 128" />
+<TextFgTentativeColor value="255, 255, 255, 128" />
+<TextEmbeddedItemReadOnlyColor value="255, 255, 255, 128" />	<!-- i.e. About Land name that you don't own -->
 <TextEmbeddedItemColor value="0, 255, 128, 255" />
 <TextDefaultColor value="0, 255, 0, 255"/>
 <TextLinkColor value="144, 165, 208, 255"/>
