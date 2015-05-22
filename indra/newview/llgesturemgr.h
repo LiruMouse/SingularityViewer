@@ -103,8 +103,8 @@ public:
 	const item_map_t& getActiveGestures() const { return mActive; }
 	// Force a gesture to be played, for example, if it is being
 	// previewed.
-	void playGesture(LLMultiGesture* gesture);
-	void playGesture(const LLUUID& item_id);
+	void playGesture(LLMultiGesture* gesture, bool local = false);
+	void playGesture(const LLUUID& item_id, bool local = false);
 
 	// Stop all requested or playing anims for this gesture
 	// Also remove from playing list

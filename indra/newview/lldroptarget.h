@@ -76,13 +76,13 @@ public:
 
 	void setChildRects(LLRect rect);
 	void fillParent(const LLView* parent);
-	void setEntityID(const LLUUID& id) { mEntityID = id;}
+	void setEntityID(const LLUUID& id) { mID = id; }
 
 protected:
 	virtual void setItem(const class LLInventoryItem* item);
 	void setControlValue(const std::string& val);
 
-	LLUUID mEntityID;
+	LLUUID mID;
 	class LLViewBorder* mBorder;
 	LLControlVariable* mControl;
 	boost::signals2::scoped_connection mConnection;

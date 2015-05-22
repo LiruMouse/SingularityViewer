@@ -7325,6 +7325,16 @@ class LLToggleControl : public view_listener_t
 	}
 };
 
+class LLTogglePerAccountControl : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLControlVariable* control(gSavedPerAccountSettings.getControl(userdata.asString()));
+		control->set(!control->get());
+		return true;
+	}
+};
+
 BOOL menu_check_control( void* user_data)
 {
 	return gSavedSettings.getBOOL((char*)user_data);
@@ -9448,6 +9458,7 @@ void initialize_menus()
 	addMenu(new LLPromptShowURL(), "PromptShowURL");
 	addMenu(new LLShowAgentProfile(), "ShowAgentProfile");
 	addMenu(new LLToggleControl(), "ToggleControl");
+	addMenu(new LLTogglePerAccountControl(), "TogglePerAccountControl");
 
 	addMenu(new LLGoToObject(), "GoToObject");
 	addMenu(new LLPayObject(), "PayObject");

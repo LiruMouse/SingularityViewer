@@ -41,6 +41,7 @@
 #include "lluictrlfactory.h"
 
 #include "llagent.h"
+#include "llagentcamera.h"
 #include "lltracker.h"
 #include "llviewerobjectlist.h"
 
@@ -84,6 +85,8 @@ BOOL JCFloaterAreaSearch::postBuild()
 
 	getChild<LLButton>("Refresh")->setClickedCallback(boost::bind(&JCFloaterAreaSearch::onRefresh,this));
 	getChild<LLButton>("Stop")->setClickedCallback(boost::bind(&JCFloaterAreaSearch::onStop,this));
+	getChild<LLButton>("TP")->setClickedCallback(boost::bind(&JCFloaterAreaSearch::teleportToSelected, this));
+	getChild<LLButton>("Look")->setClickedCallback(boost::bind(&JCFloaterAreaSearch::lookAtSelected, this));
 
 	getChild<LLFilterEditor>("Name query chunk")->setCommitCallback(boost::bind(&JCFloaterAreaSearch::onCommitLine,this,_1,_2,LIST_OBJECT_NAME));
 	getChild<LLFilterEditor>("Description query chunk")->setCommitCallback(boost::bind(&JCFloaterAreaSearch::onCommitLine,this,_1,_2,LIST_OBJECT_DESC));
@@ -113,21 +116,31 @@ void JCFloaterAreaSearch::checkRegion(bool force_clear)
 	}
 }
 
+LLViewerObject* JCFloaterAreaSearch::getSelectedObject()
+{
+	if (LLScrollListItem* item = mResultList->getFirstSelected())
+		return gObjectList.findObject(item->getUUID());
+	return NULL;
+}
+
 void JCFloaterAreaSearch::onDoubleClick()
 {
-	LLScrollListItem *item = mResultList->getFirstSelected();
-	if (!item) return;
-	LLUUID object_id = item->getUUID();
-	std::map<LLUUID,ObjectData>::iterator it = mCachedObjects.find(object_id);
-	if(it != mCachedObjects.end())
-	{
-		LLViewerObject* objectp = gObjectList.findObject(object_id);
-		if (objectp)
-		{
-			LLTracker::trackLocation(objectp->getPositionGlobal(), it->second.name, "", LLTracker::LOCATION_ITEM);
-		}
-	}
+	if (LLViewerObject* objectp = getSelectedObject())
+		LLTracker::trackLocation(objectp->getPositionGlobal(), mCachedObjects[objectp->getID()].name, "", LLTracker::LOCATION_ITEM);
 }
+
+void JCFloaterAreaSearch::teleportToSelected()
+{
+	if (LLViewerObject* objectp = getSelectedObject())
+		gAgent.teleportViaLocation(objectp->getPositionGlobal());
+}
+
+void JCFloaterAreaSearch::lookAtSelected()
+{
+	if (LLScrollListItem* item = mResultList->getFirstSelected())
+		gAgentCamera.lookAtObject(item->getUUID(), false);
+}
+
 
 void JCFloaterAreaSearch::onStop()
 {

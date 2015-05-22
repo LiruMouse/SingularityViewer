@@ -49,6 +49,7 @@ LLMultiGesture::LLMultiGesture()
 	mReplaceText(),
 	mSteps(),
 	mPlaying(FALSE),
+	mLocal(false),
 	mCurrentStep(0),
 	mDoneCallback(NULL)
 {
@@ -63,6 +64,7 @@ LLMultiGesture::~LLMultiGesture()
 void LLMultiGesture::reset()
 {
 	mPlaying = FALSE;
+	mLocal = false;
 	mCurrentStep = 0;
 	mWaitTimer.reset();
 	mWaitingTimer = FALSE;

@@ -189,7 +189,7 @@ void LLToolGun::draw()
 					LLAvatarNameCache::get(id, &avatarName);
 					bool name_restricted = gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES);
 					getCustomColorRLV(id, targetColor, world.getRegionFromPosGlobal(targetPosition), name_restricted);
-					const std::string name(name_restricted ? RlvStrings::getAnonym(avatarName) : avatarName.getNSName());
+					const std::string name(name_restricted ? RlvStrings::getAnonym(avatarName.getNSName()) : avatarName.getNSName());
 					targetColor.mV[VALPHA] = 0.5f;
 					LLFontGL::getFontSansSerifBold()->renderUTF8(
 						gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC) ? name : llformat("%s : %.2fm", name.c_str(), (targetPosition - myPosition).magVec()),

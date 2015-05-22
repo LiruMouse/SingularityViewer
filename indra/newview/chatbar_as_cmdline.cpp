@@ -667,3 +667,30 @@ void cmdline_printchat(const std::string& message)
 	LLFloaterChat::addChat(chat);
 }
 
+static void fake_local_chat(LLChat chat, const std::string& name)
+{
+	chat.mFromName = name;
+	chat.mText = name + chat.mText;
+	LLFloaterChat::addChat(chat);
+}
+void fake_local_chat(std::string msg)
+{
+	bool action(LLStringUtil::startsWith(msg, "/me") && (msg[3] == ' ' || msg[3] == '\''));
+	if (action) msg.erase(0, 4);
+	LLChat chat((action ? " " : ": ") + msg);
+	chat.mFromID = gAgentID;
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+	if (rlv_handler_t::isEnabled()) chat.mRlvLocFiltered = chat.mRlvNamesFiltered = true;
+	chat.mPosAgent = gAgent.getPositionAgent();
+	chat.mURL = "secondlife:///app/agent/" + gAgentID.asString() + "/about";
+	if (action) chat.mChatStyle = CHAT_STYLE_IRC;
+	if (!LLAvatarNameCache::getNSName(gAgentID, chat.mFromName))
+	{
+		LLAvatarNameCache::get(gAgentID, boost::bind(fake_local_chat, chat, boost::bind(&LLAvatarName::getNSName, _2, main_name_system())));
+	}
+	else
+	{
+		chat.mText = chat.mFromName + chat.mText;
+		LLFloaterChat::addChat(chat);
+	}
+}

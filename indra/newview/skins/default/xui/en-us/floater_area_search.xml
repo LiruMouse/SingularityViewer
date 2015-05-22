@@ -39,12 +39,12 @@
     	<column name="Owner" label="Owner" dynamicwidth="true" tool_tip="Double click on any entry to get a position beacon"/>
 		<column name="Group" label="Group" dynamicwidth="true" tool_tip="Double click on any entry to get a position beacon"/>
 	</scroll_list>
-	<button name="Refresh" label="Refresh" font="SansSerif" mouse_opaque="true"
-		height="20" width="80" left="10" bottom="6" follows="left|bottom"/>
-	<button name="Stop" label="Stop" font="SansSerif" mouse_opaque="true"
-		height="20" width="80" left_delta="85" bottom="6" follows="left|bottom"/>
+	<button name="TP" label="TP" height="20" width="40" left="10" bottom="6" follows="left|bottom"/>
+	<button name="Look" label="Look" height="20" width="60" left_delta="40" bottom="6" follows="left|bottom"/>
+	<button name="Refresh" label="" image_overlay="go-reload.png" height="20" width="20" left_delta="65" bottom="6" follows="left|bottom"/>
+	<button name="Stop" label="" image_overlay="go-stop.png" height="20" width="20" left_delta="20" bottom="6" follows="left|bottom"/>
 	<text name="counter"
-		height="15" width="220" left_delta="85" bottom="9" follows="left|bottom">
+		height="15" width="220" left_delta="25" bottom="9" follows="left|bottom">
 		Listed/Pending/Total
 	</text>
 </floater>

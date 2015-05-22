@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater bottom="27" can_close="true" can_drag_on_left="false" can_minimize="false" can_resize="true" can_tear_off="true" enabled="true" height="175" left="15"
+<floater bottom="27" can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="true" can_tear_off="true" enabled="true" height="175" left="15"
      min_height="100" min_width="425" name="chat floater" control_name="ShowChatHistory" rect_control="FloaterChatRect" title="Local Chat" width="435">
 	<string name="ringing">Connecting to in-world Voice Chat...</string>
 	<string name="connected">Connected</string>

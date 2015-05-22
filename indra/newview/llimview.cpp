@@ -107,6 +107,13 @@ LLColor4 agent_chat_color(const LLUUID& id, const std::string& name, bool local_
 	return local_chat ? gSavedSettings.getColor4("AgentChatColor") : gSavedSettings.getColor("IMChatColor");
 }
 
+bool block_conference(const LLUUID& id)
+{
+	const U32 block(gSavedSettings.getU32("LiruBlockConferences"));
+	if (block == 2) return !LLAvatarActions::isFriend(id);
+	return block;
+}
+
 
 class LLViewerChatterBoxInvitationAcceptResponder : public LLHTTPClient::ResponderWithResult
 {
@@ -456,7 +463,7 @@ void LLIMMgr::addMessage(
 	{
 		// Return now if we're blocking this group's chat or conferences
 		bool hasgroup = gAgent.isInGroup(session_id);
-		if (hasgroup ? getIgnoreGroup(session_id) : dialog != IM_NOTHING_SPECIAL && dialog != IM_SESSION_P2P_INVITE && gSavedSettings.getBOOL("LiruBlockConferences"))
+		if (hasgroup ? getIgnoreGroup(session_id) : dialog != IM_NOTHING_SPECIAL && dialog != IM_SESSION_P2P_INVITE && block_conference(other_participant_id))
 			return;
 
 		// if this is a group session, append the floater at the right
@@ -1595,7 +1602,7 @@ public:
 			}
 			else
 			{
-				if (from_id != session_id && gSavedSettings.getBOOL("LiruBlockConferences")) // from and session are equal for IMs only.
+				if (from_id != session_id && block_conference(from_id)) // from and session are equal for IMs only.
 				{
 					leave_group_chat(from_id, session_id);
 					return;

@@ -648,11 +648,11 @@
     <key>LiruBlockConferences</key>
     <map>
       <key>Comment</key>
-      <string>When true, new incoming conference chats will not be opened.</string>
+      <string>When not zero, new incoming conference chats will not be opened, if 2 only those from nonfriends will be blocked.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
-      <string>Boolean</string>
+      <string>U32</string>
       <key>Value</key>
       <integer>0</integer>
     </map>

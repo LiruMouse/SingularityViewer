@@ -173,4 +173,8 @@ void LLFlyoutButton::setToggleState(BOOL state)
 	mToggleState = state;
 }
 
+void LLFlyoutButton::setLabel(const std::string& label)
+{
+	mActionButton->setLabel(label);
+}
 

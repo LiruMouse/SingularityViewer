@@ -61,6 +61,8 @@
 #include "shcommandhandler.h"
 #endif //shy_mod
 
+void fake_local_chat(std::string msg);
+
 // Longest time, in seconds, to wait for all animations to stop playing
 const F32 MAX_WAIT_ANIM_SECS = 30.f;
 
@@ -522,7 +524,7 @@ void LLGestureMgr::replaceGesture(const LLUUID& item_id, const LLUUID& new_asset
 	LLGestureMgr::instance().replaceGesture(base_item_id, gesture, new_asset_id);
 }
 
-void LLGestureMgr::playGesture(LLMultiGesture* gesture)
+void LLGestureMgr::playGesture(LLMultiGesture* gesture, bool local)
 {
 	if (!gesture) return;
 
@@ -531,6 +533,7 @@ void LLGestureMgr::playGesture(LLMultiGesture* gesture)
 
 	// Add to list of playing
 	gesture->mPlaying = TRUE;
+	gesture->mLocal = local;
 	mPlaying.push_back(gesture);
 
 	// Load all needed assets to minimize the delays
@@ -608,7 +611,7 @@ void LLGestureMgr::playGesture(LLMultiGesture* gesture)
 
 
 // Convenience function that looks up the item_id for you.
-void LLGestureMgr::playGesture(const LLUUID& item_id)
+void LLGestureMgr::playGesture(const LLUUID& item_id, bool local)
 {
 	const LLUUID& base_item_id = get_linked_uuid(item_id);
 
@@ -826,8 +829,7 @@ void LLGestureMgr::stepGesture(LLMultiGesture* gesture)
 	{
 		// look in signaled animations (simulator's view of what is
 		// currently playing.
-		LLVOAvatar::AnimIterator play_it = gAgentAvatarp->mSignaledAnimations.find(*gest_it);
-		if (play_it != gAgentAvatarp->mSignaledAnimations.end())
+		if (gesture->mLocal ? !!gAgentAvatarp->findMotion(*gest_it) : (gAgentAvatarp->mSignaledAnimations.find(*gest_it) != gAgentAvatarp->mSignaledAnimations.end()))
 		{
 			++gest_it;
 		}
@@ -970,21 +972,37 @@ void LLGestureMgr::runStep(LLMultiGesture* gesture, LLGestureStep* step)
 
 			if (anim_step->mFlags & ANIM_FLAG_STOP)
 			{
-				gAgent.sendAnimationRequest(anim_step->mAnimAssetID, ANIM_REQUEST_STOP);
-				// remove it from our request set in case we just requested it
-				std::set<LLUUID>::iterator set_it = gesture->mRequestedAnimIDs.find(anim_step->mAnimAssetID);
-				if (set_it != gesture->mRequestedAnimIDs.end())
+				if (gesture->mLocal)
 				{
-					gesture->mRequestedAnimIDs.erase(set_it);
+					gAgentAvatarp->stopMotion(anim_step->mAnimAssetID);
+				}
+				else
+				{
+					gAgent.sendAnimationRequest(anim_step->mAnimAssetID, ANIM_REQUEST_STOP);
+					// remove it from our request set in case we just requested it
+					std::set<LLUUID>::iterator set_it = gesture->mRequestedAnimIDs.find(anim_step->mAnimAssetID);
+					if (set_it != gesture->mRequestedAnimIDs.end())
+					{
+						gesture->mRequestedAnimIDs.erase(set_it);
+					}
 				}
 			}
 			else
 			{
-				gAgent.sendAnimationRequest(anim_step->mAnimAssetID, ANIM_REQUEST_START);
-				// Indicate that we've requested this animation to play as
-				// part of this gesture (but it won't start playing for at
-				// least one round-trip to simulator).
-				gesture->mRequestedAnimIDs.insert(anim_step->mAnimAssetID);
+				if (gesture->mLocal)
+				{
+					gAgentAvatarp->startMotion(anim_step->mAnimAssetID);
+					// Indicate we're playing this animation now.
+					gesture->mPlayingAnimIDs.insert(anim_step->mAnimAssetID);
+				}
+				else
+				{
+					gAgent.sendAnimationRequest(anim_step->mAnimAssetID, ANIM_REQUEST_START);
+					// Indicate that we've requested this animation to play as
+					// part of this gesture (but it won't start playing for at
+					// least one round-trip to simulator).
+					gesture->mRequestedAnimIDs.insert(anim_step->mAnimAssetID);
+				}
 			}
 			gesture->mCurrentStep++;
 			break;
@@ -994,7 +1012,10 @@ void LLGestureMgr::runStep(LLMultiGesture* gesture, LLGestureStep* step)
 			LLGestureStepSound* sound_step = (LLGestureStepSound*)step;
 			const LLUUID& sound_id = sound_step->mSoundAssetID;
 			const F32 volume = 1.f;
-			send_sound_trigger(sound_id, volume);
+			if (gesture->mLocal)
+				gAudiop->triggerSound(sound_id, gAgentID, volume, LLAudioEngine::AUDIO_TYPE_UI, gAgent.getPositionGlobal());
+			else
+				send_sound_trigger(sound_id, volume);
 			gesture->mCurrentStep++;
 			break;
 		}
@@ -1011,7 +1032,7 @@ void LLGestureMgr::runStep(LLMultiGesture* gesture, LLGestureStep* step)
 #if SHY_MOD //Command handler
 				if(!SHCommandHandler::handleCommand(true, chat_text, gAgentID, gAgentAvatarp))//returns true if handled
 #endif //shy_mod
-				gChatBar->sendChatFromViewer(chat_text, CHAT_TYPE_NORMAL, animate);
+				gesture->mLocal ? fake_local_chat(chat_text) : gChatBar->sendChatFromViewer(chat_text, CHAT_TYPE_NORMAL, animate);
 			}
 			gesture->mCurrentStep++;
 			break;
@@ -1284,7 +1305,10 @@ void LLGestureMgr::stopGesture(LLMultiGesture* gesture)
 	for (set_it = gesture->mPlayingAnimIDs.begin(); set_it != gesture->mPlayingAnimIDs.end(); ++set_it)
 	{
 		const LLUUID& anim_id = *set_it;
-		gAgent.sendAnimationRequest(anim_id, ANIM_REQUEST_STOP);
+		if (gesture->mLocal)
+			gAgentAvatarp->stopMotion(anim_id, TRUE);
+		else
+			gAgent.sendAnimationRequest(anim_id, ANIM_REQUEST_STOP);
 	}
 
 	std::vector<LLMultiGesture*>::iterator it;

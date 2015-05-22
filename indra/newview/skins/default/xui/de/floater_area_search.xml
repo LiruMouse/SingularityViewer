@@ -14,7 +14,5 @@
     	<column name="Owner" label="Eigentümer" tool_tip="Auf Eintrag doppelklicken, um Leuchtmarkierung auf Objektposition zu setzen."/>
 		<column name="Group" label="Gruppe" tool_tip="Auf Eintrag doppelklicken, um Leuchtmarkierung auf Objektposition zu setzen."/>
 	</scroll_list>
-	<button name="Refresh" label="Aktualisieren"/>
-	<button name="Stop" label="Stop"/>
 	<text name="counter">Gelistet/Offen/Total</text>
 </floater>

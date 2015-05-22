@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="Give Money" title="">
-	<button label="1 [CURRENCY]" label_selected="1 [CURRENCY]" name="fastpay 1"/>
-	<button label="5 [CURRENCY]" label_selected="5 [CURRENCY]" name="fastpay 5"/>
-	<button label="10 [CURRENCY]" label_selected="10 [CURRENCY]" name="fastpay 10"/>
-	<button label="20 [CURRENCY]" label_selected="20 [CURRENCY]" name="fastpay 20"/>
+	<button label="1 [CURRENCY]" name="fastpay 1"/>
+	<button label="5 [CURRENCY]" name="fastpay 5"/>
+	<button label="10 [CURRENCY]" name="fastpay 10"/>
+	<button label="20 [CURRENCY]" name="fastpay 20"/>
 	<button label="Payer" label_selected="Payer" name="pay btn"/>
 	<button label="Annuler" label_selected="Annuler" name="cancel btn"/>
 	<text name="payee_label" left="5">

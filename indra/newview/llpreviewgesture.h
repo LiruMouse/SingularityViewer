@@ -137,7 +137,7 @@ protected:
 
 	void onCommitActive();
 	void onClickSave();
-	void onClickPreview();
+	void onClickPreview(bool local);
 
 	void onDonePreview(LLMultiGesture* gesture);
 
@@ -170,7 +170,7 @@ protected:
 
 	LLCheckBoxCtrl*		mActiveCheck;
 	LLButton*			mSaveBtn;
-	LLButton*			mPreviewBtn;
+	class LLFlyoutButton* mPreviewBtn;
 
 	LLMultiGesture*		mPreviewGesture;
 	BOOL mDirty;

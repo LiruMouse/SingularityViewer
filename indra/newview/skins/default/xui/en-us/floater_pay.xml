@@ -4,16 +4,16 @@
      min_width="100" mouse_opaque="true" name="Give Money"
      rect_control="FloaterPayRectB" title="" width="300">
     <button bottom="-54" enabled="true" font="SansSerif" halign="center" height="20"
-	     label="L$1" label_selected="L$1" left="108" mouse_opaque="true"
+	     label="[CURRENCY]1" left="108" mouse_opaque="true"
 	     name="fastpay 1" scale_image="true" width="80" />
     <button bottom="-54" enabled="true" font="SansSerif" halign="center" height="20"
-	     label="L$5" label_selected="L$5" left="203" mouse_opaque="true"
+	     label="[CURRENCY]5" left="203" mouse_opaque="true"
 	     name="fastpay 5" scale_image="true" width="80" />
     <button bottom="-78" enabled="true" font="SansSerif" halign="center" height="20"
-	     label="L$10" label_selected="L$10" left="108" mouse_opaque="true"
+	     label="[CURRENCY]10" left="108" mouse_opaque="true"
 	     name="fastpay 10" scale_image="true" width="80" />
     <button bottom="-78" enabled="true" font="SansSerif" halign="center" height="20"
-	     label="L$20" label_selected="L$20" left="203" mouse_opaque="true"
+	     label="[CURRENCY]20" left="203" mouse_opaque="true"
 	     name="fastpay 20" scale_image="true" width="80" />
     <button bottom="-142" enabled="false" font="SansSerif" halign="center" height="20"
 	     label="Pay" label_selected="Pay" left="140" mouse_opaque="true"

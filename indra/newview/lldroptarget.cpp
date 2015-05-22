@@ -253,8 +253,8 @@ void LLDropTarget::doDrop(EDragAndDropType cargo_type, void* cargo_data)
 
 BOOL LLDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop, EDragAndDropType cargo_type, void* cargo_data, EAcceptance* accept, std::string& tooltip_msg)
 {
-	if (mEntityID.notNull())
-		return getParent() ? LLToolDragAndDrop::handleGiveDragAndDrop(mEntityID, LLUUID::null, drop, cargo_type, cargo_data, accept) : false;
+	if (mID.notNull())
+		return getParent() ? LLToolDragAndDrop::handleGiveDragAndDrop(mID, LLUUID::null, drop, cargo_type, cargo_data, accept) : false;
 
 	if (LLViewerInventoryItem* inv_item = static_cast<LLViewerInventoryItem*>(cargo_data))
 	{

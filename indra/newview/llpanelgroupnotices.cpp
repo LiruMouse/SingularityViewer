@@ -124,7 +124,7 @@ BOOL LLGroupDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 {
 	BOOL handled = FALSE;
 
-	if (!gAgent.hasPowerInGroup(mEntityID,GP_NOTICES_SEND))
+	if (!gAgent.hasPowerInGroup(mID,GP_NOTICES_SEND))
 	{
 		*accept = ACCEPT_NO;
 		return TRUE;

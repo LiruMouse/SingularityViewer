@@ -2426,7 +2426,9 @@ LLControlVariable *LLView::findControl(const std::string& name)
 	{
 		return mParentView->findControl(name);
 	}
-	return LLUI::sConfigGroup->getControl(name);
+	if (LLControlVariable* control = LLUI::sConfigGroup->getControl(name))
+		return control;
+	return LLUI::sAccountGroup->getControl(name);
 }
 
 const S32 FLOATER_H_MARGIN = 15;
@@ -2926,7 +2928,7 @@ bool LLView::setControlValue(const LLSD& value)
 	std::string ctrlname = getControlName();
 	if (!ctrlname.empty())
 	{
-		LLUI::sConfigGroup->setUntypedValue(ctrlname, value);
+		LLUI::getControlControlGroup(ctrlname).setUntypedValue(ctrlname, value);
 		return true;
 	}
 	return false;

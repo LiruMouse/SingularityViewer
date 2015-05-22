@@ -18,8 +18,6 @@
 		<column name="Owner" label="Propriétaire" tool_tip="Double-clic pour obtenir la position."/>
 		<column name="Group" label="Groupe" tool_tip="Double-clic pour obtenir la position."/>
 	</scroll_list>
-	<button name="Refresh" label="Rafraichir"/>
-	<button name="Stop" label="Stop"/>
 	<text name="counter">
 		Liste/Attente/Total
 	</text>

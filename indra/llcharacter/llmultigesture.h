@@ -79,6 +79,9 @@ public:
 	// Is the gesture currently playing?
 	BOOL mPlaying;
 
+	// Is the gesture to be played locally?
+	bool mLocal;
+
 	// "instruction pointer" for steps
 	S32 mCurrentStep;
 

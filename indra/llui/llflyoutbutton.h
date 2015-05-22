@@ -45,6 +45,7 @@ public:
 	virtual void	setEnabled(BOOL enabled);
 
 	void setToggleState(BOOL state);
+	void setLabel(const std::string& label); // Not to be confused with LLComboBox::setLabel
 
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
 	static LLView* fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFactory* factory);

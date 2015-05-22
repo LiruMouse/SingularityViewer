@@ -533,6 +533,7 @@ void LLNotifyBox::close()
 	die();
 	if (not_tip)
 	{
+		--sNotifyBoxCount;
 		if (LLNotifyBox* front = gNotifyBoxView->getFirstNontipBox())
 		{
 			gNotifyBoxView->showOnly(front);
@@ -541,7 +542,6 @@ void LLNotifyBox::close()
 				view->setFocus(true);
 			gFocusMgr.triggerFocusFlash(); // TODO it's ugly to call this here
 		}
-		--sNotifyBoxCount;
 	}
 }
 

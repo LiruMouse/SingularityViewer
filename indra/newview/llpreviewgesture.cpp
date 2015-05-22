@@ -44,6 +44,7 @@
 #include "lldatapacker.h"
 #include "lldelayedgestureerror.h"
 #include "llfloatergesture.h" // for some label constants
+#include "llflyoutbutton.h"
 #include "llgesturemgr.h"
 #include "llinventorydefines.h"
 #include "llinventoryfunctions.h"
@@ -493,17 +494,17 @@ BOOL LLPreviewGesture::postBuild()
 	mWaitTimeEditor = edit;
 
 	// Buttons at the bottom
-	check = getChild<LLCheckBoxCtrl>( "active_check");
+	check = getChild<LLCheckBoxCtrl>("active_check");
 	check->setCommitCallback(boost::bind(&LLPreviewGesture::onCommitActive,this));
 	mActiveCheck = check;
 
-	btn = getChild<LLButton>( "save_btn");
+	btn = getChild<LLButton>("save_btn");
 	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickSave,this));
 	mSaveBtn = btn;
 
-	btn = getChild<LLButton>( "preview_btn");
-	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickPreview,this));
-	mPreviewBtn = btn;
+	LLFlyoutButton* flyout = getChild<LLFlyoutButton>("preview_btn");
+	flyout->setCommitCallback(boost::bind(&LLPreviewGesture::onClickPreview, this, _2));
+	mPreviewBtn = flyout;
 
 
 	// Populate the comboboxes
@@ -1740,7 +1741,7 @@ void LLPreviewGesture::onClickSave()
 	saveIfNeeded();
 }
 
-void LLPreviewGesture::onClickPreview()
+void LLPreviewGesture::onClickPreview(bool local)
 {
 	if (!mPreviewGesture)
 	{
@@ -1754,17 +1755,15 @@ void LLPreviewGesture::onClickPreview()
 		mPreviewBtn->setLabel(getString("stop_txt"));
 
 		// play it, and delete when done
-		LLGestureMgr::instance().playGesture(mPreviewGesture);
-
-		refresh();
+		LLGestureMgr::instance().playGesture(mPreviewGesture, local);
 	}
 	else
 	{
 		// Will call onDonePreview() below
 		LLGestureMgr::instance().stopGesture(mPreviewGesture);
-
-		refresh();
 	}
+
+	refresh();
 }
 
 

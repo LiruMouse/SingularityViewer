@@ -101,8 +101,10 @@ unless you add wait steps.
 	     name="active_check"
 	     tool_tip="Active gestures can be triggered by chatting their trigger phrases or pressing their hot keys.  Gestures usually become inactive when there is a key binding conflict."
 	     width="100" />
-	<button bottom="5" follows="top|left" height="20" label="Preview" left_delta="80"
-	     name="preview_btn" width="80" />
+	<flyout_button bottom="5" follows="top|left" height="20" label="Preview" left_delta="80"
+	     name="preview_btn" width="90">
+		<flyout_button_item value="true" name="Local" label="Local Preview"/>
+	</flyout_button>
 	<button bottom="5" follows="top|left" height="20" label="Save" left_delta="90"
 	     name="save_btn" width="80" />
 </floater>

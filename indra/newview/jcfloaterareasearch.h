@@ -72,7 +72,10 @@ private:
 	void onRefresh();
 	void onCommitLine(LLUICtrl* caller, const LLSD& value, OBJECT_COLUMN_ORDER type);
 	bool requestIfNeeded(LLUUID object_id);
+	class LLViewerObject* getSelectedObject();
 	void onDoubleClick();
+	void teleportToSelected();
+	void lookAtSelected();
 
 	LLTextBox* mCounterText;
 	LLScrollListCtrl* mResultList;
