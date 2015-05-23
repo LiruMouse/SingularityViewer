@@ -876,6 +876,8 @@ void LLFloater::handleReshape(const LLRect& new_rect, bool by_user)
 				floaterp->setShape(dependent_rect, by_user);
 			}
 		}
+
+		updateButtons();
 	}
 	else
 	{
