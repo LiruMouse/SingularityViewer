@@ -497,7 +497,7 @@ void init_audio()
 bool idle_startup()
 {
 	const F32 PRECACHING_DELAY = gSavedSettings.getF32("PrecachingDelay");
-	const F32 TIMEOUT_SECONDS = 5.f;
+	const F32 TIMEOUT_SECONDS = 25.f;
 	const S32 MAX_TIMEOUT_COUNT = 3;
 	static LLTimer timeout;
 
