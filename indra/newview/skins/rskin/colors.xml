@@ -3,10 +3,10 @@
     
 <!-- WINDOWS -->
 <TitleBarFocusColor value="0, 0, 0, 0" />	<!-- Focused window title bar highlight, no equivalent for unfocused windows -->
-<FloaterFocusBorderColor value="0, 0, 0, 50" />
-<FloaterUnfocusBorderColor value="0, 0, 0, 80" />
-<FocusBackgroundColor value="15, 15, 15, 255" />	<!-- Background color of focused floaters -->
-<DefaultBackgroundColor value="15, 15, 15, 192" />	<!-- Background color for unfocused floaters -->
+<FloaterFocusBorderColor value="47, 79, 79, 255" />
+<FloaterUnfocusBorderColor value="32, 32, 32, 255" />
+<FocusBackgroundColor value="0, 0, 0, 255" />	<!-- Background color of focused floaters -->
+<DefaultBackgroundColor value="0, 0, 0, 192" />	<!-- Background color for unfocused floaters -->
 <ColorDropShadow value="0, 0, 0, 180" />		<!-- The drop shadow behind windows and menus -->
 <DefaultHighlightDark value="26, 26, 26, 255" />
 <DefaultHighlightLight value="66, 66, 66, 255" />
