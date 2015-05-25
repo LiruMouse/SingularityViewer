@@ -2,7 +2,7 @@
 <settings version = "101">
     
 <!-- WINDOWS -->
-<TitleBarFocusColor value="0, 0, 0, 0" />	<!-- Focused window title bar highlight, no equivalent for unfocused windows -->
+<TitleBarFocusColor value="47, 79, 79, 96" />	<!-- Focused window title bar highlight, no equivalent for unfocused windows -->
 <FloaterFocusBorderColor value="47, 79, 79, 255" />
 <FloaterUnfocusBorderColor value="32, 32, 32, 255" />
 <FocusBackgroundColor value="0, 0, 0, 255" />	<!-- Background color of focused floaters -->
@@ -77,15 +77,15 @@
 <DefaultListText value="255, 255, 255, 255"/>                     <!-- We are replacing all the hardcoded black text with this color so we can make skins with white text on dark background -->
 
 <!-- MENUS -->
-<MenuBarBgColor value="33, 33, 33, 255" />
+<MenuBarBgColor value="0, 0, 0, 128" />
 <MenuBarGodBgColor value="33, 33, 33, 255" />
 <MenuNonProductionGodBgColor value="0, 128, 0, 255" />
 <MenuNonProductionBgColor value="128, 0, 0, 255" />
-<MenuDefaultBgColor value="33, 33, 33, 255" />
-<MenuItemDisabledColor value="125, 125, 125, 75" />        <!-- Menu text color; also text color for pie menus and treeviews (like Inventory) -->
-<MenuItemEnabledColor value="255, 255, 255, 255" />         <!-- Menu text color; also text color for pie menus and treeviews (like Inventory) -->
-<MenuItemHighlightBgColor value="80, 80, 80, 200" />
-<MenuItemHighlightFgColor value="255, 255, 255, 255" />	    <!-- Highlighted menu text color; also treeview node selection highlight -->
+<MenuDefaultBgColor value="0, 0, 0, 192" />
+<MenuItemDisabledColor value="32, 255, 32, 200" />        <!-- Menu text color; also text color for pie menus and treeviews (like Inventory) -->
+<MenuItemEnabledColor value="0, 255, 0, 255" />         <!-- Menu text color; also text color for pie menus and treeviews (like Inventory) -->
+<MenuItemHighlightBgColor value="47, 79, 79, 128" />
+<MenuItemHighlightFgColor value="0, 255, 0, 255" />	    <!-- Highlighted menu text color; also treeview node selection highlight -->
 <MenuPopupBgColor value="33, 33, 33, 255" />
 
 <!--  PIE MENUS -->
@@ -111,6 +111,9 @@
 <ChatHistoryTextColor value="255, 255, 255, 255" />
 <IMHistoryBgColor value="0, 0, 0, 0" />
 <IMHistoryTextColor value="255, 255, 255, 255" />
+
+<IMChatColor value="0, 255, 0, 255" />
+<UserChatColor value="0, 200, 0, 255" />
 
 <!-- IN-WORLD SELECTION -->
 <SilhouetteParentColor value="255, 255, 0, 255" />
@@ -198,12 +201,12 @@
 <GroupOverTierColor value="255, 255, 255, 255" />		<!-- Warning text in Group Info window -->
 <FilterBackgroundColor value="0, 0, 0, 255" />         <!-- Matching region of Inventory search text -->
 <FilterTextColor value="255, 255, 255, 128" />
-<InventoryItemSuffixColor value="128, 128, 128, 255" />     <!-- "worn", "no modify", etc-->
+<InventoryItemSuffixColor value="0, 64, 0, 255" />     <!-- "worn", "no modify", etc-->
 <InventorySearchStatusColor value="255, 255, 255, 128" />
 <ComboBoxBg value="11, 11, 11, 255"/>
 <ConsoleBackground value="0, 0, 0, 255" />
 <FolderViewLoadingMessageTextColor value="255, 255, 255, 128"/>     <!-- "loading..." in the inv -->
-<InventoryBackgroundColor value="11, 11, 11, 80"/>
+<InventoryBackgroundColor value="0, 0, 0, 255"/>
 <SHMediaTickerOscillatorColor value ="0, 0, 0, 191"/>
 
 <!-- Alert box colors -->
