@@ -1345,15 +1345,15 @@ void LLView::reshape(S32 width, S32 height, BOOL called_from_parent)
 				child_rect.mLeft += delta_width;
 				child_rect.mRight += delta_width;
 			}
-			else if (viewp->followsLeft())
-			{
-				// left is 0, don't need to adjust coords
-			}
-			else
-			{
-				// BUG what to do when we don't follow anyone?
-				// for now, same as followsLeft
-			}
+			// else if (viewp->followsLeft())
+			// {
+			// 	// left is 0, don't need to adjust coords
+			// }
+			// else
+			// {
+			// 	// BUG what to do when we don't follow anyone?
+			// 	// for now, same as followsLeft
+			// }
 
 			if (viewp->followsTop() && viewp->followsBottom())
 			{
