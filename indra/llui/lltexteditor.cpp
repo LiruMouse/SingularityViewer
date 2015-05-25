@@ -315,7 +315,9 @@ LLTextEditor::LLTextEditor(
 	// {
 	// 	mGLFont = LLFontGL::getFontSansSerif();
 	// }
-	mGLFont = LLFontGL::getFontSansSerifSmall();
+	//
+	// mGLFont = LLFontGL::getFontSansSerifSmall();
+	mGLFont = LLFontGL::getFontSansSerif();
 
 	updateTextRect();
 
