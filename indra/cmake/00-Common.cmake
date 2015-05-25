@@ -151,11 +151,11 @@ if (LINUX)
       -mssse3
 #
       -O2
-      -fstack-protector
+      -fno-stack-protector
       -fomit-frame-pointer
 
       -finline-functions
-      -ffast-math
+#      -ffast-math
       -funsafe-math-optimizations
       -ffinite-math-only
       -fno-signed-zeros
