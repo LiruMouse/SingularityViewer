@@ -174,7 +174,7 @@ U32 LLScrollListText::sCount = 0;
 LLScrollListText::LLScrollListText(const LLScrollListCell::Params& p)
 :	LLScrollListCell(p),
 	mText(p.value().asString()),
-	mFont(LLFontGL::getFontSansSerifSmall()),
+	mFont(LLFontGL::getFontSansSerif()),
 	mColor(p.color),
 	mUseColor(p.color.isProvided()),
 	mFontStyle(LLFontGL::getStyleFromString(p.font_style)),
@@ -187,18 +187,19 @@ LLScrollListText::LLScrollListText(const LLScrollListCell::Params& p)
 
 	mTextWidth = getWidth();
 
-	if (p.font.isProvided())
-	{
-		if (const LLFontGL* font = LLResMgr::getInstance()->getRes(p.font)) // Common CAPITALIZED font name?
-			mFont = font;
-		else // Less common camelCase font?
-		{
-			LLFontDescriptor font_desc;
-			font_desc.setName(p.font);
-			if (const LLFontGL* font = LLFontGL::getFont(font_desc))
-				mFont = font;
-		}
-	}
+	// FIXME: configurable
+	// if (p.font.isProvided())
+	// {
+	// 	if (const LLFontGL* font = LLResMgr::getInstance()->getRes(p.font)) // Common CAPITALIZED font name?
+	// 		mFont = font;
+	// 	else // Less common camelCase font?
+	// 	{
+	// 		LLFontDescriptor font_desc;
+	// 		font_desc.setName(p.font);
+	// 		if (const LLFontGL* font = LLFontGL::getFont(font_desc))
+	// 			mFont = font;
+	// 	}
+	// }
 
 	// initialize rounded rect image
 	if (!mRoundedRectImage)
