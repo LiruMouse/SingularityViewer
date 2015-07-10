@@ -46,7 +46,7 @@ LLThreadSafeQueueImplementation::LLThreadSafeQueueImplementation(unsigned int ca
 LLThreadSafeQueueImplementation::~LLThreadSafeQueueImplementation()
 {
 	if(mQueue != 0) {
-		if(apr_queue_size(mQueue) != 0) llwarns << 
+		if(apr_queue_size(mQueue) != 0) LL_WARNS() << 
 			"terminating queue which still contains " << apr_queue_size(mQueue) <<
 			" elements;" << "memory will be leaked" << LL_ENDL;
 		apr_queue_term(mQueue);

@@ -411,7 +411,7 @@ void LLFloaterPostcard::sendPostcard()
 	std::string url = gAgent.getRegion()->getCapability("SendPostcard");
 	if(!url.empty())
 	{
-		llinfos << "Send Postcard via capability" << llendl;
+		LL_INFOS() << "Send Postcard via capability" << LL_ENDL;
 		LLSD body = LLSD::emptyMap();
 		// the capability already encodes: agent ID, region ID
 		body["pos-global"] = mPosTakenGlobal.getValue();

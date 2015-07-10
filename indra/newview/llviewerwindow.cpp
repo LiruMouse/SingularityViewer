@@ -347,7 +347,7 @@ public:
 				LLViewerObject* obj1 = nodep ? nodep->getObject() : NULL;
 				LLViewerObject* obj2 = handle ? handle->getPrimaryObject() : NULL;
 				LLViewerObject* obj = obj1 ? obj1 : obj2;
-				//llinfos << std::hex << obj1 << " " << obj2 << std::dec << llendl;
+				//LL_INFOS() << std::hex << obj1 << " " << obj2 << std::dec << LL_ENDL;
 				if(obj)
 				{
 					S32 te = nodep ? nodep->getLastSelectedTE() : -1;
@@ -472,7 +472,7 @@ public:
 		static const LLCachedControl<bool> debug_show_render_info("DebugShowRenderInfo");
 		if (debug_show_render_info)
 		{
-			if (gPipeline.getUseVertexShaders() == 0)
+			if (!LLGLSLShader::sNoFixedFunction)
 			{
 				addText(xpos, ypos, "Shaders Disabled");
 				ypos += y_inc;
@@ -888,7 +888,7 @@ BOOL LLViewerWindow::handleAnyMouseClick(LLWindow *window,  LLCoordGL pos, MASK 
 
 	if (gDebugClicks)
 	{
-		llinfos << "ViewerWindow " << buttonname << " mouse " << buttonstatestr << " at " << x << "," << y << llendl;
+		LL_INFOS() << "ViewerWindow " << buttonname << " mouse " << buttonstatestr << " at " << x << "," << y << LL_ENDL;
 	}
 
 	// Make sure we get a corresponding mouseup event, even if the mouse leaves the window
@@ -931,7 +931,7 @@ BOOL LLViewerWindow::handleAnyMouseClick(LLWindow *window,  LLCoordGL pos, MASK 
 		mouse_captor->screenPointToLocal( x, y, &local_x, &local_y );
 		if (LLView::sDebugMouseHandling)
 		{
-			llinfos << buttonname << " Mouse " << buttonstatestr << " handled by captor " << mouse_captor->getName() << llendl;
+			LL_INFOS() << buttonname << " Mouse " << buttonstatestr << " handled by captor " << mouse_captor->getName() << LL_ENDL;
 		}
 		return mouse_captor->handleAnyMouseClick(local_x, local_y, mask, clicktype, down);
 	}
@@ -969,13 +969,13 @@ BOOL LLViewerWindow::handleAnyMouseClick(LLWindow *window,  LLCoordGL pos, MASK 
 	{
 		if (LLView::sDebugMouseHandling)
 		{
-			llinfos << buttonname << " Mouse " << buttonstatestr << " " << LLView::sMouseHandlerMessage << llendl;
+			LL_INFOS() << buttonname << " Mouse " << buttonstatestr << " " << LLView::sMouseHandlerMessage << LL_ENDL;
 		}
 		return TRUE;
 	}
 	else if (LLView::sDebugMouseHandling)
 	{
-		llinfos << buttonname << " Mouse " << buttonstatestr << " not handled by view" << llendl;
+		LL_INFOS() << buttonname << " Mouse " << buttonstatestr << " not handled by view" << LL_ENDL;
 	}
 
 	// Do not allow tool manager to handle mouseclicks if we have disconnected	
@@ -1101,7 +1101,7 @@ LLWindowCallbacks::DragNDropResult LLViewerWindow::handleDragNDrop( LLWindow *wi
 					S32 object_face = pick_info.mObjectFace;
 					std::string url = data;
 
-					lldebugs << "Object: picked at " << pos.mX << ", " << pos.mY << " - face = " << object_face << " - URL = " << url << llendl;
+					LL_DEBUGS() << "Object: picked at " << pos.mX << ", " << pos.mY << " - face = " << object_face << " - URL = " << url << LL_ENDL;
 
 					LLVOVolume *obj = dynamic_cast<LLVOVolume*>(static_cast<LLViewerObject*>(pick_info.getObject()));
 				
@@ -1407,7 +1407,7 @@ BOOL LLViewerWindow::handleActivate(LLWindow *window, BOOL activated)
 				if (LLStartUp::getStartupState() >= STATE_STARTED)
 				{
 					// if we're in world, show a progress bar to hide reloading of textures
-					llinfos << "Restoring GL during activate" << llendl;
+					LL_INFOS() << "Restoring GL during activate" << LL_ENDL;
 					restoreGL(LLTrans::getString("ProgressRestoring"));
 				}
 				else
@@ -1418,7 +1418,7 @@ BOOL LLViewerWindow::handleActivate(LLWindow *window, BOOL activated)
 			}
 			else
 			{
-				llwarns << "Activating while quitting" << llendl;
+				LL_WARNS() << "Activating while quitting" << LL_ENDL;
 			}
 		}
 
@@ -1444,7 +1444,7 @@ BOOL LLViewerWindow::handleActivate(LLWindow *window, BOOL activated)
 		
 		if (mWindow->getFullscreen() && !mIgnoreActivate)
 		{
-			llinfos << "Stopping GL during deactivation" << llendl;
+			LL_INFOS() << "Stopping GL during deactivation" << LL_ENDL;
 			stopGL();
 		}
 		// Mute audio
@@ -1678,8 +1678,8 @@ LLViewerWindow::LLViewerWindow(
 
 		LLSplashScreen::update(LLTrans::getString("ShuttingDown"));
 #if LL_LINUX || LL_SOLARIS
-		llwarns << "Unable to create window, be sure screen is set at 32-bit color and your graphics driver is configured correctly.  See README-linux.txt or README-solaris.txt for further information."
-				<< llendl;
+		LL_WARNS() << "Unable to create window, be sure screen is set at 32-bit color and your graphics driver is configured correctly.  See README-linux.txt or README-solaris.txt for further information."
+				<< LL_ENDL;
 #else
 		LL_WARNS("Window") << "Unable to create window, be sure screen is set at 32-bit color in Control Panels->Display->Settings"
 				<< LL_ENDL;
@@ -1699,7 +1699,7 @@ LLViewerWindow::LLViewerWindow(
 
 	if(fullscreen && ( scr.mX!=width || scr.mY!=height))
 	{
-		llwarns << "Fullscreen has forced us in to a different resolution now using "<<scr.mX<<" x "<<scr.mY<<llendl;
+		LL_WARNS() << "Fullscreen has forced us in to a different resolution now using "<<scr.mX<<" x "<<scr.mY<<LL_ENDL;
 		gSavedSettings.setS32("FullScreenWidth",scr.mX);
 		gSavedSettings.setS32("FullScreenHeight",scr.mY);
 	}
@@ -1737,7 +1737,6 @@ LLViewerWindow::LLViewerWindow(
 	}
 	LLVertexBuffer::initClass(gSavedSettings.getBOOL("RenderVBOEnable"), gSavedSettings.getBOOL("RenderVBOMappingDisable"));
 	LL_INFOS("RenderInit") << "LLVertexBuffer initialization done." << LL_ENDL ;
-	gGL.init() ;
 	LLImageGL::initClass(LLViewerTexture::MAX_GL_IMAGE_CATEGORY) ;
 
 	if (LLFeatureManager::getInstance()->isSafe()
@@ -2220,17 +2219,17 @@ void LLViewerWindow::shutdownViews()
 	{
 		gMorphView->setVisible(FALSE);
 	}
-	llinfos << "Global views cleaned." << llendl ;
+	LL_INFOS() << "Global views cleaned." << LL_ENDL ;
 
 	// DEV-40930: Clear sModalStack. Otherwise, any LLModalDialog left open
 	// will crump with LL_ERRS.
 	LLModalDialog::shutdownModals();
-	llinfos << "LLModalDialog shut down." << llendl;
+	LL_INFOS() << "LLModalDialog shut down." << LL_ENDL;
 
 	// Delete all child views.
 	delete mRootView;
 	mRootView = NULL;
-	llinfos << "RootView deleted." << llendl ;
+	LL_INFOS() << "RootView deleted." << LL_ENDL ;
 
 	if(LLMenuOptionPathfindingRebakeNavmesh::instanceExists())
 		LLMenuOptionPathfindingRebakeNavmesh::getInstance()->quit();
@@ -2264,12 +2263,12 @@ void LLViewerWindow::shutdownGL()
 	gSky.cleanup();
 	stop_glerror();
 
-	llinfos << "Cleaning up pipeline" << llendl;
+	LL_INFOS() << "Cleaning up pipeline" << LL_ENDL;
 	gPipeline.cleanup();
 	stop_glerror();
 
 	//MUST clean up pipeline before cleaning up wearables
-	llinfos << "Cleaning up wearables" << llendl;
+	LL_INFOS() << "Cleaning up wearables" << LL_ENDL;
 	LLWearableList::instance().cleanup() ;
 
 	gTextureList.shutdown();
@@ -2283,12 +2282,12 @@ void LLViewerWindow::shutdownGL()
 	LLViewerTextureManager::cleanup() ;
 	LLImageGL::cleanupClass() ;
 
-	llinfos << "All textures and llimagegl images are destroyed!" << llendl ;
+	LL_INFOS() << "All textures and llimagegl images are destroyed!" << LL_ENDL ;
 
-	llinfos << "Cleaning up select manager" << llendl;
+	LL_INFOS() << "Cleaning up select manager" << LL_ENDL;
 	LLSelectMgr::getInstance()->cleanup();
 
-	llinfos << "Stopping GL during shutdown" << llendl;
+	LL_INFOS() << "Stopping GL during shutdown" << LL_ENDL;
 	if (!gNoRender)
 	{
 		stopGL(FALSE);
@@ -2299,13 +2298,13 @@ void LLViewerWindow::shutdownGL()
 
 	LLVertexBuffer::cleanupClass();
 
-	llinfos << "LLVertexBuffer cleaned." << llendl ;
+	LL_INFOS() << "LLVertexBuffer cleaned." << LL_ENDL ;
 }
 
 // shutdownViews() and shutdownGL() need to be called first
 LLViewerWindow::~LLViewerWindow()
 {
-	llinfos << "Destroying Window" << llendl;
+	LL_INFOS() << "Destroying Window" << LL_ENDL;
 	destroyWindow();
 
 	delete mDebugText;
@@ -2943,7 +2942,7 @@ void LLViewerWindow::handleScrollWheel(S32 clicks)
 		mouse_captor->handleScrollWheel(local_x, local_y, clicks);
 		if (LLView::sDebugMouseHandling)
 		{
-			llinfos << "Scroll Wheel handled by captor " << mouse_captor->getName() << llendl;
+			LL_INFOS() << "Scroll Wheel handled by captor " << mouse_captor->getName() << LL_ENDL;
 		}
 		return;
 	}
@@ -2961,13 +2960,13 @@ void LLViewerWindow::handleScrollWheel(S32 clicks)
 	{
 		if (LLView::sDebugMouseHandling)
 		{
-			llinfos << "Scroll Wheel" << LLView::sMouseHandlerMessage << llendl;
+			LL_INFOS() << "Scroll Wheel" << LLView::sMouseHandlerMessage << LL_ENDL;
 		}
 		return;
 	}
 	else if (LLView::sDebugMouseHandling)
 	{
-		llinfos << "Scroll Wheel not handled by view" << llendl;
+		LL_INFOS() << "Scroll Wheel not handled by view" << LL_ENDL;
 	}
 
 	// Zoom the camera in and out behavior
@@ -3184,12 +3183,12 @@ void LLViewerWindow::updateUI()
 			handled = mouse_captor->handleHover(local_x, local_y, mask);
 			if (LLView::sDebugMouseHandling)
 			{
-				llinfos << "Hover handled by captor " << mouse_captor->getName() << llendl;
+				LL_INFOS() << "Hover handled by captor " << mouse_captor->getName() << LL_ENDL;
 			}
 
 			if( !handled )
 			{
-				lldebugst(LLERR_USER_INPUT) << "hover not handled by mouse captor" << llendl;
+				LL_DEBUGS("UserInput") << "hover not handled by mouse captor" << LL_ENDL;
 			}
 		}
 		else
@@ -3210,7 +3209,7 @@ void LLViewerWindow::updateUI()
 					if (LLView::sDebugMouseHandling && LLView::sMouseHandlerMessage != last_handle_msg)
 					{
 						last_handle_msg = LLView::sMouseHandlerMessage;
-						llinfos << "Hover" << LLView::sMouseHandlerMessage << llendl;
+						LL_INFOS() << "Hover" << LLView::sMouseHandlerMessage << LL_ENDL;
 					}
 					handled = TRUE;
 				}
@@ -3219,14 +3218,14 @@ void LLViewerWindow::updateUI()
 					if (last_handle_msg != LLStringUtil::null)
 					{
 						last_handle_msg.clear();
-						llinfos << "Hover not handled by view" << llendl;
+						LL_INFOS() << "Hover not handled by view" << LL_ENDL;
 					}
 				}
 			}
 
 			if( !handled )
 			{
-				lldebugst(LLERR_USER_INPUT) << "hover not handled by top view or root" << llendl;
+				LL_DEBUGS("UserInput") << "hover not handled by top view or root" << LL_ENDL;
 			}
 		}
 
@@ -3865,11 +3864,11 @@ BOOL LLViewerWindow::clickPointOnSurfaceGlobal(const S32 x, const S32 y, LLViewe
 	if (!intersect)
 	{
 		point_global = clickPointInWorldGlobal(x, y, objectp);
-		llinfos << "approx intersection at " <<  (objectp->getPositionGlobal() - point_global) << llendl;
+		LL_INFOS() << "approx intersection at " <<  (objectp->getPositionGlobal() - point_global) << LL_ENDL;
 	}
 	else
 	{
-		llinfos << "good intersection at " <<  (objectp->getPositionGlobal() - point_global) << llendl;
+		LL_INFOS() << "good intersection at " <<  (objectp->getPositionGlobal() - point_global) << LL_ENDL;
 	}
 
 	return intersect;
@@ -4291,7 +4290,7 @@ BOOL LLViewerWindow::mousePointOnLandGlobal(const S32 x, const S32 y, LLVector3d
 
 		land_z = regionp->getLand().resolveHeightRegion(probe_point_region);
 
-		//llinfos << "mousePointOnLand initial z " << land_z << llendl;
+		//LL_INFOS() << "mousePointOnLand initial z " << land_z << LL_ENDL;
 
 		if (probe_point_region.mV[VZ] < land_z)
 		{
@@ -4497,7 +4496,7 @@ void LLViewerWindow::movieSize(S32 new_width, S32 new_height)
 
 BOOL LLViewerWindow::saveSnapshot( const std::string& filepath, S32 image_width, S32 image_height, BOOL show_ui, BOOL do_rebuild, ESnapshotType type)
 {
-	llinfos << "Saving snapshot to: " << filepath << llendl;
+	LL_INFOS() << "Saving snapshot to: " << filepath << LL_ENDL;
 
 	LLPointer<LLImageRaw> raw = new LLImageRaw;
 	BOOL success = rawSnapshot(raw, image_width, image_height, (F32)image_width / image_height, show_ui, do_rebuild);
@@ -4512,12 +4511,12 @@ BOOL LLViewerWindow::saveSnapshot( const std::string& filepath, S32 image_width,
 		}
 		else
 		{
-			llwarns << "Unable to encode bmp snapshot" << llendl;
+			LL_WARNS() << "Unable to encode bmp snapshot" << LL_ENDL;
 		}
 	}
 	else
 	{
-		llwarns << "Unable to capture raw snapshot" << llendl;
+		LL_WARNS() << "Unable to capture raw snapshot" << LL_ENDL;
 	}
 
 	return success;
@@ -4696,7 +4695,7 @@ bool LLViewerWindow::rawRawSnapshot(LLImageRaw *raw,
 	{
 		if(!LLMemory::tryToAlloc(NULL, image_width * image_height * 3))
 		{
-			llwarns << "No enough memory to take the snapshot with size (w : h): " << image_width << " : " << image_height << llendl ;
+			LL_WARNS() << "No enough memory to take the snapshot with size (w : h): " << image_width << " : " << image_height << LL_ENDL ;
 			return false; //there is no enough memory for taking this snapshot.
 		}
 	}
@@ -5249,10 +5248,10 @@ LLProgressView *LLViewerWindow::getProgressView() const
 
 void LLViewerWindow::dumpState()
 {
-	llinfos << "LLViewerWindow Active " << S32(mActive) << llendl;
-	llinfos << "mWindow visible " << S32(mWindow->getVisible())
+	LL_INFOS() << "LLViewerWindow Active " << S32(mActive) << LL_ENDL;
+	LL_INFOS() << "mWindow visible " << S32(mWindow->getVisible())
 		<< " minimized " << S32(mWindow->getMinimized())
-		<< llendl;
+		<< LL_ENDL;
 }
 
 void LLViewerWindow::stopGL(BOOL save_state)
@@ -5263,7 +5262,7 @@ void LLViewerWindow::stopGL(BOOL save_state)
 	//especially be careful to put anything behind gTextureList.destroyGL(save_state);
 	if (!gGLManager.mIsDisabled)
 	{
-		llinfos << "Shutting down GL..." << llendl;
+		LL_INFOS() << "Shutting down GL..." << LL_ENDL;
 
 		// Pause texture decode threads (will get unpaused during main loop)
 		LLAppViewer::getTextureCache()->pause();
@@ -5307,8 +5306,10 @@ void LLViewerWindow::stopGL(BOOL save_state)
 
 		gGLManager.mIsDisabled = TRUE;
 		stop_glerror();
+
+		gGL.resetVertexBuffers();
 		
-		llinfos << "Remaining allocated texture memory: " << LLImageGL::sGlobalTextureMemoryInBytes << " bytes" << llendl;
+		LL_INFOS() << "Remaining allocated texture memory: " << LLImageGL::sGlobalTextureMemoryInBytes << " bytes" << LL_ENDL;
 	}
 }
 
@@ -5320,9 +5321,10 @@ void LLViewerWindow::restoreGL(const std::string& progress_message)
 	//especially, be careful to put something before gTextureList.restoreGL();
 	if (gGLManager.mIsDisabled)
 	{
-		llinfos << "Restoring GL..." << llendl;
+		LL_INFOS() << "Restoring GL..." << LL_ENDL;
 		gGLManager.mIsDisabled = FALSE;
 		
+		gGL.init();
 		initGLDefaults();
 		gGL.refreshState();	//Singu Note: Call immediately. Cached states may have prevented initGLDefaults from actually applying changes.
 		LLGLState::restoreGL();
@@ -5357,10 +5359,10 @@ void LLViewerWindow::restoreGL(const std::string& progress_message)
 			setShowProgress(TRUE);
 			setProgressString(progress_message);
 		}
-		llinfos << "...Restoring GL done" << llendl;
+		LL_INFOS() << "...Restoring GL done" << LL_ENDL;
 		if(!LLAppViewer::instance()->restoreErrorTrap())
 		{
-			llwarns << " Someone took over my signal/exception handler (post restoreGL)!" << llendl;
+			LL_WARNS() << " Someone took over my signal/exception handler (post restoreGL)!" << LL_ENDL;
 		}
 
 	}
@@ -5510,7 +5512,7 @@ BOOL LLViewerWindow::checkSettings()
 
 void LLViewerWindow::restartDisplay(BOOL show_progress_bar)
 {
-	llinfos << "Restaring GL" << llendl;
+	LL_INFOS() << "Restaring GL" << LL_ENDL;
 	stopGL();
 	if (show_progress_bar)
 	{
@@ -5565,7 +5567,7 @@ BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, 
 
 	LLFocusableElement* keyboard_focus = gFocusMgr.getKeyboardFocus();
 	send_agent_pause();
-	llinfos << "Stopping GL during changeDisplaySettings" << llendl;
+	LL_INFOS() << "Stopping GL during changeDisplaySettings" << LL_ENDL;
 	stopGL();
 	mIgnoreActivate = TRUE;
 	LLCoordScreen old_size;
@@ -5609,7 +5611,7 @@ BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, 
 	}
 	send_agent_resume();
 
-	llinfos << "Restoring GL during resolution change" << llendl;
+	LL_INFOS() << "Restoring GL during resolution change" << LL_ENDL;
 	if (show_progress_bar)
 	{
 		restoreGL(LLTrans::getString("ProgressChangingResolution"));
@@ -5713,7 +5715,7 @@ void LLViewerWindow::calcDisplayScale()
 
 	if (display_scale != mDisplayScale)
 	{
-		llinfos << "Setting display scale to " << display_scale << llendl;
+		LL_INFOS() << "Setting display scale to " << display_scale << LL_ENDL;
 
 		mDisplayScale = display_scale;
 		// Init default fonts
@@ -5771,7 +5773,7 @@ bool LLViewerWindow::onAlert(const LLSD& notify)
 
 	if (gNoRender)
 	{
-		llinfos << "Alert: " << notification->getName() << llendl;
+		LL_INFOS() << "Alert: " << notification->getName() << LL_ENDL;
 		notification->respond(LLSD::emptyMap());
 		LLNotifications::instance().cancel(notification);
 		return false;

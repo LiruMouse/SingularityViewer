@@ -195,7 +195,7 @@ void FloaterVoiceLicense::updateAgree(LLUICtrl*, void* userdata )
 void FloaterVoiceLicense::onContinue( void* userdata )
 {
 	FloaterVoiceLicense* self = (FloaterVoiceLicense*) userdata;
-	llinfos << "User agreed to the Vivox personal license" << llendl;
+	LL_INFOS() << "User agreed to the Vivox personal license" << LL_ENDL;
 
 	// enabling voice by default here seems like the best behavior
 	gSavedSettings.setBOOL("EnableVoiceChat", TRUE);
@@ -215,7 +215,7 @@ void FloaterVoiceLicense::onContinue( void* userdata )
 void FloaterVoiceLicense::onCancel( void* userdata )
 {
 	FloaterVoiceLicense* self = (FloaterVoiceLicense*) userdata;
-	llinfos << "User disagreed with the vivox personal license" << llendl;
+	LL_INFOS() << "User disagreed with the vivox personal license" << LL_ENDL;
 	gSavedSettings.setBOOL("EnableVoiceChat", FALSE);
 	gSavedSettings.setBOOL("VivoxLicenseAccepted", FALSE);
 	
@@ -235,7 +235,7 @@ void FloaterVoiceLicense::handleMediaEvent(LLPluginClassMedia* /*self*/, EMediaE
 		// skip past the loading screen navigate complete
 		if ( ++mLoadCompleteCount == 2 )
 		{
-			llinfos << "NAVIGATE COMPLETE" << llendl;
+			LL_INFOS() << "NAVIGATE COMPLETE" << LL_ENDL;
 			// enable Agree to License radio button now that page has loaded
 			LLCheckBoxCtrl * license_agreement = getChild<LLCheckBoxCtrl>("agree_chk");
 			license_agreement->setEnabled( true );

@@ -24,271 +24,34 @@
  */
 
 #include "linden_common.h"
-#include "llmath.h"
-
 #include "llperlin.h"
 
-#define B 0x100
-#define BM 0xff
-#define N 0x1000
-#define NF32 (4096.f)
-#define NP 12   /* 2^N */
-#define NM 0xfff
-
-static S32 p[B + B + 2];
-static F32 g3[B + B + 2][3];
-static F32 g2[B + B + 2][2];
-static F32 g1[B + B + 2];
-
-bool LLPerlinNoise::sInitialized = 0;
-
-static void normalize2(F32 v[2])
-{
-	F32 s = 1.f/(F32)sqrt(v[0] * v[0] + v[1] * v[1]);
-	v[0] = v[0] * s;
-	v[1] = v[1] * s;
-}
-
-static void normalize3(F32 v[3])
-{
-	F32 s = 1.f/(F32)sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-	v[0] = v[0] * s;
-	v[1] = v[1] * s;
-	v[2] = v[2] * s;
-}
-
-static void fast_setup(F32 vec, U8 &b0, U8 &b1, F32 &r0, F32 &r1)
-{
-	S32 t_S32;
-
-	r1	= vec + NF32;
-	t_S32 = lltrunc(r1);
-	b0 = (U8)t_S32;
-	b1 = b0 + 1;
-	r0 = r1 - t_S32;
-	r1 = r0 - 1.f;
-}
-
-
-void LLPerlinNoise::init(void)
-{
-	int i, j, k;
-
-	for (i = 0 ; i < B ; i++)
-	{
-		p[i] = i;
-
-		g1[i] = (F32)((rand() % (B + B)) - B) / B;
-
-		for (j = 0 ; j < 2 ; j++)
-			g2[i][j] = (F32)((rand() % (B + B)) - B) / B;
-		normalize2(g2[i]);
-
-		for (j = 0 ; j < 3 ; j++)
-			g3[i][j] = (F32)((rand() % (B + B)) - B) / B;
-		normalize3(g3[i]);
-	}
-
-	while (--i)
-	{
-		k = p[i];
-		p[i] = p[j = rand() % B];
-		p[j] = k;
-	}
-
-	for (i = 0 ; i < B + 2 ; i++)
-	{
-		p[B + i] = p[i];
-		g1[B + i] = g1[i];
-		for (j = 0 ; j < 2 ; j++)
-			g2[B + i][j] = g2[i][j];
-		for (j = 0 ; j < 3 ; j++)
-			g3[B + i][j] = g3[i][j];
-	}
-
-	sInitialized = true;
-}
-
-
-//============================================================================
-// Noise functions
-
-#define s_curve(t) ( t * t * (3.f - 2.f * t) )
-
-#define lerp_m(t, a, b) ( a + t * (b - a) )
-
-F32 LLPerlinNoise::noise1(F32 x)
-{
-	int bx0, bx1;
-	F32 rx0, rx1, sx, t, u, v;
-
-	if (!sInitialized)
-		init();
-
-	t = x + N;
-	bx0 = (lltrunc(t)) & BM;
-	bx1 = (bx0+1) & BM;
-	rx0 = t - lltrunc(t);
-	rx1 = rx0 - 1.f;
-
-	sx = s_curve(rx0);
-
-	u = rx0 * g1[ p[ bx0 ] ];
-	v = rx1 * g1[ p[ bx1 ] ];
-
-	return lerp_m(sx, u, v);
-}
-
-static F32 fast_at2(F32 rx, F32 ry, F32 *q)
-{
-	return rx * q[0] + ry * q[1];
-}
-
-F32 LLPerlinNoise::noise2(F32 x, F32 y)
-{
-	U8 bx0, bx1, by0, by1;
-	U32 b00, b10, b01, b11;
-	F32 rx0, rx1, ry0, ry1, *q, sx, sy, a, b, u, v;
-	S32 i, j;
-
-	if (!sInitialized)
-		init();
-
-	fast_setup(x, bx0, bx1, rx0, rx1);
-	fast_setup(y, by0, by1, ry0, ry1);
-
-	i = *(p + bx0);
-	j = *(p + bx1);
-
-	b00 = *(p + i + by0);
-	b10 = *(p + j + by0);
-	b01 = *(p + i + by1);
-	b11 = *(p + j + by1);
-
-	sx = s_curve(rx0);
-	sy = s_curve(ry0);
-
-
-	q = *(g2 + b00);
-	u = fast_at2(rx0, ry0, q);
-	q = *(g2 + b10); 
-	v = fast_at2(rx1, ry0, q);
-	a = lerp_m(sx, u, v);
-
-	q = *(g2 + b01); 
-	u = fast_at2(rx0,ry1,q);
-	q = *(g2 + b11); 
-	v = fast_at2(rx1,ry1,q);
-	b = lerp_m(sx, u, v);
-
-	return lerp_m(sy, a, b);
-}
-
-static F32 fast_at3(F32 rx, F32 ry, F32 rz, F32 *q)
-{
-	return rx * q[0] + ry * q[1] + rz * q[2];
-}
-
-F32 LLPerlinNoise::noise3(F32 x, F32 y, F32 z)
-{
-	U8 bx0, bx1, by0, by1, bz0, bz1;
-	S32 b00, b10, b01, b11;
-	F32 rx0, rx1, ry0, ry1, rz0, rz1, *q, sy, sz, a, b, c, d, t, u, v;
-	S32 i, j;
-
-	if (!sInitialized)
-		init();
-
-	fast_setup(x, bx0,bx1, rx0,rx1);
-	fast_setup(y, by0,by1, ry0,ry1);
-	fast_setup(z, bz0,bz1, rz0,rz1);
-
-	i = p[ bx0 ];
-	j = p[ bx1 ];
-
-	b00 = p[ i + by0 ];
-	b10 = p[ j + by0 ];
-	b01 = p[ i + by1 ];
-	b11 = p[ j + by1 ];
-
-	t  = s_curve(rx0);
-	sy = s_curve(ry0);
-	sz = s_curve(rz0);
-
-	q = g3[ b00 + bz0 ]; 
-	u = fast_at3(rx0,ry0,rz0,q);
-	q = g3[ b10 + bz0 ];
-	v = fast_at3(rx1,ry0,rz0,q);
-	a = lerp_m(t, u, v);
-
-	q = g3[ b01 + bz0 ];
-	u = fast_at3(rx0,ry1,rz0,q);
-	q = g3[ b11 + bz0 ];
-	v = fast_at3(rx1,ry1,rz0,q);
-	b = lerp_m(t, u, v);
-
-	c = lerp_m(sy, a, b);
-
-	q = g3[ b00 + bz1 ];
-	u = fast_at3(rx0,ry0,rz1,q);
-	q = g3[ b10 + bz1 ];
-	v = fast_at3(rx1,ry0,rz1,q);
-	a = lerp_m(t, u, v);
-
-	q = g3[ b01 + bz1 ];
-	u = fast_at3(rx0,ry1,rz1,q);
-	q = g3[ b11 + bz1 ];
-	v = fast_at3(rx1,ry1,rz1,q);
-	b = lerp_m(t, u, v);
-
-	d = lerp_m(sy, a, b);
-
-	return lerp_m(sz, c, d);
-}
-
-F32 LLPerlinNoise::turbulence2(F32 x, F32 y, F32 freq)
-{
-	F32 t, lx, ly;
-
-	for (t = 0.f ; freq >= 1.f ; freq *= 0.5f)
-	{
-		lx = freq * x;
-		ly = freq * y;
-		t += noise2(lx, ly)/freq;
-	}
-	return t;
-}
-
-F32 LLPerlinNoise::turbulence3(F32 x, F32 y, F32 z, F32 freq)
-{
-	F32 t, lx, ly, lz;
-
-	for (t = 0.f ; freq >= 1.f ; freq *= 0.5f)
-	{
-		lx = freq * x;
-		ly = freq * y;
-		lz = freq * z;
-		t += noise3(lx,ly,lz)/freq;
-//		t += fabs(noise3(lx,ly,lz)) / freq;					// Like snow - bubbly at low frequencies
-//		t += sqrt(fabs(noise3(lx,ly,lz))) / freq;			// Better at low freq
-//		t += (noise3(lx,ly,lz)*noise3(lx,ly,lz)) / freq;		
-	}
-	return t;
-}
-
-F32 LLPerlinNoise::clouds3(F32 x, F32 y, F32 z, F32 freq)
-{
-	F32 t, lx, ly, lz;
-
-	for (t = 0.f ; freq >= 1.f ; freq *= 0.5f)
-	{
-		lx = freq * x;
-		ly = freq * y;
-		lz = freq * z;
-//		t += noise3(lx,ly,lz)/freq;
-//		t += fabs(noise3(lx,ly,lz)) / freq;					// Like snow - bubbly at low frequencies
-//		t += sqrt(fabs(noise3(lx,ly,lz))) / freq;			// Better at low freq
-		t += (noise3(lx,ly,lz)*noise3(lx,ly,lz)) / freq;		
-	}
-	return t;
-}
+//Random values taken from http://mrl.nyu.edu/~perlin/noise/
+const U8 LLPerlinNoise::p[LLPerlinNoise::sPremutationCount] =
+{ 151, 160, 137, 91, 90, 15,
+131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
+190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
+88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
+77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
+102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
+135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
+5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
+223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
+129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
+251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
+49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
+138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180,
+151, 160, 137, 91, 90, 15,
+131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23,
+190, 6, 148, 247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
+88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166,
+77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
+102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
+135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
+5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
+223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
+129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
+251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
+49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
+138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
+};

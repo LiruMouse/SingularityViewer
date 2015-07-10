@@ -161,7 +161,7 @@ void LLPanelPlace::resetName(const std::string& name)
 	}
 	if(mNameEditor)
 	{
-		llinfos << "Clearing place name" << llendl;
+		LL_INFOS() << "Clearing place name" << LL_ENDL;
 		mNameEditor->setText( LLStringUtil::null );
 	}
 	if(mInfoEditor)
@@ -221,7 +221,7 @@ void LLPanelPlace::setErrorStatus(U32 status, const std::string& reason)
 	}
 	else
 	{
-		llwarns << "Unexpected error (" << status << "): " << reason << llendl;
+		LL_WARNS() << "Unexpected error (" << status << "): " << reason << LL_ENDL;
 		error_text = llformat("Unexpected Error (%u): %s", status, reason.c_str());
 	}
 	mDescEditor->setText(error_text);
@@ -419,7 +419,7 @@ bool LLPanelPlace::callbackAuctionWebPage(const LLSD& notification, const LLSD& 
 		S32 auction_id = notification["payload"]["auction_id"].asInteger();
 		url = AUCTION_URL + llformat("%010d", auction_id );
 
-		llinfos << "Loading auction page " << url << llendl;
+		LL_INFOS() << "Loading auction page " << url << LL_ENDL;
 
 		LLWeb::loadURL(url);
 	}

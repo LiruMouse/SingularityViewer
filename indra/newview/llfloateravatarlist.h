@@ -97,6 +97,11 @@ enum ACTIVITY_TYPE
 	 */
 	F32 getEntryAgeSeconds() const;
 
+	/*
+	 * @brief resets the name accordance with RLVa
+	 */
+	void resetName(const bool& hide_tags, const bool& anon_names, const std::string& hidden);
+
 	/**
 	 * @brief Returns the name of the avatar
 	 */
@@ -211,6 +216,7 @@ public:
 	/*virtual*/ void onOpen();
 	/*virtual*/ BOOL postBuild();
 	/*virtual*/ void draw();
+	/*virtual*/ BOOL handleRightMouseDown(S32 x, S32 y, MASK mask);
 	/**
 	 * @brief Toggles interface visibility
 	 * There is only one instance of the avatar scanner at any time.
@@ -232,6 +238,11 @@ public:
 	 * @brief Refresh avatar list (display)
 	 */
 	void refreshAvatarList();
+
+	/**
+	 * @brief Reset avatar names in accordance with RLVa
+	 */
+	void resetAvatarNames();
 
 	/**
 	 * @brief Returns the entry for an avatar, if preset

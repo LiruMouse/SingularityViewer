@@ -161,14 +161,14 @@ BOOL LLSaleInfo::importStream(std::istream& input_stream, BOOL& has_perm_mask, U
 		input_stream.getline(buffer, MAX_STRING);
 		if (input_stream.eof())
 		{
-			llwarns << "Bad sale info: early end of input stream"
-					<< llendl;
+			LL_WARNS() << "Bad sale info: early end of input stream"
+					<< LL_ENDL;
 			return FALSE;
 		}
 		if (input_stream.fail())
 		{
-			llwarns << "Bad sale info: failed to read from input stream"
-					<< llendl;
+			LL_WARNS() << "Bad sale info: failed to read from input stream"
+					<< LL_ENDL;
 			return FALSE;
 		}
 		sscanf(	/* Flawfinder: ignore */
@@ -198,14 +198,14 @@ BOOL LLSaleInfo::importStream(std::istream& input_stream, BOOL& has_perm_mask, U
 		}
 		else if (!strcmp("perm_mask", keyword))
 		{
-			//llinfos << "found deprecated keyword perm_mask" << llendl;
+			//LL_INFOS() << "found deprecated keyword perm_mask" << LL_ENDL;
 			has_perm_mask = TRUE;
 			sscanf(valuestr, "%x", &perm_mask);
 		}
 		else
 		{
-			llwarns << "unknown keyword '" << keyword
-					<< "' in sale info import" << llendl;
+			LL_WARNS() << "unknown keyword '" << keyword
+					<< "' in sale info import" << LL_ENDL;
 		}
 	}
 	return TRUE;

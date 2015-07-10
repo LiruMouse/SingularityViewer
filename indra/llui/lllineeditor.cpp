@@ -463,7 +463,7 @@ void LLLineEditor::spell_correct(void* data)
 	LLLineEditor* line = tempBind->origin;
 	if(tempBind && line)
 	{
-		llinfos << ((LLMenuItemCallGL *)(tempBind->menuItem))->getName() << " : " << tempBind->origin->getName() << " : " << tempBind->word << llendl;
+		LL_INFOS() << ((LLMenuItemCallGL *)(tempBind->menuItem))->getName() << " : " << tempBind->origin->getName() << " : " << tempBind->word << LL_ENDL;
 		if(line)line->spellReplace(tempBind);
 	}
 }
@@ -486,7 +486,7 @@ std::vector<S32> LLLineEditor::getMisspelledWordsPositions()
 	std::vector<S32> thePosesOfBadWords;
     const LLWString& text = mText.getWString();
 
-	//llinfos << "end of box is at " << cursorloc << " and end of text is at " << text.length() << llendl;
+	//LL_INFOS() << "end of box is at " << cursorloc << " and end of text is at " << text.length() << LL_ENDL;
 	S32 wordStart=0;
 	S32 wordEnd=mStartSpellHere;
 	while(wordEnd < mEndSpellHere)
@@ -728,7 +728,7 @@ BOOL LLLineEditor::handleMouseDown(S32 x, S32 y, MASK mask)
 
 BOOL LLLineEditor::handleMiddleMouseDown(S32 x, S32 y, MASK mask)
 {
-        // llinfos << "MiddleMouseDown" << llendl;
+        // llinfo << "MiddleMouseDown" << LL_ENDL;
 	setFocus( TRUE );
 	if( canPastePrimary() )
 	{
@@ -797,14 +797,14 @@ BOOL LLLineEditor::handleHover(S32 x, S32 y, MASK mask)
 		mKeystrokeTimer.reset();
 
 		getWindow()->setCursor(UI_CURSOR_IBEAM);
-		lldebugst(LLERR_USER_INPUT) << "hover handled by " << getName() << " (active)" << llendl;		
+		LL_DEBUGS("UserInput") << "hover handled by " << getName() << " (active)" << LL_ENDL;		
 		handled = TRUE;
 	}
 
 	if( !handled  )
 	{
 		getWindow()->setCursor(UI_CURSOR_IBEAM);
-		lldebugst(LLERR_USER_INPUT) << "hover handled by " << getName() << " (inactive)" << llendl;		
+		LL_DEBUGS("UserInput") << "hover handled by " << getName() << " (inactive)" << LL_ENDL;		
 		handled = TRUE;
 	}
 
@@ -1357,7 +1357,7 @@ BOOL LLLineEditor::handleSpecialKey(KEY key, MASK mask)
 	case KEY_BACKSPACE:
 		if (!mReadOnly)
 		{
-			//llinfos << "Handling backspace" << llendl;
+			//LL_INFOS() << "Handling backspace" << LL_ENDL;
 			if( hasSelection() )
 			{
 				deleteSelection();
@@ -2837,7 +2837,7 @@ void LLLineEditor::resetPreedit()
 	{
 		if (hasSelection())
 		{
-			llwarns << "Preedit and selection!" << llendl;
+			LL_WARNS() << "Preedit and selection!" << LL_ENDL;
 			deselect();
 		}
 
@@ -2994,7 +2994,7 @@ void LLLineEditor::markAsPreedit(S32 position, S32 length)
 	setCursor(position);
 	if (hasPreeditString())
 	{
-		llwarns << "markAsPreedit invoked when hasPreeditString is true." << llendl;
+		LL_WARNS() << "markAsPreedit invoked when hasPreeditString is true." << LL_ENDL;
 	}
 	mPreeditWString.assign( LLWString( mText.getWString(), position, length ) );
 	if (length > 0)

@@ -49,11 +49,11 @@ void LLFloaterWebProfile::onOpen()
 // virtual
 void LLFloaterWebProfile::handleReshape(const LLRect& new_rect, bool by_user)
 {
-	lldebugs << "handleReshape: " << new_rect << llendl;
+	LL_DEBUGS() << "handleReshape: " << new_rect << LL_ENDL;
 
 	if (by_user && !isMinimized())
 	{
-		lldebugs << "Storing new rect" << llendl;
+		LL_DEBUGS() << "Storing new rect" << LL_ENDL;
 		gSavedSettings.setRect("WebProfileFloaterRect", new_rect);
 	}
 
@@ -85,7 +85,7 @@ void LLFloaterWebProfile::showInstance(const std::string& window_class, Params& 
 	LLFloaterWebContent* old_inst = getInstance(p.id());
 	if(old_inst)
 	{
-		llwarns << "Replacing unexpected duplicate floater: " << p.id() << llendl;
+		LL_WARNS() << "Replacing unexpected duplicate floater: " << p.id() << LL_ENDL;
 		old_inst->mKey = key;
 		old_inst->mAgeTimer.reset();
 		old_inst->open();
@@ -106,7 +106,7 @@ LLFloater* LLFloaterWebProfile::create(const LLSD& key)
 void LLFloaterWebProfile::applyPreferredRect()
 {
 	const LLRect preferred_rect = gSavedSettings.getRect("WebProfileFloaterRect");
-	lldebugs << "Applying preferred rect: " << preferred_rect << llendl;
+	LL_DEBUGS() << "Applying preferred rect: " << preferred_rect << LL_ENDL;
 
 	// Don't override position that may have been set by floater stacking code.
 	// Singu Note: We do floater stacking here, actually

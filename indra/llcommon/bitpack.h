@@ -85,7 +85,7 @@ public:
 					*(mBuffer + mBufferSize++) = mLoad;
 					if (mBufferSize > mMaxSize)
 					{
-						llerror("mBufferSize exceeding mMaxSize!", 0);
+						LL_ERRS() << "mBufferSize exceeding mMaxSize!" << LL_ENDL;
 					}
 					mLoadSize = 0;
 					mLoad = 0x00;
@@ -128,7 +128,7 @@ public:
 					*(mBuffer + mBufferSize++) = mLoad;
 					if (mBufferSize > mMaxSize)
 					{
-						llerror("mBufferSize exceeding mMaxSize!", 0);
+						LL_ERRS() << "mBufferSize exceeding mMaxSize!" << LL_ENDL;
 					}
 					mLoadSize = 0;
 					mLoad = 0x00;
@@ -171,8 +171,8 @@ public:
 #ifdef _DEBUG
 					if (mBufferSize > mMaxSize)
 					{
-						llerrs << "mBufferSize exceeding mMaxSize" << llendl;
-						llerrs << mBufferSize << " > " << mMaxSize << llendl;
+						LL_ERRS() << "mBufferSize exceeding mMaxSize" << LL_ENDL;
+						LL_ERRS() << mBufferSize << " > " << mMaxSize << LL_ENDL;
 					}
 #endif
 					mLoad = *(mBuffer + mBufferSize++);
@@ -196,7 +196,7 @@ public:
 			*(mBuffer + mBufferSize++) = mLoad;
 			if (mBufferSize > mMaxSize)
 			{
-				llerror("mBufferSize exceeding mMaxSize!", 0);
+				LL_ERRS() << "mBufferSize exceeding mMaxSize!" << LL_ENDL;
 			}
 			mLoadSize = 0;
 		}

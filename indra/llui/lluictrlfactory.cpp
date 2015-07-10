@@ -158,7 +158,7 @@ void LLUICtrlFactory::setupPaths()
 	{
 		std::string slash = gDirUtilp->getDirDelimiter();
 		std::string dir = "xui" + slash + "en-us";
-		llwarns << "XUI::config file unable to open: " << filename << llendl;
+		LL_WARNS() << "XUI::config file unable to open: " << filename << LL_ENDL;
 		sXUIPaths.push_back(dir);
 	}
 }
@@ -184,14 +184,14 @@ bool LLUICtrlFactory::getLayeredXMLNode(const std::string &xui_filename, LLXMLNo
 		}
 		else
 		{
-			llwarns << "Couldn't find UI description file: " << sXUIPaths.front() + gDirUtilp->getDirDelimiter() + xui_filename << llendl;
+			LL_WARNS() << "Couldn't find UI description file: " << sXUIPaths.front() + gDirUtilp->getDirDelimiter() + xui_filename << LL_ENDL;
 			return false;
 		}
 	}
 
 	if (!LLXMLNode::parseFile(full_filename, root, NULL))
 	{
-		llwarns << "Problem reading UI description file: " << full_filename << llendl;
+		LL_WARNS() << "Problem reading UI description file: " << full_filename << LL_ENDL;
 		return false;
 	}
 
@@ -213,7 +213,7 @@ bool LLUICtrlFactory::getLayeredXMLNode(const std::string &xui_filename, LLXMLNo
 
 		if (!LLXMLNode::parseFile(layer_filename, updateRoot, NULL))
 		{
-			llwarns << "Problem reading localized UI description file: " << (*itor) + gDirUtilp->getDirDelimiter() + xui_filename << llendl;
+			LL_WARNS() << "Problem reading localized UI description file: " << (*itor) + gDirUtilp->getDirDelimiter() + xui_filename << LL_ENDL;
 			return false;
 		}
 
@@ -233,7 +233,7 @@ bool LLUICtrlFactory::getLayeredXMLNode(const std::string &xui_filename, LLXMLNo
 bool LLUICtrlFactory::getLayeredXMLNodeFromBuffer(const std::string &buffer, LLXMLNodePtr& root)
 {
 	if (!LLXMLNode::parseBuffer((U8*)buffer.data(), buffer.size(), root, 0)) {
-		llwarns << "Error reading UI description from buffer." << llendl;
+		LL_WARNS() << "Error reading UI description from buffer." << LL_ENDL;
 		return false;
 	}
 	return true;
@@ -273,7 +273,7 @@ void LLUICtrlFactory::buildFloaterInternal(LLFloater *floaterp, LLXMLNodePtr &ro
 	// root must be called floater
 	if( !(root->hasName("floater") || root->hasName("multi_floater") ) )
 	{
-		llwarns << "Root node should be named floater in: " << filename << llendl;
+		LL_WARNS() << "Root node should be named floater in: " << filename << LL_ENDL;
 		return;
 	}
 
@@ -324,7 +324,7 @@ S32 LLUICtrlFactory::saveToXML(LLView* viewp, const std::string& filename)
 	llofstream out(filename);
 	if (!out.good())
 	{
-		llwarns << "Unable to open " << filename << " for output." << llendl;
+		LL_WARNS() << "Unable to open " << filename << " for output." << LL_ENDL;
 		return 1;
 	}
 
@@ -373,7 +373,7 @@ BOOL LLUICtrlFactory::buildPanelInternal(LLPanel* panelp, LLXMLNodePtr &root, co
 	// root must be called panel
 	if( !root->hasName("panel" ) )
 	{
-		llwarns << "Root node should be named panel in : " << filename << llendl;
+		LL_WARNS() << "Root node should be named panel in : " << filename << LL_ENDL;
 		return didPost;
 	}
 
@@ -422,7 +422,7 @@ LLMenuGL *LLUICtrlFactory::buildMenu(const std::string &filename, LLView* parent
 	// root must be called panel
 	if( !root->hasName( "menu_bar" ) && !root->hasName( "menu" ))
 	{
-		llwarns << "Root node should be named menu bar or menu in : " << filename << llendl;
+		LL_WARNS() << "Root node should be named menu bar or menu in : " << filename << LL_ENDL;
 		return NULL;
 	}
 
@@ -458,7 +458,7 @@ LLContextMenu* LLUICtrlFactory::buildContextMenu(const std::string& filename, LL
 	// root must be called panel
 	if( !root->hasName( LL_PIE_MENU_TAG ))
 	{
-		llwarns << "Root node should be named " << LL_PIE_MENU_TAG << " in : " << filename << llendl;
+		LL_WARNS() << "Root node should be named " << LL_PIE_MENU_TAG << " in : " << filename << LL_ENDL;
 		return NULL;
 	}
 
@@ -496,9 +496,9 @@ void LLUICtrlFactory::rebuild()
 		{
 			continue;
 		}
-		llinfos << "Rebuilding UI panel " << panelp->getName() 
+		LL_INFOS() << "Rebuilding UI panel " << panelp->getName() 
 			<< " from " << filename
-			<< llendl;
+			<< LL_ENDL;
 		BOOL visible = panelp->getVisible();
 		panelp->setVisible(FALSE);
 		panelp->setFocus(FALSE);
@@ -519,9 +519,9 @@ void LLUICtrlFactory::rebuild()
 			continue;
 		}
 		std::string filename = built_floater_it->second;
-		llinfos << "Rebuilding UI floater " << floaterp->getName()
+		LL_INFOS() << "Rebuilding UI floater " << floaterp->getName()
 			<< " from " << filename
-			<< llendl;
+			<< LL_ENDL;
 		BOOL visible = floaterp->getVisible();
 		floaterp->setVisible(FALSE);
 		floaterp->setFocus(FALSE);
@@ -545,7 +545,7 @@ LLView *LLUICtrlFactory::createCtrlWidget(LLPanel *parent, LLXMLNodePtr node)
 
 	if (func == NULL)
 	{
-		llwarns << "Unknown control type " << ctrl_type << llendl;
+		LL_WARNS() << "Unknown control type " << ctrl_type << LL_ENDL;
 		return NULL;
 	}
 

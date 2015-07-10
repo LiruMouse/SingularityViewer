@@ -246,7 +246,7 @@ public:
 			mKey = new char[strlen(data.mKey) + 1];	/* Flawfinder: ignore */
 			if (mKey == NULL)
 			{
-				llerrs << "Memory Allocation Failed" << llendl;
+				LL_ERRS() << "Memory Allocation Failed" << LL_ENDL;
 				return;
 			}
 			strcpy(mKey, data.mKey);	/* Flawfinder: ignore */
@@ -256,7 +256,7 @@ public:
 			mString = new char[strlen(data.mString) + 1];	/* Flawfinder: ignore */
 			if (mString == NULL)
 			{
-				llerrs << "Memory Allocation Failed" << llendl;
+				LL_ERRS() << "Memory Allocation Failed" << LL_ENDL;
 				return;
 			}
 			strcpy(mString, data.mString);	/* Flawfinder: ignore */
@@ -281,7 +281,7 @@ public:
 				mKey = new char[strlen(temp) + 1];	/* Flawfinder: ignore */
 				if (mKey == NULL)
 				{
-					llerrs << "Memory Allocation Failed" << llendl;
+					LL_ERRS() << "Memory Allocation Failed" << LL_ENDL;
 					return;
 				}
 				strcpy(mKey, temp);	/* Flawfinder: ignore */
@@ -293,7 +293,7 @@ public:
 				mString = new char[strlen(temp) + 1];	/* Flawfinder: ignore */
 				if (mString == NULL)
 				{
-					llerrs << "Memory Allocation Failed" << llendl;
+					LL_ERRS() << "Memory Allocation Failed" << LL_ENDL;
 					return;
 				}
 				strcpy(mString, temp);	/* Flawfinder: ignore */
@@ -330,7 +330,7 @@ public:
 				mKey = new char[strlen(temp) + 1];	/* Flawfinder: ignore */
 				if (mKey == NULL)
 				{
-					llerrs << "Memory Allocation Failed" << llendl;
+					LL_ERRS() << "Memory Allocation Failed" << LL_ENDL;
 					return;
 				}
 				strcpy(mKey, temp);	/* Flawfinder: ignore */
@@ -342,7 +342,7 @@ public:
 				mString = new char[strlen(temp) + 1];	/* Flawfinder: ignore */
 				if (mString == NULL)
 				{
-					llerrs << "Memory Allocation Failed" << llendl;
+					LL_ERRS() << "Memory Allocation Failed" << LL_ENDL;
 					return;
 				}
 				strcpy(mString, temp);	/* Flawfinder: ignore */
@@ -370,7 +370,7 @@ public:
 		mString = new char[strlen(src) + 1];	/* Flawfinder: ignore */
 		if (mString == NULL)
 		{
-			llerrs << "Memory Allocation Failed" << llendl;
+			LL_ERRS() << "Memory Allocation Failed" << LL_ENDL;
 			return;
 		}
 		strcpy(mString, src);	/* Flawfinder: ignore */
@@ -404,7 +404,7 @@ public:
 			mString = new char[strlen(string) + 1];	/* Flawfinder: ignore */
 			if (mString == NULL)
 			{
-				llerrs << "Memory Allocation Failed" << llendl;
+				LL_ERRS() << "Memory Allocation Failed" << LL_ENDL;
 				return;
 			}
 			strcpy(mString, string);	/* Flawfinder: ignore */

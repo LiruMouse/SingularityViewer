@@ -163,12 +163,12 @@ void LLFilterSD2XMLRPC::streamOut(std::ostream& ostr, const LLSD& sd)
 	case LLSD::TypeMap:
 	{
 #if LL_SPEW_STREAM_OUT_DEBUGGING
-		llinfos << "streamOut(map) BEGIN" << llendl;
+		LL_INFOS() << "streamOut(map) BEGIN" << LL_ENDL;
 #endif
 		ostr << "<struct>";
 		if(ostr.fail())
 		{
-			llinfos << "STREAM FAILURE writing struct" << llendl;
+			LL_INFOS() << "STREAM FAILURE writing struct" << LL_ENDL;
 		}
 		LLSD::map_const_iterator it = sd.beginMap();
 		LLSD::map_const_iterator end = sd.endMap();
@@ -179,21 +179,21 @@ void LLFilterSD2XMLRPC::streamOut(std::ostream& ostr, const LLSD& sd)
 			streamOut(ostr, (*it).second);
 			if(ostr.fail())
 			{
-				llinfos << "STREAM FAILURE writing '" << (*it).first
-						<< "' with sd type " << (*it).second.type() << llendl;
+				LL_INFOS() << "STREAM FAILURE writing '" << (*it).first
+						<< "' with sd type " << (*it).second.type() << LL_ENDL;
 			}
 			ostr << "</member>";
 		}
 		ostr << "</struct>";
 #if LL_SPEW_STREAM_OUT_DEBUGGING
-		llinfos << "streamOut(map) END" << llendl;
+		LL_INFOS() << "streamOut(map) END" << LL_ENDL;
 #endif
 		break;
 	}
 	case LLSD::TypeArray:
 	{
 #if LL_SPEW_STREAM_OUT_DEBUGGING
-		llinfos << "streamOut(array) BEGIN" << llendl;
+		LL_INFOS() << "streamOut(array) BEGIN" << LL_ENDL;
 #endif
 		ostr << "<array><data>";
 		LLSD::array_const_iterator it = sd.beginArray();
@@ -203,12 +203,12 @@ void LLFilterSD2XMLRPC::streamOut(std::ostream& ostr, const LLSD& sd)
 			streamOut(ostr, *it);
 			if(ostr.fail())
 			{
-				llinfos << "STREAM FAILURE writing array element sd type "
-						<< (*it).type() << llendl;
+				LL_INFOS() << "STREAM FAILURE writing array element sd type "
+						<< (*it).type() << LL_ENDL;
 			}
 		}
 #if LL_SPEW_STREAM_OUT_DEBUGGING
-		llinfos << "streamOut(array) END" << llendl;
+		LL_INFOS() << "streamOut(array) END" << LL_ENDL;
 #endif
 		ostr << "</data></array>";
 		break;
@@ -217,31 +217,31 @@ void LLFilterSD2XMLRPC::streamOut(std::ostream& ostr, const LLSD& sd)
 		// treat undefined as a bool with a false value.
 	case LLSD::TypeBoolean:
 #if LL_SPEW_STREAM_OUT_DEBUGGING
-		llinfos << "streamOut(bool)" << llendl;
+		LL_INFOS() << "streamOut(bool)" << LL_ENDL;
 #endif
 		ostr << "<boolean>" << (sd.asBoolean() ? "1" : "0") << "</boolean>";
 		break;
 	case LLSD::TypeInteger:
 #if LL_SPEW_STREAM_OUT_DEBUGGING
-		llinfos << "streamOut(int)" << llendl;
+		LL_INFOS() << "streamOut(int)" << LL_ENDL;
 #endif
 		ostr << "<i4>" << sd.asInteger() << "</i4>";
 		break;
 	case LLSD::TypeReal:
 #if LL_SPEW_STREAM_OUT_DEBUGGING
-		llinfos << "streamOut(real)" << llendl;
+		LL_INFOS() << "streamOut(real)" << LL_ENDL;
 #endif
 		ostr << "<double>" << sd.asReal() << "</double>";
 		break;
 	case LLSD::TypeString:
 #if LL_SPEW_STREAM_OUT_DEBUGGING
-		llinfos << "streamOut(string)" << llendl;
+		LL_INFOS() << "streamOut(string)" << LL_ENDL;
 #endif
 		ostr << "<string>" << xml_escape_string(sd.asString()) << "</string>";
 		break;
 	case LLSD::TypeUUID:
 #if LL_SPEW_STREAM_OUT_DEBUGGING
-		llinfos << "streamOut(uuid)" << llendl;
+		LL_INFOS() << "streamOut(uuid)" << LL_ENDL;
 #endif
 		// serialize it as a string
 		ostr << "<string>" << sd.asString() << "</string>";
@@ -249,7 +249,7 @@ void LLFilterSD2XMLRPC::streamOut(std::ostream& ostr, const LLSD& sd)
 	case LLSD::TypeURI:
 	{
 #if LL_SPEW_STREAM_OUT_DEBUGGING
-		llinfos << "streamOut(uri)" << llendl;
+		LL_INFOS() << "streamOut(uri)" << LL_ENDL;
 #endif
 		// serialize it as a string
 		ostr << "<string>" << xml_escape_string(sd.asString()) << "</string>";
@@ -258,7 +258,7 @@ void LLFilterSD2XMLRPC::streamOut(std::ostream& ostr, const LLSD& sd)
 	case LLSD::TypeBinary:
 	{
 #if LL_SPEW_STREAM_OUT_DEBUGGING
-		llinfos << "streamOut(binary)" << llendl;
+		LL_INFOS() << "streamOut(binary)" << LL_ENDL;
 #endif
 		// this is pretty inefficient, but we'll deal with that
 		// problem when it becomes one.
@@ -281,15 +281,15 @@ void LLFilterSD2XMLRPC::streamOut(std::ostream& ostr, const LLSD& sd)
 	}
 	case LLSD::TypeDate:
 #if LL_SPEW_STREAM_OUT_DEBUGGING
-		llinfos << "streamOut(date)" << llendl;
+		LL_INFOS() << "streamOut(date)" << LL_ENDL;
 #endif
 		// no need to escape this since it will be alpha-numeric.
 		ostr << "<dateTime.iso8601>" << sd.asString() << "</dateTime.iso8601>";
 		break;
 	default:
 		// unhandled type
-		llwarns << "Unhandled structured data type: " << sd.type()
-			<< llendl;
+		LL_WARNS() << "Unhandled structured data type: " << sd.type()
+			<< LL_ENDL;
 		break;
 	}
 	ostr << "</value>";
@@ -360,7 +360,7 @@ LLIOPipe::EStatus LLFilterSD2XMLRPCResponse::process_impl(
 	}
 	else
 	{
-		llwarns << "Unable to determine the type of LLSD response." << llendl;
+		LL_WARNS() << "Unable to determine the type of LLSD response." << LL_ENDL;
 	}
 	PUMP_DEBUG;
 	return rv;
@@ -402,7 +402,7 @@ LLIOPipe::EStatus LLFilterSD2XMLRPCRequest::process_impl(
 	PUMP_DEBUG;
 	if(!eos)
 	{
-		llinfos << "!eos" << llendl;
+		LL_INFOS() << "!eos" << LL_ENDL;
 		return STATUS_BREAK;
 	}
 
@@ -412,7 +412,7 @@ LLIOPipe::EStatus LLFilterSD2XMLRPCRequest::process_impl(
 	LLSDSerialize::fromNotation(sd, stream, buffer->count(channels.in()));
 	if(stream.fail())
 	{
-		llinfos << "STREAM FAILURE reading structure data." << llendl;
+		LL_INFOS() << "STREAM FAILURE reading structure data." << LL_ENDL;
 	}
 
 	PUMP_DEBUG;
@@ -434,7 +434,7 @@ LLIOPipe::EStatus LLFilterSD2XMLRPCRequest::process_impl(
 	}
 	if(method.empty())
 	{
-		llwarns << "SD -> XML Request no method found." << llendl;
+		LL_WARNS() << "SD -> XML Request no method found." << LL_ENDL;
 		return STATUS_ERROR;
 	}
 
@@ -445,13 +445,13 @@ LLIOPipe::EStatus LLFilterSD2XMLRPCRequest::process_impl(
 	ostream.precision(DEFAULT_PRECISION);
 	if(ostream.fail())
 	{
-		llinfos << "STREAM FAILURE setting precision" << llendl;
+		LL_INFOS() << "STREAM FAILURE setting precision" << LL_ENDL;
 	}
 	ostream << XML_HEADER << XMLRPC_REQUEST_HEADER_1
 		<< xml_escape_string(method) << XMLRPC_REQUEST_HEADER_2;
 	if(ostream.fail())
 	{
-		llinfos << "STREAM FAILURE writing method headers" << llendl;
+		LL_INFOS() << "STREAM FAILURE writing method headers" << LL_ENDL;
 	}
 	switch(param_sd.type())
 	{
@@ -518,7 +518,7 @@ LLIOPipe::EStatus stream_out(std::ostream& ostr, XMLRPC_VALUE value)
 		break;
 	}
 	case xmlrpc_type_boolean:
-		//lldebugs << "stream_out() bool" << llendl;
+		//LL_DEBUGS() << "stream_out() bool" << LL_ENDL;
 		ostr << " " << (XMLRPC_GetValueBoolean(value) ? "true" : "false");
 		break;
 	case xmlrpc_type_datetime:
@@ -526,23 +526,23 @@ LLIOPipe::EStatus stream_out(std::ostream& ostr, XMLRPC_VALUE value)
 		break;
 	case xmlrpc_type_double:
 		ostr << " r" << XMLRPC_GetValueDouble(value);
-		//lldebugs << "stream_out() double" << XMLRPC_GetValueDouble(value)
-		//		 << llendl;
+		//LL_DEBUGS() << "stream_out() double" << XMLRPC_GetValueDouble(value)
+		//		 << LL_ENDL;
 		break;
 	case xmlrpc_type_int:
 		ostr << " i" << XMLRPC_GetValueInt(value);
-		//lldebugs << "stream_out() integer:" << XMLRPC_GetValueInt(value)
-		//		 << llendl;
+		//LL_DEBUGS() << "stream_out() integer:" << XMLRPC_GetValueInt(value)
+		//		 << LL_ENDL;
 		break;
 	case xmlrpc_type_string:
-		//lldebugs << "stream_out() string: " << str << llendl;
+		//LL_DEBUGS() << "stream_out() string: " << str << LL_ENDL;
 		ostr << " s(" << XMLRPC_GetValueStringLen(value) << ")'"
 			<< XMLRPC_GetValueString(value) << "'";
 		break;
 	case xmlrpc_type_array: // vector
 	case xmlrpc_type_mixed: // vector
 	{
-		//lldebugs << "stream_out() array" << llendl;
+		//LL_DEBUGS() << "stream_out() array" << LL_ENDL;
 		ostr << " [";
 		U32 needs_comma = 0;
 		XMLRPC_VALUE current = XMLRPC_VectorRewind(value);
@@ -557,7 +557,7 @@ LLIOPipe::EStatus stream_out(std::ostream& ostr, XMLRPC_VALUE value)
 	}
 	case xmlrpc_type_struct: // still vector
 	{
-		//lldebugs << "stream_out() struct" << llendl;
+		//LL_DEBUGS() << "stream_out() struct" << LL_ENDL;
 		ostr << " {";
 		std::string name;
 		U32 needs_comma = 0;
@@ -577,7 +577,7 @@ LLIOPipe::EStatus stream_out(std::ostream& ostr, XMLRPC_VALUE value)
 	case xmlrpc_type_none:
 	default:
 		status = LLIOPipe::STATUS_ERROR;
-		llwarns << "Found an empty xmlrpc type.." << llendl;
+		LL_WARNS() << "Found an empty xmlrpc type.." << LL_ENDL;
 		// not much we can do here...
 		break;
 	};
@@ -617,7 +617,7 @@ LLIOPipe::EStatus LLFilterXMLRPCResponse2LLSD::process_impl(
 	buf[bytes] = '\0';
 	buffer->readAfter(channels.in(), NULL, (U8*)buf, bytes);
 
-	//lldebugs << "xmlrpc response: " << buf << llendl;
+	//LL_DEBUGS() << "xmlrpc response: " << buf << LL_ENDL;
 
 	PUMP_DEBUG;
 	XMLRPC_REQUEST response = XMLRPC_REQUEST_FromXML(
@@ -626,7 +626,7 @@ LLIOPipe::EStatus LLFilterXMLRPCResponse2LLSD::process_impl(
 		NULL);
 	if(!response)
 	{
-		llwarns << "XML -> SD Response unable to parse xml." << llendl;
+		LL_WARNS() << "XML -> SD Response unable to parse xml." << LL_ENDL;
 		delete[] buf;
 		return STATUS_ERROR;
 	}
@@ -701,7 +701,7 @@ LLIOPipe::EStatus LLFilterXMLRPCRequest2LLSD::process_impl(
 	buf[bytes] = '\0';
 	buffer->readAfter(channels.in(), NULL, (U8*)buf, bytes);
 
-	//lldebugs << "xmlrpc request: " << buf << llendl;
+	//LL_DEBUGS() << "xmlrpc request: " << buf << LL_ENDL;
 	
 	// Check the value in the buffer. XMLRPC_REQUEST_FromXML will report a error code 4 if 
 	// values that are less than 0x20 are passed to it, except
@@ -728,7 +728,7 @@ LLIOPipe::EStatus LLFilterXMLRPCRequest2LLSD::process_impl(
 		NULL);
 	if(!request)
 	{
-		llwarns << "XML -> SD Request process parse error." << llendl;
+		LL_WARNS() << "XML -> SD Request process parse error." << LL_ENDL;
 		delete[] buf;
 		return STATUS_ERROR;
 	}

@@ -59,6 +59,6 @@ agregues un paso de espera.
 	<check_box height="20" label="tiempo en segundos" name="wait_time_check"/>
 	<line_editor left_delta="125" name="wait_time_editor"/>
 	<check_box label="Activa" name="active_check" tool_tip="Los Gestos activos pueden ser disparados en el chat por sus frases disparadoras o pulsando sus teclas de acceso rápido. Los Gestos, por lo general, se vuelven inactivas cuando hay un conflicto en la combinación de teclas."/>
-	<button label="Vista Previa" name="preview_btn"/>
+	<flyout_button label="Vista Previa" name="preview_btn"/>
 	<button label="Guardar" name="save_btn"/>
 </floater>

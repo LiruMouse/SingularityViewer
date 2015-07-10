@@ -63,7 +63,6 @@ static float sTime;
 
 BOOL deferred_render = FALSE;
 
-BOOL LLDrawPoolWater::sSkipScreenCopy = FALSE;
 BOOL LLDrawPoolWater::sNeedsReflectionUpdate = TRUE;
 BOOL LLDrawPoolWater::sNeedsDistortionUpdate = TRUE;
 LLColor4 LLDrawPoolWater::sWaterFogColor = LLColor4(0.2f, 0.5f, 0.5f, 0.f);
@@ -106,7 +105,7 @@ void LLDrawPoolWater::restoreGL()
 
 LLDrawPool *LLDrawPoolWater::instancePool()
 {
-	llerrs << "Should never be calling instancePool on a water pool!" << llendl;
+	LL_ERRS() << "Should never be calling instancePool on a water pool!" << LL_ENDL;
 	return NULL;
 }
 
@@ -185,7 +184,7 @@ void LLDrawPoolWater::render(S32 pass)
 
 	LLGLEnable blend(GL_BLEND);
 
-	if ((mVertexShaderLevel > 0) && !sSkipScreenCopy)
+	if (mVertexShaderLevel > 0)
 	{
 		shade();
 		return;

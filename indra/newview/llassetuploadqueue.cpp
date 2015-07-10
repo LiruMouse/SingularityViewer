@@ -77,7 +77,7 @@ public:
 	
 	/*virtual*/ void httpFailure(void)
    	{
-		llwarns << "Error: " << mReason << llendl;
+		LL_WARNS() << "Error: " << mReason << LL_ENDL;
 		LLUpdateTaskInventoryResponder::httpFailure();
    		LLAssetUploadQueue *queue = mSupplier->get();
    		if (queue)
@@ -107,7 +107,7 @@ public:
 		std::string uploader = content["uploader"];
 
 		mSupplier->log(std::string("Compiling " + mScriptName).c_str());
-		llinfos << "Compiling " << llendl;
+		LL_INFOS() << "Compiling " << LL_ENDL;
 
 		// postRaw takes ownership of mData and will delete it.
 		LLHTTPClient::postRaw(uploader, mData, mDataSize, this);
@@ -121,7 +121,7 @@ public:
 		if (content["compiled"])
 		{
 			mSupplier->log("Compilation succeeded");
-			llinfos << "Compiled!" << llendl;
+			LL_INFOS() << "Compiled!" << LL_ENDL;
 		}
 		else
 		{
@@ -130,7 +130,7 @@ public:
 				line < compile_errors.endArray(); line++)
 			{
 				mSupplier->log(line->asString());
-				llinfos << content["errors"] << llendl;
+				LL_INFOS() << content["errors"] << LL_ENDL;
 			}
 		}
 		LLUpdateTaskInventoryResponder::uploadComplete(content);

@@ -31,7 +31,6 @@
 #include "llanimationstates.h"
 #include "lluuid.h"
 #include "llstring.h"
-#include "lldarray.h"
 
 class LLGesture
 {
@@ -91,9 +90,9 @@ public:
 	BOOL triggerAndReviseString(const std::string &string, std::string* revised_string);
 
 	// Used for construction from UI
-	S32 count() const						{ return mList.count(); }
-	virtual LLGesture* get(S32 i) const		{ return mList.get(i); }
-	virtual void put(LLGesture* gesture)	{ mList.put( gesture ); }
+	S32 count() const						{ return mList.size(); }
+	virtual LLGesture* get(S32 i) const		{ return mList.at(i); }
+	virtual void put(LLGesture* gesture)	{ mList.push_back( gesture ); }
 	void deleteAll();
 
 	// non-endian-neutral serialization
@@ -106,7 +105,7 @@ protected:
 	virtual LLGesture *create_gesture(U8 **buffer, S32 max_size);
 
 protected:
-	LLDynamicArray<LLGesture*>	mList;
+	std::vector<LLGesture*>	mList;
 
 	static const S32	SERIAL_HEADER_SIZE;
 };

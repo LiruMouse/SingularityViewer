@@ -141,8 +141,8 @@ void LLFloaterScriptQueue::inventoryChanged(LLViewerObject* viewer_object,
 											 S32,
 											 void* q_id)
 {
-	llinfos << "LLFloaterScriptQueue::inventoryChanged() for  object "
-			<< viewer_object->getID() << llendl;
+	LL_INFOS() << "LLFloaterScriptQueue::inventoryChanged() for  object "
+			<< viewer_object->getID() << LL_ENDL;
 
 	//Remove this listener from the object since its
 	//listener callback is now being executed.
@@ -167,8 +167,8 @@ void LLFloaterScriptQueue::inventoryChanged(LLViewerObject* viewer_object,
 		// something went wrong...
 		// note that we're not working on this one, and move onto the
 		// next object in the list.
-		llwarns << "No inventory for " << mCurrentObjectID
-				<< llendl;
+		LL_WARNS() << "No inventory for " << mCurrentObjectID
+				<< LL_ENDL;
 		nextObject();
 	}
 }
@@ -188,7 +188,7 @@ void LLFloaterScriptQueue::addObject(const LLUUID& id)
 
 BOOL LLFloaterScriptQueue::start()
 {
-	//llinfos << "LLFloaterCompileQueue::start()" << llendl;
+	//LL_INFOS() << "LLFloaterCompileQueue::start()" << LL_ENDL;
 	std::string buffer;
 
 	LLStringUtil::format_map_t args;
@@ -203,29 +203,29 @@ BOOL LLFloaterScriptQueue::start()
 
 BOOL LLFloaterScriptQueue::isDone() const
 {
-	return (mCurrentObjectID.isNull() && (mObjectIDs.count() == 0));
+	return (mCurrentObjectID.isNull() && (mObjectIDs.size() == 0));
 }
 
 // go to the next object. If no objects left, it falls out silently
 // and waits to be killed by the window being closed.
 BOOL LLFloaterScriptQueue::nextObject()
 {
-	S32 count;
+	U32 count;
 	BOOL successful_start = FALSE;
 	do
 	{
-		count = mObjectIDs.count();
-		llinfos << "LLFloaterScriptQueue::nextObject() - " << count
-				<< " objects left to process." << llendl;
+		count = mObjectIDs.size();
+		LL_INFOS() << "LLFloaterScriptQueue::nextObject() - " << count
+				<< " objects left to process." << LL_ENDL;
 		mCurrentObjectID.setNull();
 		if(count > 0)
 		{
 			successful_start = popNext();
 		}
-		llinfos << "LLFloaterScriptQueue::nextObject() "
+		LL_INFOS() << "LLFloaterScriptQueue::nextObject() "
 				<< (successful_start ? "successful" : "unsuccessful")
-				<< llendl; 
-	} while((mObjectIDs.count() > 0) && !successful_start);
+				<< LL_ENDL; 
+	} while((mObjectIDs.size() > 0) && !successful_start);
 	if(isDone() && !mDone)
 	{
 		mDone = true;
@@ -242,18 +242,18 @@ BOOL LLFloaterScriptQueue::popNext()
 	// get the first element off of the container, and attempt to get
 	// the inventory.
 	BOOL rv = FALSE;
-	S32 count = mObjectIDs.count();
+	S32 count = mObjectIDs.size();
 	if(mCurrentObjectID.isNull() && (count > 0))
 	{
-		mCurrentObjectID = mObjectIDs.get(0);
-		llinfos << "LLFloaterScriptQueue::popNext() - mCurrentID: "
-				<< mCurrentObjectID << llendl;
-		mObjectIDs.remove(0);
+		mCurrentObjectID = mObjectIDs.at(0);
+		LL_INFOS() << "LLFloaterScriptQueue::popNext() - mCurrentID: "
+				<< mCurrentObjectID << LL_ENDL;
+		mObjectIDs.erase(mObjectIDs.begin());
 		LLViewerObject* obj = gObjectList.findObject(mCurrentObjectID);
 		if(obj)
 		{
-			llinfos << "LLFloaterScriptQueue::popNext() requesting inv for "
-					<< mCurrentObjectID << llendl;
+			LL_INFOS() << "LLFloaterScriptQueue::popNext() requesting inv for "
+					<< mCurrentObjectID << LL_ENDL;
 			LLUUID* id = new LLUUID(mID);
 			registerVOInventoryListener(obj,id);
 			requestVOInventory();
@@ -346,7 +346,7 @@ void LLFloaterCompileQueue::handleInventory(LLViewerObject *viewer_object,
 				item->getPermissions().allowCopyBy(gAgent.getID(), gAgent.getGroupID()) )
 			{
 				LLPointer<LLViewerInventoryItem> script = new LLViewerInventoryItem(item);
-				mCurrentScripts.put(script);
+				mCurrentScripts.push_back(script);
 				asset_item_map.insert(std::make_pair(item->getAssetUUID(), item));
 			}
 		}
@@ -369,7 +369,7 @@ void LLFloaterCompileQueue::handleInventory(LLViewerObject *viewer_object,
 												 viewer_object->getID(),
 												 itemp->getUUID());
 
-			//llinfos << "ITEM NAME 2: " << names.get(i) << llendl;
+			//LL_INFOS() << "ITEM NAME 2: " << names.get(i) << LL_ENDL;
 			gAssetStorage->getInvItemAsset(viewer_object->getRegion()->getHost(),
 				gAgent.getID(),
 				gAgent.getSessionID(),
@@ -390,7 +390,7 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 										  LLAssetType::EType type,
 										  void* user_data, S32 status, LLExtStat ext_status)
 {
-	llinfos << "LLFloaterCompileQueue::scriptArrived()" << llendl;
+	LL_INFOS() << "LLFloaterCompileQueue::scriptArrived()" << LL_ENDL;
 	LLScriptQueueData* data = (LLScriptQueueData*)user_data;
 	if(!data) return;
 	LLFloaterCompileQueue* queue = static_cast<LLFloaterCompileQueue*> (LLFloaterScriptQueue::findInstance(data->mQueueID));
@@ -398,7 +398,7 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 	std::string buffer;
 	if(queue && (0 == status))
 	{
-		//llinfos << "ITEM NAME 3: " << data->mScriptName << llendl;
+		//LL_INFOS() << "ITEM NAME 3: " << data->mScriptName << LL_ENDL;
 
 		// Dump this into a file on the local disk so we can compile it.
 		std::string filename;
@@ -417,7 +417,7 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 				// Read script source in to buffer.
 				U32 script_size = file.getSize();
 				char* script_data = new char[script_size];
-				file.read(reinterpret_cast<U8*>(script_data), script_size);
+				file.read((U8*)script_data, script_size);
 
 				queue->mUploadQueue->queue(filename, data->mTaskId, 
 				data->mItemId, is_running, queue->mMono, queue->getID(),
@@ -429,7 +429,7 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 				LLChat chat(text);
 				LLFloaterChat::addChat(chat);
 				buffer = text + LLTrans::getString(":") + " " + data->mScriptName;
-				llwarns << "Problem uploading script asset." << llendl;
+				LL_WARNS() << "Problem uploading script asset." << LL_ENDL;
 				if(queue) queue->removeItemByItemID(data->mItemId);
 			}
 #if 0 //Client side compiling disabled.
@@ -458,7 +458,7 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 				}
 				else
 				{
-					llerrs << "Unable to find object to compile" << llendl;
+					LL_ERRS() << "Unable to find object to compile" << LL_ENDL;
 				}
 
 				// TODO: babbage: No compile if no cap.
@@ -493,7 +493,7 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 			buffer = LLTrans::getString("CompileQueueUnknownFailure") + (" ") + data->mScriptName;
 		}
 
-		llwarns << "Problem downloading script asset." << llendl;
+		LL_WARNS() << "Problem downloading script asset." << LL_ENDL;
 		if(queue) queue->removeItemByItemID(data->mItemId);
 	}
 	if(queue && (buffer.size() > 0)) 
@@ -507,10 +507,10 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 // static
 void LLFloaterCompileQueue::onSaveTextComplete(const LLUUID& asset_id, void* user_data, S32 status, LLExtStat ext_status) // StoreAssetData callback (fixed)
 {
-	llinfos << "LLFloaterCompileQueue::onSaveTextComplete()" << llendl;
+	LL_INFOS() << "LLFloaterCompileQueue::onSaveTextComplete()" << LL_ENDL;
 	if (status)
 	{
-		llwarns << "Unable to save text for script." << llendl;
+		LL_WARNS() << "Unable to save text for script." << LL_ENDL;
 		LLSD args;
 		args["REASON"] = std::string(LLAssetStorage::getErrorString(status));
 		LLNotificationsUtil::add("CompileQueueSaveText", args);
@@ -520,7 +520,7 @@ void LLFloaterCompileQueue::onSaveTextComplete(const LLUUID& asset_id, void* use
 // static
 void LLFloaterCompileQueue::onSaveBytecodeComplete(const LLUUID& asset_id, void* user_data, S32 status, LLExtStat ext_status) // StoreAssetData callback (fixed)
 {
-	llinfos << "LLFloaterCompileQueue::onSaveBytecodeComplete()" << llendl;
+	LL_INFOS() << "LLFloaterCompileQueue::onSaveBytecodeComplete()" << LL_ENDL;
 	LLCompileQueueData* data = (LLCompileQueueData*)user_data;
 	LLFloaterCompileQueue* queue = static_cast<LLFloaterCompileQueue*> (LLFloaterScriptQueue::findInstance(data->mQueueID));
 	if(queue && (0 == status) && data)
@@ -530,7 +530,7 @@ void LLFloaterCompileQueue::onSaveBytecodeComplete(const LLUUID& asset_id, void*
 	}
 	else
 	{
-		llwarns << "Unable to save bytecode for script." << llendl;
+		LL_WARNS() << "Unable to save bytecode for script." << LL_ENDL;
 		LLSD args;
 		args["REASON"] = std::string(LLAssetStorage::getErrorString(status));
 		LLNotificationsUtil::add("CompileQueueSaveBytecode", args);
@@ -564,12 +564,12 @@ void LLFloaterCompileQueue::compile(const std::string& filename,
 						err_filename.c_str(), compile_to_mono,
 						uuid_string.c_str(), gAgent.isGodlike()))
 	{
-		llwarns << "compile failed" << llendl;
+		LL_WARNS() << "compile failed" << LL_ENDL;
 		removeItemByItemID(item_id);
 	}
 	else
 	{
-		llinfos << "compile successful." << llendl;
+		LL_INFOS() << "compile successful." << LL_ENDL;
 		
 		// Save LSL bytecode
 		LLCompileQueueData* data = new LLCompileQueueData(mID, item_id);
@@ -581,35 +581,15 @@ void LLFloaterCompileQueue::compile(const std::string& filename,
 }
 #endif
 
-void LLFloaterCompileQueue::removeItemByItemID(const LLUUID& asset_id)
-{
-	llinfos << "LLFloaterCompileQueue::removeItemByAssetID()" << llendl;
-	for(S32 i = 0; i < mCurrentScripts.count(); )
-	{
-		if(asset_id == mCurrentScripts.get(i)->getUUID())
-		{
-			mCurrentScripts.remove(i);
-		}
-		else
-		{
-			++i;
-		}
-	}
-	if(mCurrentScripts.count() == 0)
-	{
-		nextObject();
-	}
-}
-
 const LLInventoryItem* LLFloaterCompileQueue::findItemByItemID(const LLUUID& asset_id) const
 {
 	LLInventoryItem* result = NULL;
-	S32 count = mCurrentScripts.count();
+	S32 count = mCurrentScripts.size();
 	for(S32 i = 0; i < count; ++i)
 	{
-		if(asset_id == mCurrentScripts.get(i)->getUUID())
+		if(asset_id == mCurrentScripts.at(i)->getUUID())
 		{
-			result = mCurrentScripts.get(i);
+			result = mCurrentScripts.at(i);
 		}
 	}
 	return result;
@@ -617,24 +597,24 @@ const LLInventoryItem* LLFloaterCompileQueue::findItemByItemID(const LLUUID& ass
 
 void LLFloaterCompileQueue::saveItemByItemID(const LLUUID& asset_id)
 {
-	llinfos << "LLFloaterCompileQueue::saveItemByAssetID()" << llendl;
+	LL_INFOS() << "LLFloaterCompileQueue::saveItemByAssetID()" << LL_ENDL;
 	LLViewerObject* viewer_object = gObjectList.findObject(mCurrentObjectID);
 	if(viewer_object)
 	{
-		S32 count = mCurrentScripts.count();
+		S32 count = mCurrentScripts.size();
 		for(S32 i = 0; i < count; ++i)
 		{
-			if(asset_id == mCurrentScripts.get(i)->getUUID())
+			if(asset_id == mCurrentScripts.at(i)->getUUID())
 			{
 				// *FIX: this auto-resets active to TRUE. That might
 				// be a bad idea.
-				viewer_object->saveScript(mCurrentScripts.get(i), TRUE, false);
+				viewer_object->saveScript(mCurrentScripts.at(i), TRUE, false);
 			}
 		}
 	}
 	else
 	{
-		llwarns << "Unable to finish save!" << llendl;
+		LL_WARNS() << "Unable to finish save!" << LL_ENDL;
 	}
 }
 
@@ -786,6 +766,26 @@ LLFloaterNotRunQueue::LLFloaterNotRunQueue(const std::string& name, const LLRect
 
 LLFloaterNotRunQueue::~LLFloaterNotRunQueue()
 { 
+}
+
+void LLFloaterCompileQueue::removeItemByItemID(const LLUUID& asset_id)
+{
+	LL_INFOS() << "LLFloaterCompileQueue::removeItemByAssetID()" << LL_ENDL;
+	for(size_t i = 0; i < mCurrentScripts.size(); )
+	{
+		if(asset_id == mCurrentScripts[i]->getUUID())
+		{
+			vector_replace_with_last(mCurrentScripts, mCurrentScripts.begin() + i);
+		}
+		else
+		{
+			++i;
+		}
+	}
+	if(mCurrentScripts.empty())
+	{
+		nextObject();
+	}
 }
 
 void LLFloaterNotRunQueue::handleInventory(LLViewerObject* viewer_obj,

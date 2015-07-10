@@ -70,8 +70,8 @@ void LLLogImpl::log(const std::string &message, LLSD& info)
 			}
 		}
 	}
-	llinfos << "LLLOGMESSAGE (" << (sequence++) << ") " << message 
-		<< " " << LLSDNotationStreamer(info) << llendl;
+	LL_INFOS() << "LLLOGMESSAGE (" << (sequence++) << ") " << message 
+		<< " " << LLSDNotationStreamer(info) << LL_ENDL;
 }
 
 //@brief Function to check if specified legacy log message should be sent.

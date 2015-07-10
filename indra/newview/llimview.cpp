@@ -178,8 +178,8 @@ public:
 
 	/*virtual*/ void httpFailure(void)
 	{
-		llwarns << "LLViewerChatterBoxInvitationAcceptResponder error [status:"
-				<< mStatus << "]: " << mReason << llendl;
+		LL_WARNS() << "LLViewerChatterBoxInvitationAcceptResponder error [status:"
+				<< mStatus << "]: " << mReason << LL_ENDL;
 		//throw something back to the viewer here?
 		if ( gIMMgr )
 		{
@@ -450,8 +450,8 @@ void LLIMMgr::addMessage(
 		floater = findFloaterBySession(other_participant_id);
 		if (floater)
 		{
-			llinfos << "found the IM session " << new_session_id
-				<< " by participant " << other_participant_id << llendl;
+			LL_INFOS() << "found the IM session " << new_session_id
+				<< " by participant " << other_participant_id << LL_ENDL;
 		}
 	}
 
@@ -1068,11 +1068,11 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 {
 	if (session_id.isNull())
 	{
-		llwarns << "Creating LLFloaterIMPanel with null session ID" << llendl;
+		LL_WARNS() << "Creating LLFloaterIMPanel with null session ID" << LL_ENDL;
 	}
 
-	llinfos << "LLIMMgr::createFloater: from " << other_participant_id 
-			<< " in session " << session_id << llendl;
+	LL_INFOS() << "LLIMMgr::createFloater: from " << other_participant_id 
+			<< " in session " << session_id << LL_ENDL;
 	LLFloaterIMPanel* floater = new LLFloaterIMPanel(session_label, session_id, other_participant_id, dialog, ids);
 	LLTabContainer::eInsertionPoint i_pt = user_initiated ? LLTabContainer::RIGHT_OF_CURRENT : LLTabContainer::END;
 
@@ -1111,6 +1111,16 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 	}
 	mFloaters.insert(floater->getHandle());
 	return floater;
+}
+
+void LLIMMgr::addNotifiedNonFriendSessionID(const LLUUID& session_id)
+{
+	mNotifiedNonFriendSessions.insert(session_id);
+}
+
+bool LLIMMgr::isNonFriendSessionNotified(const LLUUID& session_id)
+{
+	return mNotifiedNonFriendSessions.end() != mNotifiedNonFriendSessions.find(session_id);
 }
 
 void LLIMMgr::noteOfflineUsers(
@@ -1209,7 +1219,7 @@ void LLIMMgr::loadIgnoreGroup()
 	file.open(filename);
 	if (file.is_open())
 	{
-		// llinfos << "loading group chat ignore from " << filename << "..." << llendl;
+		// LL_INFOS() << "loading group chat ignore from " << filename << "..." << LL_ENDL;
 		LLSDSerialize::fromXML(settings_llsd, file);
 
 		mIgnoreGroupList.clear();
@@ -1217,21 +1227,21 @@ void LLIMMgr::loadIgnoreGroup()
 		for(LLSD::array_const_iterator iter = settings_llsd.beginArray();
 		    iter != settings_llsd.endArray(); ++iter)
 		{
-			// llinfos << "added " << iter->asUUID()
-			//         << " to group chat ignore list" << llendl;
+			// LL_INFOS() << "added " << iter->asUUID()
+			//         << " to group chat ignore list" << LL_ENDL;
 			mIgnoreGroupList.push_back( iter->asUUID() );
 		}
 	}
 	else
 	{
-		// llinfos << "can't load " << filename
-		//         << " (probably it doesn't exist yet)" << llendl;
+		// LL_INFOS() << "can't load " << filename
+		//         << " (probably it doesn't exist yet)" << LL_ENDL;
 	}
 }
 
 void LLIMMgr::saveIgnoreGroup()
 {
-	// llinfos << "saving ignore_groups.xml" << llendl;
+	// LL_INFOS() << "saving ignore_groups.xml" << LL_ENDL;
 
 	std::string user_dir = gDirUtilp->getLindenUserDir(true);
 	if (!user_dir.empty())
@@ -1259,20 +1269,20 @@ void LLIMMgr::updateIgnoreGroup(const LLUUID& group_id, bool ignore)
 	if (getIgnoreGroup(group_id) == ignore)
 	{
 		// nothing to do
-		// llinfos << "no change to group " << group_id << ", it is already "
-		//         << (ignore ? "" : "not ") << "ignored" << llendl;
+		// LL_INFOS() << "no change to group " << group_id << ", it is already "
+		//         << (ignore ? "" : "not ") << "ignored" << LL_ENDL;
 		return;
 	}
 	else if (!ignore)
 	{
 		// change from ignored to not ignored
-		// llinfos << "unignoring group " << group_id << llendl;
+		// LL_INFOS() << "unignoring group " << group_id << LL_ENDL;
 		mIgnoreGroupList.remove(group_id);
 	}
 	else //if (ignore)
 	{
 		// change from not ignored to ignored
-		// llinfos << "ignoring group " << group_id << llendl;
+		// LL_INFOS() << "ignoring group " << group_id << LL_ENDL;
 		mIgnoreGroupList.push_back(group_id);
 	}
 }
@@ -1287,11 +1297,11 @@ bool LLIMMgr::getIgnoreGroup(const LLUUID& group_id) const
 
 		if (found != mIgnoreGroupList.end())
 		{
-			// llinfos << "group " << group_id << " is ignored." << llendl;
+			// LL_INFOS() << "group " << group_id << " is ignored." << LL_ENDL;
 			return true;
 		}
 	}
-	// llinfos << "group " << group_id << " is not ignored." << llendl;
+	// LL_INFOS() << "group " << group_id << " is not ignored." << LL_ENDL;
 	return false;
 }
 

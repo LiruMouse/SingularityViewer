@@ -74,7 +74,7 @@ void ASFloaterContactGroups::onBtnDelete(void* userdata)
 void ASFloaterContactGroups::onBtnAdd(void* userdata)
 {
 	ASFloaterContactGroups* self = (ASFloaterContactGroups*)userdata;
-	llinfos << "Button Add Begin" << llendl;
+	LL_INFOS() << "Button Add Begin" << LL_ENDL;
 	if(self)
 	{
 		LLComboBox* combo = self->getChild<LLComboBox>("buddy_group_combobox");
@@ -187,17 +187,17 @@ void ASFloaterContactGroups::populateActiveGroupList(LLUUID user_key)
 	LLScrollListCtrl* scroller = getChild<LLScrollListCtrl>("group_scroll_list");
 	if(scroller != NULL) 
 	{
-		llinfos << "Cleaning and rebuilding group list" << llendl;
+		LL_INFOS() << "Cleaning and rebuilding group list" << LL_ENDL;
 		scroller->deleteAllItems();
 
 		S32 count = ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"].size();
 		for (S32 index = 0; index < count; index++)
 		{
-			llinfos << "Entries for " << ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index].asString() << llendl;
+			LL_INFOS() << "Entries for " << ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index].asString() << LL_ENDL;
 			S32 entrycount = ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index].size();
 			for(S32 i = 0; i < entrycount; i++)
 			{
-				llinfos << "Subentries for " << ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index][i].asString() << llendl;
+				LL_INFOS() << "Subentries for " << ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index][i].asString() << LL_ENDL;
 				if (ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index][i].asString() == user_key.asString())
 				{
 
@@ -236,7 +236,7 @@ void ASFloaterContactGroups::populateGroupList()
 			std::string group = ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index].asString();
 			if (group != "")
 			{
-				llinfos << "Adding " << group << llendl;
+				LL_INFOS() << "Adding " << group << LL_ENDL;
 				combo->add(ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index].asString(), ADD_BOTTOM);
 			}
 		}

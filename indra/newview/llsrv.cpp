@@ -41,7 +41,7 @@ struct Responder : public LLAres::UriRewriteResponder
 	void rewriteResult(const std::vector<std::string> &uris) {
 		for (size_t i = 0; i < uris.size(); i++)
 		{
-			llinfos << "[" << i << "] " << uris[i] << llendl;
+			LL_INFOS() << "[" << i << "] " << uris[i] << LL_ENDL;
 		}
 		mUris = uris;
 	}

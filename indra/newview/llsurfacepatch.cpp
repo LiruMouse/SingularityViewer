@@ -41,7 +41,7 @@
 #include "llviewerregion.h"
 #include "llvlcomposition.h"
 #include "lldrawpool.h"
-#include "noise.h"
+#include "llperlin.h"
 
 extern bool gShiftFrame;
 extern U64 gFrameTime;
@@ -100,7 +100,7 @@ void LLSurfacePatch::dirty()
 	}
 	else
 	{
-		llwarns << "No viewer object for this surface patch!" << llendl;
+		LL_WARNS() << "No viewer object for this surface patch!" << LL_ENDL;
 	}
 
 	mDirtyZStats = TRUE;
@@ -230,12 +230,11 @@ void LLSurfacePatch::eval(const U32 x, const U32 y, const U32 stride, LLVector3 
 	const F32 xyScale = 4.9215f*7.f; //0.93284f;
 	const F32 xyScaleInv = (1.f / xyScale)*(0.2222222222f);
 
-	F32 vec[3] = {
-					(F32)fmod((F32)(mOriginGlobal.mdV[0] + x)*xyScaleInv, 256.f), // <FS:ND/> Added (F32) for proper array initialization
-					(F32)fmod((F32)(mOriginGlobal.mdV[1] + y)*xyScaleInv, 256.f), // <FS:ND/> Added (F32) for proper array initialization
-					0.f
-				};
-	F32 rand_val = llclamp(noise2(vec)* 0.75f + 0.5f, 0.f, 1.f);
+	LLVector2 vec(
+		(F32)fmod((F32)(mOriginGlobal.mdV[0] + x)*xyScaleInv, 256.f), // <FS:ND/> Added (F32) for proper array initialization
+		(F32)fmod((F32)(mOriginGlobal.mdV[1] + y)*xyScaleInv, 256.f) // <FS:ND/> Added (F32) for proper array initialization
+		);
+	F32 rand_val = llclamp(LLPerlinNoise::noise(vec)* 0.75f + 0.5f, 0.f, 1.f);
 	tex1->mV[1] = rand_val;
 
 

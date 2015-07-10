@@ -2796,6 +2796,9 @@ Falls diese Meldung weiterhin angezeigt wird, wenden Sie sich bitte an [SUPPORT_
 	<string name="Unnamed">(Nicht benannt)</string>
 	<string name="inventory_item_offered_to">Inventory item offered to</string>
 	<string name="Saved_message" value="(Saved [LONG_TIMESTAMP]) "/>
+	<string name="IM_unblock_only_groups_friends">
+		Wenn Sie diese Meldung sehen, müssen Sie unter „Einstellungen“ &gt; „Privatsphäre“ die Option „Nur IMs und Anrufe von Freunden oder Gruppen durchstellen“ deaktivieren.
+	</string>
 	<string name="StartPointSet">Start point set</string>
 	<string name="EndPointSet">End point set</string>
 	<string name="MeasuredDistance">Distance: [DIST]</string>

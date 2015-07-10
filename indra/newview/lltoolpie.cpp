@@ -765,7 +765,7 @@ BOOL LLToolPie::handleDoubleClick(S32 x, S32 y, MASK mask)
 {
 	if (gDebugClicks)
 	{
-		llinfos << "LLToolPie handleDoubleClick (becoming mouseDown)" << llendl;
+		LL_INFOS() << "LLToolPie handleDoubleClick (becoming mouseDown)" << LL_ENDL;
 	}
 
 	if (gSavedSettings.getBOOL("DoubleClickAutoPilot"))

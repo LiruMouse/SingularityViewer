@@ -94,7 +94,7 @@ public:
 		LLInventoryItem* item = gInventory.getItem(inv_item);
 		if(!item)
 		{
-			llwarns << "Item add reported, but not found in inventory!: " << inv_item << llendl;
+			LL_WARNS() << "Item add reported, but not found in inventory!: " << inv_item << LL_ENDL;
 		}
 		else
 		{
@@ -308,7 +308,7 @@ llwchar	LLEmbeddedItems::getEmbeddedCharFromIndex(S32 index)
 {
 	if (index >= (S32)mEmbeddedIndexedChars.size())
 	{
-		llwarns << "No item for embedded char " << index << " using LL_UNKNOWN_CHAR" << llendl;
+		LL_WARNS() << "No item for embedded char " << index << " using LL_UNKNOWN_CHAR" << LL_ENDL;
 		return LL_UNKNOWN_CHAR;
 	}
 	return mEmbeddedIndexedChars[index];
@@ -364,7 +364,7 @@ S32 LLEmbeddedItems::getIndexFromEmbeddedChar(llwchar wch)
 	}
 	else
 	{
-		llwarns << "Embedded char " << wch << " not found, using 0" << llendl;
+		LL_WARNS() << "Embedded char " << wch << " not found, using 0" << LL_ENDL;
 		return 0;
 	}
 }
@@ -843,7 +843,7 @@ BOOL LLViewerTextEditor::handleHover(S32 x, S32 y, MASK mask)
 			getWindow()->setCursor(UI_CURSOR_HAND);
 		}
 
-		lldebugst(LLERR_USER_INPUT) << "hover handled by " << getName() << " (active)" << llendl;		
+		LL_DEBUGS("UserInput") << "hover handled by " << getName() << " (active)" << LL_ENDL;
 		handled = TRUE;
 	}
 
@@ -870,14 +870,14 @@ BOOL LLViewerTextEditor::handleHover(S32 x, S32 y, MASK mask)
 			{
 				if(cur_segment->getStyle()->isLink())
 				{
-					lldebugst(LLERR_USER_INPUT) << "hover handled by " << getName() << " (over link, inactive)" << llendl;		
+					LL_DEBUGS("UserInput") << "hover handled by " << getName() << " (over link, inactive)" << LL_ENDL;
 					getWindow()->setCursor(UI_CURSOR_HAND);
 					handled = TRUE;
 				}
 				else
 				if(cur_segment->getStyle()->getIsEmbeddedItem())
 				{
-					lldebugst(LLERR_USER_INPUT) << "hover handled by " << getName() << " (over embedded item, inactive)" << llendl;		
+					LL_DEBUGS("UserInput") << "hover handled by " << getName() << " (over embedded item, inactive)" << LL_ENDL;
 					getWindow()->setCursor(UI_CURSOR_HAND);
 					//getWindow()->setCursor(UI_CURSOR_ARROW);
 					handled = TRUE;
@@ -888,7 +888,7 @@ BOOL LLViewerTextEditor::handleHover(S32 x, S32 y, MASK mask)
 
 		if( !handled )
 		{
-			lldebugst(LLERR_USER_INPUT) << "hover handled by " << getName() << " (inactive)" << llendl;		
+			LL_DEBUGS("UserInput") << "hover handled by " << getName() << " (inactive)" << LL_ENDL;
 			if (!mScrollbar->getVisible() || x < getRect().getWidth() - SCROLLBAR_SIZE)
 			{
 				getWindow()->setCursor(UI_CURSOR_IBEAM);
@@ -1198,7 +1198,7 @@ BOOL LLViewerTextEditor::handleDragAndDrop(S32 x, S32 y, MASK mask,
 		}
 
 		handled = TRUE;
-		lldebugst(LLERR_USER_INPUT) << "dragAndDrop handled by LLViewerTextEditor " << getName() << llendl;
+		LL_DEBUGS("UserInput") << "dragAndDrop handled by LLViewerTextEditor " << getName() << LL_ENDL;
 	}
 
 	return handled;

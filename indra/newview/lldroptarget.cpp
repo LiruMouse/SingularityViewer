@@ -167,7 +167,7 @@ void LLDropTarget::setControlName(const std::string& control_name, LLView* conte
 		mControl = gSavedPerAccountSettings.getControl(control_name);
 		if (!mControl)
 		{
-			llerrs << "Could not find control \"" << control_name << "\" in gSavedPerAccountSettings" << llendl;
+			LL_ERRS() << "Could not find control \"" << control_name << "\" in gSavedPerAccountSettings" << LL_ENDL;
 			return; // Though this should never happen.
 		}
 		const LLUUID id(mControl->getValue().asString());
@@ -248,7 +248,7 @@ void LLDropTarget::setValue(const LLSD& value)
 
 void LLDropTarget::doDrop(EDragAndDropType cargo_type, void* cargo_data)
 {
-	llinfos << "LLDropTarget::doDrop()" << llendl;
+	LL_INFOS() << "LLDropTarget::doDrop()" << LL_ENDL;
 }
 
 BOOL LLDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop, EDragAndDropType cargo_type, void* cargo_data, EAcceptance* accept, std::string& tooltip_msg)

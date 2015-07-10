@@ -14,7 +14,7 @@
 	<check_box label="Posizione" name="radio position"/>
 	<check_box label="Ruota (Ctrl)" name="radio rotate"/>
 	<check_box label="Ridimensiona (Ctrl-Shift)" name="radio stretch"/>
-	<check_box label="Seleziona Texture" name="radio select face"/>
+	<check_box label="Seleziona faccia" name="radio select face"/>
 	<check_box label="Modifica parti unite" name="checkbox edit linked parts"/>
 	<text name="text ruler mode">
 		Modalità:

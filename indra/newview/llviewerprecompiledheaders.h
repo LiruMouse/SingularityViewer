@@ -69,7 +69,6 @@
 
 // Library headers from llcommon project:
 #include "bitpack.h"
-#include "lldeleteutils.h"
 #include "imageids.h"
 #include "indra_constants.h"
 #include "llinitparam.h"
@@ -91,7 +90,6 @@
 #include "llnametable.h"
 #include "llpriqueuemap.h"
 #include "llprocessor.h"
-#include "llstack.h"
 #include "llstat.h"
 #include "llstl.h"
 #include "llstring.h"

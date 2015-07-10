@@ -123,7 +123,7 @@ bool LLInventoryFilter::checkFolder(const LLFolderViewFolder* folder) const
 {
 	if (!folder)
 	{
-		llwarns << "The filter can not be checked on an invalid folder." << llendl;
+		LL_WARNS() << "The filter can not be checked on an invalid folder." << LL_ENDL;
 		llassert(false); // crash in development builds
 		return false;
 	}
@@ -131,7 +131,7 @@ bool LLInventoryFilter::checkFolder(const LLFolderViewFolder* folder) const
 	const LLFolderViewEventListener* listener = folder->getListener();
 	if (!listener)
 	{
-		llwarns << "Folder view event listener not found." << llendl;
+		LL_WARNS() << "Folder view event listener not found." << LL_ENDL;
 		llassert(false); // crash in development builds
 		return false;
 	}
@@ -689,7 +689,7 @@ void LLInventoryFilter::setModified(EFilterBehavior behavior)
 			mMustPassGeneration = llmin(mMustPassGeneration, mFilterGeneration);
 			break;
 		default:
-			llerrs << "Bad filter behavior specified" << llendl;
+			LL_ERRS() << "Bad filter behavior specified" << LL_ENDL;
 		}
 	}
 	else

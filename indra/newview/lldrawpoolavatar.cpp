@@ -47,7 +47,7 @@
 #include "llsky.h"
 #include "llviewercamera.h"
 #include "llviewerregion.h"
-#include "noise.h"
+#include "llperlin.h"
 #include "pipeline.h"
 #include "llviewershadermgr.h"
 #include "llvovolume.h"
@@ -644,7 +644,7 @@ void LLDrawPoolAvatar::endImpostor()
 
 void LLDrawPoolAvatar::beginRigid()
 {
-	if (gPipeline.canUseVertexShaders())
+	if (LLGLSLShader::sNoFixedFunction)
 	{
 		if (LLPipeline::sUnderWaterRender)
 		{
@@ -724,18 +724,18 @@ void LLDrawPoolAvatar::endDeferredRigid()
 
 void LLDrawPoolAvatar::beginSkinned()
 {
-	if(!gPipeline.canUseVertexShaders())
+	if (!LLGLSLShader::sNoFixedFunction)
 	{
 		sVertexProgram = NULL;
 		return;
 	}
 
-	if (sShaderLevel > 0)
+	if (sShaderLevel > 0)	// for hardware blending
 	{
 		if (LLPipeline::sUnderWaterRender)
 		{
 			sVertexProgram = &gAvatarWaterProgram;
-			sShaderLevel = llmin((U32) 1, sShaderLevel);
+			sShaderLevel = 1;
 		}
 		else
 		{
@@ -797,7 +797,7 @@ void LLDrawPoolAvatar::endSkinned()
 void LLDrawPoolAvatar::beginRiggedSimple()
 {
 	sDiffuseChannel = 0;
-	if(!gPipeline.canUseVertexShaders())
+	if (!LLGLSLShader::sNoFixedFunction)
 	{
 		sVertexProgram = NULL;
 		return;
@@ -845,7 +845,7 @@ void LLDrawPoolAvatar::endRiggedFullbrightAlpha()
 void LLDrawPoolAvatar::beginRiggedGlow()
 {
 	sDiffuseChannel = 0;
-	if(!gPipeline.canUseVertexShaders())
+	if (!LLGLSLShader::sNoFixedFunction)
 	{
 		sVertexProgram = NULL;
 		return;
@@ -867,7 +867,7 @@ void LLDrawPoolAvatar::endRiggedGlow()
 void LLDrawPoolAvatar::beginRiggedFullbright()
 {
 	sDiffuseChannel = 0;
-	if(!gPipeline.canUseVertexShaders())
+	if (!LLGLSLShader::sNoFixedFunction)
 	{
 		sVertexProgram = NULL;
 		return;
@@ -908,7 +908,7 @@ void LLDrawPoolAvatar::endRiggedFullbright()
 
 void LLDrawPoolAvatar::beginRiggedShinySimple()
 {
-	if(!gPipeline.canUseVertexShaders())
+	if (!LLGLSLShader::sNoFixedFunction)
 	{
 		sVertexProgram = NULL;
 		return;
@@ -935,7 +935,7 @@ void LLDrawPoolAvatar::endRiggedShinySimple()
 
 void LLDrawPoolAvatar::beginRiggedFullbrightShiny()
 {
-	if(!gPipeline.canUseVertexShaders())
+	if (!LLGLSLShader::sNoFixedFunction)
 	{
 		sVertexProgram = NULL;
 		return;
@@ -1322,7 +1322,7 @@ void LLDrawPoolAvatar::renderAvatars(LLVOAvatar* single_avatar, S32 pass)
 		return;
 	}
 	
-	if ((sShaderLevel >= SHADER_LEVEL_CLOTH))
+	if (sShaderLevel >= SHADER_LEVEL_CLOTH)
 	{
 		LLMatrix4 rot_mat;
 		LLViewerCamera::getInstance()->getMatrixToLocal(rot_mat);
@@ -1338,7 +1338,7 @@ void LLDrawPoolAvatar::renderAvatars(LLVOAvatar* single_avatar, S32 pass)
 		sVertexProgram->uniform4fv(LLViewerShaderMgr::AVATAR_WIND, 1, wind.mV);
 		F32 phase = -1.f * (avatarp->mRipplePhase);
 
-		F32 freq = 7.f + (noise1(avatarp->mRipplePhase) * 2.f);
+		F32 freq = 7.f + (LLPerlinNoise::noise(avatarp->mRipplePhase) * 2.f);
 		LLVector4 sin_params(freq, freq, freq, phase);
 		sVertexProgram->uniform4fv(LLViewerShaderMgr::AVATAR_SINWAVE, 1, sin_params.mV);
 
@@ -1401,7 +1401,7 @@ void LLDrawPoolAvatar::getRiggedGeometry(LLFace* face, LLPointer<LLVertexBuffer>
 		face->setPoolType(LLDrawPool::POOL_AVATAR);
 	}
 
-	//llinfos << "Rebuilt face " << face->getTEOffset() << " of " << face->getDrawable() << " at " << gFrameTimeSeconds << llendl;
+	//LL_INFOS() << "Rebuilt face " << face->getTEOffset() << " of " << face->getDrawable() << " at " << gFrameTimeSeconds << LL_ENDL;
 	face->getGeometryVolume(*volume, face->getTEOffset(), mat_vert, mat_inv_trans, offset, true);
 
 	buffer->flush();
@@ -1851,12 +1851,12 @@ void LLDrawPoolAvatar::addRiggedFace(LLFace* facep, U32 type)
 {
 	if (type >= NUM_RIGGED_PASSES)
 	{
-		llerrs << "Invalid rigged face type." << llendl;
+		LL_ERRS() << "Invalid rigged face type." << LL_ENDL;
 	}
 
 	if (facep->getRiggedIndex(type) != -1)
 	{
-		llerrs << "Tried to add a rigged face that's referenced elsewhere." << llendl;
+		LL_ERRS() << "Tried to add a rigged face that's referenced elsewhere." << LL_ENDL;
 	}	
 	
 	facep->setRiggedIndex(type, mRiggedFace[type].size());
@@ -1887,7 +1887,7 @@ void LLDrawPoolAvatar::removeRiggedFace(LLFace* facep)
 			}
 			else
 			{
-				llerrs << "Face reference data corrupt for rigged type " << i << llendl;
+				LL_ERRS() << "Face reference data corrupt for rigged type " << i << LL_ENDL;
 			}
 		}
 	}

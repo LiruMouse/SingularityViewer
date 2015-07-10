@@ -625,22 +625,22 @@ BOOL LLWindowMacOSX::createContext(int x, int y, int width, int height, int bits
 
 			if(aglDescribeRenderer(rendererInfo, AGL_VIDEO_MEMORY, &result))
 			{
-				//				llinfos << "createContext: aglDescribeRenderer(AGL_VIDEO_MEMORY) returned " << result << llendl;
+				//				LL_INFOS() << "createContext: aglDescribeRenderer(AGL_VIDEO_MEMORY) returned " << result << LL_ENDL;
 				gGLManager.mVRAM = result / (1024 * 1024);
 			}
 			else
 			{
-				//				llinfos << "createContext: aglDescribeRenderer(AGL_VIDEO_MEMORY) failed." << llendl;
+				//				LL_INFOS() << "createContext: aglDescribeRenderer(AGL_VIDEO_MEMORY) failed." << LL_ENDL;
 			}
 
 			// This could be useful at some point, if it takes into account the memory already used by screen buffers, etc...
 			if(aglDescribeRenderer(rendererInfo, AGL_TEXTURE_MEMORY, &result))
 			{
-				//				llinfos << "createContext: aglDescribeRenderer(AGL_TEXTURE_MEMORY) returned " << result << llendl;
+				//				LL_INFOS() << "createContext: aglDescribeRenderer(AGL_TEXTURE_MEMORY) returned " << result << LL_ENDL;
 			}
 			else
 			{
-				//				llinfos << "createContext: aglDescribeRenderer(AGL_TEXTURE_MEMORY) failed." << llendl;
+				//				LL_INFOS() << "createContext: aglDescribeRenderer(AGL_TEXTURE_MEMORY) failed." << LL_ENDL;
 			}
 
 			aglDestroyRendererInfo(rendererInfo);
@@ -1189,7 +1189,7 @@ BOOL LLWindowMacOSX::getPosition(LLCoordScreen *position)
 	}
 	else
 	{
-		llerrs << "LLWindowMacOSX::getPosition(): no window and not fullscreen!" << llendl;
+		LL_ERRS() << "LLWindowMacOSX::getPosition(): no window and not fullscreen!" << LL_ENDL;
 	}
 
 	return (err == noErr);
@@ -1215,7 +1215,7 @@ BOOL LLWindowMacOSX::getSize(LLCoordScreen *size)
 	}
 	else
 	{
-		llerrs << "LLWindowMacOSX::getPosition(): no window and not fullscreen!" << llendl;
+		LL_ERRS() << "LLWindowMacOSX::getPosition(): no window and not fullscreen!" << LL_ENDL;
 	}
 
 	return (err == noErr);
@@ -1241,7 +1241,7 @@ BOOL LLWindowMacOSX::getSize(LLCoordWindow *size)
 	}
 	else
 	{
-		llerrs << "LLWindowMacOSX::getPosition(): no window and not fullscreen!" << llendl;
+		LL_ERRS() << "LLWindowMacOSX::getPosition(): no window and not fullscreen!" << LL_ENDL;
 	}
 
 	return (err == noErr);
@@ -1285,7 +1285,7 @@ BOOL LLWindowMacOSX::setSizeImpl(const LLCoordWindow size)
 		}
 		else
 		{
-			llinfos << "Error setting size" << err << llendl;
+			LL_INFOS() << "Error setting size" << err << LL_ENDL;
 			return FALSE;
 		}
 	}
@@ -1421,11 +1421,11 @@ void LLWindowMacOSX::setMouseClipping( BOOL b )
 
 	if(b)
 	{
-		//		llinfos << "setMouseClipping(TRUE)" << llendl;
+		//		LL_INFOS() << "setMouseClipping(TRUE)" << LL_ENDL;
 	}
 	else
 	{
-		//		llinfos << "setMouseClipping(FALSE)" << llendl;
+		//		LL_INFOS() << "setMouseClipping(FALSE)" << LL_ENDL;
 	}
 
 	adjustCursorDecouple();
@@ -1443,7 +1443,7 @@ BOOL LLWindowMacOSX::setCursorPosition(const LLCoordWindow position)
 
 	CGPoint newPosition;
 
-	//	llinfos << "setCursorPosition(" << screen_pos.mX << ", " << screen_pos.mY << ")" << llendl;
+	//	LL_INFOS() << "setCursorPosition(" << screen_pos.mX << ", " << screen_pos.mY << ")" << LL_ENDL;
 
 	newPosition.x = screen_pos.mX;
 	newPosition.y = screen_pos.mY;
@@ -1495,7 +1495,7 @@ BOOL LLWindowMacOSX::getCursorPosition(LLCoordWindow *position)
 	// gets the mouse location in local coordinates
 	::GetMouse(&cursor_point);
 
-//	lldebugs << "getCursorPosition(): cursor is at " << cursor_point.h << ", " << cursor_point.v << "  port origin: " << portrect.left << ", " << portrect.top << llendl;
+//	LL_DEBUGS() << "getCursorPosition(): cursor is at " << cursor_point.h << ", " << cursor_point.v << "  port origin: " << portrect.left << ", " << portrect.top << LL_ENDL;
 
 	::SetPort(save);
 
@@ -1529,7 +1529,7 @@ void LLWindowMacOSX::adjustCursorDecouple(bool warpingMouse)
 			// The cursor should be decoupled.  Make sure it is.
 			if(!mCursorDecoupled)
 			{
-				//			llinfos << "adjustCursorDecouple: decoupling cursor" << llendl;
+				//			LL_INFOS() << "adjustCursorDecouple: decoupling cursor" << LL_ENDL;
 				CGAssociateMouseAndMouseCursorPosition(false);
 				mCursorDecoupled = true;
 				FlushSpecificEventsFromQueue(GetCurrentEventQueue(), mMoveEventCampartorUPP, NULL);
@@ -1542,7 +1542,7 @@ void LLWindowMacOSX::adjustCursorDecouple(bool warpingMouse)
 		// The cursor should not be decoupled.  Make sure it isn't.
 		if(mCursorDecoupled)
 		{
-			//			llinfos << "adjustCursorDecouple: recoupling cursor" << llendl;
+			//			LL_INFOS() << "adjustCursorDecouple: recoupling cursor" << LL_ENDL;
 			CGAssociateMouseAndMouseCursorPosition(true);
 			mCursorDecoupled = false;
 		}
@@ -1647,7 +1647,7 @@ void LLWindowMacOSX::flashIcon(F32 seconds)
 		else
 		{
 			// This is very not-fatal (only problem is the icon will not bounce), but we'd like to find out about it somehow...
-			llinfos << "NMInstall failed with error code " << err << llendl;
+			LL_INFOS() << "NMInstall failed with error code " << err << LL_ENDL;
 		}
 	}
 }
@@ -2677,28 +2677,28 @@ OSStatus LLWindowMacOSX::eventHandler (EventHandlerCallRef myHandler, EventRef e
 			break;
 
 		case kEventWindowHidden:
-			//					llinfos << "LLWindowMacOSX: Deactivating on hide" << llendl;
+			//					LL_INFOS() << "LLWindowMacOSX: Deactivating on hide" << LL_ENDL;
 			mMinimized = TRUE;
 			mCallbacks->handleActivate(this, false);
 			//					result = noErr;
 			break;
 
 		case kEventWindowShown:
-			//					llinfos << "LLWindowMacOSX: Activating on show" << llendl;
+			//					LL_INFOS() << "LLWindowMacOSX: Activating on show" << LL_ENDL;
 			mMinimized = FALSE;
 			mCallbacks->handleActivate(this, true);
 			//					result = noErr;
 			break;
 
 		case kEventWindowCollapsed:
-			//					llinfos << "LLWindowMacOSX: Deactivating on collapse" << llendl;
+			//					LL_INFOS() << "LLWindowMacOSX: Deactivating on collapse" << LL_ENDL;
 			mMinimized = TRUE;
 			mCallbacks->handleActivate(this, false);
 			//					result = noErr;
 			break;
 
 		case kEventWindowExpanded:
-			//					llinfos << "LLWindowMacOSX: Activating on expand" << llendl;
+			//					LL_INFOS() << "LLWindowMacOSX: Activating on expand" << LL_ENDL;
 			mMinimized = FALSE;
 			mCallbacks->handleActivate(this, true);
 			//					result = noErr;
@@ -2859,7 +2859,7 @@ const char* cursorIDToName(int id)
 		case UI_CURSOR_TOOLPAY:							return "UI_CURSOR_TOOLPAY";
 	}
 
-	llerrs << "cursorIDToName: unknown cursor id" << id << llendl;
+	LL_ERRS() << "cursorIDToName: unknown cursor id" << id << LL_ENDL;
 
 	return "UI_CURSOR_ARROW";
 }
@@ -3032,14 +3032,14 @@ void LLWindowMacOSX::hideCursor()
 {
 	if(!mCursorHidden)
 	{
-		//		llinfos << "hideCursor: hiding" << llendl;
+		//		LL_INFOS() << "hideCursor: hiding" << LL_ENDL;
 		mCursorHidden = TRUE;
 		mHideCursorPermanent = TRUE;
 		::HideCursor();
 	}
 	else
 	{
-		//		llinfos << "hideCursor: already hidden" << llendl;
+		//		LL_INFOS() << "hideCursor: already hidden" << LL_ENDL;
 	}
 
 	adjustCursorDecouple();
@@ -3049,14 +3049,14 @@ void LLWindowMacOSX::showCursor()
 {
 	if(mCursorHidden)
 	{
-		//		llinfos << "showCursor: showing" << llendl;
+		//		LL_INFOS() << "showCursor: showing" << LL_ENDL;
 		mCursorHidden = FALSE;
 		mHideCursorPermanent = FALSE;
 		::ShowCursor();
 	}
 	else
 	{
-		//		llinfos << "showCursor: already visible" << llendl;
+		//		LL_INFOS() << "showCursor: already visible" << LL_ENDL;
 	}
 
 	adjustCursorDecouple();
@@ -3268,14 +3268,14 @@ void LLWindowMacOSX::spawnWebBrowser(const std::string& escaped_url, bool async)
 
 	if (!found)
 	{
-		llwarns << "spawn_web_browser called for url with protocol not on whitelist: " << escaped_url << llendl;
+		LL_WARNS() << "spawn_web_browser called for url with protocol not on whitelist: " << escaped_url << LL_ENDL;
 		return;
 	}
 
 	OSStatus result = noErr;
 	CFURLRef urlRef = NULL;
 
-	llinfos << "Opening URL " << escaped_url << llendl;
+	LL_INFOS() << "Opening URL " << escaped_url << LL_ENDL;
 
 	CFStringRef	stringRef = CFStringCreateWithBytes(NULL, (UInt8 *)escaped_url.c_str(), strlen(escaped_url.c_str()), kCFStringEncodingUTF8, false);
 	if (stringRef)
@@ -3295,14 +3295,14 @@ void LLWindowMacOSX::spawnWebBrowser(const std::string& escaped_url, bool async)
 
 		if (result != noErr)
 		{
-			llinfos << "Error " << result << " on open." << llendl;
+			LL_INFOS() << "Error " << result << " on open." << LL_ENDL;
 		}
 
 		CFRelease(urlRef);
 	}
 	else
 	{
-		llinfos << "Error: couldn't create URL." << llendl;
+		LL_INFOS() << "Error: couldn't create URL." << LL_ENDL;
 	}
 }
 
@@ -3379,7 +3379,7 @@ LLSD LLWindowMacOSX::getNativeKeyData()
 	}
 
 
-	lldebugs << "native key data is: " << result << llendl;
+	LL_DEBUGS() << "native key data is: " << result << LL_ENDL;
 
 	return result;
 }
@@ -3580,7 +3580,7 @@ OSErr LLWindowMacOSX::dragTrackingHandler(DragTrackingMessage message, WindowRef
 	OSErr result = noErr;
 	LLWindowMacOSX *self = (LLWindowMacOSX*)handlerRefCon;
 
-	lldebugs << "drag tracking handler, message = " << message << llendl;
+	LL_DEBUGS() << "drag tracking handler, message = " << message << LL_ENDL;
 
 	switch(message)
 	{

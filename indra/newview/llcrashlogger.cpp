@@ -58,7 +58,7 @@ public:
 
 	virtual void httpFailure(void)
 	{
-		llwarns << "Crash report sending failed: " << mReason << llendl;
+		LL_WARNS() << "Crash report sending failed: " << mReason << LL_ENDL;
 	}
 
 	virtual void httpSuccess(void)
@@ -68,7 +68,7 @@ public:
 		{
 			msg += ": " + mContent["message"].asString();
 		}
-		llinfos << msg << llendl;
+		LL_INFOS() << msg << LL_ENDL;
 
 		if (mContent.has("report_id"))
 		{
@@ -178,7 +178,7 @@ bool miniDumpExists(const std::string& dumpDir)
 	}
 	catch (const boost::filesystem::filesystem_error& e)
 	{
-		llwarns << "Failed to determine existance of the minidump file: '" + e.code().message() +"'" << llendl;
+		LL_WARNS() << "Failed to determine existance of the minidump file: '" + e.code().message() +"'" << LL_ENDL;
 	}
 
 	return found;
@@ -233,7 +233,7 @@ bool LLCrashLogger::readMinidump(std::string minidump_path)
 
 void LLCrashLogger::gatherFiles()
 {
-	llinfos << "Gathering logs..." << llendl;
+	LL_INFOS() << "Gathering logs..." << LL_ENDL;
  
     LLSD static_sd;
     LLSD dynamic_sd;
@@ -258,8 +258,8 @@ void LLCrashLogger::gatherFiles()
 			LLCurl::setCAFile(gDirUtilp->getCAFile());
 		}
 
-		llinfos << "Using log file from debug log " << mFileMap["SecondLifeLog"] << llendl;
-		llinfos << "Using settings file from debug log " << mFileMap["SettingsXml"] << llendl;
+		LL_INFOS() << "Using log file from debug log " << mFileMap["SecondLifeLog"] << LL_ENDL;
+		LL_INFOS() << "Using settings file from debug log " << mFileMap["SettingsXml"] << LL_ENDL;
 	}
 	else
 	{
@@ -287,14 +287,14 @@ void LLCrashLogger::gatherFiles()
 	// Singu Note: we have just started again, log has been renamed
 	mFileMap["SecondLifeLog"] = gDirUtilp->getExpandedFilename(LL_PATH_LOGS, OLD_LOG_FILE);
 
-	llinfos << "Encoding files..." << llendl;
+	LL_INFOS() << "Encoding files..." << LL_ENDL;
 
 	for(std::map<std::string, std::string>::iterator itr = mFileMap.begin(); itr != mFileMap.end(); ++itr)
 	{
 		std::ifstream f((*itr).second.c_str());
 		if(!f.is_open())
 		{
-			llinfos << "Can't find file " << (*itr).second << llendl;
+			LL_INFOS() << "Can't find file " << (*itr).second << LL_ENDL;
 			continue;
 		}
 		std::stringstream s;
@@ -376,7 +376,7 @@ bool LLCrashLogger::sendCrashLog(std::string dump_dir)
 	LLSD post_data;
 	post_data = constructPostData();
     
-	llinfos << "Sending reports..." << llendl;
+	LL_INFOS() << "Sending reports..." << LL_ENDL;
 
 	std::ofstream out_file(report_file.c_str());
 	LLSDSerialize::toPrettyXML(post_data, out_file);

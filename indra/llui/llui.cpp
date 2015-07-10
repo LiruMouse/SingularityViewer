@@ -79,7 +79,7 @@ void make_ui_sound(const char* namep)
 	std::string name = ll_safe_string(namep);
 	if (!LLUI::sConfigGroup->controlExists(name))
 	{
-		llwarns << "tried to make ui sound for unknown sound name: " << name << llendl;	
+		LL_WARNS() << "tried to make ui sound for unknown sound name: " << name << LL_ENDL;	
 	}
 	else
 	{
@@ -90,12 +90,12 @@ void make_ui_sound(const char* namep)
 			{
 				if (LLUI::sConfigGroup->getBOOL("UISndDebugSpamToggle"))
 				{
-					llinfos << "ui sound name: " << name << " triggered but silent (null uuid)" << llendl;	
+					LL_INFOS() << "ui sound name: " << name << " triggered but silent (null uuid)" << LL_ENDL;	
 				}				
 			}
 			else
 			{
-				llwarns << "ui sound named: " << name << " does not translate to a valid uuid" << llendl;	
+				LL_WARNS() << "ui sound named: " << name << " does not translate to a valid uuid" << LL_ENDL;	
 			}
 
 		}
@@ -103,7 +103,7 @@ void make_ui_sound(const char* namep)
 		{
 			if (LLUI::sConfigGroup->getBOOL("UISndDebugSpamToggle"))
 			{
-				llinfos << "ui sound name: " << name << llendl;	
+				LL_INFOS() << "ui sound name: " << name << LL_ENDL;	
 			}
 			LLUI::sAudioCallback(uuid);
 		}
@@ -137,7 +137,7 @@ void LLUI::initClass(LLControlGroup* config,
 		|| sIgnoresGroup == NULL
 		|| sColorsGroup == NULL)
 	{
-		llerrs << "Failure to initialize configuration groups" << llendl;
+		LL_ERRS() << "Failure to initialize configuration groups" << LL_ENDL;
 	}
 
 	sAudioCallback = audio_callback;

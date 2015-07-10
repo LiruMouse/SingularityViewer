@@ -133,6 +133,7 @@ public:
 
 	LLViewerObject(const LLUUID &id, const LLPCode type, LLViewerRegion *regionp, BOOL is_global = FALSE);
 
+	virtual void resetVertexBuffers() {}
 	virtual void markDead();				// Mark this object as dead, and clean up its references
 	BOOL isDead() const									{return mDead;}
 	BOOL isOrphaned() const								{ return mOrphaned; }

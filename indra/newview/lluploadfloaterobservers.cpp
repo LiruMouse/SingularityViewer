@@ -41,7 +41,7 @@ LLUploadModelPremissionsResponder::LLUploadModelPremissionsResponder(const LLHan
 
 void LLUploadModelPremissionsResponder::httpFailure(void)
 {
-	llwarns << "httpFailure: " << dumpResponse() << llendl;
+	LL_WARNS() << "httpFailure: " << dumpResponse() << LL_ENDL;
 
 	LLUploadPermissionsObserver* observer = mObserverHandle.get();
 

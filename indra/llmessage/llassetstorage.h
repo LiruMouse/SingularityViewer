@@ -51,6 +51,14 @@ class LLSD;
 // HTTP Uploads also timeout if they take longer than this.
 const F32 LL_ASSET_STORAGE_TIMEOUT = 5 * 60.0f;  
 
+// Specific error codes
+const int LL_ERR_ASSET_REQUEST_FAILED = -1;
+//const int LL_ERR_ASSET_REQUEST_INVALID = -2;
+const int LL_ERR_ASSET_REQUEST_NONEXISTENT_FILE = -3;
+const int LL_ERR_ASSET_REQUEST_NOT_IN_DATABASE = -4;
+const int LL_ERR_INSUFFICIENT_PERMISSIONS = -5;
+const int LL_ERR_PRICE_MISMATCH = -23018;
+
 class LLAssetInfo
 {
 protected:

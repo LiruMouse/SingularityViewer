@@ -273,7 +273,7 @@ void LLTracker::render3D()
 				//		  	instance()->mBeaconText, av_tracker.getName() );
 // [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a) | Added: RLVa-1.0.0a
 				renderBeacon( av_tracker.getGlobalPos(), gTrackColor, instance()->mBeaconText, 
-					(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? av_tracker.getName() : RlvStrings::getString(RLV_STRING_HIDDEN));
+					(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) && !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS)) ? av_tracker.getName() : RlvStrings::getString(RLV_STRING_HIDDEN));
 // [/RLVa:KB]
 			}
 		}
@@ -820,7 +820,7 @@ void LLTracker::cacheLandmarkPosition()
 		}
 		else
 		{
-			llwarns << "LLTracker couldn't find home pos" << llendl;
+			LL_WARNS() << "LLTracker couldn't find home pos" << LL_ENDL;
 			mTrackedLandmarkAssetID.setNull();
 			mTrackedLandmarkItemID.setNull();
 		}

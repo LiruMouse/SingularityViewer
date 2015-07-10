@@ -276,7 +276,7 @@ void LLLayoutStack::draw()
 					// Check for bogus rectangle
 					if (!panelp->getRect().isValid())
 					{
-						llwarns << "Bogus rectangle for " << panelp->getName() << " with " << panelp->getRect() << llendl;
+						LL_WARNS() << "Bogus rectangle for " << panelp->getName() << " with " << panelp->getRect() << LL_ENDL;
 					}
 				}
 				LLUI::popMatrix();
@@ -290,7 +290,7 @@ void LLLayoutStack::draw()
 		// Check for bogus rectangle
 		if (!getRect().isValid())
 		{
-			llwarns << "Bogus rectangle for " << getName() << " with " << getRect() << llendl;
+			LL_WARNS() << "Bogus rectangle for " << getName() << " with " << getRect() << LL_ENDL;
 		}
 	}
 }
@@ -951,7 +951,7 @@ LLView* LLLayoutStack::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactor
 	}
 	else
 	{
-		llwarns << "Unknown orientation " << orientation_string << ", using vertical" << llendl;
+		LL_WARNS() << "Unknown orientation " << orientation_string << ", using vertical" << LL_ENDL;
 	}
 	
 	BOOL clip = false;

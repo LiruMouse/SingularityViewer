@@ -209,7 +209,7 @@ BOOL LLFloaterExploreAnimations::handleMouseDown(S32 x, S32 y, MASK mask)
 {
 	if (mPreviewRect.pointInRect(x, y))
 	{
-		//llinfos << "lolwut" << llendl;
+		//LL_INFOS() << "lolwut" << LL_ENDL;
 		bringToFront( x, y );
 		gFocusMgr.setMouseCapture(this);
 		gViewerWindow->hideCursor();
@@ -226,7 +226,7 @@ BOOL LLFloaterExploreAnimations::handleMouseDown(S32 x, S32 y, MASK mask)
 //-----------------------------------------------------------------------------
 BOOL LLFloaterExploreAnimations::handleMouseUp(S32 x, S32 y, MASK mask)
 {
-	//llinfos << "lolwut pear" << llendl;
+	//LL_INFOS() << "lolwut pear" << LL_ENDL;
 	gFocusMgr.setMouseCapture(FALSE);
 	gViewerWindow->showCursor();
 	return LLFloater::handleMouseUp(x, y, mask);

@@ -85,13 +85,13 @@ std::string LLHost::getHostName() const
 	hostent* he;
 	if (INVALID_HOST_IP_ADDRESS == mIP)
 	{
-		llwarns << "LLHost::getHostName() : Invalid IP address" << llendl;
+		LL_WARNS() << "LLHost::getHostName() : Invalid IP address" << LL_ENDL;
 		return std::string();
 	}
 	if (mHostNotFound)
 	{
 		// We already checked this... avoid freezing the viewer 5 seconds again and again.
-		llwarns << "LLHost::getHostName() : Returning cached HOST_NOT_FOUND." << llendl;
+		LL_WARNS() << "LLHost::getHostName() : Returning cached HOST_NOT_FOUND." << LL_ENDL;
 		return std::string();
 	}
 	he = gethostbyaddr((char *)&mIP, sizeof(mIP), AF_INET);
@@ -104,7 +104,7 @@ std::string LLHost::getHostName() const
 		int err = h_errno;
 		int err_host_not_found = HOST_NOT_FOUND;
 #endif
-		llwarns << "LLHost::getHostName() : Couldn't find host name for address " << mIP << ", Error: " << err << llendl;
+		LL_WARNS() << "LLHost::getHostName() : Couldn't find host name for address " << mIP << ", Error: " << err << LL_ENDL;
 		if (err == err_host_not_found)
 		{
 			mHostNotFound = 1;
@@ -149,17 +149,17 @@ BOOL LLHost::setHostByName(const std::string& hostname)
 		switch(error_number) 
 		{
 			case TRY_AGAIN:	// XXX how to handle this case? 
-				llwarns << "LLHost::setAddress(): try again" << llendl;
+				LL_WARNS() << "LLHost::setAddress(): try again" << LL_ENDL;
 				break;
 			case HOST_NOT_FOUND:
 			case NO_ADDRESS:	// NO_DATA
-				llwarns << "LLHost::setAddress(): host not found" << llendl;
+				LL_WARNS() << "LLHost::setAddress(): host not found" << LL_ENDL;
 				break;
 			case NO_RECOVERY:
-				llwarns << "LLHost::setAddress(): unrecoverable error" << llendl;
+				LL_WARNS() << "LLHost::setAddress(): unrecoverable error" << LL_ENDL;
 				break;
 			default:
-				llwarns << "LLHost::setAddress(): unknown error - " << error_number << llendl;
+				LL_WARNS() << "LLHost::setAddress(): unknown error - " << error_number << LL_ENDL;
 				break;
 		}
 		return FALSE;

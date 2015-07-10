@@ -245,14 +245,14 @@ void LLPanelFriends::filterContacts(const std::string& search_name)
 			refreshNames(LLFriendObserver::ADD);
 		}
 
-		//llinfos << "search_name = " << search_name <<llendl;
+		//LL_INFOS() << "search_name = " << search_name <<LL_ENDL;
 
 		std::vector<LLScrollListItem*> vFriends = mFriendsList->getAllData(); // all of it.
 		for (std::vector<LLScrollListItem*>::iterator itr = vFriends.begin(); itr != vFriends.end(); ++itr)
 		{
 			friend_name = utf8str_tolower((*itr)->getColumn(LIST_FRIEND_NAME)->getValue().asString());
 			bool show_entry = (friend_name.find(utf8str_tolower(search_name)) != std::string::npos);
-			//llinfos << "friend_name = " << friend_name << (show_entry ? " (shown)" : "") <<llendl;
+			//LL_INFOS() << "friend_name = " << friend_name << (show_entry ? " (shown)" : "") <<LL_ENDL;
 			if (!show_entry)
 			{
 				mFriendsList->deleteItems((*itr)->getValue());
@@ -614,7 +614,7 @@ void LLPanelFriends::onSelectName()
 
 void LLPanelFriends::updateColumns(bool collapsed)
 {
-	//llinfos << "Refreshing UI" << llendl;
+	//LL_INFOS() << "Refreshing UI" << LL_ENDL;
 	S32 width = collapsed ? 0 : 22;
 	LLScrollListColumn* column = mFriendsList->getColumn(5);
 	mFriendsList->updateStaticColumnWidth(column, width);
@@ -631,7 +631,7 @@ void LLPanelFriends::updateColumns(bool collapsed)
 
 void LLPanelFriends::onClickIM(const uuid_vec_t& ids)
 {
-	//llinfos << "LLPanelFriends::onClickIM()" << llendl;
+	//LL_INFOS() << "LLPanelFriends::onClickIM()" << LL_ENDL;
 	if (!ids.empty())
 		ids.size() == 1 ? LLAvatarActions::startIM(ids[0]) : LLAvatarActions::startConference(ids);
 }

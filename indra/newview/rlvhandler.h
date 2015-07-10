@@ -100,6 +100,9 @@ public:
 	bool canTouch(const LLViewerObject* pObj, const LLVector3& posOffset = LLVector3::zero) const;	// @touch
 	bool filterChat(std::string& strUTF8Text, bool fFilterEmote) const;							// @sendchat, @recvchat and @redirchat
 	bool redirectChatOrEmote(const std::string& strUTF8Test) const;								// @redirchat and @rediremote
+	void updatePole(const ERlvBehaviour& bhvr, bool max);										// @cam*min, @cam*max, and @camavdist
+	F32 camPole(const ERlvBehaviour& bhvr)			{ return m_Poles[bhvr]; }					// @cam*min, @cam*max, and @camavdist
+	LLColor3 camDrawColor() const;																// @camdrawcolor
 
 	// Command processing helper functions
 	ERlvCmdRet processCommand(const LLUUID& idObj, const std::string& strCommand, bool fFromObj);
@@ -192,6 +195,7 @@ public:
 protected:
 	rlv_object_map_t      m_Objects;				// Map of objects that have active restrictions (idObj -> RlvObject)
 	rlv_exception_map_t   m_Exceptions;				// Map of currently active restriction exceptions (ERlvBehaviour -> RlvException)
+	std::map<ERlvBehaviour, F32> m_Poles;			// Map of polest poles from exceptions that store polar values.
 	S16                   m_Behaviours[RLV_BHVR_COUNT];
 
 	rlv_command_list_t    m_Retained;

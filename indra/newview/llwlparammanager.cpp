@@ -150,12 +150,12 @@ void LLWLParamManager::clearParamSetsOfScope(LLWLParamKey::EScope scope)
 // side effect: applies changes to all internal structures!
 std::map<LLWLParamKey, LLWLParamSet> LLWLParamManager::finalizeFromDayCycle(LLWLParamKey::EScope scope)
 {
-	lldebugs << "mDay before finalizing:" << llendl;
+	LL_DEBUGS() << "mDay before finalizing:" << LL_ENDL;
 	{
 		for (std::map<F32, LLWLParamKey>::iterator iter = mDay.mTimeMap.begin(); iter != mDay.mTimeMap.end(); ++iter)
 		{
 			LLWLParamKey& key = iter->second;
-			lldebugs << iter->first << "->" << key.name << llendl;
+			LL_DEBUGS() << iter->first << "->" << key.name << LL_ENDL;
 		}
 	}
 
@@ -241,12 +241,12 @@ std::map<LLWLParamKey, LLWLParamSet> LLWLParamManager::finalizeFromDayCycle(LLWL
 		final_references[new_key] = iter->second;
 	}
 
-	lldebugs << "mDay after finalizing:" << llendl;
+	LL_DEBUGS() << "mDay after finalizing:" << LL_ENDL;
 	{
 		for (std::map<F32, LLWLParamKey>::iterator iter = mDay.mTimeMap.begin(); iter != mDay.mTimeMap.end(); ++iter)
 		{
 			LLWLParamKey& key = iter->second;
-			lldebugs << iter->first << "->" << key.name << llendl;
+			LL_DEBUGS() << iter->first << "->" << key.name << LL_ENDL;
 		}
 	}
 
@@ -294,7 +294,7 @@ void LLWLParamManager::loadAllPresets()
 
 void LLWLParamManager::loadPresetsFromDir(const std::string& dir)
 {
-	LL_INFOS2("AppInit", "Shaders") << "Loading sky presets from " << dir << LL_ENDL;
+	LL_INFOS("AppInit", "Shaders") << "Loading sky presets from " << dir << LL_ENDL;
 
 	LLDirIterator dir_iter(dir, "*.xml");
 	while (1)
@@ -308,7 +308,7 @@ void LLWLParamManager::loadPresetsFromDir(const std::string& dir)
 		std::string path = dir + file;
 		if (!loadPreset(path))
 		{
-			llwarns << "Error loading sky preset from " << path << llendl;
+			LL_WARNS() << "Error loading sky preset from " << path << LL_ENDL;
 		}
 	}
 }
@@ -324,7 +324,7 @@ bool LLWLParamManager::loadPreset(const std::string& path)
 		return false;
 	}
 
-	LL_DEBUGS2("AppInit", "Shaders") << "Loading sky " << name << LL_ENDL;
+	LL_DEBUGS("AppInit", "Shaders") << "Loading sky " << name << LL_ENDL;
 
 	LLSD params_data;
 	LLPointer<LLSDParser> parser = new LLSDXMLParser();
@@ -534,7 +534,7 @@ bool LLWLParamManager::applySkyParams(const LLSD& params, bool interpolate /*= f
 {
 	if (params.size() == 0)
 	{
-		llwarns << "Undefined sky params" << llendl;
+		LL_WARNS() << "Undefined sky params" << LL_ENDL;
 		return false;
 	}
 
@@ -656,7 +656,7 @@ bool LLWLParamManager::removeParamSet(const LLWLParamKey& key, bool delete_from_
 
 	if (key.scope == LLEnvKey::SCOPE_REGION)
 	{
-		llwarns << "Removing region skies not supported" << llendl;
+		LL_WARNS() << "Removing region skies not supported" << LL_ENDL;
 		llassert(key.scope == LLEnvKey::SCOPE_LOCAL);
 		return false;
 	}
@@ -793,7 +793,7 @@ void LLWLParamManager::initHack()
 	if (!LLDayCycleManager::instance().getPreset(preferred_day, mDay))
 	{
 		// Fall back to default.
-		llwarns << "No day cycle named " << preferred_day << ", falling back to defaults" << llendl;
+		LL_WARNS() << "No day cycle named " << preferred_day << ", falling back to defaults" << LL_ENDL;
 		mDay.loadDayCycleFromFile("Default.xml");
 
 		// *TODO: Fix user preferences accordingly.
@@ -803,7 +803,7 @@ void LLWLParamManager::initHack()
 	std::string sky = LLEnvManagerNew::instance().getSkyPresetName();
 	if (!getParamSet(LLWLParamKey(sky, LLWLParamKey::SCOPE_LOCAL), mCurParams))
 	{
-		llwarns << "No sky preset named " << sky << ", falling back to defaults" << llendl;
+		LL_WARNS() << "No sky preset named " << sky << ", falling back to defaults" << LL_ENDL;
 		getParamSet(LLWLParamKey("Default", LLWLParamKey::SCOPE_LOCAL), mCurParams);
 
 		// *TODO: Fix user preferences accordingly.

@@ -4157,6 +4157,7 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 	<string name="Unnamed">(Unnamed)</string>
 	<string name="inventory_item_offered_to">Inventory item offered to</string>
 	<string name="Saved_message" value="(Saved [LONG_TIMESTAMP]) "/>
+	<string name="IM_unblock_only_groups_friends">To see this message, you must uncheck &apos;Only friends and groups can call or IM me&apos; in Preferences/Privacy.</string>
 	<string name="StartPointSet">Start point set</string>
 	<string name="EndPointSet">End point set</string>
 	<string name="MeasuredDistance">Distance: [DIST]</string>

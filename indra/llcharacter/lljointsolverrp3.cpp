@@ -141,8 +141,8 @@ void LLJointSolverRP3::setTwist( F32 twist )
 //-----------------------------------------------------------------------------
 void LLJointSolverRP3::solve()
 {
-//	llinfos << llendl;
-//	llinfos << "LLJointSolverRP3::solve()" << llendl;
+//	LL_INFOS() << LL_ENDL;
+//	LL_INFOS() << "LLJointSolverRP3::solve()" << LL_ENDL;
 
 	//-------------------------------------------------------------------------
 	// setup joints in their base rotations
@@ -158,15 +158,15 @@ void LLJointSolverRP3::solve()
 	LLVector3 cPos = mJointC->getWorldPosition();
 	LLVector3 gPos = mJointGoal->getWorldPosition();
 
-//	llinfos << "bPosLocal = " << mJointB->getPosition() << llendl;
-//	llinfos << "cPosLocal = " << mJointC->getPosition() << llendl;
-//	llinfos << "bRotLocal = " << mJointB->getRotation() << llendl;
-//	llinfos << "cRotLocal = " << mJointC->getRotation() << llendl;
+//	LL_INFOS() << "bPosLocal = " << mJointB->getPosition() << LL_ENDL;
+//	LL_INFOS() << "cPosLocal = " << mJointC->getPosition() << LL_ENDL;
+//	LL_INFOS() << "bRotLocal = " << mJointB->getRotation() << LL_ENDL;
+//	LL_INFOS() << "cRotLocal = " << mJointC->getRotation() << LL_ENDL;
 
-//	llinfos << "aPos : " << aPos << llendl;
-//	llinfos << "bPos : " << bPos << llendl;
-//	llinfos << "cPos : " << cPos << llendl;
-//	llinfos << "gPos : " << gPos << llendl;
+//	LL_INFOS() << "aPos : " << aPos << LL_ENDL;
+//	LL_INFOS() << "bPos : " << bPos << LL_ENDL;
+//	LL_INFOS() << "cPos : " << cPos << LL_ENDL;
+//	LL_INFOS() << "gPos : " << gPos << LL_ENDL;
 
 	//-------------------------------------------------------------------------
 	// get the poleVector in world space
@@ -192,10 +192,10 @@ void LLJointSolverRP3::solve()
 	LLVector3 acVec = cPos - aPos;
 	LLVector3 agVec = gPos - aPos;
 
-//	llinfos << "abVec : " << abVec << llendl;
-//	llinfos << "bcVec : " << bcVec << llendl;
-//	llinfos << "acVec : " << acVec << llendl;
-//	llinfos << "agVec : " << agVec << llendl;
+//	LL_INFOS() << "abVec : " << abVec << LL_ENDL;
+//	LL_INFOS() << "bcVec : " << bcVec << LL_ENDL;
+//	LL_INFOS() << "acVec : " << acVec << LL_ENDL;
+//	LL_INFOS() << "agVec : " << agVec << LL_ENDL;
 
 	//-------------------------------------------------------------------------
 	// compute needed lengths of those vectors
@@ -204,16 +204,16 @@ void LLJointSolverRP3::solve()
 	F32 bcLen = bcVec.magVec();
 	F32 agLen = agVec.magVec();
 
-//	llinfos << "abLen : " << abLen << llendl;
-//	llinfos << "bcLen : " << bcLen << llendl;
-//	llinfos << "agLen : " << agLen << llendl;
+//	LL_INFOS() << "abLen : " << abLen << LL_ENDL;
+//	LL_INFOS() << "bcLen : " << bcLen << LL_ENDL;
+//	LL_INFOS() << "agLen : " << agLen << LL_ENDL;
 
 	//-------------------------------------------------------------------------
 	// compute component vector of (A->B) orthogonal to (A->C)
 	//-------------------------------------------------------------------------
 	LLVector3 abacCompOrthoVec = abVec - acVec * ((abVec * acVec)/(acVec * acVec));
 
-//	llinfos << "abacCompOrthoVec : " << abacCompOrthoVec << llendl;
+//	LL_INFOS() << "abacCompOrthoVec : " << abacCompOrthoVec << LL_ENDL;
 
 	//-------------------------------------------------------------------------
 	// compute the normal of the original ABC plane (and store for later)
@@ -281,13 +281,13 @@ void LLJointSolverRP3::solve()
 
 	LLQuaternion bRot(theta - abbcAng, abbcOrthoVec);
 
-//	llinfos << "abbcAng      : " << abbcAng << llendl;
-//	llinfos << "abbcOrthoVec : " << abbcOrthoVec << llendl;
-//	llinfos << "agLenSq      : " << agLenSq << llendl;
-//	llinfos << "cosTheta     : " << cosTheta << llendl;
-//	llinfos << "theta        : " << theta << llendl;
-//	llinfos << "bRot         : " << bRot << llendl;
-//	llinfos << "theta abbcAng theta-abbcAng: " << theta*180.0/F_PI << " " << abbcAng*180.0f/F_PI << " " << (theta - abbcAng)*180.0f/F_PI << llendl;
+//	LL_INFOS() << "abbcAng      : " << abbcAng << LL_ENDL;
+//	LL_INFOS() << "abbcOrthoVec : " << abbcOrthoVec << LL_ENDL;
+//	LL_INFOS() << "agLenSq      : " << agLenSq << LL_ENDL;
+//	LL_INFOS() << "cosTheta     : " << cosTheta << LL_ENDL;
+//	LL_INFOS() << "theta        : " << theta << LL_ENDL;
+//	LL_INFOS() << "bRot         : " << bRot << LL_ENDL;
+//	LL_INFOS() << "theta abbcAng theta-abbcAng: " << theta*180.0/F_PI << " " << abbcAng*180.0f/F_PI << " " << (theta - abbcAng)*180.0f/F_PI << LL_ENDL;
 
 	//-------------------------------------------------------------------------
 	// compute rotation that rotates new A->C to A->G
@@ -301,9 +301,9 @@ void LLJointSolverRP3::solve()
 	LLQuaternion cgRot;
 	cgRot.shortestArc( acVec, agVec );
 
-//	llinfos << "bcVec : " << bcVec << llendl;
-//	llinfos << "acVec : " << acVec << llendl;
-//	llinfos << "cgRot : " << cgRot << llendl;
+//	LL_INFOS() << "bcVec : " << bcVec << LL_ENDL;
+//	LL_INFOS() << "acVec : " << acVec << LL_ENDL;
+//	LL_INFOS() << "cgRot : " << cgRot << LL_ENDL;
 
 	// update A->B and B->C with rotation from C to G
 	abVec = abVec * cgRot;
@@ -361,18 +361,18 @@ void LLJointSolverRP3::solve()
 		pRot.shortestArc( abcNorm, apgNorm );
 	}
 
-//	llinfos << "abcNorm = " << abcNorm << llendl;
-//	llinfos << "apgNorm = " << apgNorm << llendl;
-//	llinfos << "pRot = " << pRot << llendl;
+//	LL_INFOS() << "abcNorm = " << abcNorm << LL_ENDL;
+//	LL_INFOS() << "apgNorm = " << apgNorm << LL_ENDL;
+//	LL_INFOS() << "pRot = " << pRot << LL_ENDL;
 
 	//-------------------------------------------------------------------------
 	// compute twist rotation
 	//-------------------------------------------------------------------------
 	LLQuaternion twistRot( mTwist, agVec );
 
-//	llinfos	<< "twist    : " << mTwist*180.0/F_PI << llendl;
-//	llinfos << "agNormVec: " << agNormVec << llendl;
-//	llinfos << "twistRot : " << twistRot << llendl;
+//	LL_INFOS() << "twist    : " << mTwist*180.0/F_PI << LL_ENDL;
+//	LL_INFOS() << "agNormVec: " << agNormVec << LL_ENDL;
+//	LL_INFOS() << "twistRot : " << twistRot << LL_ENDL;
 
 	//-------------------------------------------------------------------------
 	// compute rotation of A

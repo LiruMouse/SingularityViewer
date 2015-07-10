@@ -61,7 +61,8 @@ public:
 	F32 getCurrent() const;
 	F32 getCurrentPerSec() const;
 	F32 getCurrentDuration() const;
-	
+	F64 getCurrentTime() const;
+
 	F64 getPrevBeginTime(S32 age) const;
 	F64 getPrevTime(S32 age) const;
 	F64 getBinTime(S32 bin) const;
@@ -77,13 +78,11 @@ public:
 	U32 getNumValues() const;
 	S32 getNumBins() const;
 
-	F64 getLastTime() const;
+	
 private:
 	BOOL mUseFrameTimer;
 	U32 mNumValues;
 	U32 mNumBins;
-	F32 mLastValue;
-	F64 mLastTime;
 
 	struct ValueEntry
 	{

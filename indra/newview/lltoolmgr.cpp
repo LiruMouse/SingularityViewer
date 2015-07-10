@@ -157,7 +157,7 @@ void LLToolMgr::setCurrentToolset(LLToolset* current)
 		{
 			mSelectedTool->handleDeselect();
 		}
-		lldebugs << "Current tool set: " << current->getName() << llendl;
+		LL_DEBUGS() << "Current tool set: " << current->getName() << LL_ENDL;
 		mCurrentToolset = current;
 		// select first tool of new toolset only if toolset changed
 		mCurrentToolset->selectFirstTool();
@@ -174,7 +174,7 @@ LLToolset* LLToolMgr::getCurrentToolset()
 void LLToolMgr::setCurrentTool( LLTool* tool )
 {
 	if(tool && mBaseTool!=tool)
-		lldebugs << "Current Tool: " << tool->getName() << llendl;
+		LL_DEBUGS() << "Current Tool: " << tool->getName() << LL_ENDL;
 	if (mTransientTool)
 	{
 		mTransientTool = NULL;
@@ -383,7 +383,7 @@ void LLToolMgr::clearTransientTool()
 		mTransientTool = NULL;
 		if (!mBaseTool)
 		{
-			llwarns << "mBaseTool is NULL" << llendl;
+			LL_WARNS() << "mBaseTool is NULL" << LL_ENDL;
 		}
 	}
 	updateToolStatus();

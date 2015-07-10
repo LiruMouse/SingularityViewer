@@ -132,7 +132,7 @@ void LLURLRequest::initialize_impl(void)
 	}
 	catch (AICurlNoBody const& error)
 	{
-		llwarns << "Injector::get_body() failed: " << error.what() << llendl; 
+		LL_WARNS() << "Injector::get_body() failed: " << error.what() << LL_ENDL; 
 	}
 
 	if (success)
@@ -261,7 +261,7 @@ bool LLURLRequest::configure(AICurlEasyRequest_wat const& curlEasyRequest_w)
 			break;
 
 		default:
-			llwarns << "Unhandled URLRequest action: " << mAction << llendl;
+			LL_WARNS() << "Unhandled URLRequest action: " << mAction << LL_ENDL;
 			break;
 		}
 		if(rv)

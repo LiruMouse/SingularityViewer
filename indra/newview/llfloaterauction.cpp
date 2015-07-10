@@ -193,7 +193,7 @@ void LLFloaterAuction::onClickSnapshot(void* data)
 		{
 			gViewerWindow->playSnapshotAnimAndSound();
 		}
-		llinfos << "Writing TGA..." << llendl;
+		LL_INFOS() << "Writing TGA..." << LL_ENDL;
 
 		LLPointer<LLImageTGA> tga = new LLImageTGA;
 		tga->encode(raw);
@@ -201,7 +201,7 @@ void LLFloaterAuction::onClickSnapshot(void* data)
 		
 		raw->biasedScaleToPowerOfTwo(LLViewerTexture::MAX_IMAGE_SIZE_DEFAULT);
 
-		llinfos << "Writing J2C..." << llendl;
+		LL_INFOS() << "Writing J2C..." << LL_ENDL;
 
 		LLPointer<LLImageJ2C> j2c = new LLImageJ2C;
 		j2c->encode(raw, 0.0f);
@@ -213,7 +213,7 @@ void LLFloaterAuction::onClickSnapshot(void* data)
 	}
 	else
 	{
-		llwarns << "Unable to take snapshot" << llendl;
+		LL_WARNS() << "Unable to take snapshot" << LL_ENDL;
 	}
 }
 
@@ -272,8 +272,8 @@ void LLFloaterAuction::onClickOK(void* data)
 void auction_tga_upload_done(const LLUUID& asset_id, void* user_data, S32 status, LLExtStat ext_status) // StoreAssetData callback (fixed)
 {
 	std::string* name = (std::string*)(user_data);
-	llinfos << "Upload of asset '" << *name << "' " << asset_id
-			<< " returned " << status << llendl;
+	LL_INFOS() << "Upload of asset '" << *name << "' " << asset_id
+			<< " returned " << status << LL_ENDL;
 	delete name;
 
 	gViewerWindow->getWindow()->decBusyCount();
@@ -293,8 +293,8 @@ void auction_tga_upload_done(const LLUUID& asset_id, void* user_data, S32 status
 void auction_j2c_upload_done(const LLUUID& asset_id, void* user_data, S32 status, LLExtStat ext_status) // StoreAssetData callback (fixed)
 {
 	std::string* name = (std::string*)(user_data);
-	llinfos << "Upload of asset '" << *name << "' " << asset_id
-			<< " returned " << status << llendl;
+	LL_INFOS() << "Upload of asset '" << *name << "' " << asset_id
+			<< " returned " << status << LL_ENDL;
 	delete name;
 
 	gViewerWindow->getWindow()->decBusyCount();

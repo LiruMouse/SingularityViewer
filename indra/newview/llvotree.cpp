@@ -55,7 +55,7 @@
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
 #include "llworld.h"
-#include "noise.h"
+#include "llperlin.h"
 #include "pipeline.h"
 #include "llspatialpartition.h"
 //#include "llviewerwindow.h"
@@ -128,7 +128,7 @@ void LLVOTree::initClass()
 
 	if (!tree_def_tree.parseFile(xml_filename))
 	{
-		llerrs << "Failed to parse tree file." << llendl;
+		LL_ERRS() << "Failed to parse tree file." << LL_ENDL;
 	}
 
 	LLXmlTreeNode* rootp = tree_def_tree.getRoot();
@@ -139,7 +139,7 @@ void LLVOTree::initClass()
 		{
 			if (!tree_def->hasName("tree"))
 			{
-				llwarns << "Invalid tree definition node " << tree_def->getName() << llendl;
+				LL_WARNS() << "Invalid tree definition node " << tree_def->getName() << LL_ENDL;
 				continue;
 			}
 			F32 F32_val;
@@ -154,19 +154,19 @@ void LLVOTree::initClass()
 			static LLStdStringHandle species_id_string = LLXmlTree::addAttributeString("species_id");
 			if (!tree_def->getFastAttributeS32(species_id_string, species))
 			{
-				llwarns << "No species id defined" << llendl;
+				LL_WARNS() << "No species id defined" << LL_ENDL;
 				continue;
 			}
 
 			if (species < 0)
 			{
-				llwarns << "Invalid species id " << species << llendl;
+				LL_WARNS() << "Invalid species id " << species << LL_ENDL;
 				continue;
 			}
 
 			if (sSpeciesTable.count(species))
 			{
-				llwarns << "Tree species " << species << " already defined! Duplicate discarded." << llendl;
+				LL_WARNS() << "Tree species " << species << " already defined! Duplicate discarded." << LL_ENDL;
 				continue;
 			}
 
@@ -262,7 +262,7 @@ void LLVOTree::initClass()
 				std::string name;
 				static LLStdStringHandle name_string = LLXmlTree::addAttributeString("name");
 				tree_def->getFastAttributeString(name_string, name);
-				llwarns << "Incomplete definition of tree " << name << llendl;
+				LL_WARNS() << "Incomplete definition of tree " << name << LL_ENDL;
 			}
 		}
 		
@@ -304,7 +304,7 @@ U32 LLVOTree::processUpdateMessage(LLMessageSystem *mesgsys,
 		||(getAcceleration().lengthSquared() > 0.f)
 		||(getAngularVelocity().lengthSquared() > 0.f))
 	{
-		llinfos << "ACK! Moving tree!" << llendl;
+		LL_INFOS() << "ACK! Moving tree!" << LL_ENDL;
 		setVelocity(LLVector3::zero);
 		setAcceleration(LLVector3::zero);
 		setAngularVelocity(LLVector3::zero);
@@ -550,6 +550,11 @@ const S32 LEAF_VERTICES = 16;
 
 static LLFastTimer::DeclareTimer FTM_UPDATE_TREE("Update Tree");
 
+void LLVOTree::resetVertexBuffers()
+{
+	mReferenceBuffer = NULL;
+}
+
 BOOL LLVOTree::updateGeometry(LLDrawable *drawable)
 {
 	LLFastTimer ftm(FTM_UPDATE_TREE);
@@ -772,8 +777,8 @@ BOOL LLVOTree::updateGeometry(LLDrawable *drawable)
 			slices = sLODSlices[lod];
 			F32 base_radius = 0.65f;
 			F32 top_radius = base_radius * sSpeciesTable[mSpecies]->mTaper;
-			//llinfos << "Species " << ((U32) mSpecies) << ", taper = " << sSpeciesTable[mSpecies].mTaper << llendl;
-			//llinfos << "Droop " << mDroop << ", branchlength: " << mBranchLength << llendl;
+			//LL_INFOS() << "Species " << ((U32) mSpecies) << ", taper = " << sSpeciesTable[mSpecies].mTaper << LL_ENDL;
+			//LL_INFOS() << "Droop " << mDroop << ", branchlength: " << mBranchLength << LL_ENDL;
 			F32 angle = 0;
 			F32 angle_inc = 360.f/(slices-1);
 			F32 z = 0.f;
@@ -841,7 +846,7 @@ BOOL LLVOTree::updateGeometry(LLDrawable *drawable)
 								sin(nangle * DEG_TO_RAD)*start_radius*nvec_scale, 
 								z*nvec_scalez); 
 					// First and last slice at 0 radius (to bring in top/bottom of structure)
-					radius = start_radius + turbulence3((F32*)&nvec.mV, (F32)fractal_depth)*noise_scale;
+					radius = start_radius + LLPerlinNoise::turbulence(nvec, (F32)fractal_depth)*noise_scale;
 
 					if (slices - 1 == j)
 					{

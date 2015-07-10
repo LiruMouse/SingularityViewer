@@ -359,7 +359,7 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 			}
 			if (!fgi)
 			{
-				llerrs << "Missing Glyph Info" << llendl;
+				LL_ERRS() << "Missing Glyph Info" << LL_ENDL;
 				break;
 			}
 			// Per-glyph bitmap texture.
@@ -1224,7 +1224,7 @@ std::string LLFontGL::getFontPathSystem()
 	system_root = getenv("SystemRoot");	/* Flawfinder: ignore */
 	if (!system_root)
 	{
-		llwarns << "SystemRoot not found, attempting to load fonts from default path." << llendl;
+		LL_WARNS() << "SystemRoot not found, attempting to load fonts from default path." << LL_ENDL;
 	}
 #endif
 
@@ -1269,12 +1269,12 @@ std::string LLFontGL::getFontPathLocal()
 
 LLFontGL::LLFontGL(const LLFontGL &source)
 {
-	llerrs << "Not implemented!" << llendl;
+	LL_ERRS() << "Not implemented!" << LL_ENDL;
 }
 
 LLFontGL &LLFontGL::operator=(const LLFontGL &source)
 {
-	llerrs << "Not implemented" << llendl;
+	LL_ERRS() << "Not implemented" << LL_ENDL;
 	return *this;
 }
 

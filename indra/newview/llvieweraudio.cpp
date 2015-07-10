@@ -245,13 +245,13 @@ void audio_update_wind(bool fade)
 
 		static LLCachedControl<bool> MuteWind(gSavedSettings, "MuteWind", false);
 		static LLCachedControl<bool> ContinueFlying(gSavedSettings, "LiruContinueFlyingOnUnsit", false);
-		// mute wind entirely when the user asked or when the user is seated, but flying
-		if (MuteWind || (ContinueFlying && gAgentAvatarp && gAgentAvatarp->isSitting()))
+		// mute wind entirely when the user asked or when the user is seated, but flying or just when the user is under water
+		if (!gAgentAvatarp || MuteWind || (ContinueFlying && gAgentAvatarp->isSitting()) || gAgentAvatarp->mBelowWater)
 		{
 			gAudiop->mMaxWindGain = 0.f;
 		}
 		// mute wind when not /*flying*/ in air
-		else if /*(gAgent.getFlying())*/ (gAgentAvatarp && gAgentAvatarp->mInAir)
+		else if (/*gAgent.getFlying()*/gAgentAvatarp->mInAir)
 		{
 			// volume increases by volume_delta, up to no more than max_wind_volume
 			gAudiop->mMaxWindGain = llmin(gAudiop->mMaxWindGain + volume_delta, max_wind_volume);

@@ -405,14 +405,14 @@ void LLViewerStats::addToMessage(LLSD &body) const
 		{
 			// TODO: send timer value so dataserver can normalize
 			misc[STAT_INFO[i].mName] = mStats[i];
-			llinfos << "STAT: " << STAT_INFO[i].mName << ": " << mStats[i]
-					<< llendl;
+			LL_INFOS() << "STAT: " << STAT_INFO[i].mName << ": " << mStats[i]
+					<< LL_ENDL;
 		}
 	}
 	
 	body["AgentPositionSnaps"] = mAgentPositionSnaps.getData();
-	llinfos << "STAT: AgentPositionSnaps: Mean = " << mAgentPositionSnaps.getMean() << "; StdDev = " << mAgentPositionSnaps.getStdDev() 
-			<< "; Count = " << mAgentPositionSnaps.getCount() << llendl;
+	LL_INFOS() << "STAT: AgentPositionSnaps: Mean = " << mAgentPositionSnaps.getMean() << "; StdDev = " << mAgentPositionSnaps.getStdDev() 
+			<< "; Count = " << mAgentPositionSnaps.getCount() << LL_ENDL;
 }
 
 // static
@@ -447,25 +447,25 @@ void output_statistics(void*)
 	{
 		global_raw_memory = *AIAccess<U64>(LLImageRaw::sGlobalRawMemory);
 	}
-	llinfos << "Number of orphans: " << gObjectList.getOrphanCount() << llendl;
-	llinfos << "Number of dead objects: " << gObjectList.mNumDeadObjects << llendl;
-	llinfos << "Num images: " << gTextureList.getNumImages() << llendl;
-	llinfos << "Texture usage: " << LLImageGL::sGlobalTextureMemoryInBytes << llendl;
-	llinfos << "Texture working set: " << LLImageGL::sBoundTextureMemoryInBytes << llendl;
-	llinfos << "Raw usage: " << global_raw_memory << llendl;
-	llinfos << "Formatted usage: " << LLImageFormatted::sGlobalFormattedMemory << llendl;
-	llinfos << "Zombie Viewer Objects: " << LLViewerObject::getNumZombieObjects() << llendl;
-	llinfos << "Number of lights: " << gPipeline.getLightCount() << llendl;
+	LL_INFOS() << "Number of orphans: " << gObjectList.getOrphanCount() << LL_ENDL;
+	LL_INFOS() << "Number of dead objects: " << gObjectList.mNumDeadObjects << LL_ENDL;
+	LL_INFOS() << "Num images: " << gTextureList.getNumImages() << LL_ENDL;
+	LL_INFOS() << "Texture usage: " << LLImageGL::sGlobalTextureMemoryInBytes << LL_ENDL;
+	LL_INFOS() << "Texture working set: " << LLImageGL::sBoundTextureMemoryInBytes << LL_ENDL;
+	LL_INFOS() << "Raw usage: " << global_raw_memory << LL_ENDL;
+	LL_INFOS() << "Formatted usage: " << LLImageFormatted::sGlobalFormattedMemory << LL_ENDL;
+	LL_INFOS() << "Zombie Viewer Objects: " << LLViewerObject::getNumZombieObjects() << LL_ENDL;
+	LL_INFOS() << "Number of lights: " << gPipeline.getLightCount() << LL_ENDL;
 
-	llinfos << "Memory Usage:" << llendl;
-	llinfos << "--------------------------------" << llendl;
-	llinfos << "Pipeline:" << llendl;
-	llinfos << llendl;
+	LL_INFOS() << "Memory Usage:" << LL_ENDL;
+	LL_INFOS() << "--------------------------------" << LL_ENDL;
+	LL_INFOS() << "Pipeline:" << LL_ENDL;
+	LL_INFOS() << LL_ENDL;
 
 #if LL_SMARTHEAP
-	llinfos << "--------------------------------" << llendl;
+	LL_INFOS() << "--------------------------------" << LL_ENDL;
 	{
-		llinfos << "sizeof(LLVOVolume) = " << sizeof(LLVOVolume) << llendl;
+		LL_INFOS() << "sizeof(LLVOVolume) = " << sizeof(LLVOVolume) << LL_ENDL;
 
 		U32 total_pool_size = 0;
 		U32 total_used_size = 0;
@@ -476,35 +476,35 @@ void output_statistics(void*)
 			pool_status != MEM_POOL_END; 
 			pool_status = MemPoolNext( &pool_info, 1 ) )
 		{
-			llinfos << "Pool #" << pool_num << llendl;
+			LL_INFOS() << "Pool #" << pool_num << LL_ENDL;
 			if( MEM_POOL_OK != pool_status )
 			{
-				llwarns << "Pool not ok" << llendl;
+				LL_WARNS() << "Pool not ok" << LL_ENDL;
 				continue;
 			}
 
-			llinfos << "Pool blockSizeFS " << pool_info.blockSizeFS
+			LL_INFOS() << "Pool blockSizeFS " << pool_info.blockSizeFS
 				<< " pageSize " << pool_info.pageSize
-				<< llendl;
+				<< LL_ENDL;
 
 			U32 pool_count = MemPoolCount(pool_info.pool);
-			llinfos << "Blocks " << pool_count << llendl;
+			LL_INFOS() << "Blocks " << pool_count << LL_ENDL;
 
 			U32 pool_size = MemPoolSize( pool_info.pool );
 			if( pool_size == MEM_ERROR_RET )
 			{
-				llinfos << "MemPoolSize() failed (" << pool_num << ")" << llendl;
+				LL_INFOS() << "MemPoolSize() failed (" << pool_num << ")" << LL_ENDL;
 			}
 			else
 			{
-				llinfos << "MemPool Size " << pool_size / 1024 << "K" << llendl;
+				LL_INFOS() << "MemPool Size " << pool_size / 1024 << "K" << LL_ENDL;
 			}
 
 			total_pool_size += pool_size;
 
 			if( !MemPoolLock( pool_info.pool ) )
 			{
-				llinfos << "MemPoolLock failed (" << pool_num << ") " << llendl;
+				LL_INFOS() << "MemPoolLock failed (" << pool_num << ") " << LL_ENDL;
 				continue;
 			}
 
@@ -521,19 +521,19 @@ void output_statistics(void*)
 
 			MemPoolUnlock( pool_info.pool );
 
-			llinfos << "MemPool Used " << used_size/1024 << "K" << llendl;
+			LL_INFOS() << "MemPool Used " << used_size/1024 << "K" << LL_ENDL;
 			total_used_size += used_size;
 			pool_num++;
 		}
 		
-		llinfos << "Total Pool Size " << total_pool_size/1024 << "K" << llendl;
-		llinfos << "Total Used Size " << total_used_size/1024 << "K" << llendl;
+		LL_INFOS() << "Total Pool Size " << total_pool_size/1024 << "K" << LL_ENDL;
+		LL_INFOS() << "Total Used Size " << total_used_size/1024 << "K" << LL_ENDL;
 
 	}
 #endif
 
-	llinfos << "--------------------------------" << llendl;
-	llinfos << "Avatar Memory (partly overlaps with above stats):" << llendl;
+	LL_INFOS() << "--------------------------------" << LL_ENDL;
+	LL_INFOS() << "Avatar Memory (partly overlaps with above stats):" << LL_ENDL;
 	LLTexLayerStaticImageList::getInstance()->dumpByteCount();
 	LLVOAvatarSelf::dumpScratchTextureByteCount();
 	LLViewerTexLayerSetBuffer::dumpTotalByteCount();
@@ -541,9 +541,9 @@ void output_statistics(void*)
 	LLTexLayerParamAlpha::dumpCacheByteCount();
 	LLVOAvatar::dumpBakedStatus();
 
-	llinfos << llendl;
+	LL_INFOS() << LL_ENDL;
 
-	llinfos << "Object counts:" << llendl;
+	LL_INFOS() << "Object counts:" << LL_ENDL;
 	S32 i;
 	S32 obj_counts[256];
 //	S32 app_angles[256];
@@ -563,7 +563,7 @@ void output_statistics(void*)
 	{
 		if (obj_counts[i])
 		{
-			llinfos << LLPrimitive::pCodeToString(i) << ":" << obj_counts[i] << llendl;
+			LL_INFOS() << LLPrimitive::pCodeToString(i) << ":" << obj_counts[i] << LL_ENDL;
 		}
 	}
 }
@@ -711,13 +711,13 @@ public:
 
     /*virtual*/ void httpFailure(void)
     {
-		llinfos << "ViewerStatsResponder::error " << mStatus << " "
-				<< mReason << llendl;
+		LL_INFOS() << "ViewerStatsResponder::error " << mStatus << " "
+				<< mReason << LL_ENDL;
     }
 
     /*virtual*/ void httpSuccess(void)
     {
-		llinfos << "ViewerStatsResponder::result" << llendl;
+		LL_INFOS() << "ViewerStatsResponder::result" << LL_ENDL;
 	}
 
 	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerStatsResponder_timeout; }
@@ -750,7 +750,7 @@ void send_stats()
 	std::string url = gAgent.getRegion()->getCapability("ViewerStats");
 
 	if (url.empty()) {
-		llwarns << "Could not get ViewerStats capability" << llendl;
+		LL_WARNS() << "Could not get ViewerStats capability" << LL_ENDL;
 		return;
 	}
 	
@@ -875,8 +875,8 @@ void send_stats()
 	F32 grey_time = LLVOAvatar::sGreyTime * 1000.f / gFrameTimeSeconds;
 	misc["int_2"] = LLSD::Integer(grey_time); // Steve: 1.22
 
-	llinfos << "Misc Stats: int_1: " << misc["int_1"] << " int_2: " << misc["int_2"] << llendl;
-	llinfos << "Misc Stats: string_1: " << misc["string_1"] << " string_2: " << misc["string_2"] << llendl;
+	LL_INFOS() << "Misc Stats: int_1: " << misc["int_1"] << " int_2: " << misc["int_2"] << LL_ENDL;
+	LL_INFOS() << "Misc Stats: string_1: " << misc["string_1"] << " string_2: " << misc["string_2"] << LL_ENDL;
 
 	const S32 namesys = gSavedSettings.getS32("PhoenixNameSystem");
 	body["DisplayNamesEnabled"] = namesys > 0 && namesys < 4;
@@ -907,7 +907,7 @@ LLTimer& LLViewerStats::PhaseMap::getPhaseTimer(const std::string& phase_name)
 void LLViewerStats::PhaseMap::startPhase(const std::string& phase_name)
 {
 	LLTimer& timer = getPhaseTimer(phase_name);
-	lldebugs << "startPhase " << phase_name << llendl;
+	LL_DEBUGS() << "startPhase " << phase_name << LL_ENDL;
 	timer.start();
 }
 
@@ -941,7 +941,7 @@ bool LLViewerStats::PhaseMap::getPhaseValues(const std::string& phase_name, F32&
 	
 void LLViewerStats::PhaseMap::clearPhases()
 {
-	lldebugs << "clearPhases" << llendl;
+	LL_DEBUGS() << "clearPhases" << LL_ENDL;
 
 	mPhaseMap.clear();
 }

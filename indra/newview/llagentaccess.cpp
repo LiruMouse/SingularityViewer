@@ -172,7 +172,7 @@ int LLAgentAccess::convertTextToMaturity(char text)
 void LLAgentAccess::setMaturity(char text)
 {
 	mAccess = LLAgentAccess::convertTextToMaturity(text);
-	llinfos << "Setting agent maturity to " << text << " " << (int)mAccess << llendl;
+	LL_INFOS() << "Setting agent maturity to " << text << " " << (int)mAccess << LL_ENDL;
 	U32 preferred_access = mSavedSettings.getU32("PreferredMaturity");
 	while (!canSetMaturity(preferred_access))
 	{

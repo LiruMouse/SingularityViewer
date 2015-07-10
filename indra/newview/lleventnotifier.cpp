@@ -231,7 +231,7 @@ BOOL LLEventNotification::load(const LLSD& response)
 	if (event_name.isDefined())
 	{
 		mEventName = event_name.asString();
-		llinfos << "Event: " << mEventName << llendl;
+		LL_INFOS() << "Event: " << mEventName << LL_ENDL;
 	}
 	else
 	{
@@ -242,7 +242,7 @@ BOOL LLEventNotification::load(const LLSD& response)
 	if (event_date.isDefined())
 	{
 		mEventDate = event_date.asString();
-		llinfos << "EventDate: " << mEventDate << llendl;
+		LL_INFOS() << "EventDate: " << mEventDate << LL_ENDL;
 	}
 	else
 	{
@@ -253,7 +253,7 @@ BOOL LLEventNotification::load(const LLSD& response)
 	if (event_date_ut.isDefined())
 	{
 		std::string date = event_date_ut.asString();
-		llinfos << "EventDate: " << date << llendl;
+		LL_INFOS() << "EventDate: " << date << LL_ENDL;
 		mEventDate = strtoul(date.c_str(), NULL, 10);
 
 		// Convert to Pacific, based on server's opinion of whether
@@ -283,7 +283,7 @@ BOOL LLEventNotification::load(const LLSD& response)
 	if (grid_x_sd.isDefined())
 	{
 		grid_x= grid_x_sd.asInteger();
-		llinfos << "GridX: " << grid_x << llendl;
+		LL_INFOS() << "GridX: " << grid_x << LL_ENDL;
 	}
 	else
 	{
@@ -294,7 +294,7 @@ BOOL LLEventNotification::load(const LLSD& response)
 	if (grid_y_sd.isDefined())
 	{
 		grid_y= grid_y_sd.asInteger();
-		llinfos << "GridY: " << grid_y << llendl;
+		LL_INFOS() << "GridY: " << grid_y << LL_ENDL;
 	}
 	else
 	{
@@ -305,7 +305,7 @@ BOOL LLEventNotification::load(const LLSD& response)
 	if (x_region_sd.isDefined())
 	{	
 		x_region = x_region_sd.asInteger();
-		llinfos << "RegionX: " << x_region << llendl;
+		LL_INFOS() << "RegionX: " << x_region << LL_ENDL;
 	}
 	else
 	{
@@ -316,7 +316,7 @@ BOOL LLEventNotification::load(const LLSD& response)
 	if (y_region_sd.isDefined())
 	{
 		y_region = y_region_sd.asInteger();
-		llinfos << "RegionY: " << y_region << llendl;
+		LL_INFOS() << "RegionY: " << y_region << LL_ENDL;
 	}
 	else
 	{

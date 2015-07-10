@@ -346,7 +346,7 @@ void AIFilePicker::initialize_impl(void)
 	mCanceled = false;
 	if (mFilter.empty())
 	{
-		llwarns << "Calling AIFilePicker::initialize_impl() with empty mFilter. Call open before calling run!" << llendl;
+		LL_WARNS() << "Calling AIFilePicker::initialize_impl() with empty mFilter. Call open before calling run!" << LL_ENDL;
 		abort();
 		return;
 	}
@@ -521,13 +521,13 @@ bool AIFilePicker::loadFile(std::string const& filename)
 	llifstream file(filepath);
 	if (file.is_open())
 	{
-		llinfos << "Loading filepicker context file at \"" << filepath << "\"." << llendl;
+		LL_INFOS() << "Loading filepicker context file at \"" << filepath << "\"." << LL_ENDL;
 		LLSDSerialize::fromXML(data, file);
 	}
 
 	if (!data.isMap())
 	{
-		llinfos << "File missing, ill-formed, or simply undefined; not changing the file (" << filepath << ")." << llendl;
+		LL_INFOS() << "File missing, ill-formed, or simply undefined; not changing the file (" << filepath << ")." << LL_ENDL;
 		return false;
 	}
 
@@ -560,14 +560,14 @@ bool AIFilePicker::saveFile(std::string const& filename)
 	file.open(filepath.c_str());
 	if (!file.is_open()) 
 	{
-		llwarns << "Unable to open filepicker context file for save: \"" << filepath << "\"." << llendl;
+		LL_WARNS() << "Unable to open filepicker context file for save: \"" << filepath << "\"." << LL_ENDL;
 		return false;
 	}
 
 	LLSDSerialize::toPrettyXML(context, file);
 
 	file.close();
-	llinfos << "Saved default paths to \"" << filepath << "\"." << llendl;
+	LL_INFOS() << "Saved default paths to \"" << filepath << "\"." << LL_ENDL;
 
 	return true;
 }

@@ -213,7 +213,7 @@ void LLFloaterObjectWeights::refresh()
 		else
 		{
 			//LL_WARNS() << "Failed to get region capabilities" << LL_ENDL;
-			llwarns << "Failed to get region capabilities" << llendl;
+			LL_WARNS() << "Failed to get region capabilities" << LL_ENDL;
 		}
 	}
 }

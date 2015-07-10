@@ -185,7 +185,7 @@ BOOL LLFloaterLandmark::handleDragAndDrop(
 	}
 
 	handled = TRUE;
-	lldebugst(LLERR_USER_INPUT) << "dragAndDrop handled by LLFloaterLandmark " << getName() << llendl;
+	LL_DEBUGS("UserInput") << "dragAndDrop handled by LLFloaterLandmark " << getName() << LL_ENDL;
 
 	return handled;
 }
@@ -291,13 +291,13 @@ void LLFloaterLandmark::onBtnNew()
 	LLViewerRegion* agent_region = gAgent.getRegion();
 	if(!agent_region)
 	{
-		llwarns << "No agent region" << llendl;
+		LL_WARNS() << "No agent region" << LL_ENDL;
 		return;
 	}
 	LLParcel* agent_parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 	if (!agent_parcel)
 	{
-		llwarns << "No agent parcel" << llendl;
+		LL_WARNS() << "No agent parcel" << LL_ENDL;
 		return;
 	}
 	if (!agent_parcel->getAllowLandmark()

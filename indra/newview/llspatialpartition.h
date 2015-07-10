@@ -91,7 +91,7 @@ public:
 
 	const LLDrawInfo& operator=(const LLDrawInfo& rhs)
 	{
-		llerrs << "Illegal operation!" << llendl;
+		LL_ERRS() << "Illegal operation!" << LL_ENDL;
 		return *this;
 	}
 
@@ -236,7 +236,7 @@ public:
 
 	const LLSpatialGroup& operator=(const LLSpatialGroup& rhs)
 	{
-		llerrs << "Illegal operation!" << llendl;
+		LL_ERRS() << "Illegal operation!" << LL_ENDL;
 		return *this;
 	}
 
@@ -737,6 +737,12 @@ public:
 	virtual void addGeometryCount(LLSpatialGroup* group, U32 &vertex_count, U32& index_count) { LLVolumeGeometryManager::addGeometryCount(group, vertex_count, index_count); }
 };
 
+class LLAttachmentBridge : public LLVolumeBridge
+{
+public:
+	LLAttachmentBridge(LLDrawable* drawable);
+};
+
 class LLHUDBridge : public LLVolumeBridge
 {
 public:
@@ -754,11 +760,18 @@ public:
 	virtual void addGeometryCount(LLSpatialGroup* group, U32 &vertex_count, U32& index_count) {  }
 };
 
+//spatial partition that holds nothing but spatial bridges
+class LLAttachmentPartition : public LLBridgePartition
+{
+public:
+	LLAttachmentPartition();
+};
+
 class LLHUDPartition : public LLBridgePartition
 {
 public:
 	LLHUDPartition();
-	virtual void shift(const LLVector4a &offset);
+	virtual void shift(const LLVector4a &offset) { }	//HUD objects don't shift with region crossing.  That would be silly.
 };
 
 extern const F32 SG_BOX_SIDE;

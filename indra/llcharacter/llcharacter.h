@@ -35,7 +35,7 @@
 #include "lljoint.h"
 #include "llmotioncontroller.h"
 #include "llvisualparam.h"
-#include "string_table.h"
+#include "llstringtable.h"
 #include "llpointer.h"
 #include "llthread.h"
 #include "llsortedvector.h"
@@ -195,9 +195,9 @@ public:
 	void addVisualParam(LLVisualParam *param);
 	void addSharedVisualParam(LLVisualParam *param);
 
-	virtual BOOL setVisualParamWeight(const LLVisualParam *which_param, F32 weight, BOOL upload_bake = FALSE );
-	virtual BOOL setVisualParamWeight(const char* param_name, F32 weight, BOOL upload_bake = FALSE );
-	virtual BOOL setVisualParamWeight(S32 index, F32 weight, BOOL upload_bake = FALSE );
+	virtual BOOL setVisualParamWeight(const LLVisualParam *which_param, F32 weight, bool upload_bake = false );
+	virtual BOOL setVisualParamWeight(const char* param_name, F32 weight, bool upload_bake = false );
+	virtual BOOL setVisualParamWeight(S32 index, F32 weight, bool upload_bake = false );
 
 	// get visual param weight by param or name
 	F32 getVisualParamWeight(LLVisualParam *distortion);

@@ -33,7 +33,7 @@
 #ifndef LL_LSCRIPT_SCOPE_H
 #define LL_LSCRIPT_SCOPE_H
 
-#include "string_table.h"
+#include "llstringtable.h"
 #include "llmap.h"
 #include "lscript_byteformat.h"
 

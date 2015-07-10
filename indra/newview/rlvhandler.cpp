@@ -16,6 +16,7 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llagent.h"
+#include "llagentcamera.h"
 #include "llappearancemgr.h"
 #include "llappviewer.h"
 #include "llgroupactions.h"
@@ -840,6 +841,31 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 	return true;
 }
 
+void RlvHandler::updatePole(const ERlvBehaviour& bhvr, bool max)
+{
+	F32 pole(max ? F32_MAX : F32_MIN);
+	for (rlv_exception_map_t::const_iterator i = m_Exceptions.lower_bound(bhvr),
+			end = m_Exceptions.upper_bound(bhvr); i != end; ++i)
+	{
+		F32 val(boost::get<F32>(i->second.varOption));
+		if (max ? val < pole : val > pole) pole = val;
+	}
+	m_Poles[bhvr] = pole;
+}
+
+LLColor3 RlvHandler::camDrawColor() const
+{
+	LLColor3 ret;
+	U32 count(0);
+	for (rlv_exception_map_t::const_iterator i = m_Exceptions.lower_bound(RLV_BHVR_CAMDRAWCOLOR),
+			end = m_Exceptions.upper_bound(RLV_BHVR_CAMDRAWCOLOR); i != end; ++i, ++count)
+		ret += boost::get<LLColor3>(i->second.varOption);
+	ret.mV[0]/=count;
+	ret.mV[1]/=count;
+	ret.mV[2]/=count;
+	return ret;
+}
+
 // ============================================================================
 // Composite folders
 //
@@ -1298,9 +1324,50 @@ ERlvCmdRet RlvHandler::processAddRemCommand(const RlvCommand& rlvCmd)
 					pObj->mText->setString( (RLV_TYPE_ADD == eType) ? "" : pObj->mText->getObjectText());
 			}
 			break;
+		case RLV_BHVR_CAMZOOMMAX:		// @camzoommax:<max_multiplier>=n|y			- Checked: 2015-05-25 (RLVa:LF)
+		case RLV_BHVR_CAMZOOMMIN:		// @camzoommin:<min_multiplier>=n|y			- Checked: 2015-05-25 (RLVa:LF)
+		case RLV_BHVR_CAMDISTMAX:		// @camdistmax:<max_distance>=n|y			- Checked: 2015-05-25 (RLVa:LF)
+		case RLV_BHVR_CAMDISTMIN:		// @camdistmin:<min_distance>=n|y			- Checked: 2015-05-25 (RLVa:LF)
+		case RLV_BHVR_CAMDRAWMAX:		// @camdrawmax:<max_distance>=n|y			- Checked: 2015-05-25 (RLVa:LF)
+		case RLV_BHVR_CAMDRAWMIN:		// @camdrawmin:<min_distance>=n|y			- Checked: 2015-05-25 (RLVa:LF)
+		case RLV_BHVR_CAMDRAWALPHAMAX:	// @camdrawalphamax:<max_alpha>=n|y			- Checked: 2015-05-25 (RLVa:LF)
+		case RLV_BHVR_CAMDRAWALPHAMIN:	// @camdrawalphamin:<min_alpha>=n|y			- Checked: 2015-05-25 (RLVa:LF)
+		case RLV_BHVR_CAMAVDIST:		// @camavdist:<distance>=n|y				- Checked: 2015-05-25 (RLVa:LF)
+		{
+			F32 param;
+			VERIFY_OPTION_REF(LLStringUtil::convertToF32(strOption, param));
+			if (RLV_TYPE_ADD == eType)
+				addException(rlvCmd.getObjectID(), eBhvr, param);
+			else
+				removeException(rlvCmd.getObjectID(), eBhvr, param);
+			updatePole(eBhvr, eBhvr == RLV_BHVR_CAMDISTMAX || eBhvr == RLV_BHVR_CAMZOOMMAX || eBhvr == RLV_BHVR_CAMDRAWMAX || eBhvr == RLV_BHVR_CAMDRAWALPHAMAX);
+			break;
+		}
+		case RLV_BHVR_CAMDRAWCOLOR:		// @camdrawcolor:<red>;<green>;<blue>=n|y	- Checked: 2015-05-25 (RLVa:LF)
+		{
+			LLColor3 color;
+			if (!strOption.empty())
+			{
+				boost_tokenizer tokens(strOption, boost::char_separator<char>(";", "", boost::keep_empty_tokens));
+				boost_tokenizer::const_iterator it = tokens.begin();
+				for (U8 i = 0; i < LENGTHOFCOLOR3 && it != tokens.end(); ++it, ++i)
+					LLStringUtil::convertToF32(*it, color.mV[i]);
+				color.clamp();
+			}
+			if (RLV_TYPE_ADD == eType)
+				addException(rlvCmd.getObjectID(), eBhvr, color);
+			else
+				removeException(rlvCmd.getObjectID(), eBhvr, color);
+			// Singu TODO: If there is work to be done immediately after this is toggled, add to the onToggleCamXXX section in rlvui.cpp
+			eRet = RLV_RET_FAILED_UNKNOWN; // Singu TODO: Hook this up and remove this line.
+			break;
+		}
 		// The following block is only valid if there's no option
 		case RLV_BHVR_SHOWLOC:				// @showloc=n|y						- Checked: 2009-12-05 (RLVa-1.1.0h) | Modified: RLVa-1.1.0h
 		case RLV_BHVR_SHOWNAMES:			// @shownames=n|y					- Checked: 2009-12-05 (RLVa-1.1.0h) | Modified: RLVa-1.1.0h
+		case RLV_BHVR_SHOWNAMETAGS:			// @shownametags=n|y					- Checked: 2015-05-20 (RLVa:LF)
+		case RLV_BHVR_CAMUNLOCK:		// @camunlock=n|y						- Checked: 2015-05-25 (RLVa:LF)
+		case RLV_BHVR_CAMTEXTURES:		// @camtextures=n|y						- Checked: 2015-05-25 (RLVa:LF)
 		case RLV_BHVR_EMOTE:				// @emote=n|y						- Checked: 2010-03-26 (RLVa-1.2.0b)
 		case RLV_BHVR_SENDCHAT:				// @sendchat=n|y					- Checked: 2010-03-26 (RLVa-1.2.0b)
 		case RLV_BHVR_CHATWHISPER:			// @chatwhisper=n|y					- Checked: 2010-03-26 (RLVa-1.2.0b)

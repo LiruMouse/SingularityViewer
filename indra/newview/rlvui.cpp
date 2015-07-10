@@ -67,6 +67,7 @@ RlvUIEnabler::RlvUIEnabler()
 	// onRefreshHoverText()
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SHOWLOC, boost::bind(&RlvUIEnabler::onRefreshHoverText, this)));
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SHOWNAMES, boost::bind(&RlvUIEnabler::onRefreshHoverText, this)));
+	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SHOWNAMETAGS, boost::bind(&RlvUIEnabler::onRefreshHoverText, this)));
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SHOWHOVERTEXTALL, boost::bind(&RlvUIEnabler::onRefreshHoverText, this)));
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SHOWHOVERTEXTWORLD, boost::bind(&RlvUIEnabler::onRefreshHoverText, this)));
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SHOWHOVERTEXTHUD, boost::bind(&RlvUIEnabler::onRefreshHoverText, this)));
@@ -90,8 +91,18 @@ RlvUIEnabler::RlvUIEnabler()
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SHOWLOC, boost::bind(&RlvUIEnabler::onToggleShowLoc, this)));
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SHOWMINIMAP, boost::bind(&RlvUIEnabler::onToggleShowMinimap, this)));
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SHOWNAMES, boost::bind(&RlvUIEnabler::onToggleShowNames, this, _1)));
+	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SHOWNAMETAGS, boost::bind(&RlvUIEnabler::onToggleShowNameTags, this, _1)));
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_SHOWWORLDMAP, boost::bind(&RlvUIEnabler::onToggleShowWorldMap, this)));
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_UNSIT, boost::bind(&RlvUIEnabler::onToggleUnsit, this)));
+
+	// onToggleCamXXX
+	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_CAMUNLOCK, boost::bind(&RlvUIEnabler::onToggleCamUnlock, this)));
+	void onToggleCamZoom(const ERlvBehaviour& eBhvr);
+	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_CAMZOOMMAX, boost::bind(onToggleCamZoom, RLV_BHVR_CAMZOOMMAX)));
+	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_CAMZOOMMIN, boost::bind(onToggleCamZoom, RLV_BHVR_CAMZOOMMIN)));
+	void onToggleCamDist(const ERlvBehaviour& eBhvr);
+	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_CAMDISTMAX, boost::bind(onToggleCamDist, RLV_BHVR_CAMDISTMAX)));
+	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_CAMDISTMIN, boost::bind(onToggleCamDist, RLV_BHVR_CAMDISTMIN)));
 
 	// onToggleTp
 	m_Handlers.insert(std::pair<ERlvBehaviour, behaviour_handler_t>(RLV_BHVR_TPLOC, boost::bind(&RlvUIEnabler::onToggleTp, this)));
@@ -305,9 +316,7 @@ void RlvUIEnabler::onToggleShowNames(bool fQuitting)
 	{
 		// Close the "Active Speakers" panel if it's currently visible
 		LLFloaterChat::getInstance()->childSetVisible("active_speakers_panel", false);
-		// Close the "Avatar List/Radar" floater if it's currently visible
-		if (LLFloaterAvatarList::instanceVisible())
-			LLFloaterAvatarList::toggleInstance();
+
 		LLAvatarNameCache::setForceDisplayNames(true);
 	}
 	else
@@ -316,6 +325,23 @@ void RlvUIEnabler::onToggleShowNames(bool fQuitting)
 		const S32 namesys = gSavedSettings.getS32("PhoenixNameSystem");
 		LLAvatarNameCache::setUseDisplayNames(namesys > 0 && namesys < 4);
 	}
+
+	// Reset the names in radar, if it exists
+	if (LLFloaterAvatarList::instanceExists())
+		LLFloaterAvatarList::instance().resetAvatarNames();
+
+	LLVOAvatar::invalidateNameTags();	// See handleDisplayNamesOptionChanged()
+}
+
+// Checked: 2015-05-20 (RLVa:LF)
+void RlvUIEnabler::onToggleShowNameTags(bool fQuitting)
+{
+	if (fQuitting) return; // Nothing to do if the viewer is shutting down
+
+	// Reset the names in radar, if it exists
+	if (LLFloaterAvatarList::instanceExists())
+		LLFloaterAvatarList::instance().resetAvatarNames();
+
 	LLVOAvatar::invalidateNameTags();	// See handleDisplayNamesOptionChanged()
 }
 
@@ -327,6 +353,42 @@ void RlvUIEnabler::onToggleShowWorldMap()
 	// Simulate clicking the Map button [see LLToolBar::onClickMap()]
 	if ((!fEnable) && gFloaterWorldMap->getVisible())
 		LLFloaterWorldMap::toggle();
+}
+
+// Checked: 2015-05-25 (RLVa:LF)
+void RlvUIEnabler::onToggleCamUnlock()
+{
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_CAMUNLOCK))
+		gAgentCamera.resetView(true, true);
+}
+
+// Checked: 2015-06-04 (RLVa:LF)
+void onToggleCamZoom(const ERlvBehaviour& eBhvr)
+{
+	if (gRlvHandler.hasBehaviour(eBhvr))
+	{
+		LLViewerCamera& inst(LLViewerCamera::instance());
+		inst.mSavedFOVLoaded ? inst.loadDefaultFOV() : inst.setDefaultFOV(gSavedSettings.getF32("CameraAngle"));
+	}
+}
+
+// Checked: 2015-06-04 (RLVa:LF)
+void onToggleCamDist(const ERlvBehaviour& eBhvr)
+{
+	if (gRlvHandler.hasBehaviour(eBhvr))
+	{
+		if (eBhvr == RLV_BHVR_CAMDISTMAX && gRlvHandler.camPole(eBhvr) <= 0)
+		{
+			if (!gAgentCamera.cameraMouselook())
+				gAgentCamera.changeCameraToMouselook();
+		}
+		else
+		{
+			if (eBhvr == RLV_BHVR_CAMDISTMIN && gRlvHandler.camPole(eBhvr) > 0 && gAgentCamera.cameraMouselook())
+				gAgentCamera.changeCameraToDefault();
+			gAgentCamera.cameraPanUp(0); // Hacky, but meh, issues a proper call to calcCameraPositionTargetGlobal().
+		}
+	}
 }
 
 // Checked: 2010-08-22 (RLVa-1.2.1a) | Added: RLVa-1.2.1a

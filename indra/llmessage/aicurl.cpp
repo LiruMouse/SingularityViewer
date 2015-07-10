@@ -219,9 +219,9 @@ void ssl_init(void)
   if (linked_openSSL_major != compiled_openSSL_major ||
 	  (linked_openSSL_major == 0 && linked_openSSL_minor != compiled_openSSL_minor))
   {
-	llerrs << "The viewer was compiled against " << OPENSSL_VERSION_TEXT <<
+	LL_ERRS() << "The viewer was compiled against " << OPENSSL_VERSION_TEXT <<
 	    " but linked against " << SSLeay_version(SSLEAY_VERSION) <<
-		". Those versions are not compatible." << llendl;
+		". Those versions are not compatible." << LL_ENDL;
   }
   // Static locks vector.
   ssl_rwlock_array = new AIRWLock[CRYPTO_num_locks()];
@@ -251,8 +251,8 @@ void ssl_init(void)
   CRYPTO_set_dynlock_lock_callback(&ssl_dyn_lock_function);
   CRYPTO_set_dynlock_destroy_callback(&ssl_dyn_destroy_function);
   need_renegotiation_hack = (0x10001000UL <= ssleay);
-  llinfos << "Successful initialization of " <<
-	  SSLeay_version(SSLEAY_VERSION) << " (0x" << std::hex << SSLeay() << std::dec << ")." << llendl;
+  LL_INFOS() << "Successful initialization of " <<
+	  SSLeay_version(SSLEAY_VERSION) << " (0x" << std::hex << SSLeay() << std::dec << ")." << LL_ENDL;
 }
 
 // Cleanup OpenSSL library thread-safety.
@@ -329,7 +329,7 @@ void initCurl(void)
   CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
   if (res != CURLE_OK)
   {
-	llerrs << "curl_global_init(CURL_GLOBAL_ALL) failed." << llendl;
+	LL_ERRS() << "curl_global_init(CURL_GLOBAL_ALL) failed." << LL_ENDL;
   }
 
   // Print version and do some feature sanity checks.
@@ -339,26 +339,26 @@ void initCurl(void)
 	llassert_always(version_info->age >= 0);
 	if (version_info->age < 1)
 	{
-	  llwarns << "libcurl's age is 0; no ares support." << llendl;
+	  LL_WARNS() << "libcurl's age is 0; no ares support." << LL_ENDL;
 	}
 	llassert_always((version_info->features & CURL_VERSION_SSL));	// SSL support, added in libcurl 7.10.
 	if (!(version_info->features & CURL_VERSION_ASYNCHDNS))			// Asynchronous name lookups (added in libcurl 7.10.7).
 	{
-	  llwarns << "libcurl was not compiled with support for asynchronous name lookups!" << llendl;
+	  LL_WARNS() << "libcurl was not compiled with support for asynchronous name lookups!" << LL_ENDL;
 	}
 	if (!version_info->ssl_version)
 	{
-	  llerrs << "This libcurl has no SSL support!" << llendl;
+	  LL_ERRS() << "This libcurl has no SSL support!" << LL_ENDL;
 	}
 
-	llinfos << "Successful initialization of libcurl " <<
+	LL_INFOS() << "Successful initialization of libcurl " <<
 		version_info->version << " (0x" << std::hex << version_info->version_num << std::dec << "), (" <<
 	    version_info->ssl_version;
 	if (version_info->libz_version)
 	{
-	  llcont << ", libz/" << version_info->libz_version;
+	  LL_CONT << ", libz/" << version_info->libz_version;
 	}
-	llcont << ")." << llendl;
+	LL_CONT << ")." << LL_ENDL;
 
 	// Detect SSL library used.
 	gSSLlib = ssl_unknown;
@@ -376,12 +376,12 @@ void initCurl(void)
 	{
 	  case ssl_unknown:
 	  {
-		llerrs << "Unknown SSL library \"" << version_info->ssl_version << "\", required actions for thread-safe handling are unknown! Bailing out." << llendl;
+		LL_ERRS() << "Unknown SSL library \"" << version_info->ssl_version << "\", required actions for thread-safe handling are unknown! Bailing out." << LL_ENDL;
 	  }
 	  case ssl_openssl:
 	  {
 #ifndef OPENSSL_THREADS
-		llerrs << "OpenSSL was not configured with thread support! Bailing out." << llendl;
+		LL_ERRS() << "OpenSSL was not configured with thread support! Bailing out." << LL_ENDL;
 #endif
 		ssl_init();
 	  }
@@ -402,7 +402,7 @@ void initCurl(void)
 	gSetoptParamsNeedDup = (version_info->version_num < encoded_version(7, 17, 0));
 	if (gSetoptParamsNeedDup)
 	{
-	  llwarns << "Your libcurl version is too old." << llendl;
+	  LL_WARNS() << "Your libcurl version is too old." << LL_ENDL;
 	}
 	llassert_always(!gSetoptParamsNeedDup);		// Might add support later.
   }
@@ -427,7 +427,7 @@ void cleanupCurl(void)
 
   stopCurlThread();
   if (CurlMultiHandle::getTotalMultiHandles() != 0)
-	llwarns << "Not all CurlMultiHandle objects were destroyed!" << llendl;
+	LL_WARNS() << "Not all CurlMultiHandle objects were destroyed!" << LL_ENDL;
   gMainThreadEngine.flush();			// Not really related to curl, but why not.
   gStateMachineThreadEngine.flush();
   clearCommandQueue();
@@ -470,20 +470,20 @@ U32 getNumHTTPRunning(void)
 void Stats::print(void)
 {
   int const easy_handles = easy_init_calls - easy_init_errors - easy_cleanup_calls;
-  llinfos_nf << "============ CURL  STATS ============" << llendl;
-  llinfos_nf << "  Curl multi       errors/calls      : " << std::dec << multi_errors << "/" << multi_calls << llendl;
-  llinfos_nf << "  Curl easy        errors/calls      : " << std::dec << easy_errors << "/" << easy_calls << llendl;
-  llinfos_nf << "  curl_easy_init() errors/calls      : " << std::dec << easy_init_errors << "/" << easy_init_calls << llendl;
-  llinfos_nf << "  Current number of curl easy handles: " << std::dec << easy_handles << llendl;
+  LL_INFOS_NF() << "============ CURL  STATS ============" << LL_ENDL;
+  LL_INFOS_NF() << "  Curl multi       errors/calls      : " << std::dec << multi_errors << "/" << multi_calls << LL_ENDL;
+  LL_INFOS_NF() << "  Curl easy        errors/calls      : " << std::dec << easy_errors << "/" << easy_calls << LL_ENDL;
+  LL_INFOS_NF() << "  curl_easy_init() errors/calls      : " << std::dec << easy_init_errors << "/" << easy_init_calls << LL_ENDL;
+  LL_INFOS_NF() << "  Current number of curl easy handles: " << std::dec << easy_handles << LL_ENDL;
 #ifdef DEBUG_CURLIO
-  llinfos_nf << "  Current number of BufferedCurlEasyRequest objects: " << BufferedCurlEasyRequest_count << llendl;
-  llinfos_nf << "  Current number of ThreadSafeBufferedCurlEasyRequest objects: " << ThreadSafeBufferedCurlEasyRequest_count << llendl;
-  llinfos_nf << "  Current number of AICurlEasyRequest objects: " << AICurlEasyRequest_count << llendl;
-  llinfos_nf << "  Current number of AICurlEasyRequestStateMachine objects: " << AICurlEasyRequestStateMachine_count << llendl;
+  LL_INFOS_NF() << "  Current number of BufferedCurlEasyRequest objects: " << BufferedCurlEasyRequest_count << LL_ENDL;
+  LL_INFOS_NF() << "  Current number of ThreadSafeBufferedCurlEasyRequest objects: " << ThreadSafeBufferedCurlEasyRequest_count << LL_ENDL;
+  LL_INFOS_NF() << "  Current number of AICurlEasyRequest objects: " << AICurlEasyRequest_count << LL_ENDL;
+  LL_INFOS_NF() << "  Current number of AICurlEasyRequestStateMachine objects: " << AICurlEasyRequestStateMachine_count << LL_ENDL;
 #endif
-  llinfos_nf << "  Current number of Responders: " << ResponderBase_count << llendl;
-  llinfos_nf << "  Received HTTP bodies   LLSD / LLSD parse errors / non-LLSD: " << llsd_body_count << "/" << llsd_body_parse_error << "/" << raw_body_count << llendl;
-  llinfos_nf << "  Received HTTP status codes: status (count) [...]: ";
+  LL_INFOS_NF() << "  Current number of Responders: " << ResponderBase_count << LL_ENDL;
+  LL_INFOS_NF() << "  Received HTTP bodies   LLSD / LLSD parse errors / non-LLSD: " << llsd_body_count << "/" << llsd_body_parse_error << "/" << raw_body_count << LL_ENDL;
+  LL_INFOS_NF() << "  Received HTTP status codes: status (count) [...]: ";
   bool first = true;
   for (U32 index = 0; index < 100; ++index)
   {
@@ -491,17 +491,17 @@ void Stats::print(void)
 	{
 	  if (!first)
 	  {
-		llcont << ", ";
+		LL_CONT << ", ";
 	  }
 	  else
 	  {
 		first = false;
 	  }
-	  llcont << index2status(index) << " (" << status_count[index] << ')';
+	  LL_CONT << index2status(index) << " (" << status_count[index] << ')';
 	}
   }
-  llcont << llendl;
-  llinfos_nf << "========= END OF CURL STATS =========" << llendl;
+  LL_CONT << LL_ENDL;
+  LL_INFOS_NF() << "========= END OF CURL STATS =========" << LL_ENDL;
   // Leak tests.
   // There is one easy handle per CurlEasyHandle, and BufferedCurlEasyRequest is derived from that.
   // It is not allowed to create CurlEasyHandle (or CurlEasyRequest) directly, only by creating a BufferedCurlEasyRequest,
@@ -536,8 +536,8 @@ extern int debug_callback(CURL*, curl_infotype infotype, char* buf, size_t size,
 void handle_multi_error(CURLMcode code) 
 {
   Stats::multi_errors++;
-  llinfos << "curl multi error detected: " << curl_multi_strerror(code) <<
-	  "; (errors/calls = " << Stats::multi_errors << "/" << Stats::multi_calls << ")" << llendl;
+  LL_INFOS() << "curl multi error detected: " << curl_multi_strerror(code) <<
+	  "; (errors/calls = " << Stats::multi_errors << "/" << Stats::multi_calls << ")" << LL_ENDL;
 }
 
 //=============================================================================
@@ -552,13 +552,13 @@ void handle_multi_error(CURLMcode code)
 void CurlEasyHandle::handle_easy_error(CURLcode code)
 {
   char* error_buffer = LLThreadLocalData::tldata().mCurlErrorBuffer;
-  llinfos << "curl easy error detected: " << curl_easy_strerror(code);
+  LL_INFOS() << "curl easy error detected: " << curl_easy_strerror(code);
   if (error_buffer && *error_buffer != '\0')
   {
-	llcont << ": " << error_buffer;
+	LL_CONT << ": " << error_buffer;
   }
   Stats::easy_errors++;
-  llcont << "; (errors/calls = " << Stats::easy_errors << "/" << Stats::easy_calls << ")" << llendl;
+  LL_CONT << "; (errors/calls = " << Stats::easy_errors << "/" << Stats::easy_calls << ")" << LL_ENDL;
 }
 
 // Throws AICurlNoEasyHandle.
@@ -637,7 +637,7 @@ void CurlEasyHandle::setErrorBuffer(void) const
 	CURLcode res = curl_easy_setopt(mEasyHandle, CURLOPT_ERRORBUFFER, error_buffer);
 	if (res != CURLE_OK)
 	{
-	  llwarns << "curl_easy_setopt(" << (void*)mEasyHandle << "CURLOPT_ERRORBUFFER, " << (void*)error_buffer << ") failed with error " << res << llendl;
+	  LL_WARNS() << "curl_easy_setopt(" << (void*)mEasyHandle << "CURLOPT_ERRORBUFFER, " << (void*)error_buffer << ") failed with error " << res << LL_ENDL;
 	  mErrorBuffer = NULL;
 	}
   }
@@ -918,35 +918,35 @@ void CurlEasyRequest::setProgressCallback(curl_progress_callback callback, void*
   setopt(CURLOPT_PROGRESSDATA, userdata ? this : NULL);
 }
 
-#define llmaybewarns lllog(LLApp::isExiting() ? LLError::LEVEL_INFO : LLError::LEVEL_WARN, NULL, NULL, false, true)
+#define llmaybewarns lllog(LLApp::isExiting() ? LLError::LEVEL_INFO : LLError::LEVEL_WARN, false, true)
 
 static size_t noHeaderCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
-  llmaybewarns << "Calling noHeaderCallback(); curl session aborted." << llendl;
+  llmaybewarns << "Calling noHeaderCallback(); curl session aborted." << LL_ENDL;
   return 0;							// Cause a CURLE_WRITE_ERROR
 }
 
 static size_t noWriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
-  llmaybewarns << "Calling noWriteCallback(); curl session aborted." << llendl;
+  llmaybewarns << "Calling noWriteCallback(); curl session aborted." << LL_ENDL;
   return 0;							// Cause a CURLE_WRITE_ERROR
 }
 
 static size_t noReadCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
-  llmaybewarns << "Calling noReadCallback(); curl session aborted." << llendl;
+  llmaybewarns << "Calling noReadCallback(); curl session aborted." << LL_ENDL;
   return CURL_READFUNC_ABORT;		// Cause a CURLE_ABORTED_BY_CALLBACK
 }
 
 static CURLcode noSSLCtxCallback(CURL* curl, void* sslctx, void* parm)
 {
-  llmaybewarns << "Calling noSSLCtxCallback(); curl session aborted." << llendl;
+  llmaybewarns << "Calling noSSLCtxCallback(); curl session aborted." << LL_ENDL;
   return CURLE_ABORTED_BY_CALLBACK;
 }
 
 static int noProgressCallback(void* userdata, double, double, double, double)
 {
-  llmaybewarns << "Calling noProgressCallback(); curl session aborted." << llendl;
+  llmaybewarns << "Calling noProgressCallback(); curl session aborted." << LL_ENDL;
   return -1;						// Cause a CURLE_ABORTED_BY_CALLBACK
 }
 
@@ -968,7 +968,7 @@ void CurlEasyRequest::revokeCallbacks(void)
   mProgressCallback = &noProgressCallback;
   if (active() && !no_warning())
   {
-	llwarns << "Revoking callbacks on a still active CurlEasyRequest object!" << llendl;
+	LL_WARNS() << "Revoking callbacks on a still active CurlEasyRequest object!" << LL_ENDL;
   }
   curl_easy_setopt(getEasyHandle(), CURLOPT_HEADERFUNCTION, &noHeaderCallback);
   curl_easy_setopt(getEasyHandle(), CURLOPT_WRITEHEADER, &noWriteCallback);
@@ -1139,7 +1139,7 @@ void CurlEasyRequest::finalizeRequest(std::string const& url, AIHTTPTimeoutPolic
   }
   if (content_type_count > 1)
   {
-	llwarns << "Requesting: \"" << url << "\": " << content_type_count << " Content-Type: headers!" << llendl;
+	LL_WARNS() << "Requesting: \"" << url << "\": " << content_type_count << " Content-Type: headers!" << LL_ENDL;
   }
 #endif
   setopt(CURLOPT_HTTPHEADER, mHeaders);
@@ -1313,7 +1313,7 @@ BufferedCurlEasyRequest::BufferedCurlEasyRequest() :
   AICurlInterface::Stats::BufferedCurlEasyRequest_count++;
 }
 
-#define llmaybeerrs lllog(LLApp::isRunning() ? LLError::LEVEL_ERROR : LLError::LEVEL_WARN, NULL, NULL, false, true)
+#define llmaybeerrs lllog(LLApp::isRunning() ? LLError::LEVEL_ERROR : LLError::LEVEL_WARN, false, true)
 
 BufferedCurlEasyRequest::~BufferedCurlEasyRequest()
 {
@@ -1327,7 +1327,7 @@ BufferedCurlEasyRequest::~BufferedCurlEasyRequest()
 	// in which case AICurlEasyRequestStateMachine::mTimer times out, a socket goes bad, or
 	// the state machine is aborted, but those already call BufferedCurlEasyRequest::aborted()
 	// which sets mResponder to NULL.
-	llmaybeerrs << "Calling ~BufferedCurlEasyRequest() with active responder!" << llendl;
+	llmaybeerrs << "Calling ~BufferedCurlEasyRequest() with active responder!" << LL_ENDL;
 	if (!LLApp::isRunning())
 	{
 	  // It might happen if some BufferedCurlEasyRequest escaped clean up somehow :/
@@ -1414,7 +1414,7 @@ void BufferedCurlEasyRequest::print_diagnostics(CURLcode code)
   }
   else
   {
-	llwarns << "Curl returned error code " << code << " (" << curl_easy_strerror(code) << ") for HTTP request to \"" << eff_url << "\"." << llendl;
+	LL_WARNS() << "Curl returned error code " << code << " (" << curl_easy_strerror(code) << ") for HTTP request to \"" << eff_url << "\"." << LL_ENDL;
   }
 }
 

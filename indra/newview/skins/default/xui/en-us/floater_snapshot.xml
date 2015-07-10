@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater bottom="-300" can_close="true" can_drag_on_left="false" can_minimize="false"
-     can_resize="false" follows="left|top" height="629" name="Snapshot"
+     can_resize="false" follows="left|top" height="566" name="Snapshot"
      rect_control="FloaterSnapshotRect" title="Snapshot Preview" width="219">
 	<text bottom="-210" right="-10" follows="left|top" height="25" name="file_size_label" halign="right" width="150">
 		File size: [SIZE] KB
@@ -8,22 +8,21 @@
 	<text bottom_delta="10" follows="top|left" height="15" left="10" name="type_label">
 		Target
 	</text>
-	<radio_group bottom_delta="-82" follows="left|top" height="79" label="Snapshot type"
-	     left="10" name="snapshot_type_radio" width="200">
-		<radio_item bottom="-19" height="16" name="feed">
+	<combo_box bottom_delta="-23" follows="left|top" height="20" left="10" name="snapshot_type_radio" width="200">
+		<combo_item name="feed" value="0">
 			Post to profile feed
-		</radio_item>
-		<radio_item bottom="-38" height="16" name="postcard">
+		</combo_item>
+		<combo_item name="postcard" value="1">
 			Send via email
-		</radio_item>
-		<radio_item bottom="-57" height="16" name="texture">
-			Save to inventory ([UPLOADFEE])
-		</radio_item>
-		<radio_item bottom="-76" height="16" name="local">
+		</combo_item>
+		<combo_item name="texture" value="2">
+			Save to inventory
+		</combo_item>
+		<combo_item name="local" value="3">
 			Save to hard drive
-		</radio_item>
-	</radio_group>
-	<button bottom="-309" follows="left|top" height="20" label="Refresh" left="10"
+		</combo_item>
+	</combo_box>
+	<button bottom="-250" follows="left|top" height="20" label="Refresh" left="10"
 	  name="new_snapshot_btn" width="105"/>
 	<button bottom_delta="0" follows="left|top" height="20" label="Freeze" left="120"
 	     name="freeze_time_btn" width="90" tool_tip="Show a fullscreen preview. Allows camming around as if time is frozen to make multiple snapshots of the same scene. Press ESC to undo!" />
@@ -39,7 +38,7 @@
     <flyout_button_item value="saveas" name="saveas_item">Save As...</flyout_button_item>
 	</flyout_button>
 	<button bottom_delta="0" follows="left|top" height="20" label="Cancel" left="120" name="discard_btn" width="90"/>
-	<button bottom="-353" follows="left|top" font="SansSerifSmall" halign="center"
+	<button bottom="-294" follows="left|top" font="SansSerifSmall" halign="center"
 	     height="20" label="More &gt;&gt;" left="10"
 	     mouse_opaque="true" name="more_btn" scale_image="TRUE"
 	     tool_tip="Advanced Options" width="80" />

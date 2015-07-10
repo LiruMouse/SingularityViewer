@@ -229,7 +229,7 @@ void LLHTTPClient::request(
 	}
 	catch(AICurlNoEasyHandle& error)
 	{
-		llwarns << "Failed to create LLURLRequest: " << error.what() << llendl;
+		LL_WARNS() << "Failed to create LLURLRequest: " << error.what() << LL_ENDL;
 		// This is what the old LL code did: no recovery whatsoever (but also no leaks or crash).
 		return ;
 	}
@@ -332,7 +332,7 @@ void LLHTTPClient::ResponderBase::decode_llsd_body(LLChannelDescriptors const& c
 			// Unfortunately we can't show the body of the message... I think this is a pretty serious error
 			// though, so if this ever happens it has to be investigated by making a copy of the buffer
 			// before serializing it, as is done below.
-			llwarns << "Failed to deserialize LLSD. " << mURL << " [" << mStatus << "]: " << mReason << llendl;
+			LL_WARNS() << "Failed to deserialize LLSD. " << mURL << " [" << mStatus << "]: " << mReason << LL_ENDL;
 			AICurlInterface::Stats::llsd_body_parse_error++;
 		}
 		// LLSDSerialize::fromXML destructed buffer, we can't initialize mContent now.
@@ -357,7 +357,7 @@ void LLHTTPClient::ResponderBase::decode_llsd_body(LLChannelDescriptors const& c
 			LLSDSerialize::fromXML(dummy, ss) > 0;
 		if (server_sent_llsd_with_http_error)
 		{
-			llwarns << "The server sent us a response with http status " << mStatus << " and LLSD(!) body: \"" << ss.str() << "\"!" << llendl;
+			LL_WARNS() << "The server sent us a response with http status " << mStatus << " and LLSD(!) body: \"" << ss.str() << "\"!" << LL_ENDL;
 		}
 		// This is not really an error, and it has been known to happen before. It just normally never happens (at the moment)
 		// and therefore warrants an investigation. Linden Lab (or other grids) might start to send error messages
@@ -479,7 +479,7 @@ void LLHTTPClient::ResponderWithResult::finished(CURLcode code, U32 http_status,
 // virtual
 void LLHTTPClient::ResponderWithResult::httpFailure(void)
 {
-  llinfos << mURL << " [" << mStatus << "]: " << mReason << llendl;
+  LL_INFOS() << mURL << " [" << mStatus << "]: " << mReason << LL_ENDL;
 }
 
 // Friend functions.
@@ -622,7 +622,7 @@ static LLSD blocking_request(
 	LLSD const& body/*,*/				// Only used for HTTP_LLSD_POST
 	DEBUG_CURLIO_PARAM(EDebugCurl debug))
 {
-	lldebugs << "blockingRequest of " << url << llendl;
+	LL_DEBUGS() << "blockingRequest of " << url << LL_ENDL;
 
 	AIHTTPHeaders headers;
 	boost::intrusive_ptr<BlockingResponder> responder;
@@ -665,21 +665,21 @@ static LLSD blocking_request(
 		// We expect 404s, don't spam for them.
 		if (http_status != 404)
 		{
-			llwarns << "CURL REQ URL: " << url << llendl;
-			llwarns << "CURL REQ METHOD TYPE: " << method << llendl;
-			llwarns << "CURL REQ HEADERS: " << headers << llendl;
+			LL_WARNS() << "CURL REQ URL: " << url << LL_ENDL;
+			LL_WARNS() << "CURL REQ METHOD TYPE: " << method << LL_ENDL;
+			LL_WARNS() << "CURL REQ HEADERS: " << headers << LL_ENDL;
 			if (method == HTTP_LLSD_POST)
 			{
-				llwarns << "CURL REQ BODY: " << body.asString() << llendl;
+				LL_WARNS() << "CURL REQ BODY: " << body.asString() << LL_ENDL;
 			}
-			llwarns << "CURL HTTP_STATUS: " << http_status << llendl;
+			LL_WARNS() << "CURL HTTP_STATUS: " << http_status << LL_ENDL;
 			if (method == HTTP_RAW_GET)
 			{
-				llwarns << "CURL ERROR BODY: " << responder->getRaw() << llendl;
+				LL_WARNS() << "CURL ERROR BODY: " << responder->getRaw() << LL_ENDL;
 			}
 			else
 			{
-				llwarns << "CURL ERROR BODY: " << responder->getContent().asString() << llendl;
+				LL_WARNS() << "CURL ERROR BODY: " << responder->getContent().asString() << LL_ENDL;
 			}
 		}
 		if (method == HTTP_RAW_GET)

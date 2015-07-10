@@ -184,15 +184,15 @@ public:
 		switch (sData.mInitState)
 		{
 		case CONSTRUCTING:
-			llerrs << "Tried to access singleton " << typeid(DERIVED_TYPE).name() << " from singleton constructor!" << LL_ENDL;
+			LL_ERRS() << "Tried to access singleton " << typeid(DERIVED_TYPE).name() << " from singleton constructor!" << LL_ENDL;
 			return NULL;
 		case INITIALIZING:
-			llwarns << "Using singleton " << typeid(DERIVED_TYPE).name() << " during its own initialization, before its initialization completed!" << LL_ENDL;
+			LL_WARNS() << "Using singleton " << typeid(DERIVED_TYPE).name() << " during its own initialization, before its initialization completed!" << LL_ENDL;
 			return sData.mInstance;
 		case INITIALIZED:
 			return sData.mInstance;
 		case DELETED:
-			llwarns << "Trying to access deleted singleton " << typeid(DERIVED_TYPE).name() << " creating new instance" << LL_ENDL;
+			LL_WARNS() << "Trying to access deleted singleton " << typeid(DERIVED_TYPE).name() << " creating new instance" << LL_ENDL;
 		case UNINITIALIZED:
 			// This must be the first time we get here.
 			SingletonLifetimeManager::construct();

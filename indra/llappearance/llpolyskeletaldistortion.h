@@ -68,6 +68,14 @@ class LLPolySkeletalDistortionInfo : public LLViewerVisualParamInfo
 {
 	friend class LLPolySkeletalDistortion;
 public:
+	
+	LLPolySkeletalDistortionInfo();
+	/*virtual*/ ~LLPolySkeletalDistortionInfo() {};
+	
+	/*virtual*/ BOOL parseXml(LLXmlTreeNode* node);
+
+
+
 	void* operator new(size_t size)
 	{
 		return ll_aligned_malloc_16(size);
@@ -78,10 +86,6 @@ public:
 		ll_aligned_free_16(ptr);
 	}
 
-	LLPolySkeletalDistortionInfo();
-	/*virtual*/ ~LLPolySkeletalDistortionInfo() {};
-	
-	/*virtual*/ BOOL parseXml(LLXmlTreeNode* node);
 
 protected:
 	typedef std::vector<LLPolySkeletalBoneInfo> bone_info_list_t;
@@ -129,6 +133,8 @@ public:
 	/*virtual*/ const LLVector4a*	getNextDistortion(U32 *index, LLPolyMesh **poly_mesh){index = 0; poly_mesh = NULL; return NULL;};
 
 protected:
+	LLPolySkeletalDistortion(const LLPolySkeletalDistortion& pOther);
+
 	LL_ALIGN_16(LLVector4a mDefaultVec);
 	typedef std::map<LLJoint*, LLVector3> joint_vec_map_t;
 	joint_vec_map_t mJointScales;

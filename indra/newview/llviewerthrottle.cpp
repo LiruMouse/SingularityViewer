@@ -152,7 +152,7 @@ LLViewerThrottleGroup LLViewerThrottleGroup::operator-(const LLViewerThrottleGro
 
 void LLViewerThrottleGroup::sendToSim() const
 {
-	llinfos << "Sending throttle settings, total BW " << mThrottleTotal << llendl;
+	LL_INFOS() << "Sending throttle settings, total BW " << mThrottleTotal << LL_ENDL;
 	LLMessageSystem* msg = gMessageSystem;
 
 	msg->newMessageFast(_PREHASH_AgentThrottle);
@@ -321,7 +321,7 @@ void LLViewerThrottle::updateDynamicThrottle()
 		mCurrentBandwidth = mMaxBandwidth * mThrottleFrac;
 		mCurrent = getThrottleGroup(mCurrentBandwidth / 1024.0f);
 		mCurrent.sendToSim();
-		llinfos << "Tightening network throttle to " << mCurrentBandwidth << llendl;
+		LL_INFOS() << "Tightening network throttle to " << mCurrentBandwidth << LL_ENDL;
 	}
 	else if (LLViewerStats::getInstance()->mPacketsLostPercentStat.getMean() <= EASE_THROTTLE_THRESHOLD)
 	{
@@ -334,6 +334,6 @@ void LLViewerThrottle::updateDynamicThrottle()
 		mCurrentBandwidth = mMaxBandwidth * mThrottleFrac;
 		mCurrent = getThrottleGroup(mCurrentBandwidth/1024.0f);
 		mCurrent.sendToSim();
-		llinfos << "Easing network throttle to " << mCurrentBandwidth << llendl;
+		LL_INFOS() << "Easing network throttle to " << mCurrentBandwidth << LL_ENDL;
 	}
 }

@@ -76,7 +76,7 @@ public:
 
 	const LLFace& operator=(const LLFace& rhs)
 	{
-		llerrs << "Illegal operation!" << llendl;
+		LL_ERRS() << "Illegal operation!" << LL_ENDL;
 		return *this;
 	}
 

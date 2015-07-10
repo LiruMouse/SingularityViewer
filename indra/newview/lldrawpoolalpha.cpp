@@ -216,8 +216,7 @@ void LLDrawPoolAlpha::render(S32 pass)
 		gGL.setColorMask(true, true);
 	}
 	
-	bool write_depth = LLDrawPoolWater::sSkipScreenCopy
-						 || (deferred_render && pass == 1)
+	bool write_depth = (deferred_render && pass == 1)
 						 // we want depth written so that rendered alpha will
 						 // contribute to the alpha mask used for impostors
 						 || LLPipeline::sImpostorRenderAlphaDepthPass;
@@ -271,8 +270,7 @@ void LLDrawPoolAlpha::render(S32 pass)
 
 	if (sShowDebugAlpha)
 	{
-		BOOL shaders = gPipeline.canUseVertexShaders();
-		if(shaders) 
+		if (LLGLSLShader::sNoFixedFunction)
 		{
 			gHighlightProgram.bind();
 		}
@@ -292,7 +290,7 @@ void LLDrawPoolAlpha::render(S32 pass)
 		pushBatches(LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK, LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0, FALSE);
 		pushBatches(LLRenderPass::PASS_ALPHA_INVISIBLE, LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0, FALSE);
 
-		if(shaders) 
+		if (LLGLSLShader::sNoFixedFunction)
 		{
 			gHighlightProgram.unbind();
 		}
@@ -337,7 +335,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 	BOOL initialized_lighting = FALSE;
 	BOOL light_enabled = TRUE;
 	
-	BOOL use_shaders = gPipeline.canUseVertexShaders();
+	BOOL use_shaders = LLGLSLShader::sNoFixedFunction;
 
 	BOOL depth_only = (pass == 1 && !LLPipeline::sImpostorRender);
 		
@@ -370,7 +368,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 
 				/*if ((params.mVertexBuffer->getTypeMask() & mask) != mask)
 				{ //FIXME!
-					llwarns << "Missing required components, skipping render batch." << llendl;
+					LL_WARNS() << "Missing required components, skipping render batch." << LL_ENDL;
 					continue;
 				}*/
 

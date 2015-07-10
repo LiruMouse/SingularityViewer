@@ -317,7 +317,7 @@ void LLFloaterRegionInfo::processEstateOwnerRequest(LLMessageSystem* msg,void**)
 	LLDispatcher::unpackMessage(msg, request, invoice, strings);
 	if(invoice != getLastInvoice())
 	{
-		llwarns << "Mismatched Estate message: " << request << llendl;
+		LL_WARNS() << "Mismatched Estate message: " << request << LL_ENDL;
 		return;
 	}
 
@@ -605,7 +605,7 @@ void LLPanelRegionInfo::sendEstateOwnerMessage(
 	const LLUUID& invoice,
 	const strings_t& strings)
 {
-	llinfos << "Sending estate request '" << request << "'" << llendl;
+	LL_INFOS() << "Sending estate request '" << request << "'" << LL_ENDL;
 	msg->newMessage("EstateOwnerMessage");
 	msg->nextBlockFast(_PREHASH_AgentData);
 	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
@@ -758,7 +758,7 @@ BOOL LLPanelRegionGeneralInfo::postBuild()
 
 void LLPanelRegionGeneralInfo::onClickKick()
 {
-	llinfos << "LLPanelRegionGeneralInfo::onClickKick" << llendl;
+	LL_INFOS() << "LLPanelRegionGeneralInfo::onClickKick" << LL_ENDL;
 
 	// this depends on the grandparent view being a floater
 	// in order to set up floater dependency
@@ -793,7 +793,7 @@ void LLPanelRegionGeneralInfo::onKickCommit(const uuid_vec_t& ids)
 // static
 void LLPanelRegionGeneralInfo::onClickKickAll(void* userdata)
 {
-	llinfos << "LLPanelRegionGeneralInfo::onClickKickAll" << llendl;
+	LL_INFOS() << "LLPanelRegionGeneralInfo::onClickKickAll" << LL_ENDL;
 	LLNotificationsUtil::add("KickUsersFromRegion", 
 									LLSD(), 
 									LLSD(), 
@@ -821,7 +821,7 @@ bool LLPanelRegionGeneralInfo::onKickAllCommit(const LLSD& notification, const L
 // static
 void LLPanelRegionGeneralInfo::onClickMessage(void* userdata)
 {
-	llinfos << "LLPanelRegionGeneralInfo::onClickMessage" << llendl;
+	LL_INFOS() << "LLPanelRegionGeneralInfo::onClickMessage" << LL_ENDL;
 	LLNotificationsUtil::add("MessageRegion", 
 		LLSD(), 
 		LLSD(), 
@@ -836,7 +836,7 @@ bool LLPanelRegionGeneralInfo::onMessageCommit(const LLSD& notification, const L
 	std::string text = response["message"].asString();
 	if (text.empty()) return false;
 
-	llinfos << "Message to everyone: " << text << llendl;
+	LL_INFOS() << "Message to everyone: " << text << LL_ENDL;
 	strings_t strings;
 	// [0] grid_x, unused here
 	// [1] grid_y, unused here
@@ -864,7 +864,7 @@ protected:
 	/*virtual*/
 	void httpFailure()
 	{
-		llwarns << "error requesting mesh_rez_enabled " << dumpResponse() << llendl;
+		LL_WARNS() << "error requesting mesh_rez_enabled " << dumpResponse() << LL_ENDL;
 	}
 	/*virtual*/ const char* getName() const { return "ConsoleRequestResponder"; }
 };
@@ -878,7 +878,7 @@ protected:
 	/* virtual */
 	void httpFailure()
 	{
-		llwarns << "error updating mesh enabled region setting " << dumpResponse() << llendl;
+		LL_WARNS() << "error updating mesh enabled region setting " << dumpResponse() << LL_ENDL;
 	}
 };
 
@@ -910,7 +910,7 @@ void LLFloaterRegionInfo::requestMeshRezInfo()
 // strings[9] = 'Y' - block parcel search, 'N' - allow
 BOOL LLPanelRegionGeneralInfo::sendUpdate()
 {
-	llinfos << "LLPanelRegionGeneralInfo::sendUpdate()" << llendl;
+	LL_INFOS() << "LLPanelRegionGeneralInfo::sendUpdate()" << LL_ENDL;
 
 	// First try using a Cap.  If that fails use the old method.
 	LLSD body;
@@ -1039,7 +1039,7 @@ bool LLPanelRegionDebugInfo::refreshFromRegion(LLViewerRegion* region)
 // virtual
 BOOL LLPanelRegionDebugInfo::sendUpdate()
 {
-	llinfos << "LLPanelRegionDebugInfo::sendUpdate" << llendl;
+	LL_INFOS() << "LLPanelRegionDebugInfo::sendUpdate" << LL_ENDL;
 	strings_t strings;
 	std::string buffer;
 
@@ -1302,7 +1302,7 @@ bool LLPanelRegionTerrainInfo::refreshFromRegion(LLViewerRegion* region)
 			texture_ctrl = getChild<LLTextureCtrl>(buffer);
 			if(texture_ctrl)
 			{
-				lldebugs << "Detail Texture " << i << ": "
+				LL_DEBUGS() << "Detail Texture " << i << ": "
 						 << compp->getDetailTextureID(i) << LL_ENDL;
 				LLUUID tmp_id(compp->getDetailTextureID(i));
 				texture_ctrl->setImageAssetID(tmp_id);
@@ -1319,7 +1319,7 @@ bool LLPanelRegionTerrainInfo::refreshFromRegion(LLViewerRegion* region)
 	}
 	else
 	{
-		lldebugs << "no region set" << llendl;
+		LL_DEBUGS() << "no region set" << LL_ENDL;
 		getChild<LLUICtrl>("region_text")->setValue(LLSD(""));
 	}
 
@@ -1334,7 +1334,7 @@ bool LLPanelRegionTerrainInfo::refreshFromRegion(LLViewerRegion* region)
 // virtual
 BOOL LLPanelRegionTerrainInfo::sendUpdate()
 {
-	llinfos << "LLPanelRegionTerrainInfo::sendUpdate" << llendl;
+	LL_INFOS() << "LLPanelRegionTerrainInfo::sendUpdate" << LL_ENDL;
 	std::string buffer;
 	strings_t strings;
 	LLUUID invoice(LLFloaterRegionInfo::getLastInvoice());
@@ -2154,7 +2154,7 @@ void LLPanelEstateInfo::updateChild(LLUICtrl* child_ctrl)
 
 bool LLPanelEstateInfo::estateUpdate(LLMessageSystem* msg)
 {
-	llinfos << "LLPanelEstateInfo::estateUpdate()" << llendl;
+	LL_INFOS() << "LLPanelEstateInfo::estateUpdate()" << LL_ENDL;
 	return false;
 }
 
@@ -2297,7 +2297,7 @@ void LLPanelEstateInfo::refreshFromEstate()
 
 BOOL LLPanelEstateInfo::sendUpdate()
 {
-	llinfos << "LLPanelEstateInfo::sendUpdate()" << llendl;
+	LL_INFOS() << "LLPanelEstateInfo::sendUpdate()" << LL_ENDL;
 
 	LLNotification::Params params("ChangeLindenEstate");
 	params.functor(boost::bind(&LLPanelEstateInfo::callbackChangeLindenEstate, this, _1, _2));
@@ -2444,7 +2444,7 @@ void LLPanelEstateInfo::clearAccessLists()
 // static
 void LLPanelEstateInfo::onClickMessageEstate(void* userdata)
 {
-	llinfos << "LLPanelEstateInfo::onClickMessageEstate" << llendl;
+	LL_INFOS() << "LLPanelEstateInfo::onClickMessageEstate" << LL_ENDL;
 	LLNotificationsUtil::add("MessageEstate", LLSD(), LLSD(), boost::bind(&LLPanelEstateInfo::onMessageCommit, (LLPanelEstateInfo*)userdata, _1, _2));
 }
 
@@ -2454,7 +2454,7 @@ bool LLPanelEstateInfo::onMessageCommit(const LLSD& notification, const LLSD& re
 	std::string text = response["message"].asString();
 	if(option != 0) return false;
 	if(text.empty()) return false;
-	llinfos << "Message to everyone: " << text << llendl;
+	LL_INFOS() << "Message to everyone: " << text << LL_ENDL;
 	strings_t strings;
 	//integers_t integers;
 	std::string name;
@@ -2530,7 +2530,7 @@ bool LLPanelEstateCovenant::refreshFromRegion(LLViewerRegion* region)
 // virtual 
 bool LLPanelEstateCovenant::estateUpdate(LLMessageSystem* msg)
 {
-	llinfos << "LLPanelEstateCovenant::estateUpdate()" << llendl;
+	LL_INFOS() << "LLPanelEstateCovenant::estateUpdate()" << LL_ENDL;
 	return true;
 }
 	
@@ -2666,7 +2666,7 @@ void LLPanelEstateCovenant::onLoadComplete(LLVFS *vfs,
 									   LLAssetType::EType type,
 									   void* user_data, S32 status, LLExtStat ext_status)
 {
-	llinfos << "LLPanelEstateCovenant::onLoadComplete()" << llendl;
+	LL_INFOS() << "LLPanelEstateCovenant::onLoadComplete()" << LL_ENDL;
 	LLPanelEstateCovenant* panelp = (LLPanelEstateCovenant*)user_data;
 	if( panelp )
 	{
@@ -2685,7 +2685,7 @@ void LLPanelEstateCovenant::onLoadComplete(LLVFS *vfs,
 			{
 				if( !panelp->mEditor->importBuffer( &buffer[0], file_length+1 ) )
 				{
-					llwarns << "Problem importing estate covenant." << llendl;
+					LL_WARNS() << "Problem importing estate covenant." << LL_ENDL;
 					LLNotificationsUtil::add("ProblemImportingEstateCovenant");
 				}
 				else
@@ -2717,7 +2717,7 @@ void LLPanelEstateCovenant::onLoadComplete(LLVFS *vfs,
 				LLNotificationsUtil::add("UnableToLoadNotecardAsset");
 			}
 
-			llwarns << "Problem loading notecard: " << status << llendl;
+			LL_WARNS() << "Problem loading notecard: " << status << LL_ENDL;
 		}
 		panelp->mAssetStatus = ASSET_LOADED;
 		panelp->setCovenantID(asset_uuid);
@@ -2839,7 +2839,7 @@ bool LLDispatchEstateUpdateInfo::operator()(
 		const LLUUID& invoice,
 		const sparam_t& strings)
 {
-	lldebugs << "Received estate update" << llendl;
+	LL_DEBUGS() << "Received estate update" << LL_ENDL;
 
 	// Update estate info model.
 	// This will call LLPanelEstateInfo::refreshFromEstate().
@@ -2881,22 +2881,22 @@ bool LLDispatchSetEstateAccess::operator()(
 	if (num_allowed_agents > 0
 		&& !(access_flags & ESTATE_ACCESS_ALLOWED_AGENTS))
 	{
-		llwarns << "non-zero count for allowed agents, but no corresponding flag" << llendl;
+		LL_WARNS() << "non-zero count for allowed agents, but no corresponding flag" << LL_ENDL;
 	}
 	if (num_allowed_groups > 0
 		&& !(access_flags & ESTATE_ACCESS_ALLOWED_GROUPS))
 	{
-		llwarns << "non-zero count for allowed groups, but no corresponding flag" << llendl;
+		LL_WARNS() << "non-zero count for allowed groups, but no corresponding flag" << LL_ENDL;
 	}
 	if (num_banned_agents > 0
 		&& !(access_flags & ESTATE_ACCESS_BANNED_AGENTS))
 	{
-		llwarns << "non-zero count for banned agents, but no corresponding flag" << llendl;
+		LL_WARNS() << "non-zero count for banned agents, but no corresponding flag" << LL_ENDL;
 	}
 	if (num_estate_managers > 0
 		&& !(access_flags & ESTATE_ACCESS_MANAGERS))
 	{
-		llwarns << "non-zero count for managers, but no corresponding flag" << llendl;
+		LL_WARNS() << "non-zero count for managers, but no corresponding flag" << LL_ENDL;
 	}
 
 	// grab the UUID's out of the string fields
@@ -3206,7 +3206,7 @@ void LLPanelEnvironmentInfo::fixEstateSun()
 	LLEstateInfoModel& estate_info = LLEstateInfoModel::instance();
 	if (estate_info.getUseFixedSun())
 	{
-		llinfos << "Switching estate to global sun" << llendl;
+		LL_INFOS() << "Switching estate to global sun" << LL_ENDL;
 		estate_info.setUseFixedSun(false);
 		estate_info.sendEstateInfo();
 	}
@@ -3347,7 +3347,7 @@ bool LLPanelEnvironmentInfo::getSelectedWaterParams(LLSD& water_params)
 		LLWaterParamSet param_set;
 		if (!LLWaterParamManager::instance().getParamSet(water_key.name, param_set))
 		{
-			llwarns << "Error getting water preset: " << water_key.name << llendl;
+			LL_WARNS() << "Error getting water preset: " << water_key.name << LL_ENDL;
 			return false;
 		}
 
@@ -3366,7 +3366,7 @@ bool LLPanelEnvironmentInfo::getSelectedSkyParams(LLSD& sky_params, std::string&
 	LLWLParamSet param_set;
 	if (!LLWLParamManager::instance().getParamSet(preset, param_set))
 	{
-		llwarns << "Error getting sky params: " << preset.toLLSD() << llendl;
+		LL_WARNS() << "Error getting sky params: " << preset.toLLSD() << LL_ENDL;
 		return false;
 	}
 
@@ -3391,7 +3391,7 @@ bool LLPanelEnvironmentInfo::getSelectedDayCycleParams(LLSD& day_cycle, LLSD& sk
 	{
 		if (!LLDayCycleManager::instance().getPreset(dc.name, day_cycle))
 		{
-			llwarns << "Error getting day cycle " << dc.name << llendl;
+			LL_WARNS() << "Error getting day cycle " << dc.name << LL_ENDL;
 			return false;
 		}
 
@@ -3558,7 +3558,7 @@ void LLPanelEnvironmentInfo::onBtnApply()
 	new_region_settings.saveParams(day_cycle, sky_map, water_params, 0.0f);
 	if (!LLEnvManagerNew::instance().sendRegionSettings(new_region_settings))
 	{
-		llwarns << "Error applying region environment settings" << llendl;
+		LL_WARNS() << "Error applying region environment settings" << LL_ENDL;
 		return;
 	}
 

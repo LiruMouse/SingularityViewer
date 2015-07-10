@@ -89,7 +89,7 @@ BOOL LLDriverParamInfo::parseXml(LLXmlTreeNode* node)
 		}
 		else
 		{
-			llerrs << "<driven> Unable to resolve driven parameter: " << driven_id << llendl;
+			LL_ERRS() << "<driven> Unable to resolve driven parameter: " << driven_id << LL_ENDL;
 			return FALSE;
 		}
 	}
@@ -139,9 +139,9 @@ void LLDriverParamInfo::toStream(std::ostream &out)
 			}
 			else
 			{
-				llwarns << "could not get parameter " << driven.mDrivenID << " from avatar " 
+				LL_WARNS() << "could not get parameter " << driven.mDrivenID << " from avatar " 
 						<< mDriverParam->getAvatarAppearance() 
-						<< " for driver parameter " << getID() << llendl;
+						<< " for driver parameter " << getID() << LL_ENDL;
 			}
 			out << std::endl;
 		}
@@ -152,17 +152,29 @@ void LLDriverParamInfo::toStream(std::ostream &out)
 // LLDriverParam
 //-----------------------------------------------------------------------------
 
-LLDriverParam::LLDriverParam(LLAvatarAppearance *appearance, LLWearable* wearable /* = NULL */) :
+LLDriverParam::LLDriverParam(LLAvatarAppearance *appearance, LLWearable* wearable /* = NULL */)
+	: LLViewerVisualParam(),
+	mDefaultVec(),
+	mDriven(),
 	mCurrentDistortionParam( NULL ), 
 	mAvatarAppearance(appearance), 
 	mWearablep(wearable)
 {
 	llassert(mAvatarAppearance);
-	if (mWearablep)
-	{
-		llassert(mAvatarAppearance->isSelf());
-	}
+	llassert((mWearablep == NULL) || mAvatarAppearance->isSelf());
 	mDefaultVec.clear();
+}
+
+LLDriverParam::LLDriverParam(const LLDriverParam& pOther)
+	: LLViewerVisualParam(pOther),
+	mDefaultVec(pOther.mDefaultVec),
+	mDriven(pOther.mDriven),
+	mCurrentDistortionParam(pOther.mCurrentDistortionParam),
+	mAvatarAppearance(pOther.mAvatarAppearance),
+	mWearablep(pOther.mWearablep)
+{
+	llassert(mAvatarAppearance);
+	llassert((mWearablep == NULL) || mAvatarAppearance->isSelf());
 }
 
 LLDriverParam::~LLDriverParam()
@@ -178,7 +190,7 @@ BOOL LLDriverParam::setInfo(LLDriverParamInfo *info)
 	mID = info->mID;
 	info->mDriverParam = this;
 
-	setWeight(getDefaultWeight(), FALSE );
+	setWeight(getDefaultWeight());
 
 	return TRUE;
 }
@@ -186,31 +198,10 @@ BOOL LLDriverParam::setInfo(LLDriverParamInfo *info)
 /*virtual*/ LLViewerVisualParam* LLDriverParam::cloneParam(LLWearable* wearable) const
 {
 	llassert(wearable);
-	LLDriverParam *new_param = new LLDriverParam(mAvatarAppearance, wearable);
-	// FIXME DRANO this clobbers mWearablep, which means any code
-	// currently using mWearablep is wrong, or at least untested.
-	*new_param = *this;
-	//new_param->mWearablep = wearable;
-//	new_param->mDriven.clear(); // clear driven list to avoid overwriting avatar driven params from wearables. 
-	return new_param;
+	return new LLDriverParam(*this);
 }
 
-#if 0 // obsolete
-BOOL LLDriverParam::parseData(LLXmlTreeNode* node)
-{
-	LLDriverParamInfo* info = new LLDriverParamInfo;
-
-	info->parseXml(node);
-	if (!setInfo(info))
-	{
-		delete info;
-		return FALSE;
-	}
-	return TRUE;
-}
-#endif
-
-void LLDriverParam::setWeight(F32 weight, BOOL upload_bake)
+void LLDriverParam::setWeight(F32 weight, bool upload_bake)
 {
 	F32 min_weight = getMinWeight();
 	F32 max_weight = getMaxWeight();
@@ -445,7 +436,7 @@ const LLViewerVisualParam* LLDriverParam::getDrivenParam(S32 index) const
 //-----------------------------------------------------------------------------
 // setAnimationTarget()
 //-----------------------------------------------------------------------------
-void LLDriverParam::setAnimationTarget( F32 target_value, BOOL upload_bake )
+void LLDriverParam::setAnimationTarget( F32 target_value, bool upload_bake )
 {
 	LLVisualParam::setAnimationTarget(target_value, upload_bake);
 
@@ -463,7 +454,7 @@ void LLDriverParam::setAnimationTarget( F32 target_value, BOOL upload_bake )
 //-----------------------------------------------------------------------------
 // stopAnimating()
 //-----------------------------------------------------------------------------
-void LLDriverParam::stopAnimating(BOOL upload_bake)
+void LLDriverParam::stopAnimating(bool upload_bake)
 {
 	LLVisualParam::stopAnimating(upload_bake);
 
@@ -545,7 +536,7 @@ void LLDriverParam::updateCrossDrivenParams(LLWearableType::EType driven_type)
 		LLWearable *wearable = mAvatarAppearance->getWearableData()->getTopWearable(driver_type);
 		if (wearable)
 		{
-			wearable->setVisualParamWeight(mID, wearable->getVisualParamWeight(mID), false);
+			wearable->setVisualParamWeight(mID, wearable->getVisualParamWeight(mID));
 		}
 	}
 }

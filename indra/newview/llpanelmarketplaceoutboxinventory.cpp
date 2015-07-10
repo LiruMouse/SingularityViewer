@@ -72,7 +72,7 @@ void LLOutboxInventoryPanel::buildFolderView(/*const LLInventoryPanel::Params& p
 
 	if (root_id == LLUUID::null)
 	{
-		llwarns << "Outbox inventory panel has no root folder!" << llendl;
+		LL_WARNS() << "Outbox inventory panel has no root folder!" << LL_ENDL;
 		root_id = LLUUID::generateNewID();
 	}
 

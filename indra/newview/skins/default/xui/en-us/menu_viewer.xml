@@ -578,6 +578,10 @@
 				<on_check control="AutoresponseMuted"/>
 			</menu_item_check>
 		</menu>
+		<menu_item_check label="Sit when away" name="Sit when away">
+			<on_click function="ToggleControl" userdata="AlchemySitOnAway" />
+			<on_check control="AlchemySitOnAway" />
+		</menu_item_check>
       </menu>
 		<menu_item_call bottom="-281" enabled="false" height="19" label="Stop Animating My Avatar" left="0"
 		     mouse_opaque="true" name="Stop Animating My Avatar" width="250">
@@ -1070,10 +1074,6 @@
 		<menu_item_check label="Nimble" mouse_opaque="true" name="Nimble">
 			<on_click function="ToggleControl" userdata="Nimble"/>
 			<on_check control="Nimble"/>
-		</menu_item_check>
-		<menu_item_check label="Phantom" mouse_opaque="true" name="Phantom">
-			<on_click function="ToggleControl" userdata="Phantom"/>
-			<on_check control="Phantom"/>
 		</menu_item_check>
 		<menu_item_separator mouse_opaque="true" name="separators3"/>
 		<menu_item_check label="Region Tracker" name="Region Tracker">

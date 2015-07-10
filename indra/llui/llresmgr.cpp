@@ -157,10 +157,10 @@ void LLResMgr::setLocale( LLLOCALE_ID locale_id )
 	case LLLOCALE_USA: 
 //#if LL_WINDOWS
 //		// Windows doesn't use ISO country codes.
-//		llinfos << "Setting locale to " << setlocale( LC_ALL, "english-usa" ) << llendl;
+//		LL_INFOS() << "Setting locale to " << setlocale( LC_ALL, "english-usa" ) << LL_ENDL;
 //#else	
 //		// posix version should work everywhere else.
-//		llinfos << "Setting locale to " << setlocale( LC_ALL, "en_US" ) << llendl;
+//		LL_INFOS() << "Setting locale to " << setlocale( LC_ALL, "en_US" ) << LL_ENDL;
 //#endif
 
 //		mStrings	= mUSAStrings;
@@ -169,10 +169,10 @@ void LLResMgr::setLocale( LLLOCALE_ID locale_id )
 	case LLLOCALE_UK:
 //#if LL_WINDOWS
 //		// Windows doesn't use ISO country codes.
-//		llinfos << "Setting locale to " << setlocale( LC_ALL, "english-uk" ) << llendl;
+//		LL_INFOS() << "Setting locale to " << setlocale( LC_ALL, "english-uk" ) << LL_ENDL;
 //#else
 //		// posix version should work everywhere else.
-//		llinfos << "Setting locale to " << setlocale( LC_ALL, "en_GB" ) << llendl;
+//		LL_INFOS() << "Setting locale to " << setlocale( LC_ALL, "en_GB" ) << LL_ENDL;
 //#endif
 
 //		mStrings	= mUKStrings;
@@ -469,13 +469,13 @@ LLLocale::LLLocale(const std::string& locale_string)
 	char* new_locale_string = setlocale( LC_ALL, locale_string.c_str());
 	if ( new_locale_string == NULL && PrevFailedLocaleString != locale_string )
 	{
-		llwarns << "Failed to set locale " << locale_string.c_str() << llendl;
+		LL_WARNS() << "Failed to set locale " << locale_string.c_str() << LL_ENDL;
 		setlocale(LC_ALL, SYSTEM_LOCALE.c_str());
 		PrevFailedLocaleString = locale_string;
 	}
 	//else
 	//{
-	//	llinfos << "Set locale to " << new_locale_string << llendl;
+	//	LL_INFOS() << "Set locale to " << new_locale_string << LL_ENDL;
 	//}
 }
 

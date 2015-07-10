@@ -656,7 +656,7 @@ protected:
 	{
 		if (mRef != 0)
 		{
-			llerrs << "deleting non-zero reference" << llendl;
+			LL_ERRS() << "deleting non-zero reference" << LL_ENDL;
 		}
 	}
 

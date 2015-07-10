@@ -9,7 +9,7 @@
 	<check_box bottom="-85" height="16" initial_value="false" label="Show timestamps in IM" name="show_timestamps_check"/>
     <check_box bottom="-105" height="16" initial_value="false" label="Show online Friend notifications" name="friends_online_notify_checkbox"/>
     <text bottom_delta="-15" follows="top|left" left_delta="4" name="conference_block_text">Incoming conferences:</text>
-    <radio_group follows="top|left" bottom_delta="-21" left_delta="116" height="16" width="350" draw_border="false" control_name="LiruBlockConferences" name="block_conferences_radio">
+    <radio_group follows="top|left" bottom_delta="-6" left_delta="116" height="16" width="204" draw_border="true" control_name="LiruBlockConferences" name="block_conferences_radio">
       <radio_item bottom_delta="0" name="accept" width="30" value="0">Accept</radio_item>
       <radio_item bottom_delta="0" left_delta="30" name="friends only" width="44" value="2">Friends Only</radio_item>
       <radio_item bottom_delta="0" left_delta="44" name="block" width="30" value="1">Block</radio_item>

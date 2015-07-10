@@ -91,9 +91,9 @@
 ///----------------------------------------------------------------------------
 /// Local function declarations, constants, enums, and typedefs
 ///----------------------------------------------------------------------------
-S32 LLFloaterSnapshot::sUIWinHeightLong = 625 ;
-S32 LLFloaterSnapshot::sUIWinHeightShort = LLFloaterSnapshot::sUIWinHeightLong - 266 ;
-S32 LLFloaterSnapshot::sUIWinWidth = 219 ;
+S32 LLFloaterSnapshot::sUIWinHeightLong = 566;
+S32 LLFloaterSnapshot::sUIWinHeightShort = LLFloaterSnapshot::sUIWinHeightLong - 266;
+S32 LLFloaterSnapshot::sUIWinWidth = 219;
 S32 const THUMBHEIGHT = 159;
 
 LLSnapshotFloaterView* gSnapshotFloaterView = NULL;
@@ -1331,7 +1331,7 @@ LLFloaterFeed* LLSnapshotLivePreview::getCaptionAndSaveFeed()
 	if (mFullScreenPreviewTexture.isNull())
 	{
 		// This should never happen!
-		llwarns << "The snapshot image has not been generated!" << llendl;
+		LL_WARNS() << "The snapshot image has not been generated!" << LL_ENDL;
 		saveDone(SNAPSHOT_FEED, false, sSnapshotIndex);
 		return NULL;
 	}
@@ -1344,7 +1344,7 @@ LLFloaterFeed* LLSnapshotLivePreview::getCaptionAndSaveFeed()
 	LLImagePNG* png = dynamic_cast<LLImagePNG*>(mFormattedImage.get());
 	if (!png)
 	{
-		llwarns << "Formatted image not a PNG" << llendl;
+		LL_WARNS() << "Formatted image not a PNG" << LL_ENDL;
 		saveDone(SNAPSHOT_FEED, false, sSnapshotIndex);
 		return NULL;
 	}
@@ -1369,7 +1369,7 @@ LLFloaterPostcard* LLSnapshotLivePreview::savePostcard()
 	if(mFullScreenPreviewTexture.isNull())
 	{
 		//this should never happen!!
-		llwarns << "The snapshot image has not been generated!" << llendl ;
+		LL_WARNS() << "The snapshot image has not been generated!" << LL_ENDL ;
 		saveDone(SNAPSHOT_POSTCARD, false, sSnapshotIndex);
 		return NULL ;
 	}
@@ -1384,7 +1384,7 @@ LLFloaterPostcard* LLSnapshotLivePreview::savePostcard()
 	LLImageJPEG* jpg = dynamic_cast<LLImageJPEG*>(mFormattedImage.get());
 	if(!jpg)
 	{
-		llwarns << "Formatted image not a JPEG" << llendl;
+		LL_WARNS() << "Formatted image not a JPEG" << LL_ENDL;
 		saveDone(SNAPSHOT_POSTCARD, false, sSnapshotIndex);
 		return NULL;
 	}
@@ -1513,7 +1513,7 @@ void LLSnapshotLivePreview::saveDone(ESnapshotType type, bool success, int index
 		// The snapshot was already replaced, so this callback has nothing to do with us anymore.
 		if (!success)
 		{
-			llwarns << "Permanent failure to upload or save snapshot" << llendl;
+			LL_WARNS() << "Permanent failure to upload or save snapshot" << LL_ENDL;
 		}
 		return;
 	}
@@ -1608,18 +1608,7 @@ LLSnapshotLivePreview* LLFloaterSnapshot::Impl::getPreviewView(void)
 // static
 LLSnapshotLivePreview::ESnapshotType LLFloaterSnapshot::Impl::getTypeIndex(LLFloaterSnapshot* floater)
 {
-	LLSnapshotLivePreview::ESnapshotType index = LLSnapshotLivePreview::SNAPSHOT_FEED;
-	LLSD value = floater->childGetValue("snapshot_type_radio");
-	const std::string id = value.asString();
-	if (id == "feed")
-		index = LLSnapshotLivePreview::SNAPSHOT_FEED;
-	else if (id == "postcard")
-		index = LLSnapshotLivePreview::SNAPSHOT_POSTCARD;
-	else if (id == "texture")
-		index = LLSnapshotLivePreview::SNAPSHOT_TEXTURE;
-	else if (id == "local")
-		index = LLSnapshotLivePreview::SNAPSHOT_LOCAL;
-	return index;
+	return (LLSnapshotLivePreview::ESnapshotType)floater->childGetValue("snapshot_type_radio").asInteger();
 }
 
 
@@ -1772,33 +1761,10 @@ void LLFloaterSnapshot::Impl::freezeTime(bool on)
 void LLFloaterSnapshot::Impl::updateControls(LLFloaterSnapshot* floater, bool delayed_formatted)
 {
 	DoutEntering(dc::snapshot, "LLFloaterSnapshot::Impl::updateControls()");
-	std::string fee = gHippoGridManager->getConnectedGrid()->getUploadFee();
-	if (gSavedSettings.getBOOL("TemporaryUpload"))
-	{
-		fee = fee.substr(0, fee.find_first_of("0123456789")) + "0";
-	}
-	floater->childSetLabelArg("upload_btn", "[UPLOADFEE]", fee);
+	const HippoGridInfo& grid(*gHippoGridManager->getConnectedGrid());
+	floater->childSetLabelArg("upload_btn", "[UPLOADFEE]", gSavedSettings.getBOOL("TemporaryUpload") ? (grid.getCurrencySymbol() + '0') : grid.getUploadFee());
 
 	LLSnapshotLivePreview::ESnapshotType shot_type = (LLSnapshotLivePreview::ESnapshotType)gSavedSettings.getS32("LastSnapshotType");
-	LLRadioGroup* snapshot_type_radio = floater->getChild<LLRadioGroup>("snapshot_type_radio");
-	if (snapshot_type_radio) 
-	{
-		snapshot_type_radio->setSelectedIndex(shot_type);
-
-		const child_list_t *childs = snapshot_type_radio->getChildList();
-		if (childs) 
-		{
-			child_list_t::const_iterator it, end=childs->end();
-			for (it=childs->begin(); it!=end; ++it) 
-			{
-				LLView* ctrl = *it;
-				if (ctrl && (ctrl->getName() == "texture"))
-				{
-					ctrl->setLabelArg("[UPLOADFEE]", fee);
-				}
-			}
-		}
-	}
 	ESnapshotFormat shot_format = (ESnapshotFormat)gSavedSettings.getS32("SnapshotFormat");
 
 	floater->childSetVisible("feed_size_combo", FALSE);
@@ -2928,7 +2894,14 @@ LLFloaterSnapshot::~LLFloaterSnapshot()
 
 BOOL LLFloaterSnapshot::postBuild()
 {
-	childSetCommitCallback("snapshot_type_radio", Impl::onCommitSnapshotType, this);
+	// Don't let statics override the xml.
+	sUIWinHeightLong = getRect().getHeight();
+	sUIWinHeightShort = sUIWinHeightLong - 266;
+	if (LLUICtrl* snapshot_type_radio = getChild<LLUICtrl>("snapshot_type_radio"))
+	{
+		snapshot_type_radio->setCommitCallback(Impl::onCommitSnapshotType, this);
+		snapshot_type_radio->setValue(gSavedSettings.getS32("LastSnapshotType"));
+	}
 	childSetCommitCallback("local_format_combo", Impl::onCommitSnapshotFormat, this);
 	
 	childSetAction("new_snapshot_btn", Impl::onClickNewSnapshot, this);

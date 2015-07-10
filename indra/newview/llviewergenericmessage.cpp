@@ -105,7 +105,7 @@ void process_generic_message(LLMessageSystem* msg, void**)
 	}
 	else if (agent_id != gAgent.getID())
 	{
-		llwarns << "GenericMessage for wrong agent " << agent_id << llendl;
+		LL_WARNS() << "GenericMessage for wrong agent " << agent_id << LL_ENDL;
 		return;
 	}
 	else
@@ -117,8 +117,8 @@ void process_generic_message(LLMessageSystem* msg, void**)
 
 		if(!gGenericDispatcher.dispatch(request, invoice, strings))
 		{
-			llwarns << "GenericMessage " << request << " failed to dispatch" 
-				<< llendl;
+			LL_WARNS() << "GenericMessage " << request << " failed to dispatch" 
+				<< LL_ENDL;
 		}
 	}
 }

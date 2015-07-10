@@ -927,7 +927,7 @@ bool LLFindNonRemovableObjects::operator()(LLInventoryCategory* cat, LLInventory
 		return !get_is_category_removable(&gInventory, cat->getUUID());
 	}
 
-	llwarns << "Not a category and not an item?" << llendl;
+	LL_WARNS() << "Not a category and not an item?" << LL_ENDL;
 	return false;
 }
 

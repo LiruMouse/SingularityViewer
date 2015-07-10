@@ -71,7 +71,7 @@ class LLViewerVisualParam : public LLVisualParam
 {
 public:
 	LLViewerVisualParam();
-	/*virtual*/ ~LLViewerVisualParam(){};
+	virtual ~LLViewerVisualParam();
 
 	// Special: These functions are overridden by child classes
 	LLViewerVisualParamInfo 	*getInfo() const { return (LLViewerVisualParamInfo*)mInfo; };
@@ -108,6 +108,8 @@ public:
 
 	BOOL				getCrossWearable() const 	{ return getInfo()->mCrossWearable; }
 
+protected:
+	LLViewerVisualParam(const LLViewerVisualParam& pOther);
 } LL_ALIGN_POSTFIX(16);
 
 #endif // LL_LLViewerVisualParam_H

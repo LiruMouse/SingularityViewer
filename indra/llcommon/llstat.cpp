@@ -44,7 +44,6 @@ LLFrameTimer LLStat::sFrameTimer;
 void LLStat::reset()
 {
 	mNumValues = 0;
-	mLastValue = 0.f;
 	delete[] mBins;
 	mBins      = new ValueEntry[mNumBins];
 	mCurBin = mNumBins-1;
@@ -57,8 +56,7 @@ LLStat::LLStat(std::string name, S32 num_bins, BOOL use_frame_timer)
 	mName(name),
 	mBins(NULL)
 {
-	llassert(mNumBins > 0);
-	mLastTime  = 0.f;
+	llassert_always(mNumBins > 1);
 
 	reset();
 
@@ -66,7 +64,7 @@ LLStat::LLStat(std::string name, S32 num_bins, BOOL use_frame_timer)
 	{
 		stat_map_t::iterator iter = getStatList().find(mName);
 		if (iter != getStatList().end())
-			llwarns << "LLStat with duplicate name: " << mName << llendl;
+			LL_WARNS() << "LLStat with duplicate name: " << mName << LL_ENDL;
 		getStatList().insert(std::make_pair(mName, this));
 	}
 }
@@ -115,16 +113,8 @@ void LLStat::addValue(const F32 value)
 	}
 
 	// Increment the bin counters.
-	mCurBin++;
-	if ((U32)mCurBin >= mNumBins)
-	{
-		mCurBin = 0;
-	}
-	mNextBin++;
-	if ((U32)mNextBin >= mNumBins)
-	{
-		mNextBin = 0;
-	}
+	mCurBin = (mCurBin+1) % mNumBins;
+	mNextBin = (mNextBin+1) % mNumBins;
 
 	mBins[mCurBin].mValue = value;
 	if (mUseFrameTimer)
@@ -137,10 +127,6 @@ void LLStat::addValue(const F32 value)
 	}
 	mBins[mCurBin].mDT = (F32)(mBins[mCurBin].mTime - mBins[mCurBin].mBeginTime);
 
-	//this value is used to prime the min/max calls
-	mLastTime = mBins[mCurBin].mTime;
-	mLastValue = value;
-
 	// Set the begin time for the next stat segment.
 	mBins[mNextBin].mBeginTime = mBins[mCurBin].mTime;
 	mBins[mNextBin].mTime = mBins[mCurBin].mTime;
@@ -150,36 +136,25 @@ void LLStat::addValue(const F32 value)
 
 F32 LLStat::getMax() const
 {
-	S32 i;
-	F32 current_max = mLastValue;
-	if (mNumBins == 0)
+	F32 current_max = getCurrent();
+	for (S32 i = 0; i < (S32)mNumValues; i++)
 	{
-		current_max = 0.f;
-	}
-	else
-	{
-		for (i = 0; (i < (S32)mNumBins) && (i < (S32)mNumValues); i++)
+		// Skip the bin we're currently filling.
+		if (i == mNextBin)
 		{
-			// Skip the bin we're currently filling.
-			if (i == mNextBin)
-			{
-				continue;
-			}
-			if (mBins[i].mValue > current_max)
-			{
-				current_max = mBins[i].mValue;
-			}
+			continue;
 		}
+		current_max = llmax(current_max, mBins[i].mValue);
 	}
+
 	return current_max;
 }
 
 F32 LLStat::getMean() const
 {
-	S32 i;
-	F32 current_mean = 0.f;
+	F32 current_mean = getCurrent();
 	S32 samples = 0;
-	for (i = 0; (i < (S32)mNumBins) && (i < (S32)mNumValues); i++)
+	for (S32 i = 0; i < (S32)mNumValues; i++)
 	{
 		// Skip the bin we're currently filling.
 		if (i == mNextBin)
@@ -204,28 +179,18 @@ F32 LLStat::getMean() const
 
 F32 LLStat::getMin() const
 {
-	S32 i;
-	F32 current_min = mLastValue;
+	F32 current_min = getCurrent();
 
-	if (mNumBins == 0)
+	for (S32 i = 0; i < (S32)mNumValues; i++)
 	{
-		current_min = 0.f;
-	}
-	else
-	{
-		for (i = 0; (i < (S32)mNumBins) && (i < (S32)mNumValues); i++)
+		// Skip the bin we're currently filling.
+		if (i == mNextBin)
 		{
-			// Skip the bin we're currently filling.
-			if (i == mNextBin)
-			{
-				continue;
-			}
-			if (mBins[i].mValue < current_min)
-			{
-				current_min = mBins[i].mValue;
-			}
+			continue;
 		}
+		current_min = llmin(current_min, mBins[i].mValue);
 	}
+
 	return current_min;
 }
 
@@ -262,7 +227,7 @@ F32 LLStat::getPrevPerSec(S32 age) const
 		// Bogus for bin we're currently working on.
 		return 0.f;
 	}
-	return mBins[bin].mValue / mBins[bin].mDT;
+	return (U32(bin) < mNumValues) ? (mBins[bin].mValue / mBins[bin].mDT) : 0.f;
 }
 
 F64 LLStat::getPrevBeginTime(S32 age) const
@@ -316,7 +281,7 @@ F32 LLStat::getCurrent() const
 
 F32 LLStat::getCurrentPerSec() const
 {
-	return mBins[mCurBin].mValue / mBins[mCurBin].mDT;
+	return (U32(mCurBin) < mNumValues) ? (mBins[mCurBin].mValue / mBins[mCurBin].mDT) : 0.f;
 }
 
 F32 LLStat::getCurrentDuration() const
@@ -324,13 +289,17 @@ F32 LLStat::getCurrentDuration() const
 	return mBins[mCurBin].mDT;
 }
 
+F64 LLStat::getCurrentTime() const
+{
+	return mBins[mCurBin].mTime;
+}
+
 F32 LLStat::getMeanPerSec() const
 {
-	S32 i;
 	F32 value = 0.f;
 	F32 dt    = 0.f;
 
-	for (i = 0; (i < (S32)mNumBins) && (i < (S32)mNumValues); i++)
+	for (S32 i = 0; i < (S32)mNumValues; i++)
 	{
 		// Skip the bin we're currently filling.
 		if (i == mNextBin)
@@ -355,7 +324,7 @@ F32 LLStat::getMeanDuration() const
 {
 	F32 dur = 0.0f;
 	S32 count = 0;
-	for (S32 i=0; (i < (S32)mNumBins) && (i < (S32)mNumValues); i++)
+	for (S32 i=0; i < (S32)mNumValues; i++)
 	{
 		if (i == mNextBin)
 		{
@@ -378,22 +347,9 @@ F32 LLStat::getMeanDuration() const
 
 F32 LLStat::getMaxPerSec() const
 {
-	F32 value;
+	F32 value = 0.f;
 
-	if (mNextBin != 0)
-	{
-		value = mBins[0].mValue/mBins[0].mDT;
-	}
-	else if (mNumValues > 0)
-	{
-		value = mBins[1].mValue/mBins[1].mDT;
-	}
-	else
-	{
-		value = 0.f;
-	}
-
-	for (S32 i = 0; (i < (S32)mNumBins) && (i < (S32)mNumValues); i++)
+	for (S32 i = 0; i < (S32)mNumValues; i++)
 	{
 		// Skip the bin we're currently filling.
 		if (i == mNextBin)
@@ -407,23 +363,9 @@ F32 LLStat::getMaxPerSec() const
 
 F32 LLStat::getMinPerSec() const
 {
-	S32 i;
-	F32 value;
-	
-	if (mNextBin != 0)
-	{
-		value = mBins[0].mValue/mBins[0].mDT;
-	}
-	else if (mNumValues > 0)
-	{
-		value = mBins[1].mValue/mBins[0].mDT;
-	}
-	else
-	{
-		value = 0.f;
-	}
+	F32 value = 0.f;
 
-	for (i = 0; (i < (S32)mNumBins) && (i < (S32)mNumValues); i++)
+	for (S32 i = 0; i < (S32)mNumValues; i++)
 	{
 		// Skip the bin we're currently filling.
 		if (i == mNextBin)
@@ -455,7 +397,3 @@ S32 LLStat::getNextBin() const
 	return mNextBin;
 }
 
-F64 LLStat::getLastTime() const
-{
-	return mLastTime;
-}

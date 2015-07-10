@@ -416,7 +416,7 @@ void LLOverlayBar::onClickCancelTP(void* data)
 	LLOverlayBar* self = (LLOverlayBar*)data;
 	self->setCancelTPButtonVisible(FALSE, std::string("Cancel TP"));
 	gAgent.teleportCancel();
-	llinfos << "trying to cancel teleport" << llendl;
+	LL_INFOS() << "trying to cancel teleport" << LL_ENDL;
 }
 
 void LLOverlayBar::setCancelTPButtonVisible(BOOL b, const std::string& label)

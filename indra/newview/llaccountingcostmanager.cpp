@@ -59,7 +59,7 @@ public:
 	
 	void httpFailure(void)
 	{
-		llwarns	<< "Transport error [status:" << mStatus << "]: " << mReason << llendl;
+		LL_WARNS() << "Transport error [status:" << mStatus << "]: " << mReason << LL_ENDL;
 		clearPendingRequests();
 
 		LLAccountingCostObserver* observer = mObserverHandle.get();
@@ -74,7 +74,7 @@ public:
 		//Check for error
 		if ( !mContent.isMap() || mContent.has("error") )
 		{
-			llwarns	<< "Error on fetched data"<< llendl;
+			LL_WARNS() << "Error on fetched data" << LL_ENDL;
 		}
 		else if (mContent.has("selected"))
 		{
@@ -151,7 +151,7 @@ void LLAccountingCostManager::fetchCosts( eSelectionType selectionType,
 			}
 			else 
 			{
-				llinfos<<"Invalid selection type "<<llendl;
+				LL_INFOS() << "Invalid selection type " << LL_ENDL;
 				mObjectList.clear();
 				mPendingObjectQuota.clear();
 				return;
@@ -166,7 +166,7 @@ void LLAccountingCostManager::fetchCosts( eSelectionType selectionType,
 	else
 	{
 		//url was empty - warn & continue
-		llwarns<<"Supplied url is empty "<<llendl;
+		LL_WARNS() << "Supplied url is empty " << LL_ENDL;
 		mObjectList.clear();
 		mPendingObjectQuota.clear();
 	}

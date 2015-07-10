@@ -77,7 +77,7 @@ public:
 				  completeAny(mStatus, mime_type);
 				  return;
 			  }
-			  llwarns << "LLMediaTypeResponder::completedHeaders: OK HTTP status (" << mStatus << ") but no Content-Type! Received headers: " << mReceivedHeaders << llendl;
+			  LL_WARNS() << "LLMediaTypeResponder::completedHeaders: OK HTTP status (" << mStatus << ") but no Content-Type! Received headers: " << mReceivedHeaders << LL_ENDL;
 		  }
 		  completeAny(mStatus, "none/none");
 	  }

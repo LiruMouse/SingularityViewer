@@ -47,7 +47,6 @@
 #include "patch_code.h"
 
 // viewer
-#include "noise.h"
 #include "v4color.h"
 #include "llagent.h"
 #include "llviewerregion.h"

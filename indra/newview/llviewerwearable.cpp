@@ -40,6 +40,8 @@
 #include "llviewerregion.h"
 #include "llinventoryobserver.h"
 #include "llinventoryfunctions.h"
+#include "lllocaltextureobject.h"
+#include "llpaneleditwearable.h"
 #include "aixmllindengenepool.h"
 
 using namespace LLAvatarAppearanceDefines;
@@ -105,7 +107,7 @@ LLWearable::EImportResult LLViewerWearable::importStream( std::istream& input_st
 	{
 		// Shouldn't really log the asset id for security reasons, but
 		// we need it in this case.
-		llwarns << "Bad Wearable asset header: " << mAssetID << llendl;
+		LL_WARNS() << "Bad Wearable asset header: " << mAssetID << LL_ENDL;
 		//gVFS->dumpMap();
 		return result;
 	}
@@ -158,7 +160,7 @@ BOOL LLViewerWearable::isOldVersion() const
 
 	if( LLWearable::sCurrentDefinitionVersion < mDefinitionVersion )
 	{
-		llwarns << "Wearable asset has newer version (" << mDefinitionVersion << ") than XML (" << LLWearable::sCurrentDefinitionVersion << ")" << llendl;
+		LL_WARNS() << "Wearable asset has newer version (" << mDefinitionVersion << ") than XML (" << LLWearable::sCurrentDefinitionVersion << ")" << LL_ENDL;
 		llassert(0);
 	}
 
@@ -236,7 +238,7 @@ BOOL LLViewerWearable::isDirty() const
 
 			if( a != b  )
 			{
-				//llwarns << "param ID " << param->getID() << " was changed." << llendl;
+				//LL_WARNS() << "param ID " << param->getID() << " was changed." << LL_ENDL;
 				return TRUE;
 			}
 		}
@@ -594,8 +596,8 @@ struct LLWearableSaveData
 
 void LLViewerWearable::saveNewAsset() const
 {
-//	llinfos << "LLViewerWearable::saveNewAsset() type: " << getTypeName() << llendl;
-	//llinfos << *this << llendl;
+//	LL_INFOS() << "LLViewerWearable::saveNewAsset() type: " << getTypeName() << LL_ENDL;
+	//LL_INFOS() << *this << LL_ENDL;
 
 	const std::string filename = asset_id_to_filename(mAssetID);
 	LLFILE* fp = LLFile::fopen(filename, "wb");		/* Flawfinder: ignore */
@@ -612,7 +614,7 @@ void LLViewerWearable::saveNewAsset() const
 	if(!successful_save)
 	{
 		std::string buffer = llformat("Unable to save '%s' to wearable file.", mName.c_str());
-		llwarns << buffer << llendl;
+		LL_WARNS() << buffer << LL_ENDL;
 		
 		LLSD args;
 		args["NAME"] = mName;
@@ -627,7 +629,7 @@ void LLViewerWearable::saveNewAsset() const
 		std::string url = gAgent.getRegion()->getCapability("NewAgentInventory");
 		if (!url.empty())
 		{
-			llinfos << "Update Agent Inventory via capability" << llendl;
+			LL_INFOS() << "Update Agent Inventory via capability" << LL_ENDL;
 			LLSD body;
 			body["folder_id"] = gInventory.findCategoryUUIDForType(LLFolderType::assetToFolderType(getAssetType()));
 			body["asset_type"] = LLAssetType::lookup(getAssetType());
@@ -656,12 +658,12 @@ void LLViewerWearable::onSaveNewAssetComplete(const LLUUID& new_asset_id, void* 
 	if(0 == status)
 	{
 		// Success
-		llinfos << "Saved wearable " << type_name << llendl;
+		LL_INFOS() << "Saved wearable " << type_name << LL_ENDL;
 	}
 	else
 	{
 		std::string buffer = llformat("Unable to save %s to central asset store.", type_name.c_str());
-		llwarns << buffer << " Status: " << status << llendl;
+		LL_WARNS() << buffer << " Status: " << status << LL_ENDL;
 		LLSD args;
 		args["NAME"] = type_name;
 		LLNotificationsUtil::add("CannotSaveToAssetStore", args);

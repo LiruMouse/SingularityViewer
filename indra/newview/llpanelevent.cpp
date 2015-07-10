@@ -285,7 +285,7 @@ bool LLPanelEvent::callbackCreateEventWebPage(const LLSD& notification, const LL
 	S32 option = LLNotification::getSelectedOption(notification, response);
 	if (0 == option)
 	{
-		llinfos << "Loading events page " << EVENTS_URL << llendl;
+		LL_INFOS() << "Loading events page " << EVENTS_URL << LL_ENDL;
 
 		LLWeb::loadURL(EVENTS_URL);
 	}

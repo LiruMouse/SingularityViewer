@@ -297,7 +297,7 @@ BOOL LLFloaterBvhPreview::postBuild()
 		
 		if (!infile.getFileHandle())
 		{
-			llwarns << "Can't open BVH file:" << mFilename << llendl;	
+			LL_WARNS() << "Can't open BVH file:" << mFilename << LL_ENDL;	
 		}
 		else
 		{
@@ -308,7 +308,7 @@ BOOL LLFloaterBvhPreview::postBuild()
 			if (file_size == infile.read(file_buffer, file_size))
 			{
 				file_buffer[file_size] = '\0';
-				llinfos << "Loading BVH file " << mFilename << llendl;
+				LL_INFOS() << "Loading BVH file " << mFilename << LL_ENDL;
 				ELoadStatus load_status = E_ST_OK;
 				S32 line_number = 0; 
 				loaderp = new LLBVHLoader(file_buffer, load_status, line_number);
@@ -316,11 +316,11 @@ BOOL LLFloaterBvhPreview::postBuild()
 				
 				if(load_status == E_ST_NO_XLT_FILE)
 				{
-					llwarns << "NOTE: No translation table found." << llendl;
+					LL_WARNS() << "NOTE: No translation table found." << LL_ENDL;
 				}
 				else
 				{
-					llwarns << "ERROR: [line: " << line_number << "] " << status << llendl;
+					LL_WARNS() << "ERROR: [line: " << line_number << "] " << status << LL_ENDL;
 				}
 			}
 
@@ -394,7 +394,7 @@ BOOL LLFloaterBvhPreview::postBuild()
 
 		if (!raw_animatn.getFileHandle())
 		{
-			llwarns << "Can't open animatn file:" << mFilename << llendl;	
+			LL_WARNS() << "Can't open animatn file:" << mFilename << LL_ENDL;	
 		}
 		else
 		{
@@ -405,7 +405,7 @@ BOOL LLFloaterBvhPreview::postBuild()
 			if (file_size == raw_animatn.read(file_buffer, file_size))
 			{
 				file_buffer[file_size] = '\0';
-				llinfos << "Loading animatn file " << mFilename << llendl;
+				LL_INFOS() << "Loading animatn file " << mFilename << LL_ENDL;
 				mTransactionID.generate();
 				mMotionID = mTransactionID.makeAssetID(gAgent.getSecureSessionID());
 				mAnimPreview = new LLPreviewAnimation(256, 256);
@@ -1276,7 +1276,7 @@ void LLFloaterBvhPreview::onBtnOK(void* userdata)
 			}
 			else
 			{
-				llwarns << "Failure writing animation data." << llendl;
+				LL_WARNS() << "Failure writing animation data." << LL_ENDL;
 				LLNotificationsUtil::add("WriteAnimationFail");
 			}
 		}

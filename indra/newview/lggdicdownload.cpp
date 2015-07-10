@@ -189,7 +189,7 @@ void EmeraldDicDownloader::completedRaw(LLChannelDescriptors const& channels, bu
         }
         else
         {
-            llinfos << "completedRaw(): No empanel to refresh()!" << llendl;
+            LL_INFOS() << "completedRaw(): No empanel to refresh()!" << LL_ENDL;
         }
 
 		panel->close();

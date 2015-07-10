@@ -585,6 +585,40 @@
 			     name="DrawClassicClouds" width="200" />
 			<button bottom="-102" follows="left|top" font="SansSerifSmall" height="18" label="?"
 			     left="608" name="WLClassicCloudsHelp" width="18" />
+ <text
+  name="cloud_settings_title"
+  follows="top|left"
+  height="16"
+  left="480"
+  bottom_delta="-17"
+  width="76">
+          Cloud Setting
+  </text>
+  <combo_box
+   follows="top|left"
+   control_name="AlchemyWLCloudTexture"
+   name="cloud_settings_preset_combo"
+   left_delta="76"
+   bottom_delta="2"
+   height="14"
+   width="110">
+      <combo_box.item
+       label="Altocumulus"
+       name="altocumulus_cloud"
+       value="Altocumulus.tga"/>
+      <combo_box.item
+       label="Cumulo-Nimbus"
+       name="cumulonimbus_cloud"
+       value="Cumulo-Nimbus.tga"/>
+      <combo_box.item
+       label="Default"
+       name="default_cloud"
+       value="Default.tga"/>
+      <combo_box.item
+       label="Layered"
+       name="layered_cloud"
+       value="Layered.tga"/>
+  </combo_box>
 		</panel>
 	</tab_container>
 	<string name="WLDefaultSkyNames">

@@ -82,7 +82,7 @@ LLMotionRegistry::~LLMotionRegistry()
 //-----------------------------------------------------------------------------
 BOOL LLMotionRegistry::registerMotion( const LLUUID& id, LLMotionConstructor constructor )
 {
-	//	llinfos << "Registering motion: " << name << llendl;
+	//	LL_INFOS() << "Registering motion: " << name << LL_ENDL;
 	return mMotionTable.insert(std::make_pair(id,constructor)).second;
 }
 
@@ -236,7 +236,7 @@ void LLMotionController::purgeExcessMotions()
 
 	if (mLoadedMotions.size() > 2*MAX_MOTION_INSTANCES)
 	{
-		LL_WARNS_ONCE("Animation") << "> " << 2*MAX_MOTION_INSTANCES << " Loaded Motions" << llendl;
+		LL_WARNS_ONCE("Animation") << "> " << 2*MAX_MOTION_INSTANCES << " Loaded Motions" << LL_ENDL;
 	}
 }
 
@@ -384,7 +384,7 @@ LLMotion* LLMotionController::createMotion( const LLUUID &id )
 		switch(stat)
 		{
 		case LLMotion::STATUS_FAILURE:
-			llinfos << "Motion " << id << " init failed." << llendl;
+			LL_INFOS() << "Motion " << id << " init failed." << LL_ENDL;
 			sRegistry.markBad(id);
 			delete motion;
 			return NULL;
@@ -396,7 +396,7 @@ LLMotion* LLMotionController::createMotion( const LLUUID &id )
 		    mLoadedMotions.insert(motion);
 			break;
 		default:
-			llerrs << "Invalid initialization status" << llendl;
+			LL_ERRS() << "Invalid initialization status" << LL_ENDL;
 			break;
 		}
 
@@ -443,7 +443,7 @@ BOOL LLMotionController::startMotion(const LLUUID &id, F32 start_offset)
 		return TRUE;
 	}
 
-//	llinfos << "Starting motion " << name << llendl;
+//	LL_INFOS() << "Starting motion " << name << LL_ENDL;
 	//<singu>
 	F32 start_time = mAnimTime - start_offset;
 	if (!mDisableSyncing)
@@ -829,7 +829,7 @@ void LLMotionController::updateLoadingMotions()
 		}
 		else if (status == LLMotion::STATUS_FAILURE)
 		{
-			llinfos << "Motion " << motionp->getID() << " init failed." << llendl;
+			LL_INFOS() << "Motion " << motionp->getID() << " init failed." << LL_ENDL;
 			sRegistry.markBad(motionp->getID());
 			mLoadingMotions.erase(curiter);
 			// Singu note: a motion in mLoadingMotions will not be in mActiveMotions
@@ -941,7 +941,7 @@ void LLMotionController::updateMotions(bool force_update)
 	}
 
 	mHasRunOnce = TRUE;
-//	llinfos << "Motion controller time " << motionTimer.getElapsedTimeF32() << llendl;
+//	LL_INFOS() << "Motion controller time " << motionTimer.getElapsedTimeF32() << LL_ENDL;
 }
 
 //-----------------------------------------------------------------------------
@@ -1101,7 +1101,7 @@ LLMotion* LLMotionController::findMotion(const LLUUID& id) const
 //-----------------------------------------------------------------------------
 void LLMotionController::dumpMotions()
 {
-	llinfos << "=====================================" << llendl;
+	LL_INFOS() << "=====================================" << LL_ENDL;
 	for (motion_map_t::iterator iter = mAllMotions.begin();
 		 iter != mAllMotions.end(); iter++)
 	{
@@ -1115,7 +1115,7 @@ void LLMotionController::dumpMotions()
 		if (std::find(mActiveMotions.begin(), mActiveMotions.end(), motion)!=mActiveMotions.end())
 			state_string += std::string("A");
 		llassert(mDeprecatedMotions.find(motion) == mDeprecatedMotions.end());	// singu: it's impossible that a motion is in mAllMotions and mDeprecatedMotions at the same time.
-		llinfos << gAnimLibrary.animationName(id) << " " << state_string << llendl;
+		LL_INFOS() << gAnimLibrary.animationName(id) << " " << state_string << LL_ENDL;
 	}
 	//<singu>
 	// Also dump the deprecated motions.
@@ -1131,7 +1131,7 @@ void LLMotionController::dumpMotions()
 		if (std::find(mActiveMotions.begin(), mActiveMotions.end(), motion)!=mActiveMotions.end())
 			state_string += std::string("A");
 		state_string += "D";
-		llinfos << gAnimLibrary.animationName(id) << " " << state_string << llendl;
+		LL_INFOS() << gAnimLibrary.animationName(id) << " " << state_string << LL_ENDL;
 	}
 	//</singu>
 }
@@ -1312,7 +1312,7 @@ void LLMotionController::pauseAllMotions()
 {
 	if (!mPaused)
 	{
-		//llinfos << "Pausing animations..." << llendl;
+		//LL_INFOS() << "Pausing animations..." << LL_ENDL;
 		mPaused = TRUE;
 	}
 	
@@ -1325,7 +1325,7 @@ void LLMotionController::unpauseAllMotions()
 {
 	if (mPaused)
 	{
-		//llinfos << "Unpausing animations..." << llendl;
+		//LL_INFOS() << "Unpausing animations..." << LL_ENDL;
 		mPaused = FALSE;
 	}
 }

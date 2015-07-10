@@ -184,6 +184,10 @@ public:
 	 **/
 	bool endCall(const LLUUID& session_id);
 
+	void addNotifiedNonFriendSessionID(const LLUUID& session_id);
+
+	bool isNonFriendSessionNotified(const LLUUID& session_id);
+
 private:
 	// create a panel and update internal representation for
 	// consistency. Returns the pointer, caller (the class instance
@@ -209,6 +213,14 @@ private:
 
 private:
 	std::set<LLHandle<LLFloater> > mFloaters;
+
+	// EXP-901
+	// If "Only friends and groups can IM me" option is ON but the user got message from non-friend,
+	// the user should be notified that to be able to see this message the option should be OFF.
+	// This set stores session IDs in which user was notified. Need to store this IDs so that the user
+	// be notified only one time per session with non-friend.
+	typedef std::set<LLUUID> notified_non_friend_sessions_t;
+	notified_non_friend_sessions_t mNotifiedNonFriendSessions;
 
 	// An IM has been received that you haven't seen yet.
 	int		mIMUnreadCount;

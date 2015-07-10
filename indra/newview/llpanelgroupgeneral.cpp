@@ -60,6 +60,7 @@
 #include "llviewerwindow.h"
 
 #include "hippogridmanager.h"
+#include <boost/lexical_cast.hpp>
 
 // consts
 const S32 MATURE_CONTENT = 1;
@@ -115,7 +116,7 @@ LLPanelGroupGeneral::~LLPanelGroupGeneral()
 
 BOOL LLPanelGroupGeneral::postBuild()
 {
-	llinfos << "LLPanelGroupGeneral::postBuild()" << llendl;
+	LL_INFOS() << "LLPanelGroupGeneral::postBuild()" << LL_ENDL;
 
 	bool recurse = true;
 
@@ -267,6 +268,11 @@ BOOL LLPanelGroupGeneral::postBuild()
 		mGroupName->setVisible(FALSE);
 	}
 
+	std::string member_count(LLTrans::getString("LoadingData"));
+	if (LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(mGroupID))
+		member_count = boost::lexical_cast<std::string>(gdatap->mMembers.size());
+	getChild<LLUICtrl>("text_owners_and_visible_members")->setTextArg("[COUNT]", member_count);
+
 	return LLPanelGroupTab::postBuild();
 }
 
@@ -369,7 +375,7 @@ bool LLPanelGroupGeneral::apply(std::string& mesg)
 
 	if (has_power_in_group || mGroupID.isNull())
 	{
-		llinfos << "LLPanelGroupGeneral::apply" << llendl;
+		LL_INFOS() << "LLPanelGroupGeneral::apply" << LL_ENDL;
 
 		// Check to make sure mature has been set
 		if(mComboMature &&
@@ -833,9 +839,11 @@ void LLPanelGroupGeneral::updateMembers()
 		}
 	}
 
+	getChild<LLUICtrl>("text_owners_and_visible_members")->setTextArg("[COUNT]", boost::lexical_cast<std::string>(gdatap->mMembers.size()));
+
 	if (mMemberProgress == gdatap->mMembers.end())
 	{
-		lldebugs << "   member list completed." << llendl;
+		LL_DEBUGS() << "   member list completed." << LL_ENDL;
 		mListVisibleMembers->setEnabled(TRUE);
 	}
 	else

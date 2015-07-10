@@ -35,6 +35,7 @@
 #include "llnotificationsutil.h"
 #include "llsdserialize.h"
 #include "llkeyboard.h"
+#include "rlvhandler.h"
 
 const F32 LLVoiceClient::OVERDRIVEN_POWER_LEVEL = 0.7f;
 
@@ -526,6 +527,8 @@ void LLVoiceClient::setLipSyncEnabled(BOOL enabled)
 
 BOOL LLVoiceClient::lipSyncEnabled()
 {
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS)) return false; // RLVa:LF - You get nothing now!
+
 	if (mVoiceModule)
 	{
 		return mVoiceModule->lipSyncEnabled();

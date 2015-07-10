@@ -43,6 +43,7 @@
 #include "llwearabledata.h"
 #include "llvertexbuffer.h"
 #include "llviewervisualparam.h"
+#include "lllocaltextureobject.h"
 
 //#include "../tools/imdebug/imdebug.h"
 
@@ -155,7 +156,7 @@ BOOL LLTexLayerSetBuffer::renderTexLayerSet()
 		gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.00f);
 	}
 
-	LLVertexBuffer::unbind();
+	//LLVertexBuffer::unbind();
 
 	// Composite the color data
 	LLGLSUIDefault gls_ui;
@@ -170,7 +171,7 @@ BOOL LLTexLayerSetBuffer::renderTexLayerSet()
 		gAlphaMaskProgram.unbind();
 	}
 
-	LLVertexBuffer::unbind();
+	//LLVertexBuffer::unbind();
 	
 	// reset GL state
 	gGL.setColorMask(true, true);
@@ -209,7 +210,7 @@ BOOL LLTexLayerSetInfo::parseXml(LLXmlTreeNode* node)
 	static LLStdStringHandle body_region_string = LLXmlTree::addAttributeString("body_region");
 	if( !node->getFastAttributeString( body_region_string, mBodyRegion ) )
 	{
-		llwarns << "<layer_set> is missing body_region attribute" << llendl;
+		LL_WARNS() << "<layer_set> is missing body_region attribute" << LL_ENDL;
 		return FALSE;
 	}
 
@@ -737,13 +738,13 @@ BOOL LLTexLayerInfo::parseXml(LLXmlTreeNode* node)
 			}
 			if (mLocalTexture == TEX_NUM_INDICES)
 			{
-				llwarns << "<texture> element has invalid local_texture attribute: " << mName << " " << local_texture_name << llendl;
+				LL_WARNS() << "<texture> element has invalid local_texture attribute: " << mName << " " << local_texture_name << LL_ENDL;
 				return FALSE;
 			}
 		}
 		else	
 		{
-			llwarns << "<texture> element is missing a required attribute. " << mName << llendl;
+			LL_WARNS() << "<texture> element is missing a required attribute. " << mName << LL_ENDL;
 			return FALSE;
 		}
 	}
@@ -806,7 +807,7 @@ BOOL LLTexLayerInfo::createVisualParams(LLAvatarAppearance *appearance)
 		LLTexLayerParamColor* param_color = new LLTexLayerParamColor(appearance);
 		if (!param_color->setInfo(color_info, TRUE))
 		{
-			llwarns << "NULL TexLayer Color Param could not be added to visual param list. Deleting." << llendl;
+			LL_WARNS() << "NULL TexLayer Color Param could not be added to visual param list. Deleting." << LL_ENDL;
 			delete param_color;
 			success = FALSE;
 		}
@@ -820,7 +821,7 @@ BOOL LLTexLayerInfo::createVisualParams(LLAvatarAppearance *appearance)
 		LLTexLayerParamAlpha* param_alpha = new LLTexLayerParamAlpha(appearance);
 		if (!param_alpha->setInfo(alpha_info, TRUE))
 		{
-			llwarns << "NULL TexLayer Alpha Param could not be added to visual param list. Deleting." << llendl;
+			LL_WARNS() << "NULL TexLayer Alpha Param could not be added to visual param list. Deleting." << LL_ENDL;
 			delete param_alpha;
 			success = FALSE;
 		}
@@ -853,7 +854,7 @@ BOOL LLTexLayerInterface::setInfo(const LLTexLayerInfo *info, LLWearable* wearab
 	// Not a critical warning, but could be useful for debugging later issues. -Nyx
 	if (mInfo != NULL) 
 	{
-			llwarns << "mInfo != NULL" << llendl;
+			LL_WARNS() << "mInfo != NULL" << LL_ENDL;
 	}
 	mInfo = info;
 	//mID = info->mID; // No ID
@@ -1209,7 +1210,7 @@ BOOL LLTexLayer::render(S32 x, S32 y, S32 width, S32 height)
 			}
 			else
 			{
-				llinfos << "lto not defined or image not defined: " << getInfo()->getLocalTexture() << " lto: " << mLocalTextureObject << llendl;
+				LL_INFOS() << "lto not defined or image not defined: " << getInfo()->getLocalTexture() << " lto: " << mLocalTextureObject << LL_ENDL;
 			}
 //			if( mTexLayerSet->getAvatarAppearance()->getLocalTextureGL((ETextureIndex)getInfo()->mLocalTexture, &image_gl ) )
 			{
@@ -1297,7 +1298,7 @@ BOOL LLTexLayer::render(S32 x, S32 y, S32 width, S32 height)
 
 	if( !success )
 	{
-		llinfos << "LLTexLayer::render() partial: " << getInfo()->mName << llendl;
+		LL_INFOS() << "LLTexLayer::render() partial: " << getInfo()->mName << LL_ENDL;
 	}
 	return success;
 }
@@ -1434,7 +1435,7 @@ void LLTexLayer::renderMorphMasks(S32 x, S32 y, S32 width, S32 height, const LLC
 {
 	if (!force_render && !hasMorph())
 	{
-		lldebugs << "skipping renderMorphMasks for " << getUUID() << llendl;
+		LL_DEBUGS() << "skipping renderMorphMasks for " << getUUID() << LL_ENDL;
 		return;
 	}
 	LLFastTimer t(FTM_RENDER_MORPH_MASKS);
@@ -1475,7 +1476,7 @@ void LLTexLayer::renderMorphMasks(S32 x, S32 y, S32 width, S32 height, const LLC
 		success &= param->render( x, y, width, height );
 		if (!success && !force_render)
 		{
-			lldebugs << "Failed to render param " << param->getID() << " ; skipping morph mask." << llendl;
+			LL_DEBUGS() << "Failed to render param " << param->getID() << " ; skipping morph mask." << LL_ENDL;
 			return;
 		}
 	}
@@ -1517,8 +1518,8 @@ void LLTexLayer::renderMorphMasks(S32 x, S32 y, S32 width, S32 height, const LLC
 			}
 			else
 			{
-				llwarns << "Skipping rendering of " << getInfo()->mStaticImageFileName 
-						<< "; expected 1 or 4 components." << llendl;
+				LL_WARNS() << "Skipping rendering of " << getInfo()->mStaticImageFileName 
+						<< "; expected 1 or 4 components." << LL_ENDL;
 			}
 		}
 	}
@@ -1556,8 +1557,11 @@ void LLTexLayer::renderMorphMasks(S32 x, S32 y, S32 width, S32 height, const LLC
 		}
 
 		U32 cache_index = alpha_mask_crc.getCRC();
-		U8* alpha_data = get_if_there(mAlphaCache,cache_index,(U8*)NULL);
-		if (!alpha_data)
+		U8* alpha_data = NULL;//get_if_there(mAlphaCache,cache_index,(U8*)NULL);
+                // We believe we need to generate morph masks, do not assume that the cached version is accurate.
+                // We can get bad morph masks during login, on minimize, and occasional gl errors.
+                // We should only be doing this when we believe something has changed with respect to the user's appearance.
+		//if (!alpha_data)
 		{
 			// clear out a slot if we have filled our cache
 			S32 max_cache_entries = getTexLayerSet()->getAvatarAppearance()->isSelf() ? 4 : 1;
@@ -1897,18 +1901,18 @@ LLTexLayerStaticImageList::~LLTexLayerStaticImageList()
 
 void LLTexLayerStaticImageList::dumpByteCount() const
 {
-	llinfos << "Avatar Static Textures " <<
+	LL_INFOS() << "Avatar Static Textures " <<
 		"KB GL:" << (mGLBytes / 1024) <<
-		"KB TGA:" << (mTGABytes / 1024) << "KB" << llendl;
+		"KB TGA:" << (mTGABytes / 1024) << "KB" << LL_ENDL;
 }
 
 void LLTexLayerStaticImageList::deleteCachedImages()
 {
 	if( mGLBytes || mTGABytes )
 	{
-		llinfos << "Clearing Static Textures " <<
+		LL_INFOS() << "Clearing Static Textures " <<
 			"KB GL:" << (mGLBytes / 1024) <<
-			"KB TGA:" << (mTGABytes / 1024) << "KB" << llendl;
+			"KB TGA:" << (mTGABytes / 1024) << "KB" << LL_ENDL;
 
 		//mStaticImageLists uses LLPointers, clear() will cause deletion
 		

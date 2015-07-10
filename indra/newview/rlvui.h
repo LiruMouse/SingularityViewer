@@ -52,7 +52,9 @@ protected:
 	void onToggleShowLoc();												// showloc
 	void onToggleShowMinimap();											// showminimap
 	void onToggleShowNames(bool fQuitting);								// shownames
+	void onToggleShowNameTags(bool fQuitting);							// shownametags
 	void onToggleShowWorldMap();										// showworldmap
+	void onToggleCamUnlock();										// camunlock
 	void onToggleTp();													// tploc and tplm
 	void onToggleUnsit();												// unsit
 	void onToggleViewXXX();												// viewnote, viewscript, viewtexture

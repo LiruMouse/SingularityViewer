@@ -29,7 +29,10 @@
 #define LL_LLERRORCONTROL_H
 
 #include "llerror.h"
+#include "llpointer.h"
+#include "llrefcount.h"
 #include "boost/function.hpp"
+#include "boost/shared_ptr.hpp"
 #include <string>
 
 class LLSD;
@@ -62,7 +65,7 @@ namespace LLError
 		// logs to stderr, syslog, and windows debug log
 		// the identity string is used for in the syslog
 
-	LL_COMMON_API void initForApplication(const std::string& dir);
+	LL_COMMON_API void initForApplication(const std::string& dir, bool log_to_stderr = true);
 		// resets all logging settings to defaults needed by applicaitons
 		// logs to stderr and windows debug log
 		// sets up log configuration from the file logcontrol.xml in dir
@@ -72,14 +75,16 @@ namespace LLError
 		Settings that control what is logged.
 		Setting a level means log messages at that level or above.
 	*/
-	
+
 	LL_COMMON_API void setPrintLocation(bool);
 	LL_COMMON_API void setDefaultLevel(LLError::ELevel);
+	LL_COMMON_API ELevel getDefaultLevel();
 	LL_COMMON_API void setFunctionLevel(const std::string& function_name, LLError::ELevel);
 	LL_COMMON_API void setClassLevel(const std::string& class_name, LLError::ELevel);
 	LL_COMMON_API void setFileLevel(const std::string& file_name, LLError::ELevel);
 	LL_COMMON_API void setTagLevel(const std::string& file_name, LLError::ELevel);
-	
+
+	LL_COMMON_API LLError::ELevel decodeLevel(std::string name);
 	LL_COMMON_API void configure(const LLSD&);
 		// the LLSD can configure all of the settings
 		// usually read automatically from the live errorlog.xml file
@@ -134,26 +139,34 @@ namespace LLError
 	{
 		// An object that handles the actual output or error messages.
 	public:
+		Recorder();
 		virtual ~Recorder();
 
 		virtual void recordMessage(LLError::ELevel, const std::string& message) = 0;
 			// use the level for better display, not for filtering
 
-		virtual bool wantsTime(); // default returns false
-			// override and return true if the recorder wants the time string
-			// included in the text of the message
+		bool wantsTime();
+		bool wantsTags();
+		bool wantsLevel();
+		bool wantsLocation(); 
+		bool wantsFunctionName();
+
+	protected:
+		bool	mWantsTime,
+				mWantsTags,
+				mWantsLevel,
+				mWantsLocation,
+				mWantsFunctionName;
 	};
 
+	typedef boost::shared_ptr<Recorder> RecorderPtr;
+
 	/**
-	 * @NOTE: addRecorder() conveys ownership to the underlying Settings
-	 * object -- when destroyed, it will @em delete the passed Recorder*!
+	 * @NOTE: addRecorder() and removeRecorder() uses the boost::shared_ptr to allow for shared ownership
+	 * while still ensuring that the allocated memory is eventually freed
 	 */
-	LL_COMMON_API void addRecorder(Recorder*);
-	/**
-	 * @NOTE: removeRecorder() reclaims ownership of the Recorder*: its
-	 * lifespan becomes the caller's problem.
-	 */
-	LL_COMMON_API void removeRecorder(Recorder*);
+	LL_COMMON_API void addRecorder(RecorderPtr);
+	LL_COMMON_API void removeRecorder(RecorderPtr);
 		// each error message is passed to each recorder via recordMessage()
 
 	LL_COMMON_API void logToFile(const std::string& filename);
@@ -170,13 +183,12 @@ namespace LLError
 		Utilities for use by the unit tests of LLError itself.
 	*/
 
-	class ThreadSafeSettings;
-	LL_COMMON_API ThreadSafeSettings* saveAndResetSettings();
-	LL_COMMON_API void restoreSettings(ThreadSafeSettings *);
-		
+	typedef LLPointer<LLRefCount> SettingsStoragePtr;
+	LL_COMMON_API SettingsStoragePtr saveAndResetSettings();
+	LL_COMMON_API void restoreSettings(SettingsStoragePtr pSettingsStorage);
+
 	LL_COMMON_API std::string abbreviateFile(const std::string& filePath);
 	LL_COMMON_API int shouldLogCallCount();
-	
 };
 
 #endif // LL_LLERRORCONTROL_H

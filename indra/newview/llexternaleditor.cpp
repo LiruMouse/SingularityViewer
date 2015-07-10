@@ -52,7 +52,7 @@ LLExternalEditor::EErrorCode LLExternalEditor::setCommand(const std::string& env
 		cmd = findCommand(LLStringUtil::null, cmd);
 		if (cmd.empty())
 		{
-			llwarns << "Failed to find generic open handler." << llendl;
+			LL_WARNS() << "Failed to find generic open handler." << LL_ENDL;
 			return EC_NOT_SPECIFIED;
 		}
 	}
@@ -61,13 +61,13 @@ LLExternalEditor::EErrorCode LLExternalEditor::setCommand(const std::string& env
 	if (cmd.find(sFilenameMarker) == std::string::npos)
 	{
 		cmd += " \"" + sFilenameMarker + "\"";
-		llinfos << "Adding the filename marker (" << sFilenameMarker << ")" << llendl;
+		LL_INFOS() << "Adding the filename marker (" << sFilenameMarker << ")" << LL_ENDL;
 	}
 
 	string_vec_t tokens;
 	if (tokenize(tokens, cmd) < 2) // 2 = bin + at least one arg (%s)
 	{
-		llwarns << "Error parsing editor command" << llendl;
+		LL_WARNS() << "Error parsing editor command" << LL_ENDL;
 		return EC_PARSE_ERROR;
 	}
 
@@ -75,7 +75,7 @@ LLExternalEditor::EErrorCode LLExternalEditor::setCommand(const std::string& env
 	std::string bin_path = tokens[0];
 	if (!LLFile::isfile(bin_path))
 	{
-		llwarns << "Editor binary [" << bin_path << "] not found" << llendl;
+		LL_WARNS() << "Editor binary [" << bin_path << "] not found" << LL_ENDL;
 		return EC_BINARY_NOT_FOUND;
 	}
 
@@ -87,7 +87,7 @@ LLExternalEditor::EErrorCode LLExternalEditor::setCommand(const std::string& env
 		if (i > 1) mArgs += " ";
 		mArgs += "\"" + tokens[i] + "\"";
 	}
-	llinfos << "Setting command [" << bin_path << " " << mArgs << "]" << llendl;
+	LL_INFOS() << "Setting command [" << bin_path << " " << mArgs << "]" << LL_ENDL;
 
 	return EC_SUCCESS;
 }
@@ -97,7 +97,7 @@ LLExternalEditor::EErrorCode LLExternalEditor::run(const std::string& file_path)
 	std::string args = mArgs;
 	if (mProcess.getExecutable().empty() || args.empty())
 	{
-		llwarns << "Editor command not set" << llendl;
+		LL_WARNS() << "Editor command not set" << LL_ENDL;
 		return EC_NOT_SPECIFIED;
 	}
 
@@ -116,7 +116,7 @@ LLExternalEditor::EErrorCode LLExternalEditor::run(const std::string& file_path)
 	}
 
 	// Run the editor.
-	llinfos << "Running editor command [" << mProcess.getExecutable() + " " + args << "]" << llendl;
+	LL_INFOS() << "Running editor command [" << mProcess.getExecutable() + " " + args << "]" << LL_ENDL;
 	int result = mProcess.launch();
 	if (result == 0)
 	{
@@ -198,12 +198,12 @@ std::string LLExternalEditor::findCommand(
 	if (!override.empty())	// try the supplied override first
 	{
 		cmd = override;
-		llinfos << "Using override" << llendl;
+		LL_INFOS() << "Using override" << LL_ENDL;
 	}
 	else if (!gSavedSettings.getString(sSetting).empty())
 	{
 		cmd = gSavedSettings.getString(sSetting);
-		llinfos << "Using setting" << llendl;
+		LL_INFOS() << "Using setting" << LL_ENDL;
 	}
 	else					// otherwise use the path specified by the environment variable
 	{
@@ -211,10 +211,10 @@ std::string LLExternalEditor::findCommand(
 		if (env_var_val)
 		{
 			cmd = env_var_val;
-			llinfos << "Using env var " << env_var << llendl;
+			LL_INFOS() << "Using env var " << env_var << LL_ENDL;
 		}
 	}
 
-	llinfos << "Found command [" << cmd << "]" << llendl;
+	LL_INFOS() << "Found command [" << cmd << "]" << LL_ENDL;
 	return cmd;
 }

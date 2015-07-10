@@ -128,14 +128,14 @@ void LLLogChat::saveHistory(std::string const& filename, std::string line)
 {
 	if(!filename.size())
 	{
-		llinfos << "Filename is Empty!" << llendl;
+		LL_INFOS() << "Filename is Empty!" << LL_ENDL;
 		return;
 	}
 
 	LLFILE* fp = LLFile::fopen(LLLogChat::makeLogFileName(filename), "a"); 		/*Flawfinder: ignore*/
 	if (!fp)
 	{
-		llinfos << "Couldn't open chat history log!" << llendl;
+		LL_INFOS() << "Couldn't open chat history log!" << LL_ENDL;
 	}
 	else
 	{
@@ -146,7 +146,7 @@ void LLLogChat::saveHistory(std::string const& filename, std::string line)
 }
 
 
-static long const LOG_RECALL_BUFSIZ = 2048;
+static long const LOG_RECALL_BUFSIZ = 8192;
 
 long LLLogChat::computeFileposition(LLFILE *fptr, U32 lines)
 {

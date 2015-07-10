@@ -360,7 +360,7 @@ bool LLGroupNotifyBox::onNewNotification(const LLSD& notify)
 		LLGroupData group_data;
 		if (!gAgent.getGroupData(payload["group_id"].asUUID(),group_data))
 		{
-			llwarns << "Group notice for unkown group: " << payload["group_id"].asUUID() << llendl;
+			LL_WARNS() << "Group notice for unkown group: " << payload["group_id"].asUUID() << LL_ENDL;
 			return false;
 		}
 

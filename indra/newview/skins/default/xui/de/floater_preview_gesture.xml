@@ -39,6 +39,6 @@ ein.</text>
 	<check_box label="Zeit in Sekunden" name="wait_time_check"/>
 	
 	<check_box label="Aktiv" name="active_check" tool_tip="Aktive Gesten werden durch Chat-Eingabe ihrer Auslösephrasen oder Drücken von Tastenkürzeln ausgelöst.  Bei doppelten Tastenzuweisungen funktionieren Gesten in der Regel nicht."/>
-	<button label="Vorschau" name="preview_btn"/>
+	<flyout_button label="Vorschau" name="preview_btn"/>
 	<button label="Speichern" name="save_btn"/>
 </floater>

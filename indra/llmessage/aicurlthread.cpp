@@ -563,7 +563,7 @@ refresh_t PollSet::refresh(void)
   // by not calculating mMaxFdSet here.
   if (mNrFds >= FD_SETSIZE)
   {
-	llwarns << "PollSet::reset: More than FD_SETSIZE (" << FD_SETSIZE << ") file descriptors active!" << llendl;
+	LL_WARNS() << "PollSet::reset: More than FD_SETSIZE (" << FD_SETSIZE << ") file descriptors active!" << LL_ENDL;
 #if !WINDOWS_CODE
 	// Calculate mMaxFdSet.
 	// Run over FD_SETSIZE - 1 elements, starting at mNext, wrapping to 0 when we reach the end.
@@ -1020,20 +1020,20 @@ void AICurlThread::create_wakeup_fds(void)
 	curl_socket_t socks[2];
 	if (dumb_socketpair(socks, false) == SOCKET_ERROR)
 	{
-		llerrs << "Failed to generate wake-up socket pair" << formatWSAError() << llendl;
+		LL_ERRS() << "Failed to generate wake-up socket pair" << formatWSAError() << LL_ENDL;
 		return;
 	}
 	u_long nonblocking_enable = TRUE;
 	int error = ioctlsocket(socks[0], FIONBIO, &nonblocking_enable);
 	if(error)
 	{
-		llerrs << "Failed to set wake-up socket nonblocking: " << formatWSAError() << llendl;
+		LL_ERRS() << "Failed to set wake-up socket nonblocking: " << formatWSAError() << LL_ENDL;
 	}
 	llassert(nonblocking_enable);
 	error = ioctlsocket(socks[1], FIONBIO, &nonblocking_enable);
 	if(error)
 	{
-		llerrs << "Failed to set wake-up input socket nonblocking: " << formatWSAError() << llendl;
+		LL_ERRS() << "Failed to set wake-up input socket nonblocking: " << formatWSAError() << LL_ENDL;
 	}
 	mWakeUpFd = socks[0];
 	mWakeUpFd_in = socks[1];
@@ -1041,14 +1041,14 @@ void AICurlThread::create_wakeup_fds(void)
   int pipefd[2];
   if (pipe(pipefd))
   {
-	llerrs << "Failed to create wakeup pipe: " << strerror(errno) << llendl;
+	LL_ERRS() << "Failed to create wakeup pipe: " << strerror(errno) << LL_ENDL;
   }
   int const flags = O_NONBLOCK;
   for (int i = 0; i < 2; ++i)
   {
 	if (fcntl(pipefd[i], F_SETFL, flags))
 	{
-	  llerrs << "Failed to set pipe to non-blocking: " << strerror(errno) << llendl;
+	  LL_ERRS() << "Failed to set pipe to non-blocking: " << strerror(errno) << LL_ENDL;
 	}
   }
   mWakeUpFd = pipefd[0];		// Read-end of the pipe.
@@ -1066,7 +1066,7 @@ void AICurlThread::cleanup_wakeup_fds(void)
 		int error = closesocket(mWakeUpFd);
 		if (error)
 		{
-			llwarns << "Error closing wake-up socket" << formatWSAError() << llendl;
+			LL_WARNS() << "Error closing wake-up socket" << formatWSAError() << LL_ENDL;
 		}
 	}
 	if (mWakeUpFd_in != CURL_SOCKET_BAD)
@@ -1074,7 +1074,7 @@ void AICurlThread::cleanup_wakeup_fds(void)
 		int error = closesocket(mWakeUpFd_in);
 		if (error)
 		{
-			llwarns << "Error closing wake-up input socket" << formatWSAError() << llendl;
+			LL_WARNS() << "Error closing wake-up input socket" << formatWSAError() << LL_ENDL;
 		}
 	}
 #else
@@ -1128,7 +1128,7 @@ void AICurlThread::wakeup_thread(bool stop_thread)
   int len = send(mWakeUpFd_in, "!", 1, 0);
   if (len == SOCKET_ERROR)
   {
-	  llerrs << "Send to wake-up socket failed: " << formatWSAError() << llendl;
+	  LL_ERRS() << "Send to wake-up socket failed: " << formatWSAError() << LL_ENDL;
   }
   llassert_always(len == 1);
   //SGTODO: handle EAGAIN if needed
@@ -1153,7 +1153,7 @@ void AICurlThread::wakeup_thread(bool stop_thread)
   while(len == -1 && errno == EINTR);
   if (len == -1)
   {
-	llerrs << "write(3) to mWakeUpFd_in: " << strerror(errno) << llendl;
+	LL_ERRS() << "write(3) to mWakeUpFd_in: " << strerror(errno) << LL_ENDL;
   }
   llassert_always(len == 1);
 #endif
@@ -1210,14 +1210,14 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 	  }
 	  else
 	  {
-		llerrs << "read(3) from mWakeUpFd: " << formatWSAError() << llendl;
+		LL_ERRS() << "read(3) from mWakeUpFd: " << formatWSAError() << LL_ENDL;
 		return;
 	  }
 	}
 	else
 	{
 	  // pipe(2) returned 0.
-	  llwarns << "read(3) from mWakeUpFd returned 0, indicating that the pipe on the other end was closed! Shutting down curl thread." << llendl;
+	  LL_WARNS() << "read(3) from mWakeUpFd returned 0, indicating that the pipe on the other end was closed! Shutting down curl thread." << LL_ENDL;
 	  closesocket(mWakeUpFd);
 	  mWakeUpFd = CURL_SOCKET_BAD;
 	  mRunning = false;
@@ -1258,14 +1258,14 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 	  }
 	  else
 	  {
-		llerrs << "read(3) from mWakeUpFd: " << strerror(errno) << llendl;
+		LL_ERRS() << "read(3) from mWakeUpFd: " << strerror(errno) << LL_ENDL;
 		return;
 	  }
 	}
 	else
 	{
 	  // pipe(2) returned 0.
-	  llwarns << "read(3) from mWakeUpFd returned 0, indicating that the pipe on the other end was closed! Shutting down curl thread." << llendl;
+	  LL_WARNS() << "read(3) from mWakeUpFd returned 0, indicating that the pipe on the other end was closed! Shutting down curl thread." << LL_ENDL;
 	  close(mWakeUpFd);
 	  mWakeUpFd = CURL_SOCKET_BAD;
 	  mRunning = false;
@@ -1459,7 +1459,7 @@ void AICurlThread::run(void)
 		if (mZeroTimeout >= 1000)
 		{
 		  if (mZeroTimeout % 10000 == 0)
-			llwarns << "Detected " << mZeroTimeout << " zero-timeout calls of select() by curl thread (more than 101 seconds)!" << llendl;
+			LL_WARNS() << "Detected " << mZeroTimeout << " zero-timeout calls of select() by curl thread (more than 101 seconds)!" << LL_ENDL;
 		  timeout_ms = 10;
 		}
 		else if (mZeroTimeout >= 100)
@@ -1470,7 +1470,7 @@ void AICurlThread::run(void)
 	  else
 	  {
 		if (LL_UNLIKELY(mZeroTimeout >= 10000))
-		  llinfos << "Timeout of select() call by curl thread reset (to " << timeout_ms << " ms)." << llendl;
+		  LL_INFOS() << "Timeout of select() call by curl thread reset (to " << timeout_ms << " ms)." << LL_ENDL;
 		mZeroTimeout = 0;
 	  }
 	  timeout.tv_sec = timeout_ms / 1000;
@@ -1524,7 +1524,7 @@ void AICurlThread::run(void)
 	  // or -1 when an error occurred. A value of 0 means that a timeout occurred.
 	  if (ready == -1)
 	  {
-		llwarns << "select() failed: " << errno << ", " << strerror(errno) << llendl;
+		LL_WARNS() << "select() failed: " << errno << ", " << strerror(errno) << LL_ENDL;
 		if (errno == EBADF)
 		{
 		  // Somewhere (fmodex?) one of our file descriptors was closed. Try to recover by finding out which.
@@ -1644,7 +1644,7 @@ MultiHandle::MultiHandle(void) : mTimeout(-1), mReadPollSet(NULL), mWritePollSet
 
 MultiHandle::~MultiHandle()
 {
-  llinfos << "Destructing MultiHandle with " << mAddedEasyRequests.size() << " active curl easy handles." << llendl;
+  LL_INFOS() << "Destructing MultiHandle with " << mAddedEasyRequests.size() << " active curl easy handles." << LL_ENDL;
 
   // This thread was terminated.
   // Curl demands that all handles are removed from the multi session handle before calling curl_multi_cleanup.
@@ -1906,7 +1906,7 @@ void MultiHandle::check_msg_queue(void)
 	  }
 	  else if (res == -2)
 	  {
-		llwarns << "Curl easy handle returned by curl_multi_info_read() that is not (anymore) in MultiHandle::mAddedEasyRequests!?!" << llendl;
+		LL_WARNS() << "Curl easy handle returned by curl_multi_info_read() that is not (anymore) in MultiHandle::mAddedEasyRequests!?!" << LL_ENDL;
 	  }
 	  // Destruction of easy_request at this point, causes the CurlEasyRequest to be deleted.
 	}
@@ -2041,7 +2041,7 @@ void stopCurlThread(void)
 	  // main thread) will have destroyed before it REALLY finished.
 	  AICurlThread::sInstance->join_thread();	// Wait till it is REALLY done.
 	}
-	llinfos << "Curl thread" << (curlThreadIsRunning() ? " not" : "") << " stopped after " << ((400 - count) * 10) << "ms." << llendl;
+	LL_INFOS() << "Curl thread" << (curlThreadIsRunning() ? " not" : "") << " stopped after " << ((400 - count) * 10) << "ms." << LL_ENDL;
   }
 }
 
@@ -2069,7 +2069,7 @@ void BufferedCurlEasyRequest::setStatusAndReason(U32 status, std::string const& 
   // Sanity check. If the server replies with a redirect status then we better have that option turned on!
   if ((status >= 300 && status < 400) && mResponder && !mResponder->redirect_status_ok())
   {
-	llerrs << "Received " << status << " (" << reason << ") for responder \"" << mResponder->getName() << "\" which does not allow redirection!" << llendl;
+	LL_ERRS() << "Received " << status << " (" << reason << ") for responder \"" << mResponder->getName() << "\" which does not allow redirection!" << LL_ENDL;
   }
 }
 
@@ -2287,12 +2287,12 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	  if (status == 0)
 	  {
 		reason = "Header parse error.";
-		llwarns << "Received broken header line from server: \"" << header << "\"" << llendl;
+		LL_WARNS() << "Received broken header line from server: \"" << header << "\"" << LL_ENDL;
 	  }
 	  else
 	  {
 		reason = "Unexpected HTTP status.";
-		llwarns << "Received unexpected status value from server (" << status << "): \"" << header << "\"" << llendl;
+		LL_WARNS() << "Received unexpected status value from server (" << status << "): \"" << header << "\"" << LL_ENDL;
 	  }
 	  // Either way, this status value is not understood (or taken into account).
 	  // Set it to internal error so that the rest of code treats it as an error.
@@ -2348,7 +2348,7 @@ size_t BufferedCurlEasyRequest::curlHeaderCallback(char* data, size_t size, size
 	LLStringUtil::trim(header);
 	if (!header.empty())
 	{
-	  llwarns << "Unable to parse header: " << header << llendl;
+	  LL_WARNS() << "Unable to parse header: " << header << LL_ENDL;
 	}
   }
 
@@ -2687,7 +2687,7 @@ bool handleCurlMaxTotalConcurrentConnections(LLSD const& newvalue)
   U32 old = curl_max_total_concurrent_connections;
   curl_max_total_concurrent_connections = newvalue.asInteger();
   AIPerService::incrementMaxPipelinedRequests(curl_max_total_concurrent_connections - old);
-  llinfos << "CurlMaxTotalConcurrentConnections set to " << curl_max_total_concurrent_connections << llendl;
+  LL_INFOS() << "CurlMaxTotalConcurrentConnections set to " << curl_max_total_concurrent_connections << LL_ENDL;
   return true;
 }
 
@@ -2706,7 +2706,7 @@ bool handleCurlConcurrentConnectionsPerService(LLSD const& newvalue)
 	int increment = new_concurrent_connections - CurlConcurrentConnectionsPerService;
 	CurlConcurrentConnectionsPerService = new_concurrent_connections;
 	AIPerService::adjust_concurrent_connections(increment);
-	llinfos << "CurlConcurrentConnectionsPerService set to " << CurlConcurrentConnectionsPerService << llendl;
+	LL_INFOS() << "CurlConcurrentConnectionsPerService set to " << CurlConcurrentConnectionsPerService << LL_ENDL;
   }
   return true;
 }

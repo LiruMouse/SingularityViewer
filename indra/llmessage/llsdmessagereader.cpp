@@ -57,12 +57,12 @@ LLSD getLLSD(const LLSD& input, const char* block, const char* var, S32 blocknum
 	// LLTemplateMessageReader::getData behaviour
 	if(NULL == block)
 	{
-		llerrs << "NULL block name" << llendl;
+		LL_ERRS() << "NULL block name" << LL_ENDL;
 		return LLSD();
 	}
 	if(NULL == var)
 	{
-		llerrs << "NULL var name" << llendl;
+		LL_ERRS() << "NULL var name" << LL_ENDL;
 		return LLSD();
 	}
 	if(! input[block].isArray())
@@ -70,7 +70,7 @@ LLSD getLLSD(const LLSD& input, const char* block, const char* var, S32 blocknum
 		// NOTE: babbage: need to return default for missing blocks to allow
 		// backwards/forwards compatibility - handlers must cope with default
 		// values.
-		llwarns << "block " << block << " not found" << llendl;
+		LL_WARNS() << "block " << block << " not found" << LL_ENDL;
 		return LLSD();
 	}
 
@@ -80,7 +80,7 @@ LLSD getLLSD(const LLSD& input, const char* block, const char* var, S32 blocknum
 		// NOTE: babbage: need to return default for missing vars to allow
 		// backwards/forwards compatibility - handlers must cope with default
 		// values.
-		llwarns << "var " << var << " not found" << llendl;
+		LL_WARNS() << "var " << var << " not found" << LL_ENDL;
 	}
 	return result;
 }
@@ -238,7 +238,7 @@ void LLSDMessageReader::getString(const char *block, const char *var,
 {
 	if(buffer_size <= 0)
 	{
-		llwarns << "buffer_size <= 0" << llendl;
+		LL_WARNS() << "buffer_size <= 0" << LL_ENDL;
 		return;
 	}
 	std::string data = getLLSD(mMessage, block, var, blocknum);

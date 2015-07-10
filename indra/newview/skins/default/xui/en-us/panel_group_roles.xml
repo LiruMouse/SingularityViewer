@@ -80,9 +80,7 @@ execute the Ability.
 			     border_thickness="1" bottom="143" follows="left|top" font="SansSerifSmall"
 			     height="16" is_unicode="false" left="4" max_length="63" mouse_opaque="true"
 			     name="filter_input" width="100" />
-			<button bottom_delta="-2" font="SansSerifSmall" halign="center" height="20"
-			     label="Search" left_delta="105" name="search_button" width="60" />
-			<name_list allow_calling_card_drop="false" background_visible="true" bottom_delta="-121"
+			<name_list allow_calling_card_drop="false" background_visible="true" bottom_delta="-123"
 			     column_padding="0" draw_border="true" draw_heading="true"
 			     heading_font="SansSerifSmall" menu_num="0" name_system="GroupMembersNameSystem"
 			     heading_height="14" height="120" left="4" multi_select="true"

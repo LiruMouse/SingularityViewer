@@ -35,15 +35,16 @@
 #include "llpostprocess.h"
 
 #include "lldir.h"
+#include "llfasttimer.h"
 #include "llgl.h"
 #include "llglslshader.h"
+#include "llmatrix4a.h"
+#include "llperlin.h"
 #include "llrender.h"
 #include "llsdserialize.h"
 #include "llsdutil.h"
 #include "llsdutil_math.h"
 #include "llvertexbuffer.h"
-#include "llfasttimer.h"
-#include "llmatrix4a.h"
 
 extern LLGLSLShader			gPostColorFilterProgram;
 extern LLGLSLShader			gPostNightVisionProgram;
@@ -352,7 +353,7 @@ LLPostProcess::LLPostProcess(void) :
 
 	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.*/
 	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight", XML_FILENAME));
-	LL_DEBUGS2("AppInit", "Shaders") << "Loading PostProcess Effects settings from " << pathName << LL_ENDL;
+	LL_DEBUGS("AppInit", "Shaders") << "Loading PostProcess Effects settings from " << pathName << LL_ENDL;
 
 	llifstream effectsXML(pathName);
 
@@ -457,7 +458,8 @@ void LLPostProcess::createNoiseTexture()
 	std::vector<GLubyte> buffer(NOISE_SIZE * NOISE_SIZE);
 	for (unsigned int i = 0; i < NOISE_SIZE; i++){
 		for (unsigned int k = 0; k < NOISE_SIZE; k++){
-			buffer[(i * NOISE_SIZE) + k] = (GLubyte)((double) rand() / ((double) RAND_MAX + 1.f) * 255.f);
+			F32 pnoise = LLPerlinNoise::noise(LLVector2(i, k) * .5f) * (1.f/.7f);
+			buffer[i * NOISE_SIZE + k] = (GLubyte)(llclamp(.5f + pnoise * .5f, 0.f, 1.f) * 255.f);
 		}
 	}
 
@@ -637,8 +639,8 @@ void LLPostProcess::drawOrthoQuad(QuadType type)
 		mVBO->getTexCoord1Strider(uv2);
 
 		float offs[2] = {
-			ll_round(((float) rand() / (float) RAND_MAX) * (float)NOISE_SIZE)/float(NOISE_SIZE),
-			ll_round(((float) rand() / (float) RAND_MAX) * (float)NOISE_SIZE)/float(NOISE_SIZE) };
+			/*ll_round*/(((float) rand() / (float) RAND_MAX) * (float)NOISE_SIZE)/float(NOISE_SIZE),
+			/*ll_round*/(((float) rand() / (float) RAND_MAX) * (float)NOISE_SIZE)/float(NOISE_SIZE) };
 		float scale[2] = {
 			(float)mScreenWidth * mNoiseTextureScale,
 			(float)mScreenHeight * mNoiseTextureScale };
@@ -700,7 +702,7 @@ void LLPostProcess::saveEffectAs(std::string const & effectName)
 	mAllEffectInfo[effectName] = mSelectedEffectInfo;
 
 	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight", XML_FILENAME));
-	//llinfos << "Saving PostProcess Effects settings to " << pathName << llendl;
+	//LL_INFOS() << "Saving PostProcess Effects settings to " << pathName << LL_ENDL;
 
 	llofstream effectsXML(pathName);
 

@@ -50,7 +50,7 @@ bool LLTrans::parseStrings(const std::string& xml_filename, const std::set<std::
 
 	if (!success || root.isNull() || !root->hasName( "strings" ))
 	{
-		llerrs << "Problem reading strings: " << xml_filename << llendl;
+		LL_ERRS() << "Problem reading strings: " << xml_filename << LL_ENDL;
 		return false;
 	}
 	
@@ -67,7 +67,7 @@ bool LLTrans::parseStrings(const std::string& xml_filename, const std::set<std::
 
 		if (! string->getAttributeString("name", string_name))
 		{
-			llwarns << "Unable to parse string with no name" << llendl;
+			LL_WARNS() << "Unable to parse string with no name" << LL_ENDL;
 			continue;
 		}
 	
@@ -96,7 +96,7 @@ int const access_increment = 1000;
 
 static void log_sStringTemplates_accesses(void)
 {
-  lldebugs << "LLTrans::getString/findString called " << sStringTemplates_accesses << " in total." << llendl;
+  LL_DEBUGS() << "LLTrans::getString/findString called " << sStringTemplates_accesses << " in total." << LL_ENDL;
 }
 
 //static 

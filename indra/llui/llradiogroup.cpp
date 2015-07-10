@@ -314,7 +314,7 @@ void LLRadioGroup::onClickButton(LLUICtrl* ctrl)
 		index++;
 	}
 
-	llwarns << "LLRadioGroup::onClickButton - clicked button that isn't a child" << llendl;
+	LL_WARNS() << "LLRadioGroup::onClickButton - clicked button that isn't a child" << LL_ENDL;
 }
 
 void LLRadioGroup::setValue( const LLSD& value )
@@ -433,7 +433,7 @@ LLView* LLRadioGroup::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory
 			radio_group->addRadioButton(std::string("radio"), line, rect, font);
 			++token_iter;
 		}
-		llwarns << "Legacy radio group format used! Please convert to use <radio_item> tags!" << llendl;
+		LL_WARNS() << "Legacy radio group format used! Please convert to use <radio_item> tags!" << LL_ENDL;
 	}
 	else
 	{

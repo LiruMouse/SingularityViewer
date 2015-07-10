@@ -97,18 +97,18 @@ AOStandTimer::AOStandTimer() : LLEventTimer( gSavedSettings.getF32("AOStandInter
 }
 AOStandTimer::~AOStandTimer()
 {
-//	llinfos << "dead" << llendl;
+//	LL_INFOS() << "dead" << LL_ENDL;
 }
 void AOStandTimer::reset()
 {
 	mPeriod = gSavedSettings.getF32("AOStandInterval");
 	mEventTimer.reset();
-//	llinfos << "reset" << llendl;
+//	LL_INFOS() << "reset" << LL_ENDL;
 }
 BOOL AOStandTimer::tick()
 {
 	LLFloaterAO::stand_iterator++;
-//	llinfos << "tick" << llendl;
+//	LL_INFOS() << "tick" << LL_ENDL;
 	LLFloaterAO::ChangeStand();
 	return FALSE;
 //	return LLFloaterAO::ChangeStand(); //timer is always active now ..
@@ -216,7 +216,7 @@ LLFloaterAO::~LLFloaterAO()
 	mcomboBox_lands = 0;
 	mcomboBox_standups = 0;
 	mcomboBox_prejumps = 0;
-//	llinfos << "floater destroyed" << llendl;
+//	LL_INFOS() << "floater destroyed" << LL_ENDL;
 }
 
 void LLFloaterAO::show(void*)
@@ -322,7 +322,7 @@ void LLFloaterAO::onComboBoxCommit(LLUICtrl* ctrl)
 		{
 			int state = STATE_AGENT_IDLE;
 			std::string stranim = box->getValue().asString();
-//			llinfos << "state " << (gAgentAvatarp->isSitting()) << " - " << getAnimationState() << llendl;
+//			LL_INFOS() << "state " << (gAgentAvatarp->isSitting()) << " - " << getAnimationState() << LL_ENDL;
 			if (box->getName() == "walks")
 			{
 				gAgent.sendAnimationRequest(GetAnimID(ANIM_AGENT_WALK), ANIM_REQUEST_STOP);
@@ -347,7 +347,7 @@ void LLFloaterAO::onComboBoxCommit(LLUICtrl* ctrl)
 				{
 					if ((gAgentAvatarp->isSitting()) && (getAnimationState() == STATE_AGENT_SIT))
 					{
-//						llinfos << "sitting " << GetAnimID(ANIM_AGENT_SIT) << " " << getAssetIDByName(stranim) << llendl;
+//						LL_INFOS() << "sitting " << GetAnimID(ANIM_AGENT_SIT) << " " << getAssetIDByName(stranim) << LL_ENDL;
 						gAgent.sendAnimationRequest(GetAnimID(ANIM_AGENT_SIT), ANIM_REQUEST_STOP);
 						gAgent.sendAnimationRequest(getAssetIDByName(stranim), ANIM_REQUEST_START);
 					}
@@ -357,12 +357,12 @@ void LLFloaterAO::onComboBoxCommit(LLUICtrl* ctrl)
 			}
 			else if (box->getName() == "gsits")
 			{
-//				llinfos << "gsitting " << GetAnimID(ANIM_AGENT_SIT_GROUND) << " " << getAssetIDByName(stranim) << llendl;
+//				LL_INFOS() << "gsitting " << GetAnimID(ANIM_AGENT_SIT_GROUND) << " " << getAssetIDByName(stranim) << LL_ENDL;
 				if (gAgentAvatarp)
 				{
 					if ((gAgentAvatarp->isSitting()) && (getAnimationState() == STATE_AGENT_GROUNDSIT))
 					{
-//						llinfos << "gsitting " << GetAnimID(ANIM_AGENT_SIT_GROUND) << " " << getAssetIDByName(stranim) << llendl;
+//						LL_INFOS() << "gsitting " << GetAnimID(ANIM_AGENT_SIT_GROUND) << " " << getAssetIDByName(stranim) << LL_ENDL;
 						gAgent.sendAnimationRequest(GetAnimID(ANIM_AGENT_SIT_GROUND), ANIM_REQUEST_STOP);
 						gAgent.sendAnimationRequest(getAssetIDByName(stranim), ANIM_REQUEST_START);
 					}
@@ -785,7 +785,7 @@ BOOL LLFloaterAO::ChangeStand()
 				setAnimationState(STATE_AGENT_STAND);
 				setCurrentStandId(mAOStands[stand_iterator].ao_id);
 				if ((sInstance)&&(mcomboBox_stands)) mcomboBox_stands->selectNthItem(stand_iterator);
-//				llinfos << "changing stand to " << mAOStands[stand_iterator].anim_name << llendl;
+//				LL_INFOS() << "changing stand to " << mAOStands[stand_iterator].anim_name << LL_ENDL;
 				return FALSE;
 			}
 		}
@@ -822,7 +822,7 @@ BOOL LLFloaterAO::startMotion(const LLUUID& id, F32 time_offset, BOOL stand)
 			stopMotion(getCurrentStandId(), FALSE, TRUE); //stop stand first then set state 
 			setAnimationState(GetStateFromAnimID(id));
 		
-//			llinfos << " state " << getAnimationState() << " start anim " << id << " overriding with " << GetAnimID(id) << llendl;
+//			LL_INFOS() << " state " << getAnimationState() << " start anim " << id << " overriding with " << GetAnimID(id) << LL_ENDL;
 			if ((GetStateFromAnimID(id) == STATE_AGENT_SIT) && !(gSavedSettings.getBOOL("AOSitsEnabled"))) return TRUE;
 			gAgent.sendAnimationRequest(GetAnimID(id), ANIM_REQUEST_START);
 			return TRUE;
@@ -843,7 +843,7 @@ BOOL LLFloaterAO::stopMotion(const LLUUID& id, BOOL stop_immediate, BOOL stand)
 	{
 		if (GetAnimID(id).notNull() && gSavedSettings.getBOOL("AOEnabled"))
 		{
-//			llinfos << "  state " << getAnimationState() << "/" << GetStateFromAnimID(id) << "(now 0)  stop anim " << id << " overriding with " << GetAnimID(id) << llendl;
+//			LL_INFOS() << "  state " << getAnimationState() << "/" << GetStateFromAnimID(id) << "(now 0)  stop anim " << id << " overriding with " << GetAnimID(id) << LL_ENDL;
 			if (getAnimationState() == GetStateFromAnimID(id))
 			{
 				setAnimationState(STATE_AGENT_IDLE);
@@ -900,7 +900,7 @@ void LLFloaterAO::onClickNewCard(void* user_data)
 	}
 	else
 	{
-		llwarns << "Can't find ao_template.ini in app_settings!" << llendl;
+		LL_WARNS() << "Can't find ao_template.ini in app_settings!" << LL_ENDL;
 	}	
 }
 
@@ -923,7 +923,7 @@ void LLFloaterAO::onNotecardLoadComplete(LLVFS *vfs,const LLUUID& asset_uuid,LLA
 			LLViewerTextEditor* edit = new LLViewerTextEditor("",LLRect(0,0,0,0),S32_MAX,"");
 			if(edit->importBuffer((char*)buffer, (S32)size))
 			{
-				llinfos << "ao nc decode success" << llendl;
+				LL_INFOS() << "ao nc decode success" << LL_ENDL;
 				std::string card = edit->getText();
 				edit->die();
 
@@ -958,16 +958,16 @@ void LLFloaterAO::onNotecardLoadComplete(LLVFS *vfs,const LLUUID& asset_uuid,LLA
 
 				for (tokenizer::iterator line = tokline.begin(); line != tokline.end(); ++line)
 				{
-//					llinfos << *line << llendl;
+//					LL_INFOS() << *line << LL_ENDL;
 					std::string strline(*line);
-//					llinfos << "uncommented line: " << strline << llendl;
+//					LL_INFOS() << "uncommented line: " << strline << LL_ENDL;
 
 					boost::regex type("^(\\s*)(\\[ )(.*)( \\])");
 					boost::smatch what; 
 					if (boost::regex_search(strline, what, type)) 
 					{
-//						llinfos << "type: " << what[0] << llendl;
-//						llinfos << "anims in type: " << boost::regex_replace(strline, type, "") << llendl;
+//						LL_INFOS() << "type: " << what[0] << LL_ENDL;
+//						LL_INFOS() << "anims in type: " << boost::regex_replace(strline, type, "") << LL_ENDL;
 
 						boost::char_separator<char> sep("|,");
 						std::string stranimnames(boost::regex_replace(strline, type, ""));
@@ -978,8 +978,8 @@ void LLFloaterAO::onNotecardLoadComplete(LLVFS *vfs,const LLUUID& asset_uuid,LLA
 							std::string stranim(*anim);
 							LLUUID animid(getAssetIDByName(stranim));
 
-//							llinfos << invfolderid.asString().c_str() << llendl;
-//							llinfos << "anim: " << stranim.c_str() << " assetid: " << animid << llendl;
+//							LL_INFOS() << invfolderid.asString().c_str() << LL_ENDL;
+//							LL_INFOS() << "anim: " << stranim.c_str() << " assetid: " << animid << LL_ENDL;
 							if (!(animid.notNull()))
 							{
 								cmdline_printchat(llformat("Warning: animation '%s' could not be found (Section: %s).",stranim.c_str(),strtoken.c_str()));
@@ -996,7 +996,7 @@ void LLFloaterAO::onNotecardLoadComplete(LLVFS *vfs,const LLUUID& asset_uuid,LLA
 										{
 											if (sInstance && (mcomboBox_walks != NULL))
 											{
-												//llinfos << "1 anim: " << stranim.c_str() << " assetid: " << animid << llendl;
+												//LL_INFOS() << "1 anim: " << stranim.c_str() << " assetid: " << animid << LL_ENDL;
 												if (!(mcomboBox_walks->selectByValue(stranim.c_str()))) mcomboBox_walks->add(stranim.c_str(), ADD_BOTTOM, TRUE); //check if exist
 											}
 										}
@@ -1133,7 +1133,7 @@ void LLFloaterAO::onNotecardLoadComplete(LLVFS *vfs,const LLUUID& asset_uuid,LLA
 						}
 					} 
 				}
-				llinfos << "ao nc read sucess" << llendl;
+				LL_INFOS() << "ao nc read sucess" << LL_ENDL;
 
 				for (std::vector<struct_overrides>::iterator iter = mAOOverrides.begin(); iter != mAOOverrides.end(); ++iter)
 				{
@@ -1258,13 +1258,13 @@ void LLFloaterAO::onNotecardLoadComplete(LLVFS *vfs,const LLUUID& asset_uuid,LLA
 			}
 			else
 			{
-				llinfos << "ao nc decode error" << llendl;
+				LL_INFOS() << "ao nc decode error" << LL_ENDL;
 			}
 		}
 	}
 	else
 	{
-		llinfos << "ao nc read error" << llendl;
+		LL_INFOS() << "ao nc read error" << LL_ENDL;
 	}
 }
 

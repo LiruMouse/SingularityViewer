@@ -61,6 +61,6 @@ ajoutez des pauses.
 	<line_editor left_delta="130" name="wait_time_editor"/>
 	<check_box label="Actifs" name="active_check"
 	     tool_tip="Les gestes actifs peuvent être déclenchés en saisissant leurs raccourcis dans le chat ou en appuyant sur les raccourcis. Les gestes deviennent généralement inactifs lorsqu'il y a un conflit entre les raccourcis."/>
-	<button label="Prévisualiser" name="preview_btn" width="86"/>
+	<flyout_button label="Prévisualiser" name="preview_btn" width="86"/>
 	<button label="Enregistrer" name="save_btn" width="86" left_delta="96"/>
 </floater>

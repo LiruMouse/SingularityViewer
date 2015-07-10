@@ -569,8 +569,8 @@ void LLFastTimer::NamedTimer::buildHierarchy()
 		{
 			// since ancestors have already been visited, reparenting won't affect tree traversal
 			//step up tree, bringing our descendants with us
-			//llinfos << "Moving " << timerp->getName() << " from child of " << timerp->getParent()->getName() <<
-			//	" to child of " << timerp->getParent()->getParent()->getName() << llendl;
+			//LL_INFOS() << "Moving " << timerp->getName() << " from child of " << timerp->getParent()->getName() <<
+			//	" to child of " << timerp->getParent()->getParent()->getName() << LL_ENDL;
 			timerp->setParent(timerp->getParent()->getParent());
 			timerp->getFrameState().mMoveUpTree = false;
 
@@ -662,12 +662,12 @@ void LLFastTimer::NamedTimer::resetFrame()
 		static S32 call_count = 0;
 		if (call_count % 100 == 0)
 		{
-			llinfos << "countsPerSecond (32 bit): " << countsPerSecond() << llendl;
-			llinfos << "get_clock_count (64 bit): " << get_clock_count() << llendl;
-			llinfos << "LLProcessorInfo().getCPUFrequency() " << LLProcessorInfo().getCPUFrequency() << llendl;
-			llinfos << "getCPUClockCount32() " << getCPUClockCount32() << llendl;
-			llinfos << "getCPUClockCount64() " << getCPUClockCount64() << llendl;
-			llinfos << "elapsed sec " << ((F64)getCPUClockCount64())/((F64)LLProcessorInfo().getCPUFrequency()*1000000.0) << llendl;
+			LL_INFOS() << "countsPerSecond (32 bit): " << countsPerSecond() << LL_ENDL;
+			LL_INFOS() << "get_clock_count (64 bit): " << get_clock_count() << LL_ENDL;
+			LL_INFOS() << "LLProcessorInfo().getCPUFrequency() " << LLProcessorInfo().getCPUFrequency() << LL_ENDL;
+			LL_INFOS() << "getCPUClockCount32() " << getCPUClockCount32() << LL_ENDL;
+			LL_INFOS() << "getCPUClockCount64() " << getCPUClockCount64() << LL_ENDL;
+			LL_INFOS() << "elapsed sec " << ((F64)getCPUClockCount64())/((F64)LLProcessorInfo().getCPUFrequency()*1000000.0) << LL_ENDL;
 		}
 		call_count++;
 
@@ -851,7 +851,7 @@ void LLFastTimer::nextFrame()
 	U64 frame_time = getCPUClockCount64();
 	if ((frame_time - sLastFrameTime) >> 8 > 0xffffffff)
 	{
-		llinfos << "Slow frame, fast timers inaccurate" << llendl;
+		LL_INFOS() << "Slow frame, fast timers inaccurate" << LL_ENDL;
 	}
 
 	if (!sPauseHistory)
@@ -896,7 +896,7 @@ void LLFastTimer::dumpCurTimes()
 			<< std::setprecision(3) << total_time_ms << " ms, "
 			<< timerp->getHistoricalCalls(0) << " calls";
 
-		llinfos << out_str.str() << llendl;
+		LL_INFOS() << out_str.str() << LL_ENDL;
 	}
 }
 

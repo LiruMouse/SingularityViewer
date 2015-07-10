@@ -47,6 +47,7 @@ enum EVisualParamGroup
 	VISUAL_PARAM_GROUP_TWEAKABLE,
 	VISUAL_PARAM_GROUP_ANIMATABLE,
 	VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT,
+	VISUAL_PARAM_GROUP_TRANSMIT_NOT_TWEAKABLE, // deprecated params that used to be tweakable.
 	NUM_VISUAL_PARAM_GROUPS
 };
 
@@ -99,6 +100,7 @@ protected:
 // An interface class for a generalized parametric modification of the avatar mesh
 // Contains data that is specific to each Avatar
 //-----------------------------------------------------------------------------
+LL_ALIGN_PREFIX(16)
 class LLVisualParam
 {
 public:
@@ -118,10 +120,10 @@ public:
 	//virtual BOOL			parseData( LLXmlTreeNode *node ) = 0;
 	virtual void			apply( ESex avatar_sex ) = 0;
 	//  Default functions
-	virtual void			setWeight(F32 weight, BOOL upload_bake);
-	virtual void			setAnimationTarget( F32 target_value, BOOL upload_bake );
-	virtual void			animate(F32 delta, BOOL upload_bake);
-	virtual void			stopAnimating(BOOL upload_bake);
+	virtual void			setWeight(F32 weight, bool upload_bake = false);
+	virtual void			setAnimationTarget(F32 target_value, bool upload_bake = false);
+	virtual void			animate(F32 delta, bool upload_bake = false);
+	virtual void			stopAnimating(bool upload_bake = false);
 
 	virtual BOOL			linkDrivenParams(visual_param_mapper mapper, BOOL only_cross_params);
 	virtual void			resetDrivenParams();
@@ -153,6 +155,7 @@ public:
 
 	LLVisualParam*			getNextParam()		{ return mNext; }
 	void					setNextParam( LLVisualParam *next );
+	void					clearNextParam();
 	
 	virtual void			setAnimating(BOOL is_animating) { mIsAnimating = is_animating && !mIsDummy; }
 	BOOL					getAnimating() const { return mIsAnimating; }
@@ -167,6 +170,8 @@ public:
 	virtual std::string		getDumpWearableTypeName(void) const = 0;
 
 protected:
+	LLVisualParam(const LLVisualParam& pOther);
+
 	F32					mCurWeight;			// current weight
 	F32					mLastWeight;		// last weight
 	LLVisualParam*		mNext;				// next param in a shared chain
@@ -178,6 +183,6 @@ protected:
 	S32					mID;				// id for storing weight/morphtarget compares compactly
 	LLVisualParamInfo	*mInfo;
 	EParamLocation		mParamLocation;		// where does this visual param live?
-};
+} LL_ALIGN_POSTFIX(16);
 
 #endif // LL_LLVisualParam_H

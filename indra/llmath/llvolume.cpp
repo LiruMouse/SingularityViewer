@@ -426,7 +426,7 @@ public:
 		}
 		else
 		{
-			llerrs << "Empty leaf" << llendl;
+			LL_ERRS() << "Empty leaf" << LL_ENDL;
 		}
 
 		for (U32 i = 0; i < branch->getChildCount(); ++i)
@@ -833,7 +833,7 @@ BOOL LLProfile::generate(const LLProfileParams& params, BOOL path_open,F32 detai
 
 	if (detail < MIN_LOD)
 	{
-		llinfos << "Generating profile with LOD < MIN_LOD.  CLAMPING" << llendl;
+		LL_INFOS() << "Generating profile with LOD < MIN_LOD.  CLAMPING" << LL_ENDL;
 		detail = MIN_LOD;
 	}
 
@@ -849,7 +849,7 @@ BOOL LLProfile::generate(const LLProfileParams& params, BOOL path_open,F32 detai
 	// Quick validation to eliminate some server crashes.
 	if (begin > end - 0.01f)
 	{
-		llwarns << "LLProfile::generate() assertion failed (begin >= end)" << llendl;
+		LL_WARNS() << "LLProfile::generate() assertion failed (begin >= end)" << LL_ENDL;
 		return FALSE;
 	}
 
@@ -1070,7 +1070,7 @@ BOOL LLProfile::generate(const LLProfileParams& params, BOOL path_open,F32 detai
 		}
 		break;
 	default:
-	    llerrs << "Unknown profile: getCurveType()=" << params.getCurveType() << llendl;
+	    LL_ERRS() << "Unknown profile: getCurveType()=" << params.getCurveType() << LL_ENDL;
 		break;
 	};
 
@@ -1152,7 +1152,7 @@ BOOL LLProfileParams::importFile(LLFILE *fp)
 		}
 		else
 		{
-			llwarns << "unknown keyword " << keyword << " in profile import" << llendl;
+			LL_WARNS() << "unknown keyword " << keyword << " in profile import" << LL_ENDL;
 		}
 	}
 
@@ -1224,7 +1224,7 @@ BOOL LLProfileParams::importLegacyStream(std::istream& input_stream)
 		}
 		else
 		{
- 		llwarns << "unknown keyword " << keyword << " in profile import" << llendl;
+ 		LL_WARNS() << "unknown keyword " << keyword << " in profile import" << LL_ENDL;
 		}
 	}
 
@@ -1546,7 +1546,7 @@ BOOL LLPath::generate(const LLPathParams& params, F32 detail, S32 split,
 
 	if (detail < MIN_LOD)
 	{
-		llinfos << "Generating path with LOD < MIN!  Clamping to 1" << llendl;
+		LL_INFOS() << "Generating path with LOD < MIN!  Clamping to 1" << LL_ENDL;
 		detail = MIN_LOD;
 	}
 
@@ -1808,7 +1808,7 @@ BOOL LLPathParams::importFile(LLFILE *fp)
 		}
 		else
 		{
-			llwarns << "unknown keyword " << " in path import" << llendl;
+			LL_WARNS() << "unknown keyword " << " in path import" << LL_ENDL;
 		}
 	}
 	return TRUE;
@@ -1948,7 +1948,7 @@ BOOL LLPathParams::importLegacyStream(std::istream& input_stream)
 		}
 		else
 		{
-			llwarns << "unknown keyword " << " in path import" << llendl;
+			LL_WARNS() << "unknown keyword " << " in path import" << LL_ENDL;
 		}
 	}
 	return TRUE;
@@ -2039,7 +2039,7 @@ LLProfile::~LLProfile()
 {
 	if(profile_delete_lock)
 	{
-		llerrs << "LLProfile should not be deleted here!" << llendl ;
+		LL_ERRS() << "LLProfile should not be deleted here!" << LL_ENDL ;
 	}
 }
 
@@ -2380,7 +2380,7 @@ bool LLVolume::unpackVolumeFaces(std::istream& is, S32 size)
 
 		if (face_count == 0)
 		{ //no faces unpacked, treat as failed decode
-			llwarns << "found no faces!" << llendl;
+			LL_WARNS() << "found no faces!" << LL_ENDL;
 			return false;
 		}
 
@@ -2413,7 +2413,7 @@ bool LLVolume::unpackVolumeFaces(std::istream& is, S32 size)
 			
 			if (idx.empty() || face.mNumIndices < 3)
 			{ //why is there an empty index list?
-				llwarns <<"Empty face present!" << llendl;
+				LL_WARNS() <<"Empty face present!" << LL_ENDL;
 				continue;
 			}
 
@@ -2559,7 +2559,7 @@ bool LLVolume::unpackVolumeFaces(std::istream& is, S32 size)
 
 				if (cur_vertex != num_verts || idx != weights.size())
 				{
-					llwarns << "Vertex weight count does not match vertex count!" << llendl;
+					LL_WARNS() << "Vertex weight count does not match vertex count!" << LL_ENDL;
 				}
 					
 			}
@@ -2725,7 +2725,7 @@ void LLVolume::createVolumeFaces()
 			vf.mNumS = face.mCount;
 			if (vf.mNumS < 0)
 			{
-				llerrs << "Volume face corruption detected." << llendl;
+				LL_ERRS() << "Volume face corruption detected." << LL_ENDL;
 			}
 
 			vf.mBeginT = 0;
@@ -2773,7 +2773,7 @@ void LLVolume::createVolumeFaces()
 						vf.mNumS = vf.mNumS*2;
 						if (vf.mNumS < 0)
 						{
-							llerrs << "Volume face corruption detected." << llendl;
+							LL_ERRS() << "Volume face corruption detected." << LL_ENDL;
 						}
 					}
 				}
@@ -3141,7 +3141,7 @@ void LLVolume::sculpt(U16 sculpt_width, U16 sculpt_height, S8 sculpt_components,
 	// weird crash bug - DEV-11158 - trying to collect more data:
 	if ((sizeS == 0) || (sizeT == 0))
 	{
-		llwarns << "sculpt bad mesh size " << sizeS << " " << sizeT << llendl;
+		LL_WARNS() << "sculpt bad mesh size " << sizeS << " " << sizeT << LL_ENDL;
 	}
 	
 	sNumMeshPoints -= mMesh.size();
@@ -3536,16 +3536,16 @@ bool LLVolumeParams::setType(U8 profile, U8 path)
 		// Bad profile.  Make it square.
 		profile = LL_PCODE_PROFILE_SQUARE;
 		result = false;
-		llwarns << "LLVolumeParams::setType changing bad profile type (" << profile_type
-			 	<< ") to be LL_PCODE_PROFILE_SQUARE" << llendl;
+		LL_WARNS() << "LLVolumeParams::setType changing bad profile type (" << profile_type
+			 	<< ") to be LL_PCODE_PROFILE_SQUARE" << LL_ENDL;
 	}
 	else if (hole_type > LL_PCODE_HOLE_MAX)
 	{
 		// Bad hole.  Make it the same.
 		profile = profile_type;
 		result = false;
-		llwarns << "LLVolumeParams::setType changing bad hole type (" << hole_type
-			 	<< ") to be LL_PCODE_HOLE_SAME" << llendl;
+		LL_WARNS() << "LLVolumeParams::setType changing bad hole type (" << hole_type
+			 	<< ") to be LL_PCODE_HOLE_SAME" << LL_ENDL;
 	}
 
 	if (path_type < LL_PCODE_PATH_MIN ||
@@ -3553,8 +3553,8 @@ bool LLVolumeParams::setType(U8 profile, U8 path)
 	{
 		// Bad path.  Make it linear.
 		result = false;
-		llwarns << "LLVolumeParams::setType changing bad path (" << path
-			 	<< ") to be LL_PCODE_PATH_LINE" << llendl;
+		LL_WARNS() << "LLVolumeParams::setType changing bad path (" << path
+			 	<< ") to be LL_PCODE_PATH_LINE" << LL_ENDL;
 		path = LL_PCODE_PATH_LINE;
 	}
 
@@ -4142,7 +4142,7 @@ BOOL equalTriangle(const S32 *a, const S32 *b)
 
 BOOL LLVolumeParams::importFile(LLFILE *fp)
 {
-	//llinfos << "importing volume" << llendl;
+	//LL_INFOS() << "importing volume" << LL_ENDL;
 	const S32 BUFSIZE = 16384;
 	char buffer[BUFSIZE];	/* Flawfinder: ignore */
 	// *NOTE: changing the size or type of this buffer will require
@@ -4176,7 +4176,7 @@ BOOL LLVolumeParams::importFile(LLFILE *fp)
 		}
 		else
 		{
-			llwarns << "unknown keyword " << keyword << " in volume import" << llendl;
+			LL_WARNS() << "unknown keyword " << keyword << " in volume import" << LL_ENDL;
 		}
 	}
 
@@ -4196,7 +4196,7 @@ BOOL LLVolumeParams::exportFile(LLFILE *fp) const
 
 BOOL LLVolumeParams::importLegacyStream(std::istream& input_stream)
 {
-	//llinfos << "importing volume" << llendl;
+	//LL_INFOS() << "importing volume" << LL_ENDL;
 	const S32 BUFSIZE = 16384;
 	// *NOTE: changing the size or type of this buffer will require
 	// changing the sscanf below.
@@ -4226,7 +4226,7 @@ BOOL LLVolumeParams::importLegacyStream(std::istream& input_stream)
 		}
 		else
 		{
-			llwarns << "unknown keyword " << keyword << " in volume import" << llendl;
+			LL_WARNS() << "unknown keyword " << keyword << " in volume import" << LL_ENDL;
 		}
 	}
 
@@ -4438,7 +4438,7 @@ LLFaceID LLVolume::generateFaceMask()
 		}
 		break;
 	default:
-		llerrs << "Unknown profile!" << llendl;
+		LL_ERRS() << "Unknown profile!" << LL_ENDL;
 		break;
 	}
 
@@ -4735,7 +4735,7 @@ BOOL LLVolumeFace::create(LLVolume* volume, BOOL partial_build)
 	}
 	else
 	{
-		llerrs << "Unknown/uninitialized face type!" << llendl;
+		LL_ERRS() << "Unknown/uninitialized face type!" << LL_ENDL;
 	}
 
 	return ret ;
@@ -5336,7 +5336,7 @@ void LLVolumeFace::cacheOptimize()
 	mTangents = binorm;
 
 	//std::string result = llformat("ACMR pre/post: %.3f/%.3f  --  %d triangles %d breaks", pre_acmr, post_acmr, mNumIndices/3, breaks);
-	//llinfos << result << llendl;
+	//LL_INFOS() << result << LL_ENDL;
 
 }
 
@@ -6205,12 +6205,12 @@ void LLVolumeFace::appendFace(const LLVolumeFace& face, LLMatrix4& mat_in, LLMat
 
 	if (new_count > 65536)
 	{
-		llerrs << "Cannot append face -- 16-bit overflow will occur." << llendl;
+		LL_ERRS() << "Cannot append face -- 16-bit overflow will occur." << LL_ENDL;
 	}
 	
 	if (face.mNumVertices == 0)
 	{
-		llerrs << "Cannot append empty face." << llendl;
+		LL_ERRS() << "Cannot append empty face." << LL_ENDL;
 	}
 
 	U32 old_vsize = mNumVertices*16;

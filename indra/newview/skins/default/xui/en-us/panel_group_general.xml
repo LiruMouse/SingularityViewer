@@ -68,7 +68,7 @@ Hover your mouse over the options for more help.
 	     left_delta="0" mouse_opaque="true" name="info_button" width="106" />
 	<button bottom_delta="0" follows="left|top" height="22" label="" left_delta="106"  width="22" scale_image="true" image_selected="tool_zoom.tga" image_unselected="tool_zoom.tga" image_hover_selected="tool_zoom_active.tga" image_hover_unselected="tool_zoom_active.tga" name="bigimg"/>
 	<text bottom_delta="-16" left_delta="-106" font="SansSerif" name="text_owners_and_visible_members">
-		Owners &amp; Visible Members
+		Owners &amp; Visible Members ([COUNT])
 	</text>
 	<text bottom_delta="-16" font="SansSerifSmall" left_delta="0"
 	     name="text_owners_are_shown_in_bold">

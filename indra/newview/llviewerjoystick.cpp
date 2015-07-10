@@ -40,6 +40,7 @@
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llfocusmgr.h"
+#include "rlvhandler.h"
 
 #include <boost/regex.hpp>
 
@@ -173,7 +174,7 @@ NDOF_HotPlugResult LLViewerJoystick::HotPlugAddCallback(NDOF_Device *dev)
 	LLViewerJoystick* joystick(LLViewerJoystick::getInstance());
 	if (joystick->mDriverState == JDS_UNINITIALIZED)
 	{
-        llinfos << "HotPlugAddCallback: will use device:" << llendl;
+        LL_INFOS() << "HotPlugAddCallback: will use device:" << LL_ENDL;
 		ndof_dump(dev);
 		joystick->mNdofDev = dev;
         joystick->mDriverState = JDS_INITIALIZED;
@@ -191,8 +192,8 @@ void LLViewerJoystick::HotPlugRemovalCallback(NDOF_Device *dev)
 	LLViewerJoystick* joystick(LLViewerJoystick::getInstance());
 	if (joystick->mNdofDev == dev)
 	{
-        llinfos << "HotPlugRemovalCallback: joystick->mNdofDev=" 
-				<< joystick->mNdofDev << "; removed device:" << llendl;
+        LL_INFOS() << "HotPlugRemovalCallback: joystick->mNdofDev=" 
+				<< joystick->mNdofDev << "; removed device:" << LL_ENDL;
 		ndof_dump(dev);
 		joystick->mDriverState = JDS_UNINITIALIZED;
 	}
@@ -281,7 +282,7 @@ void LLViewerJoystick::init(bool autoenable)
 			if (ndof_init_first(mNdofDev, NULL))
 			{
 				mDriverState = JDS_UNINITIALIZED;
-				llwarns << "ndof_init_first FAILED" << llendl;
+				LL_WARNS() << "ndof_init_first FAILED" << LL_ENDL;
 			}
 			else
 			{
@@ -354,13 +355,13 @@ void LLViewerJoystick::init(bool autoenable)
 		sType = NONE;
 	}
 	
-	llinfos << "ndof: mDriverState=" << mDriverState << "; mNdofDev=" 
-			<< mNdofDev << "; libinit=" << libinit << llendl;
+	LL_INFOS() << "ndof: mDriverState=" << mDriverState << "; mNdofDev=" 
+			<< mNdofDev << "; libinit=" << libinit << LL_ENDL;
 
 	// <CV:David>
 	if (mDriverState == JDS_INITIALIZED)
 	{
-		llinfos << "Joystick = " << desc << llendl;
+		LL_INFOS() << "Joystick = " << desc << LL_ENDL;
 	}
 	// </CV:David>
 #endif
@@ -372,7 +373,7 @@ void LLViewerJoystick::terminate()
 #if LIB_NDOF
 
 	ndof_libcleanup();
-	llinfos << "Terminated connection with NDOF device." << llendl;
+	LL_INFOS() << "Terminated connection with NDOF device." << LL_ENDL;
 	mDriverState = JDS_UNINITIALIZED;
 #endif
 }
@@ -1161,7 +1162,8 @@ void LLViewerJoystick::moveFlycam(bool reset)
 // -----------------------------------------------------------------------------
 bool LLViewerJoystick::toggleFlycam()
 {
-	if (!gSavedSettings.getBOOL("JoystickEnabled") || !gSavedSettings.getBOOL("JoystickFlycamEnabled"))
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_CAMDISTMAX) || gRlvHandler.hasBehaviour(RLV_BHVR_CAMUNLOCK) // [RLVa:LF] - @camdistmax and @camunlock mean no going away!
+	|| !gSavedSettings.getBOOL("JoystickEnabled") || !gSavedSettings.getBOOL("JoystickFlycamEnabled"))
 	{
 		mOverrideCamera = false;
 		return false;
@@ -1393,7 +1395,7 @@ void LLViewerJoystick::setSNDefaults(S32 type)
 	const bool ouya = type == 1;
 	const bool xbox = ouya || type == 2;
 	const bool ds3 = type == 3;
-	llinfos << "restoring " << (xbox ? ouya ? "OUYA	Game Controller" : "Xbox Controller" : ds3 ? "Dual Shock 3" : "SpaceNavigator") << " defaults..." << llendl;
+	LL_INFOS() << "restoring " << (xbox ? ouya ? "OUYA	Game Controller" : "Xbox Controller" : ds3 ? "Dual Shock 3" : "SpaceNavigator") << " defaults..." << LL_ENDL;
 
 	/*
 	Axis 0: Left Thumbstick Horizontal

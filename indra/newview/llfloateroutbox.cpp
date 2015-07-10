@@ -241,7 +241,7 @@ void LLFloaterOutbox::setupOutbox()
 	if (outbox_id.isNull())
 	{
 		// We should never get there unless inventory fails badly
-		llerrs << "Inventory problem: failure to create the outbox for a merchant!" << llendl;
+		LL_ERRS() << "Inventory problem: failure to create the outbox for a merchant!" << LL_ENDL;
 		return;
 	}
 
@@ -252,7 +252,7 @@ void LLFloaterOutbox::setupOutbox()
 	if (outbox_id == mOutboxId)
 	{
 
-		llwarns << "Inventory warning: Merchant outbox already set" << llendl;
+		LL_WARNS() << "Inventory warning: Merchant outbox already set" << LL_ENDL;
 		return;
 	}
 	mOutboxId = outbox_id;
@@ -642,7 +642,7 @@ void LLFloaterOutbox::showNotification(const LLSD& notify)
 
 	if (!notification)
 	{
-		llerrs << "Unable to find outbox notification!" << notify.asString() << llendl;
+		LL_ERRS() << "Unable to find outbox notification!" << notify.asString() << LL_ENDL;
 
 		return;
 	}

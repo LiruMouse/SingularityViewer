@@ -289,13 +289,13 @@ bool LLCommandLineParser::parseAndStoreResults(po::command_line_parser& clp)
     }
     catch(po::error& e)
     {
-        llwarns << "Caught Error:" << e.what() << llendl;
+        LL_WARNS() << "Caught Error:" << e.what() << LL_ENDL;
 		mErrorMsg = e.what();
         return false;
     }
     catch(LLCLPError& e)
     {
-        llwarns << "Caught Error:" << e.what() << llendl;
+        LL_WARNS() << "Caught Error:" << e.what() << LL_ENDL;
 		mErrorMsg = e.what();
         return false;
     }
@@ -335,7 +335,7 @@ bool LLCommandLineParser::parseAndStoreResults(po::command_line_parser& clp)
 			<< last_option << " "
 			<< last_value;
 
-        llwarns << msg.str() << llendl;
+        LL_WARNS() << msg.str() << LL_ENDL;
 		mErrorMsg = msg.str();
         return false;
     } 
@@ -395,7 +395,7 @@ void LLCommandLineParser::printOptions() const
         {
             oss << t_itr->c_str() << " ";
         }
-        llinfos << oss.str() << llendl;
+        LL_INFOS() << oss.str() << LL_ENDL;
     }
 }
 
@@ -440,7 +440,7 @@ void setControlValueCB(const LLCommandLineParser::token_vector_t& value,
         case TYPE_BOOLEAN:
             if(value.size() > 1)
             {
-                llwarns << "Ignoring extra tokens." << llendl; 
+                LL_WARNS() << "Ignoring extra tokens." << LL_ENDL; 
             }
               
             if(value.size() > 0)
@@ -479,7 +479,7 @@ void setControlValueCB(const LLCommandLineParser::token_vector_t& value,
                 {
 					if(value.size() > 1)
 					{
-						llwarns << "Ignoring extra tokens mapped to the setting: " << opt_name << "." << llendl; 
+						LL_WARNS() << "Ignoring extra tokens mapped to the setting: " << opt_name << "." << LL_ENDL; 
 					}
 
                     LLSD llsdValue;
@@ -492,10 +492,10 @@ void setControlValueCB(const LLCommandLineParser::token_vector_t& value,
     }
     else
     {
-        llwarns << "Command Line option mapping '" 
+        LL_WARNS() << "Command Line option mapping '" 
             << opt_name 
             << "' not found! Ignoring." 
-            << llendl;
+            << LL_ENDL;
     }
 }
 

@@ -416,7 +416,7 @@ std::vector<affected_object> LocalBitmap::getUsingObjects(bool seek_by_type, boo
 void LocalBitmap::getDebugInfo()
 {
 	/* debug function: dumps everything human readable into llinfos */
-	llinfos << "===[local bitmap debug]==="               << "\n"
+	LL_INFOS() << "===[local bitmap debug]==="               << "\n"
 			<< "path: "          << filename        << "\n"
 			<< "name: "          << shortname       << "\n"
 			<< "extension: "     << extension       << "\n"
@@ -426,7 +426,7 @@ void LocalBitmap::getDebugInfo()
 			<< "keep updated: "  << keep_updating   << "\n"
 			<< "type: "          << bitmap_type     << "\n"
 			<< "is valid: "      << valid           << "\n"
-			<< "=========================="               << llendl;
+			<< "=========================="               << LL_ENDL;
 	
 }
 

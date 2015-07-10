@@ -144,9 +144,9 @@ bool LLCalc::evalString(const std::string& expression, F32& result)
 	if (!expression::parse<F32,std::string::const_iterator>(itr, expression.end(), calc, result) || itr !=  expression.end())
 	{
 		mLastErrorPos = itr - expression.begin();
-		llinfos << "Unhandled syntax error at " << mLastErrorPos << " in expression: " << expression << llendl;
+		LL_INFOS() << "Unhandled syntax error at " << mLastErrorPos << " in expression: " << expression << LL_ENDL;
 		return false;
 	}
-	lldebugs << "Math expression: " << expression << " = " << result << llendl;
+	LL_DEBUGS() << "Math expression: " << expression << " = " << result << LL_ENDL;
 	return true;
 }

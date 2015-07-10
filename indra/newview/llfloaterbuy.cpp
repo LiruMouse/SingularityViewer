@@ -206,14 +206,14 @@ void LLFloaterBuy::inventoryChanged(LLViewerObject* obj,
 {
 	if (!obj)
 	{
-		llwarns << "No object in LLFloaterBuy::inventoryChanged" << llendl;
+		LL_WARNS() << "No object in LLFloaterBuy::inventoryChanged" << LL_ENDL;
 		return;
 	}
 
 	if (!inv)
 	{
-		llwarns << "No inventory in LLFloaterBuy::inventoryChanged"
-			<< llendl;
+		LL_WARNS() << "No inventory in LLFloaterBuy::inventoryChanged"
+			<< LL_ENDL;
 		removeVOInventoryListener();
 		return;
 	}
@@ -297,7 +297,7 @@ void LLFloaterBuy::onClickBuy(void*)
 {
 	if (!sInstance)
 	{
-		llinfos << "LLFloaterBuy::onClickBuy no sInstance!" << llendl;
+		LL_INFOS() << "LLFloaterBuy::onClickBuy no sInstance!" << LL_ENDL;
 		return;
 	}
 

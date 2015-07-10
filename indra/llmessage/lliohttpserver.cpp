@@ -154,7 +154,7 @@ LLIOPipe::EStatus LLHTTPPipe::process_impl(
 {
 	LLFastTimer t(FTM_PROCESS_HTTP_PIPE);
 	PUMP_DEBUG;
-    lldebugs << "LLSDHTTPServer::process_impl" << llendl;
+    LL_DEBUGS() << "LLSDHTTPServer::process_impl" << LL_ENDL;
 
     // Once we have all the data, We need to read the sd on
     // the the in channel, and respond on  the out channel
@@ -245,15 +245,15 @@ LLIOPipe::EStatus LLHTTPPipe::process_impl(
 		// Log all HTTP transactions.
 		// TODO: Add a way to log these to their own file instead of indra.log
 		// It is just too spammy to be in indra.log.
-		lldebugs << verb << " " << context[CONTEXT_REQUEST]["path"].asString()
+		LL_DEBUGS() << verb << " " << context[CONTEXT_REQUEST]["path"].asString()
 			<< " " << mStatusCode << " " <<  mStatusMessage << " " << delta
-			<< "s" << llendl;
+			<< "s" << LL_ENDL;
 
 		// Log Internal Server Errors
 		//if(mStatusCode == 500)
 		//{
-		//	llwarns << "LLHTTPPipe::process_impl:500:Internal Server Error" 
-		//			<< llendl;
+		//	LL_WARNS() << "LLHTTPPipe::process_impl:500:Internal Server Error" 
+		//			<< LL_ENDL;
 		//}
 	}
 
@@ -303,8 +303,8 @@ LLIOPipe::EStatus LLHTTPPipe::process_impl(
 			return STATUS_DONE;
 		}
 		default:
-			llwarns << "LLHTTPPipe::process_impl: unexpected state "
-				<< mState << llendl;
+			LL_WARNS() << "LLHTTPPipe::process_impl: unexpected state "
+				<< mState << LL_ENDL;
 
 			return STATUS_BREAK;
 	}
@@ -333,7 +333,7 @@ void LLHTTPPipe::Response::result(const LLSD& r)
 {
 	if(! mPipe)
 	{
-		llwarns << "LLHTTPPipe::Response::result: NULL pipe" << llendl;
+		LL_WARNS() << "LLHTTPPipe::Response::result: NULL pipe" << LL_ENDL;
 		return;
 	}
 
@@ -349,7 +349,7 @@ void LLHTTPPipe::Response::extendedResult(S32 code, const std::string& body, con
 {
 	if(! mPipe)
 	{
-		llwarns << "LLHTTPPipe::Response::status: NULL pipe" << llendl;
+		LL_WARNS() << "LLHTTPPipe::Response::status: NULL pipe" << LL_ENDL;
 		return;
 	}
 
@@ -365,7 +365,7 @@ void LLHTTPPipe::Response::status(S32 code, const std::string& message)
 {
 	if(! mPipe)
 	{
-		llwarns << "LLHTTPPipe::Response::status: NULL pipe" << llendl;
+		LL_WARNS() << "LLHTTPPipe::Response::status: NULL pipe" << LL_ENDL;
 		return;
 	}
 
@@ -596,7 +596,7 @@ LLHTTPResponder::LLHTTPResponder(const LLHTTPNode& tree, const LLSD& ctx) :
 // virtual
 LLHTTPResponder::~LLHTTPResponder()
 {
-	//lldebugs << "destroying LLHTTPResponder" << llendl;
+	//LL_DEBUGS() << "destroying LLHTTPResponder" << LL_ENDL;
 }
 
 bool LLHTTPResponder::readHeaderLine(
@@ -613,7 +613,7 @@ bool LLHTTPResponder::readHeaderLine(
 	{
 		if(len)
 		{
-			lldebugs << "readLine failed - too long maybe?" << llendl;
+			LL_DEBUGS() << "readLine failed - too long maybe?" << LL_ENDL;
 			markBad(channels, buffer);
 		}
 		return false;
@@ -669,8 +669,8 @@ LLIOPipe::EStatus LLHTTPResponder::process_impl(
 		{
 			memcpy(buf, (*seg_iter).data(), (*seg_iter).size());	  /*Flawfinder: ignore*/
 			buf[(*seg_iter).size()] = '\0';
-			llinfos << (*seg_iter).getChannel() << ": " << buf
-					<< llendl;
+			LL_INFOS() << (*seg_iter).getChannel() << ": " << buf
+					<< LL_ENDL;
 			++seg_iter;
 		}
 		}
@@ -696,10 +696,10 @@ LLIOPipe::EStatus LLHTTPResponder::process_impl(
 					header >> mAbsPathAndQuery;
 					header >> mVersion;
 
-					lldebugs << "http request: "
+					LL_DEBUGS() << "http request: "
 							 << mVerb
 							 << " " << mAbsPathAndQuery
-							 << " " << mVersion << llendl;
+							 << " " << mVersion << LL_ENDL;
 
 					std::string::size_type delimiter
 						= mAbsPathAndQuery.find('?');
@@ -729,7 +729,7 @@ LLIOPipe::EStatus LLHTTPResponder::process_impl(
 				{
 					read_next_line = false;
 					parse_all = false;
-					lldebugs << "unknown http verb: " << mVerb << llendl;
+					LL_DEBUGS() << "unknown http verb: " << mVerb << LL_ENDL;
 					markBad(channels, buffer);
 				}
 			}
@@ -764,7 +764,7 @@ LLIOPipe::EStatus LLHTTPResponder::process_impl(
 					if(NULL == pos_colon)
 					{
 						keep_parsing = false;
-						lldebugs << "bad header: " << buf << llendl;
+						LL_DEBUGS() << "bad header: " << buf << LL_ENDL;
 						markBad(channels, buffer);
 						break;
 					}
@@ -775,7 +775,7 @@ LLIOPipe::EStatus LLHTTPResponder::process_impl(
 					LLStringUtil::toLower(name);
 					if("content-length" == name)
 					{
-						lldebugs << "Content-Length: " << value << llendl;
+						LL_DEBUGS() << "Content-Length: " << value << LL_ENDL;
 						mContentLength = atoi(value.c_str());
 					}
 					else
@@ -812,8 +812,8 @@ LLIOPipe::EStatus LLHTTPResponder::process_impl(
 		const LLHTTPNode* node = mRootNode.traverse(mPath, context);
 		if(node)
 		{
- 			//llinfos << "LLHTTPResponder::process_impl found node for "
-			//	<< mAbsPathAndQuery << llendl;
+ 			//LL_INFOS() << "LLHTTPResponder::process_impl found node for "
+			//	<< mAbsPathAndQuery << LL_ENDL;
 
   			// Copy everything after mLast read to the out.
 			LLBufferArray::segment_iterator_t seg_iter;
@@ -833,8 +833,8 @@ LLIOPipe::EStatus LLHTTPResponder::process_impl(
 				{
 					memcpy(buf, (*seg_iter).data(), (*seg_iter).size());	  /*Flawfinder: ignore*/
 					buf[(*seg_iter).size()] = '\0';
-					llinfos << (*seg_iter).getChannel() << ": " << buf
-							<< llendl;
+					LL_INFOS() << (*seg_iter).getChannel() << ": " << buf
+							<< LL_ENDL;
 					++seg_iter;
 				}
 #endif
@@ -860,7 +860,7 @@ LLIOPipe::EStatus LLHTTPResponder::process_impl(
 				= node->getProtocolHandler();
 			if (protocolHandler)
 			{
-				lldebugs << "HTTP context: " << context << llendl;
+				LL_DEBUGS() << "HTTP context: " << context << LL_ENDL;
 				protocolHandler->build(chain, context);
 			}
 			else
@@ -919,8 +919,8 @@ LLIOPipe::EStatus LLHTTPResponder::process_impl(
 		}
 		else
 		{
-			llwarns << "LLHTTPResponder::process_impl didn't find a node for "
-				<< mAbsPathAndQuery << llendl;
+			LL_WARNS() << "LLHTTPResponder::process_impl didn't find a node for "
+				<< mAbsPathAndQuery << LL_ENDL;
 			LLBufferStream str(channels, buffer.get());
 			mState = STATE_SHORT_CIRCUIT;
 			str << HTTP_VERSION_STR << " 404 Not Found\r\n\r\n<html>\n"
@@ -969,7 +969,7 @@ LLHTTPNode& LLIOHTTPServer::create(LLPumpIO& pump, U16 port)
 	LLSocket::ptr_t socket = LLSocket::create(LLSocket::STREAM_TCP, port);
     if(!socket)
     {
-        llerrs << "Unable to initialize socket" << llendl;
+        LL_ERRS() << "Unable to initialize socket" << LL_ENDL;
     }
 
     LLHTTPResponseFactory* factory = new LLHTTPResponseFactory;

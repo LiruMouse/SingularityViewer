@@ -939,7 +939,8 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& tool_tip, LLRect* stick
 					{
 						//tool_tip.append(fullName);
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b
-						tool_tip.append( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullName : RlvStrings::getAnonym(fullName) );
+						if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS))
+							tool_tip.append( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullName : RlvStrings::getAnonym(fullName) );
 // [/RLVa:KB]
 
 						// <singu> Use the radar for positioning, when possible.

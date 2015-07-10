@@ -138,7 +138,11 @@ namespace HACD
             if (m_callBack)
             {
                 char msg[1024];
+#if _MSC_VER
+                sprintf(msg, "nCC %Iu\n", m_graph.m_nCCs);
+#else
                 sprintf(msg, "nCC %zu\n", m_graph.m_nCCs);
+#endif
                 (*m_callBack)(msg, 0.0, 0.0,  m_graph.GetNVertices());
                 
             }
@@ -679,7 +683,11 @@ namespace HACD
                 {
 					if ((!condition1) && m_callBack)
 					{
+#if _MSC_VER
+						sprintf(msg, "\n-> %Iu\t%f\t%f\t%f\n", m_pqueue.size(), m_graph.m_vertices[v1].m_surf*100.0/m_area, m_graph.m_vertices[v2].m_surf*100.0/m_area, m_graph.m_edges[currentEdge.m_name].m_concavity);
+#else
 						sprintf(msg, "\n-> %zu\t%f\t%f\t%f\n", m_pqueue.size(), m_graph.m_vertices[v1].m_surf*100.0/m_area, m_graph.m_vertices[v2].m_surf*100.0/m_area, m_graph.m_edges[currentEdge.m_name].m_concavity);
+#endif
 						(*m_callBack)(msg, progress, globalConcavity,  m_graph.GetNVertices());
 					}
 					globalConcavity = std::max<double>(globalConcavity ,m_graph.m_edges[currentEdge.m_name].m_concavity);
@@ -879,7 +887,11 @@ namespace HACD
                 if (m_callBack) 
                 {
                     char msg[1024];
+#if _MSC_VER
+                    sprintf(msg, "\t CH(%Iu) \t %Iu \t %lf \t %Iu \t %f \t %Iu\n", v, p, m_graph.m_vertices[v].m_concavity, m_graph.m_vertices[v].m_distPoints.Size(),  m_graph.m_vertices[v].m_surf*100.0/m_area, m_graph.m_vertices[v].m_ancestors.size());
+#else
                     sprintf(msg, "\t CH(%zu) \t %zu \t %lf \t %zu \t %f \t %zu\n", v, p, m_graph.m_vertices[v].m_concavity, m_graph.m_vertices[v].m_distPoints.Size(),  m_graph.m_vertices[v].m_surf*100.0/m_area, m_graph.m_vertices[v].m_ancestors.size());
+#endif
 					(*m_callBack)(msg, 0.0, 0.0, m_nClusters);
 					p++;
                 }
@@ -977,7 +989,8 @@ namespace HACD
                     m_convexHulls[p].AddPoint(m_points[point.m_name], point.m_name);
                 }
             }
-			m_convexHulls[p].SetDistPoints(0); //&m_graph.m_vertices[v].m_distPoints
+			if (p < m_nClusters)
+				m_convexHulls[p].SetDistPoints(0); //&m_graph.m_vertices[v].m_distPoints
             if (fullCH)
             {
 				while (m_convexHulls[p].Process() == ICHullErrorInconsistent)		// if we face problems when constructing the visual-hull. really ugly!!!!

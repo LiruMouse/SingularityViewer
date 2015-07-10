@@ -167,7 +167,7 @@ LLView* LLComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *
 
 	if (contents.find_first_not_of(" \n\t") != contents.npos)
 	{
-		llerrs << "Legacy combo box item format used! Please convert to <combo_item> tags!" << llendl;
+		LL_ERRS() << "Legacy combo box item format used! Please convert to <combo_item> tags!" << LL_ENDL;
 	}
 	else
 	{
@@ -197,9 +197,10 @@ LLView* LLComboBox::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *
 	//Do this AFTER combo_items are set up so setValue is actually able to select the correct initial entry.
 	combo_box->initFromXML(node, parent);
 
+	// if we haven't already gotten a value from our control_name and
 	// if providing user text entry or descriptive label
 	// don't select an item under the hood
-	if (!combo_box->acceptsTextInput() && combo_box->mLabel.empty())
+	if (combo_box->getControlName().empty() && !combo_box->acceptsTextInput() && combo_box->mLabel.empty())
 	{
 		combo_box->selectFirstItem();
 	}

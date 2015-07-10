@@ -131,7 +131,7 @@ void check_stack_depth(S32 stack_depth)
 			}
 			else
 			{
-				llerrs << "GL matrix stack corrupted!" << llendl;
+				LL_ERRS() << "GL matrix stack corrupted!" << LL_ENDL;
 			}
 		}
 	}
@@ -212,7 +212,6 @@ static LLFastTimer::DeclareTimer FTM_STATESORT_POSTSORT("Post Sort");
 //static LLStaticHashedString sAlphaScale("alpha_scale");
 static LLStaticHashedString sNormMat("norm_mat");
 //static LLStaticHashedString sOffset("offset");
-static LLStaticHashedString sScreenRes("screenRes");
 static LLStaticHashedString sDelta("delta");
 static LLStaticHashedString sDistFactor("dist_factor");
 static LLStaticHashedString sKern("kern");
@@ -309,7 +308,6 @@ S32		LLPipeline::sUseOcclusion = 0;
 BOOL	LLPipeline::sDelayVBUpdate = FALSE;
 BOOL	LLPipeline::sAutoMaskAlphaDeferred = TRUE;
 BOOL	LLPipeline::sAutoMaskAlphaNonDeferred = FALSE;
-BOOL	LLPipeline::sDisableShaders = FALSE;
 BOOL	LLPipeline::sRenderBump = TRUE;
 BOOL	LLPipeline::sNoAlpha = FALSE;
 BOOL	LLPipeline::sUseFarClip = TRUE;
@@ -364,10 +362,7 @@ LLPipeline::LLPipeline() :
 	mMeanBatchSize(0),
 	mTrianglesDrawn(0),
 	mNumVisibleNodes(0),
-
 	mInitialized(FALSE),
-	mVertexShadersEnabled(FALSE),
-	mVertexShadersLoaded(0),
 	mTransformFeedbackPrimitives(0),
 	mRenderDebugFeatureMask(0),
 	mRenderDebugMask(0),
@@ -404,9 +399,6 @@ LLPipeline::LLPipeline() :
 void LLPipeline::init()
 {
 	refreshCachedSettings();
-
-	bool can_defer = LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred");
-	LLRenderTarget::sUseFBO				= gSavedSettings.getBOOL("RenderUseFBO") || (gSavedSettings.getBOOL("RenderDeferred") && can_defer);
 
 	gOctreeMaxCapacity = gSavedSettings.getU32("OctreeMaxNodeCapacity");
 	gOctreeReserveCapacity = llmin(gSavedSettings.getU32("OctreeReserveNodeCapacity"),U32(512));
@@ -494,11 +486,13 @@ void LLPipeline::init()
 	gSavedSettings.getControl("RenderAvatarMaxVisible")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	//gSavedSettings.getControl("RenderDelayVBUpdate")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	gSavedSettings.getControl("UseOcclusion")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
-	gSavedSettings.getControl("VertexShaderEnable")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
-	gSavedSettings.getControl("RenderDeferred")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
+	//gSavedSettings.getControl("VertexShaderEnable")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));	//Already registered to handleSetShaderChanged
+	//gSavedSettings.getControl("RenderDeferred")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));	//Already registered to handleSetShaderChanged
 	gSavedSettings.getControl("RenderFSAASamples")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
-	gSavedSettings.getControl("RenderAvatarVP")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
-	gSavedSettings.getControl("WindLightUseAtmosShaders")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
+	//gSavedSettings.getControl("RenderAvatarVP")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));	//Already registered to handleSetShaderChanged
+	//gSavedSettings.getControl("WindLightUseAtmosShaders")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings)); //Already registered to handleSetShaderChanged
+
+	gGL.init();
 }
 
 LLPipeline::~LLPipeline()
@@ -538,11 +532,11 @@ void LLPipeline::cleanup()
 	
 	if (!mTerrainPools.empty())
 	{
-		llwarns << "Terrain Pools not cleaned up" << llendl;
+		LL_WARNS() << "Terrain Pools not cleaned up" << LL_ENDL;
 	}
 	if (!mTreePools.empty())
 	{
-		llwarns << "Tree Pools not cleaned up" << llendl;
+		LL_WARNS() << "Tree Pools not cleaned up" << LL_ENDL;
 	}
 		
 	delete mAlphaPool;
@@ -635,7 +629,7 @@ void LLPipeline::throttleNewMemoryAllocation(BOOL disable)
 void LLPipeline::resizeScreenTexture()
 {
 	LLFastTimer ft(FTM_RESIZE_SCREEN_TEXTURE);
-	if (gPipeline.canUseVertexShaders() && assertInitialized())
+	if (LLGLSLShader::sNoFixedFunction && assertInitialized())
 	{
 		GLuint resX = gViewerWindow->getWorldViewWidthRaw();
 		GLuint resY = gViewerWindow->getWorldViewHeightRaw();
@@ -767,7 +761,7 @@ LLPipeline::eFBOStatus LLPipeline::doAllocateScreenBuffer(U32 resX, U32 resY)
 			releaseScreenBuffers();
 		}
 
-		llwarns << "Unable to allocate screen buffer at any resolution!" << llendl;
+		LL_WARNS() << "Unable to allocate screen buffer at any resolution!" << LL_ENDL;
 	}
 
 	return ret;
@@ -937,25 +931,28 @@ bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 	return true;
 }
 
-//static
-void LLPipeline::updateRenderDeferred()
+bool LLPipeline::isRenderDeferredCapable()
 {
-	sRenderDeferred = (gSavedSettings.getBOOL("RenderDeferred") && 
-		LLRenderTarget::sUseFBO &&
+	return gGLManager.mHasFramebufferObject &&
 		LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred") &&
-		gSavedSettings.getBOOL("RenderObjectBump") &&
-		gSavedSettings.getBOOL("VertexShaderEnable") && 
-		gSavedSettings.getBOOL("RenderAvatarVP") &&
-		gSavedSettings.getBOOL("WindLightUseAtmosShaders") &&
-		!gUseWireframe);	
-	if (sRenderDeferred)
-	{ //must render glow when rendering deferred since post effect pass is needed to present any lighting at all
-		sRenderGlow = TRUE;
-	}
+		LLFeatureManager::getInstance()->isFeatureAvailable("RenderAvatarVP") &&			//Hardware Skinning. Deferred forces RenderAvatarVP to true
+		LLFeatureManager::getInstance()->isFeatureAvailable("VertexShaderEnable") &&		//Basic Shaders
+		LLFeatureManager::getInstance()->isFeatureAvailable("WindLightUseAtmosShaders") &&	//Atmospheric Shaders
+		LLFeatureManager::getInstance()->isFeatureAvailable("VertexShaderEnable");
 }
+
+bool LLPipeline::isRenderDeferredDesired()
+{
+	return isRenderDeferredCapable() &&
+		gSavedSettings.getBOOL("RenderDeferred") &&
+		gSavedSettings.getBOOL("VertexShaderEnable") &&
+		gSavedSettings.getBOOL("WindLightUseAtmosShaders");
+}
+
 //static
 void LLPipeline::refreshCachedSettings()
 {
+	LLRenderTarget::sUseFBO = gSavedSettings.getBOOL("RenderUseFBO") || LLPipeline::sRenderDeferred;
 	LLPipeline::sAutoMaskAlphaDeferred = gSavedSettings.getBOOL("RenderAutoMaskAlphaDeferred");
 	LLPipeline::sAutoMaskAlphaNonDeferred = gSavedSettings.getBOOL("RenderAutoMaskAlphaNonDeferred");
 	LLPipeline::sUseFarClip = gSavedSettings.getBOOL("RenderUseFarClip");
@@ -968,8 +965,6 @@ void LLPipeline::refreshCachedSettings()
 			&& LLFeatureManager::getInstance()->isFeatureAvailable("UseOcclusion") 
 			&& gSavedSettings.getBOOL("UseOcclusion") 
 			&& gGLManager.mHasOcclusionQuery) ? 2 : 0;
-	
-	updateRenderDeferred();
 }
 
 void LLPipeline::releaseGLBuffers()
@@ -1043,8 +1038,6 @@ void LLPipeline::createGLBuffers()
 {
 	stop_glerror();
 	assertInitialized();
-
-	updateRenderDeferred();
 
 	bool materials_in_water = false;
 
@@ -1215,10 +1208,7 @@ void LLPipeline::restoreGL()
 {
 	assertInitialized();
 
-	if (mVertexShadersEnabled)
-	{
-		LLViewerShaderMgr::instance()->setShaders();
-	}
+	LLViewerShaderMgr::instance()->setShaders();
 
 	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
 			iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
@@ -1237,29 +1227,9 @@ void LLPipeline::restoreGL()
 	resetLocalLights(); //Default all gl light parameters. Fixes light brightness problems on fullscren toggle
 }
 
-
-BOOL LLPipeline::canUseVertexShaders()
-{
-	static const std::string vertex_shader_enable_feature_string = "VertexShaderEnable";
-
-	if (sDisableShaders ||
-		!gGLManager.mHasVertexShader ||
-		!gGLManager.mHasFragmentShader ||
-		!LLFeatureManager::getInstance()->isFeatureAvailable(vertex_shader_enable_feature_string) ||
-		(assertInitialized() && mVertexShadersLoaded != 1) )
-	{
-		return FALSE;
-	}
-	else
-	{
-		return TRUE;
-	}
-}
-
 BOOL LLPipeline::canUseWindLightShaders() const
 {
-	return (!LLPipeline::sDisableShaders &&
-			gWLSkyProgram.mProgramObject != 0 &&
+	return (gWLSkyProgram.mProgramObject != 0 &&
 			LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_WINDLIGHT) > 1);
 }
 
@@ -1277,13 +1247,11 @@ BOOL LLPipeline::canUseAntiAliasing() const
 void LLPipeline::unloadShaders()
 {
 	LLViewerShaderMgr::instance()->unloadShaders();
-
-	mVertexShadersLoaded = 0;
 }
 
 void LLPipeline::assertInitializedDoError()
 {
-	llerrs << "LLPipeline used when uninitialized." << llendl;
+	LL_ERRS() << "LLPipeline used when uninitialized." << LL_ENDL;
 }
 
 //============================================================================
@@ -1322,11 +1290,13 @@ S32 LLPipeline::setLightingDetail(S32 level)
 	}
 	level = llclamp(level, 0, getMaxLightingDetail());
 	//Bugfix: If setshaders was called with RenderLocalLights off then enabling RenderLocalLights later will not work. Reloading shaders fixes this.
-	if (level != mLightingDetail && mVertexShadersLoaded)
+	if (level != mLightingDetail)
 	{
-		LLViewerShaderMgr::instance()->setShaders();
+		mLightingDetail = level;
+		if (LLGLSLShader::sNoFixedFunction)
+			LLViewerShaderMgr::instance()->setShaders();
 	}
-	mLightingDetail = level;
+
 	return mLightingDetail;
 }
 
@@ -1472,7 +1442,7 @@ LLDrawPool *LLPipeline::findPool(const U32 type, LLViewerTexture *tex0)
 
 	default:
 		llassert(0);
-		llerrs << "Invalid Pool Type in  LLPipeline::findPool() type=" << type << llendl;
+		LL_ERRS() << "Invalid Pool Type in  LLPipeline::findPool() type=" << type << LL_ENDL;
 		break;
 	}
 
@@ -1618,7 +1588,7 @@ void LLPipeline::allocDrawable(LLViewerObject *vobj)
 {
 	if(!vobj)
 	{
-		llerrs << "Null object passed to allocDrawable!" << llendl;
+		LL_ERRS() << "Null object passed to allocDrawable!" << LL_ENDL;
 	}
 
 	LLDrawable *drawable = new LLDrawable();
@@ -1668,9 +1638,9 @@ void LLPipeline::unlinkDrawable(LLDrawable *drawable)
 		if (!drawablep->getSpatialGroup()->mSpatialPartition->remove(drawablep, drawablep->getSpatialGroup()))
 		{
 #ifdef LL_RELEASE_FOR_DOWNLOAD
-			llwarns << "Couldn't remove object from spatial group!" << llendl;
+			LL_WARNS() << "Couldn't remove object from spatial group!" << LL_ENDL;
 #else
-			llerrs << "Couldn't remove object from spatial group!" << llendl;
+			LL_ERRS() << "Couldn't remove object from spatial group!" << LL_ENDL;
 #endif
 		}
 	}
@@ -1777,7 +1747,7 @@ void LLPipeline::createObject(LLViewerObject* vobj)
 	}
 	else
 	{
-		llerrs << "Redundant drawable creation!" << llendl;
+		LL_ERRS() << "Redundant drawable creation!" << LL_ENDL;
 	}
 		
 	llassert(drawablep);
@@ -1835,7 +1805,7 @@ void LLPipeline::updateMoveDampedAsync(LLDrawable* drawablep)
 	}
 	if (!drawablep)
 	{
-		llerrs << "updateMove called with NULL drawablep" << llendl;
+		LL_ERRS() << "updateMove called with NULL drawablep" << LL_ENDL;
 		return;
 	}
 	if (drawablep->isState(LLDrawable::EARLY_MOVE))
@@ -1866,7 +1836,7 @@ void LLPipeline::updateMoveNormalAsync(LLDrawable* drawablep)
 	}
 	if (!drawablep)
 	{
-		llerrs << "updateMove called with NULL drawablep" << llendl;
+		LL_ERRS() << "updateMove called with NULL drawablep" << LL_ENDL;
 		return;
 	}
 	if (drawablep->isState(LLDrawable::EARLY_MOVE))
@@ -2047,7 +2017,7 @@ void check_references(LLSpatialGroup* group, LLDrawable* drawable)
 	{
 		if (drawable == *i)
 		{
-			llerrs << "LLDrawable deleted while actively reference by LLPipeline." << llendl;
+			LL_ERRS() << "LLDrawable deleted while actively reference by LLPipeline." << LL_ENDL;
 		}
 	}
 }
@@ -2058,7 +2028,7 @@ void check_references(LLDrawable* drawable, LLFace* face)
 	{
 		if (drawable->getFace(i) == face)
 		{
-			llerrs << "LLFace deleted while actively referenced by LLPipeline." << llendl;
+			LL_ERRS() << "LLFace deleted while actively referenced by LLPipeline." << LL_ENDL;
 		}
 	}
 }
@@ -2131,7 +2101,7 @@ void LLPipeline::checkReferences(LLDrawable* drawable)
 		{
 			if (drawable == *iter)
 			{
-				llerrs << "LLDrawable deleted while actively referenced by LLPipeline." << llendl;
+				LL_ERRS() << "LLDrawable deleted while actively referenced by LLPipeline." << LL_ENDL;
 			}
 		}
 	}
@@ -2148,7 +2118,7 @@ void check_references(LLSpatialGroup* group, LLDrawInfo* draw_info)
 			LLDrawInfo* params = *j;
 			if (params == draw_info)
 			{
-				llerrs << "LLDrawInfo deleted while actively referenced by LLPipeline." << llendl;
+				LL_ERRS() << "LLDrawInfo deleted while actively referenced by LLPipeline." << LL_ENDL;
 			}
 		}
 	}
@@ -2190,7 +2160,7 @@ void LLPipeline::checkReferences(LLSpatialGroup* group)
 		{
 			if (group == *iter)
 			{
-				llerrs << "LLSpatialGroup deleted while actively referenced by LLPipeline." << llendl;
+				LL_ERRS() << "LLSpatialGroup deleted while actively referenced by LLPipeline." << LL_ENDL;
 			}
 		}
 
@@ -2198,7 +2168,7 @@ void LLPipeline::checkReferences(LLSpatialGroup* group)
 		{
 			if (group == *iter)
 			{
-				llerrs << "LLSpatialGroup deleted while actively referenced by LLPipeline." << llendl;
+				LL_ERRS() << "LLSpatialGroup deleted while actively referenced by LLPipeline." << LL_ENDL;
 			}
 		}
 
@@ -2206,7 +2176,7 @@ void LLPipeline::checkReferences(LLSpatialGroup* group)
 		{
 			if (group == *iter)
 			{
-				llerrs << "LLSpatialGroup deleted while actively referenced by LLPipeline." << llendl;
+				LL_ERRS() << "LLSpatialGroup deleted while actively referenced by LLPipeline." << LL_ENDL;
 			}
 		}
 	}
@@ -2291,7 +2261,7 @@ void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_cl
 	BOOL to_texture =	LLPipeline::sUseOcclusion > 1 &&
 						!hasRenderType(LLPipeline::RENDER_TYPE_HUD) && 
 						LLViewerCamera::sCurCameraID == LLViewerCamera::CAMERA_WORLD &&
-						gPipeline.canUseVertexShaders() &&
+						LLGLSLShader::sNoFixedFunction &&
 						sRenderGlow;
 
 	if (to_texture)
@@ -2359,7 +2329,7 @@ void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_cl
 	LLGLDepthTest depth(GL_TRUE, GL_FALSE);
 
 	bool bound_shader = false;
-	if (gPipeline.canUseVertexShaders() && LLGLSLShader::sCurBoundShader == 0)
+	if (LLGLSLShader::sNoFixedFunction && LLGLSLShader::sCurBoundShader == 0)
 	{ //if no shader is currently bound, use the occlusion shader instead of fixed function if we can
 		// (shadow render uses a special shader that clamps to clip planes)
 		bound_shader = true;
@@ -2956,13 +2926,13 @@ void LLPipeline::markMoved(LLDrawable *drawablep, BOOL damped_motion)
 {
 	if (!drawablep)
 	{
-		//llerrs << "Sending null drawable to moved list!" << llendl;
+		//LL_ERRS() << "Sending null drawable to moved list!" << LL_ENDL;
 		return;
 	}
 	
 	if (drawablep->isDead())
 	{
-		llwarns << "Marking NULL or dead drawable moved!" << llendl;
+		LL_WARNS() << "Marking NULL or dead drawable moved!" << LL_ENDL;
 		return;
 	}
 	
@@ -3154,10 +3124,10 @@ void LLPipeline::markRebuild(LLSpatialGroup* group, BOOL priority)
 		else if (!group->isState(LLSpatialGroup::IN_BUILD_Q2 | LLSpatialGroup::IN_BUILD_Q1))
 		{
 			llassert_always(!mGroupQ2Locked);
-			//llerrs << "Non-priority updates not yet supported!" << llendl;
+			//LL_ERRS() << "Non-priority updates not yet supported!" << LL_ENDL;
 			/*if (std::find(mGroupQ2.begin(), mGroupQ2.end(), group) != mGroupQ2.end())
 			{
-				llerrs << "WTF?" << llendl;
+				LL_ERRS() << "WTF?" << LL_ENDL;
 			}*/
 			mGroupQ2.push_back(group);
 			group->setState(LLSpatialGroup::IN_BUILD_Q2);
@@ -3650,7 +3620,7 @@ void LLPipeline::postSort(LLCamera& camera)
 
 	assertInitialized();
 
-	llpushcallstacks ;
+	LL_PUSH_CALLSTACKS();
 	//rebuild drawable geometry
 	for (LLCullResult::sg_iterator i = sCull->beginDrawableGroups(); i != sCull->endDrawableGroups(); ++i)
 	{
@@ -3661,12 +3631,12 @@ void LLPipeline::postSort(LLCamera& camera)
 			group->rebuildGeom();
 		}
 	}
-	llpushcallstacks ;
+	LL_PUSH_CALLSTACKS();
 	//rebuild groups
 	sCull->assertDrawMapsEmpty();
 
 	rebuildPriorityGroups();
-	llpushcallstacks ;
+	LL_PUSH_CALLSTACKS();
 
 
 	//build render map
@@ -3777,7 +3747,7 @@ void LLPipeline::postSort(LLCamera& camera)
 		std::sort(sCull->beginAlphaGroups(), sCull->endAlphaGroups(), LLSpatialGroup::CompareDepthGreater());
 	}
 
-	llpushcallstacks ;
+	LL_PUSH_CALLSTACKS();
 
 	forAllVisibleDrawables(updateParticleActivity);	//for llfloateravatarlist
 
@@ -3862,7 +3832,7 @@ void LLPipeline::postSort(LLCamera& camera)
 			forAllVisibleDrawables(renderSoundHighlights);
 		}
 	}
-	llpushcallstacks ;
+	LL_PUSH_CALLSTACKS();
 	// If managing your telehub, draw beacons at telehub and currently selected spawnpoint.
 	if (LLFloaterTelehub::renderBeacons())
 	{
@@ -3898,7 +3868,7 @@ void LLPipeline::postSort(LLCamera& camera)
 	}
 
 	//LLSpatialGroup::sNoDelete = FALSE;
-	llpushcallstacks ;
+	LL_PUSH_CALLSTACKS();
 }
 
 
@@ -3975,7 +3945,7 @@ void renderSelectedFaces(LLGLSLShader& shader, std::vector<LLFace*> &selected_fa
 		LLFace *facep = *it;
 		if (!facep || facep->getDrawable()->isDead())
 		{
-			llerrs << "Bad face on selection" << llendl;
+			LL_ERRS() << "Bad face on selection" << LL_ENDL;
 			return;
 		}
 
@@ -4091,7 +4061,7 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 	{
 		if (!verify())
 		{
-			llerrs << "Pipeline verification failed!" << llendl;
+			LL_ERRS() << "Pipeline verification failed!" << LL_ENDL;
 		}
 	}
 
@@ -5029,7 +4999,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if (mSimplePool)
 		{
 			llassert(0);
-			llwarns << "Ignoring duplicate simple pool." << llendl;
+			LL_WARNS() << "Ignoring duplicate simple pool." << LL_ENDL;
 		}
 		else
 		{
@@ -5041,7 +5011,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if (mAlphaMaskPool)
 		{
 			llassert(0);
-			llwarns << "Ignoring duplicate alpha mask pool." << llendl;
+			LL_WARNS() << "Ignoring duplicate alpha mask pool." << LL_ENDL;
 			break;
 		}
 		else
@@ -5054,7 +5024,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if (mFullbrightAlphaMaskPool)
 		{
 			llassert(0);
-			llwarns << "Ignoring duplicate alpha mask pool." << llendl;
+			LL_WARNS() << "Ignoring duplicate alpha mask pool." << LL_ENDL;
 			break;
 		}
 		else
@@ -5067,7 +5037,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if (mGrassPool)
 		{
 			llassert(0);
-			llwarns << "Ignoring duplicate grass pool." << llendl;
+			LL_WARNS() << "Ignoring duplicate grass pool." << LL_ENDL;
 		}
 		else
 		{
@@ -5079,7 +5049,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if (mFullbrightPool)
 		{
 			llassert(0);
-			llwarns << "Ignoring duplicate simple pool." << llendl;
+			LL_WARNS() << "Ignoring duplicate simple pool." << LL_ENDL;
 		}
 		else
 		{
@@ -5091,7 +5061,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if (mInvisiblePool)
 		{
 			llassert(0);
-			llwarns << "Ignoring duplicate simple pool." << llendl;
+			LL_WARNS() << "Ignoring duplicate simple pool." << LL_ENDL;
 		}
 		else
 		{
@@ -5103,7 +5073,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if (mGlowPool)
 		{
 			llassert(0);
-			llwarns << "Ignoring duplicate glow pool." << llendl;
+			LL_WARNS() << "Ignoring duplicate glow pool." << LL_ENDL;
 		}
 		else
 		{
@@ -5123,7 +5093,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if (mBumpPool)
 		{
 			llassert(0);
-			llwarns << "Ignoring duplicate bump pool." << llendl;
+			LL_WARNS() << "Ignoring duplicate bump pool." << LL_ENDL;
 		}
 		else
 		{
@@ -5134,7 +5104,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if (mMaterialsPool)
 		{
 			llassert(0);
-			llwarns << "Ignorning duplicate materials pool." << llendl;
+			LL_WARNS() << "Ignorning duplicate materials pool." << LL_ENDL;
 		}
 		else
 		{
@@ -5145,7 +5115,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if( mAlphaPool )
 		{
 			llassert(0);
-			llwarns << "LLPipeline::addPool(): Ignoring duplicate Alpha pool" << llendl;
+			LL_WARNS() << "LLPipeline::addPool(): Ignoring duplicate Alpha pool" << LL_ENDL;
 		}
 		else
 		{
@@ -5160,7 +5130,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if( mSkyPool )
 		{
 			llassert(0);
-			llwarns << "LLPipeline::addPool(): Ignoring duplicate Sky pool" << llendl;
+			LL_WARNS() << "LLPipeline::addPool(): Ignoring duplicate Sky pool" << LL_ENDL;
 		}
 		else
 		{
@@ -5172,7 +5142,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if( mWaterPool )
 		{
 			llassert(0);
-			llwarns << "LLPipeline::addPool(): Ignoring duplicate Water pool" << llendl;
+			LL_WARNS() << "LLPipeline::addPool(): Ignoring duplicate Water pool" << LL_ENDL;
 		}
 		else
 		{
@@ -5184,7 +5154,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if( mGroundPool )
 		{
 			llassert(0);
-			llwarns << "LLPipeline::addPool(): Ignoring duplicate Ground Pool" << llendl;
+			LL_WARNS() << "LLPipeline::addPool(): Ignoring duplicate Ground Pool" << LL_ENDL;
 		}
 		else
 		{ 
@@ -5196,7 +5166,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 		if( mWLSkyPool )
 		{
 			llassert(0);
-			llwarns << "LLPipeline::addPool(): Ignoring duplicate WLSky Pool" << llendl;
+			LL_WARNS() << "LLPipeline::addPool(): Ignoring duplicate WLSky Pool" << LL_ENDL;
 		}
 		else
 		{ 
@@ -5206,7 +5176,7 @@ void LLPipeline::addToQuickLookup( LLDrawPool* new_poolp )
 
 	default:
 		llassert(0);
-		llwarns << "Invalid Pool Type in  LLPipeline::addPool()" << llendl;
+		LL_WARNS() << "Invalid Pool Type in  LLPipeline::addPool()" << LL_ENDL;
 		break;
 	}
 }
@@ -5321,7 +5291,7 @@ void LLPipeline::removeFromQuickLookup( LLDrawPool* poolp )
 
 	default:
 		llassert(0);
-		llwarns << "Invalid Pool Type in  LLPipeline::removeFromQuickLookup() type=" << poolp->getType() << llendl;
+		LL_WARNS() << "Invalid Pool Type in  LLPipeline::removeFromQuickLookup() type=" << poolp->getType() << LL_ENDL;
 		break;
 	}
 }
@@ -6001,28 +5971,28 @@ void LLPipeline::findReferences(LLDrawable *drawablep)
 	assertInitialized();
 	if (mLights.find(drawablep) != mLights.end())
 	{
-		llinfos << "In mLights" << llendl;
+		LL_INFOS() << "In mLights" << LL_ENDL;
 	}
 	if (std::find(mMovedList.begin(), mMovedList.end(), drawablep) != mMovedList.end())
 	{
-		llinfos << "In mMovedList" << llendl;
+		LL_INFOS() << "In mMovedList" << LL_ENDL;
 	}
 	if (std::find(mShiftList.begin(), mShiftList.end(), drawablep) != mShiftList.end())
 	{
-		llinfos << "In mShiftList" << llendl;
+		LL_INFOS() << "In mShiftList" << LL_ENDL;
 	}
 	if (mRetexturedList.find(drawablep) != mRetexturedList.end())
 	{
-		llinfos << "In mRetexturedList" << llendl;
+		LL_INFOS() << "In mRetexturedList" << LL_ENDL;
 	}
 	
 	if (std::find(mBuildQ1.begin(), mBuildQ1.end(), drawablep) != mBuildQ1.end())
 	{
-		llinfos << "In mBuildQ1" << llendl;
+		LL_INFOS() << "In mBuildQ1" << LL_ENDL;
 	}
 	if (std::find(mBuildQ2.begin(), mBuildQ2.end(), drawablep) != mBuildQ2.end())
 	{
-		llinfos << "In mBuildQ2" << llendl;
+		LL_INFOS() << "In mBuildQ2" << LL_ENDL;
 	}
 
 	S32 count;
@@ -6030,7 +6000,7 @@ void LLPipeline::findReferences(LLDrawable *drawablep)
 	count = gObjectList.findReferences(drawablep);
 	if (count)
 	{
-		llinfos << "In other drawables: " << count << " references" << llendl;
+		LL_INFOS() << "In other drawables: " << count << " references" << LL_ENDL;
 	}
 }
 
@@ -6051,7 +6021,7 @@ BOOL LLPipeline::verify()
 
 	if (!ok)
 	{
-		llwarns << "Pipeline verify failed!" << llendl;
+		LL_WARNS() << "Pipeline verify failed!" << LL_ENDL;
 	}
 	return ok;
 }
@@ -6189,11 +6159,11 @@ void LLPipeline::toggleRenderTypeControl(void* data)
 	U32 bit = (1<<type);
 	if (gPipeline.hasRenderType(type))
 	{
-		llinfos << "Toggling render type mask " << std::hex << bit << " off" << std::dec << llendl;
+		LL_INFOS() << "Toggling render type mask " << std::hex << bit << " off" << std::dec << LL_ENDL;
 	}
 	else
 	{
-		llinfos << "Toggling render type mask " << std::hex << bit << " on" << std::dec << llendl;
+		LL_INFOS() << "Toggling render type mask " << std::hex << bit << " on" << std::dec << LL_ENDL;
 	}
 	gPipeline.toggleRenderType(type);
 }
@@ -6237,7 +6207,7 @@ void LLPipeline::toggleRenderPairedTypeControl(void *data)
 	{
 		if( typeflags & (1ULL<<i))
 		{
-			llinfos << "Toggling render type mask " << std::hex << (1ULL<<i) << (on ? " off" : " on") << std::dec << llendl;
+			LL_INFOS() << "Toggling render type mask " << std::hex << (1ULL<<i) << (on ? " off" : " on") << std::dec << LL_ENDL;
 			gPipeline.mRenderTypeEnabled[i]=!on;
 		}
 	}	
@@ -6249,11 +6219,11 @@ void LLPipeline::toggleRenderDebug(void* data)
 	U32 bit = (U32)(intptr_t)data;
 	if (gPipeline.hasRenderDebugMask(bit))
 	{
-		llinfos << "Toggling render debug mask " << std::hex << bit << " off" << std::dec << llendl;
+		LL_INFOS() << "Toggling render debug mask " << std::hex << bit << " off" << std::dec << LL_ENDL;
 	}
 	else
 	{
-		llinfos << "Toggling render debug mask " << std::hex << bit << " on" << std::dec << llendl;
+		LL_INFOS() << "Toggling render debug mask " << std::hex << bit << " on" << std::dec << LL_ENDL;
 	}
 	gPipeline.mRenderDebugMask ^= bit;
 }
@@ -6302,7 +6272,7 @@ void LLPipeline::popRenderDebugFeatureMask()
 {
 	if (mRenderDebugFeatureStack.empty())
 	{
-		llerrs << "Depleted render feature stack." << llendl;
+		LL_ERRS() << "Depleted render feature stack." << LL_ENDL;
 	}
 
 	mRenderDebugFeatureMask = mRenderDebugFeatureStack.top();
@@ -6526,6 +6496,7 @@ LLViewerObject* LLPipeline::lineSegmentIntersectInWorld(const LLVector4a& start,
 		for (U32 j = 0; j < LLViewerRegion::NUM_PARTITIONS; j++)
 		{
 			if ((j == LLViewerRegion::PARTITION_VOLUME) || 
+				(j == LLViewerRegion::PARTITION_ATTACHMENT) ||
 				(j == LLViewerRegion::PARTITION_BRIDGE) || 
 				(j == LLViewerRegion::PARTITION_TERRAIN) ||
 				(j == LLViewerRegion::PARTITION_TREE) ||
@@ -6588,7 +6559,7 @@ LLViewerObject* LLPipeline::lineSegmentIntersectInWorld(const LLVector4a& start,
 		{
 			LLViewerRegion* region = *iter;
 
-			LLSpatialPartition* part = region->getSpatialPartition(LLViewerRegion::PARTITION_BRIDGE);
+			LLSpatialPartition* part = region->getSpatialPartition(LLViewerRegion::PARTITION_ATTACHMENT);
 			if (part && hasRenderType(part->mDrawableType))
 			{
 				LLDrawable* hit = part->lineSegmentIntersect(start, local_end, pick_transparent, face_hit, &position, tex_coord, normal, tangent);
@@ -6774,16 +6745,18 @@ void LLPipeline::doResetVertexBuffers()
 	//delete all name pool caches
 	LLGLNamePool::cleanupPools();
 
+	gGL.resetVertexBuffers();
+
 	if (LLVertexBuffer::sGLCount > 0)
 	{
-		llwarns << "VBO wipe failed -- " << LLVertexBuffer::sGLCount << " buffers remaining." << llendl;
+		LL_WARNS() << "VBO wipe failed -- " << LLVertexBuffer::sGLCount << " buffers remaining. " << LLVertexBuffer::sCount << LL_ENDL;
 	}
 
 	LLVertexBuffer::unbind();	
 
 	sRenderBump = gSavedSettings.getBOOL("RenderObjectBump");
 	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("ShyotlRenderUseStreamVBO");
-	LLVertexBuffer::sUseVAO = gSavedSettings.getBOOL("RenderUseVAO") && gPipeline.canUseVertexShaders(); //Temporary workaround for vaos being broken when shaders are off
+	LLVertexBuffer::sUseVAO = gSavedSettings.getBOOL("RenderUseVAO") && LLGLSLShader::sNoFixedFunction; //Temporary workaround for vaos being broken when shaders are off
 	LLVertexBuffer::sPreferStreamDraw = gSavedSettings.getBOOL("RenderPreferStreamDraw");
 	LLVertexBuffer::sEnableVBOs = gSavedSettings.getBOOL("RenderVBOEnable");
 	LLVertexBuffer::sDisableVBOMapping = LLVertexBuffer::sEnableVBOs;// && gSavedSettings.getBOOL("RenderVBOMappingDisable") ; //Temporary workaround for vbo mapping being straight up broken
@@ -6793,6 +6766,8 @@ void LLPipeline::doResetVertexBuffers()
 	LLVertexBuffer::initClass(LLVertexBuffer::sEnableVBOs, LLVertexBuffer::sDisableVBOMapping);
 
 	LLVOPartGroup::restoreGL();
+
+	gGL.restoreVertexBuffers();
 }
 
 void LLPipeline::renderObjects(U32 type, U32 mask, BOOL texture, BOOL batch_texture)
@@ -6865,22 +6840,22 @@ void validate_framebuffer_object()
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
 			// frame buffer not OK: probably means unsupported depth buffer format
-			llerrs << "Framebuffer Incomplete Missing Attachment." << llendl;
+			LL_ERRS() << "Framebuffer Incomplete Missing Attachment." << LL_ENDL;
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:	//May not work on mac. Remove/ifdef if that's the case, for now. GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS missing from glext.h.
 			// frame buffer not OK: probably means unsupported depth buffer format
-			llerrs << "Framebuffer Incomplete Dimensions." << llendl;
+			LL_ERRS() << "Framebuffer Incomplete Dimensions." << LL_ENDL;
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
 			// frame buffer not OK: probably means unsupported depth buffer format
-			llerrs << "Framebuffer Incomplete Attachment." << llendl;
+			LL_ERRS() << "Framebuffer Incomplete Attachment." << LL_ENDL;
 			break; 
 		case GL_FRAMEBUFFER_UNSUPPORTED:                    
 			/* choose different formats */                        
-			llerrs << "Framebuffer unsupported." << llendl;
+			LL_ERRS() << "Framebuffer unsupported." << LL_ENDL;
 			break;                                                
 		default:                                                
-			llerrs << "Unknown framebuffer status." << llendl;
+			LL_ERRS() << "Unknown framebuffer status." << LL_ENDL;
 			break;
 	}
 }
@@ -6893,7 +6868,7 @@ void LLPipeline::bindScreenToTexture()
 static LLFastTimer::DeclareTimer FTM_RENDER_BLOOM("Bloom");
 void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, bool tiling)
 {
-	if (!(gPipeline.canUseVertexShaders() &&
+	if (!(LLGLSLShader::sNoFixedFunction &&
 		sRenderGlow))
 	{
 		return;
@@ -10866,7 +10841,7 @@ void LLPipeline::setRenderTypeMask(U32 type, ...)
 
 	if (type > END_RENDER_TYPES)
 	{
-		llerrs << "Invalid render type." << llendl;
+		LL_ERRS() << "Invalid render type." << LL_ENDL;
 	}
 }
 
@@ -10887,7 +10862,7 @@ BOOL LLPipeline::hasAnyRenderType(U32 type, ...) const
 
 	if (type > END_RENDER_TYPES)
 	{
-		llerrs << "Invalid render type." << llendl;
+		LL_ERRS() << "Invalid render type." << LL_ENDL;
 	}
 
 	return FALSE;
@@ -10904,7 +10879,7 @@ void LLPipeline::popRenderTypeMask()
 {
 	if (mRenderTypeEnableStack.empty())
 	{
-		llerrs << "Depleted render type stack." << llendl;
+		LL_ERRS() << "Depleted render type stack." << LL_ENDL;
 	}
 
 	memcpy(mRenderTypeEnabled, mRenderTypeEnableStack.top().data(), sizeof(mRenderTypeEnabled));
@@ -10935,7 +10910,7 @@ void LLPipeline::andRenderTypeMask(U32 type, ...)
 
 	if (type > END_RENDER_TYPES)
 	{
-		llerrs << "Invalid render type." << llendl;
+		LL_ERRS() << "Invalid render type." << LL_ENDL;
 	}
 
 	for (U32 i = 0; i < LLPipeline::NUM_RENDER_TYPES; ++i)
@@ -10960,7 +10935,7 @@ void LLPipeline::clearRenderTypeMask(U32 type, ...)
 
 	if (type > END_RENDER_TYPES)
 	{
-		llerrs << "Invalid render type." << llendl;
+		LL_ERRS() << "Invalid render type." << LL_ENDL;
 	}
 }
 

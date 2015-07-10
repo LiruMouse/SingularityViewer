@@ -226,7 +226,7 @@ public:
 
     void httpFailure(void)
     {
-		LL_WARNS2("AppInit", "Capabilities") << mStatus << ": " << mReason << LL_ENDL;
+		LL_WARNS("AppInit", "Capabilities") << mStatus << ": " << mReason << LL_ENDL;
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if (regionp)
 		{
@@ -239,12 +239,12 @@ public:
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if(!regionp) //region was removed
 		{
-			LL_WARNS2("AppInit", "Capabilities") << "Received results for region that no longer exists!" << LL_ENDL;
+			LL_WARNS("AppInit", "Capabilities") << "Received results for region that no longer exists!" << LL_ENDL;
 			return ;
 		}
 		if( mID != regionp->getHttpResponderID() ) // region is no longer referring to this responder
 		{
-			LL_WARNS2("AppInit", "Capabilities") << "Received results for a stale http responder!" << LL_ENDL;
+			LL_WARNS("AppInit", "Capabilities") << "Received results for a stale http responder!" << LL_ENDL;
 			return ;
 		}
 
@@ -252,7 +252,7 @@ public:
 		for(iter = mContent.beginMap(); iter != mContent.endMap(); ++iter)
 		{
 			regionp->setCapability(iter->first, iter->second);
-			LL_DEBUGS2("AppInit", "Capabilities") << "got capability for " 
+			LL_DEBUGS("AppInit", "Capabilities") << "got capability for " 
 				<< iter->first << LL_ENDL;
 
 			/* HACK we're waiting for the ServerReleaseNotes */
@@ -380,6 +380,7 @@ void LLViewerRegion::initPartitions()
 	mImpl->mObjectPartition.push_back(new LLGrassPartition());		//PARTITION_GRASS
 	mImpl->mObjectPartition.push_back(new LLVolumePartition());	//PARTITION_VOLUME
 	mImpl->mObjectPartition.push_back(new LLBridgePartition());	//PARTITION_BRIDGE
+	mImpl->mObjectPartition.push_back(new LLAttachmentPartition());	//PARTITION_ATTACHMENT
 	mImpl->mObjectPartition.push_back(new LLHUDParticlePartition());//PARTITION_HUD_PARTICLE
 	mImpl->mObjectPartition.push_back(NULL);						//PARTITION_NONE
 }
@@ -788,7 +789,7 @@ void LLViewerRegion::processRegionInfo(LLMessageSystem* msg, void**)
 {
 	// send it to 'observers'
 	// *TODO: switch the floaters to using LLRegionInfoModel
-	llinfos << "Processing region info" << llendl;
+	LL_INFOS() << "Processing region info" << LL_ENDL;
 	LLRegionInfoModel::instance().update(msg);
 	LLFloaterGodTools::processRegionInfo(msg);
 	LLFloaterRegionInfo::processRegionInfo(msg);
@@ -1033,7 +1034,7 @@ U32 LLViewerRegion::getPacketsLost() const
 	LLCircuitData *cdp = gMessageSystem->mCircuitInfo.findCircuit(mImpl->mHost);
 	if (!cdp)
 	{
-		llinfos << "LLViewerRegion::getPacketsLost couldn't find circuit for " << mImpl->mHost << llendl;
+		LL_INFOS() << "LLViewerRegion::getPacketsLost couldn't find circuit for " << mImpl->mHost << LL_ENDL;
 		return 0;
 	}
 	else
@@ -1184,9 +1185,9 @@ public:
 		avatar_locs->reset();
 		avatar_ids->reset();
 
-		//llinfos << "coarse locations agent[0] " << input["body"]["AgentData"][0]["AgentID"].asUUID() << llendl;
-		//llinfos << "my agent id = " << gAgent.getID() << llendl;
-		//llinfos << ll_pretty_print_sd(input) << llendl;
+		//LL_INFOS() << "coarse locations agent[0] " << input["body"]["AgentData"][0]["AgentID"].asUUID() << LL_ENDL;
+		//LL_INFOS() << "my agent id = " << gAgent.getID() << LL_ENDL;
+		//LL_INFOS() << ll_pretty_print_sd(input) << LL_ENDL;
 
 		LLSD 
 			locs   = input["body"]["Location"],
@@ -1223,11 +1224,11 @@ public:
 				pos <<= 8;
 				pos |= z;
 				avatar_locs->put(pos);
-				//llinfos << "next pos: " << x << "," << y << "," << z << ": " << pos << llendl;
+				//LL_INFOS() << "next pos: " << x << "," << y << "," << z << ": " << pos << LL_ENDL;
 				if(has_agent_data) // for backwards compatibility with old message format
 				{
 					LLUUID agent_id(agents_it->get("AgentID").asUUID());
-					//llinfos << "next agent: " << agent_id.asString() << llendl;
+					//LL_INFOS() << "next agent: " << agent_id.asString() << LL_ENDL;
 					avatar_ids->put(agent_id);
 				}
 			}
@@ -1248,7 +1249,7 @@ LLHTTPRegistration<CoarseLocationUpdate>
 // the deprecated coarse location handler
 void LLViewerRegion::updateCoarseLocations(LLMessageSystem* msg)
 {
-	//llinfos << "CoarseLocationUpdate" << llendl;
+	//LL_INFOS() << "CoarseLocationUpdate" << LL_ENDL;
 	mMapAvatars.reset();
 	mMapAvatarIDs.reset(); // only matters in a rare case but it's good to be safe.
 
@@ -1276,9 +1277,9 @@ void LLViewerRegion::updateCoarseLocations(LLMessageSystem* msg)
 			msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AgentID, agent_id, i);
 		}
 
-		//llinfos << "  object X: " << (S32)x_pos << " Y: " << (S32)y_pos
+		//LL_INFOS() << "  object X: " << (S32)x_pos << " Y: " << (S32)y_pos
 		//		<< " Z: " << (S32)(z_pos * 4)
-		//		<< llendl;
+		//		<< LL_ENDL;
 
 		// treat the target specially for the map
 		if(i == target_index)
@@ -1359,7 +1360,7 @@ void LLViewerRegion::setGamingData(const LLSD& gaming_data)
 	mGamingFlags = 0;
 
 	if (!gaming_data.has("display"))
-		llerrs << "GamingData Capability requires \"display\"" << llendl;
+		LL_ERRS() << "GamingData Capability requires \"display\"" << LL_ENDL;
 	if (gaming_data["display"].asBoolean())
 		mGamingFlags |= REGION_GAMING_PRESENT;
 	if (gaming_data.has("hide_parcel") && gaming_data["hide_parcel"].asBoolean())
@@ -1381,7 +1382,7 @@ void LLViewerRegion::setGamingData(const LLSD& gaming_data)
 	if (gaming_data.has("hide_god_floater") && gaming_data["hide_god_floater"].asBoolean())
 		mGamingFlags |= REGION_GAMING_HIDE_GOD_FLOATER;
 
-	llinfos << "Gaming flags are " << mGamingFlags << llendl;
+	LL_INFOS() << "Gaming flags are " << mGamingFlags << LL_ENDL;
 }
 
 LLViewerRegion::eCacheUpdateResult LLViewerRegion::cacheFullUpdate(LLViewerObject* objectp, LLDataPackerBinaryBuffer &dp)
@@ -1446,14 +1447,14 @@ LLDataPacker *LLViewerRegion::getDP(U32 local_id, U32 crc, U8 &cache_miss_type)
 		}
 		else
 		{
-			// llinfos << "CRC miss for " << local_id << llendl;
+			// LL_INFOS() << "CRC miss for " << local_id << LL_ENDL;
 		cache_miss_type = CACHE_MISS_TYPE_CRC;
 			mCacheMissCRC.put(local_id);
 		}
 	}
 	else
 	{
-		// llinfos << "Cache miss for " << local_id << llendl;
+		// LL_INFOS() << "Cache miss for " << local_id << LL_ENDL;
 	cache_miss_type = CACHE_MISS_TYPE_FULL;
 		mCacheMissFull.put(local_id);
 	}
@@ -1538,7 +1539,7 @@ void LLViewerRegion::requestCacheMisses()
 	mCacheMissCRC.reset();
 
 	mCacheDirty = TRUE ;
-	// llinfos << "KILLDEBUG Sent cache miss full " << full_count << " crc " << crc_count << llendl;
+	// LL_INFOS() << "KILLDEBUG Sent cache miss full " << full_count << " crc " << crc_count << LL_ENDL;
 	LLViewerStatsRecorder::instance().requestCacheMissesEvent(full_count + crc_count);
 	LLViewerStatsRecorder::instance().log(0.2f);
 }
@@ -1571,14 +1572,14 @@ void LLViewerRegion::dumpCache()
 		change_bin[changes]++;
 	}
 
-	llinfos << "Count " << mImpl->mCacheMap.size() << llendl;
+	LL_INFOS() << "Count " << mImpl->mCacheMap.size() << LL_ENDL;
 	for (i = 0; i < BINS; i++)
 	{
-		llinfos << "Hits " << i << " " << hit_bin[i] << llendl;
+		LL_INFOS() << "Hits " << i << " " << hit_bin[i] << LL_ENDL;
 	}
 	for (i = 0; i < BINS; i++)
 	{
-		llinfos << "Changes " << i << " " << change_bin[i] << llendl;
+		LL_INFOS() << "Changes " << i << " " << change_bin[i] << LL_ENDL;
 	}
 }
 
@@ -1663,41 +1664,69 @@ void LLViewerRegion::unpackRegionHandshake()
 	{
 		LLUUID tmp_id;
 
+		bool changed = false;
+
+		// Get the 4 textures for land
 		msg->getUUID("RegionInfo", "TerrainDetail0", tmp_id);
+		changed |= (tmp_id != compp->getDetailTextureID(0));		
 		compp->setDetailTextureID(0, tmp_id);
+
 		msg->getUUID("RegionInfo", "TerrainDetail1", tmp_id);
+		changed |= (tmp_id != compp->getDetailTextureID(1));		
 		compp->setDetailTextureID(1, tmp_id);
+
 		msg->getUUID("RegionInfo", "TerrainDetail2", tmp_id);
+		changed |= (tmp_id != compp->getDetailTextureID(2));		
 		compp->setDetailTextureID(2, tmp_id);
+
 		msg->getUUID("RegionInfo", "TerrainDetail3", tmp_id);
+		changed |= (tmp_id != compp->getDetailTextureID(3));		
 		compp->setDetailTextureID(3, tmp_id);
 
+		// Get the start altitude and range values for land textures
 		F32 tmp_f32;
 		msg->getF32("RegionInfo", "TerrainStartHeight00", tmp_f32);
+		changed |= (tmp_f32 != compp->getStartHeight(0));
 		compp->setStartHeight(0, tmp_f32);
+
 		msg->getF32("RegionInfo", "TerrainStartHeight01", tmp_f32);
+		changed |= (tmp_f32 != compp->getStartHeight(1));
 		compp->setStartHeight(1, tmp_f32);
+
 		msg->getF32("RegionInfo", "TerrainStartHeight10", tmp_f32);
+		changed |= (tmp_f32 != compp->getStartHeight(2));
 		compp->setStartHeight(2, tmp_f32);
+
 		msg->getF32("RegionInfo", "TerrainStartHeight11", tmp_f32);
+		changed |= (tmp_f32 != compp->getStartHeight(3));
 		compp->setStartHeight(3, tmp_f32);
 
+
 		msg->getF32("RegionInfo", "TerrainHeightRange00", tmp_f32);
+		changed |= (tmp_f32 != compp->getHeightRange(0));
 		compp->setHeightRange(0, tmp_f32);
+
 		msg->getF32("RegionInfo", "TerrainHeightRange01", tmp_f32);
+		changed |= (tmp_f32 != compp->getHeightRange(1));
 		compp->setHeightRange(1, tmp_f32);
+
 		msg->getF32("RegionInfo", "TerrainHeightRange10", tmp_f32);
+		changed |= (tmp_f32 != compp->getHeightRange(2));
 		compp->setHeightRange(2, tmp_f32);
+
 		msg->getF32("RegionInfo", "TerrainHeightRange11", tmp_f32);
+		changed |= (tmp_f32 != compp->getHeightRange(3));
 		compp->setHeightRange(3, tmp_f32);
 
 		// If this is an UPDATE (params already ready, we need to regenerate
 		// all of our terrain stuff, by
 		if (compp->getParamsReady())
 		{
-			// The following line was commented out in http://hg.secondlife.com/viewer-development/commits/448b02f5b56f9e608952c810df5454f83051a992
-			// by davep. However, this is needed to see changes in region/estate texture elevation ranges, and to update the terrain textures after terraforming.
-			getLand().dirtyAllPatches();
+			// Update if the land changed
+			if (changed)
+			{
+				getLand().dirtyAllPatches();
+			}
 		}
 		else
 		{
@@ -1746,6 +1775,7 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("FetchLibDescendents2");
 	capabilityNames.append("FetchInventory2");
 	capabilityNames.append("FetchInventoryDescendents2");
+	capabilityNames.append("IncrementCOFVersion");
 	capabilityNames.append("GamingData"); //Used by certain grids.
 	capabilityNames.append("GetDisplayNames");
 	capabilityNames.append("GetMesh");
@@ -1813,7 +1843,7 @@ void LLViewerRegion::setSeedCapability(const std::string& url)
 {
 	if (getCapability("Seed") == url)
     {
-		// llwarns << "Ignoring duplicate seed capability" << llendl;
+		// LL_WARNS() << "Ignoring duplicate seed capability" << LL_ENDL;
 		return;
     }
 	
@@ -1826,7 +1856,7 @@ void LLViewerRegion::setSeedCapability(const std::string& url)
 	LLSD capabilityNames = LLSD::emptyArray();
 	mImpl->buildCapabilityNames(capabilityNames);
 
-	llinfos << "posting to seed " << url << llendl;
+	LL_INFOS() << "posting to seed " << url << LL_ENDL;
 
 	S32 id = ++mImpl->mHttpResponderID;
 	LLHTTPClient::post(url, capabilityNames, 
@@ -1845,7 +1875,7 @@ void LLViewerRegion::failedSeedCapability()
 	std::string url = getCapability("Seed");
 	if ( url.empty() )
 	{
-		LL_WARNS2("AppInit", "Capabilities") << "Failed to get seed capabilities, and can not determine url for retries!" << LL_ENDL;
+		LL_WARNS("AppInit", "Capabilities") << "Failed to get seed capabilities, and can not determine url for retries!" << LL_ENDL;
 		return;
 	}
 	// After a few attempts, continue login.  We will keep trying once in-world:
@@ -1860,8 +1890,8 @@ void LLViewerRegion::failedSeedCapability()
 		LLSD capabilityNames = LLSD::emptyArray();
 		mImpl->buildCapabilityNames(capabilityNames);
 
-		llinfos << "posting to seed " << url << " (retry " 
-				<< mImpl->mSeedCapAttempts << ")" << llendl;
+		LL_INFOS() << "posting to seed " << url << " (retry " 
+				<< mImpl->mSeedCapAttempts << ")" << LL_ENDL;
 
 		S32 id = ++mImpl->mHttpResponderID;
 		LLHTTPClient::post(url, capabilityNames, 
@@ -1870,7 +1900,7 @@ void LLViewerRegion::failedSeedCapability()
 	else
 	{
 		// *TODO: Give a user pop-up about this error?
-		LL_WARNS2("AppInit", "Capabilities") << "Failed to get seed capabilities from '" << url << "' after " << mImpl->mSeedCapAttempts << " attempts.  Giving up!" << LL_ENDL;
+		LL_WARNS("AppInit", "Capabilities") << "Failed to get seed capabilities from '" << url << "' after " << mImpl->mSeedCapAttempts << " attempts.  Giving up!" << LL_ENDL;
 	}
 }
 
@@ -1886,7 +1916,7 @@ public:
 	
     void httpFailure(void)
     {
-		LL_WARNS2("AppInit", "SimulatorFeatures") << mStatus << ": " << mReason << LL_ENDL;
+		LL_WARNS("AppInit", "SimulatorFeatures") << mStatus << ": " << mReason << LL_ENDL;
 		retry();
     }
 
@@ -1895,7 +1925,7 @@ public:
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
 		if(!regionp) //region is removed or responder is not created.
 		{
-			LL_WARNS2("AppInit", "SimulatorFeatures") << "Received results for region that no longer exists!" << LL_ENDL;
+			LL_WARNS("AppInit", "SimulatorFeatures") << "Received results for region that no longer exists!" << LL_ENDL;
 			return ;
 		}
 		
@@ -1911,7 +1941,7 @@ private:
 		if (mAttempt < mMaxAttempts)
 		{
 			mAttempt++;
-			LL_WARNS2("AppInit", "SimulatorFeatures") << "Re-trying '" << mRetryURL << "'.  Retry #" << mAttempt << LL_ENDL;
+			LL_WARNS("AppInit", "SimulatorFeatures") << "Re-trying '" << mRetryURL << "'.  Retry #" << mAttempt << LL_ENDL;
 			LLHTTPClient::get(mRetryURL, new SimulatorFeaturesReceived(*this));
 		}
 	}
@@ -1932,7 +1962,7 @@ public:
 
 	/*virtual*/ void httpFailure(void)
 	{
-		LL_WARNS2("AppInit", "GamingData") << mStatus << ": " << mReason << LL_ENDL;
+		LL_WARNS("AppInit", "GamingData") << mStatus << ": " << mReason << LL_ENDL;
 		retry();
 	}
 
@@ -1951,7 +1981,7 @@ private:
 		if (mAttempt < mMaxAttempts)
 		{
 			mAttempt++;
-			LL_WARNS2("AppInit", "GamingData") << "Retrying '" << mRetryURL << "'.  Retry #" << mAttempt << LL_ENDL;
+			LL_WARNS("AppInit", "GamingData") << "Retrying '" << mRetryURL << "'.  Retry #" << mAttempt << LL_ENDL;
 			LLHTTPClient::get(mRetryURL, new GamingDataReceived(*this));
 		}
 	}
@@ -2008,7 +2038,7 @@ std::string LLViewerRegion::getCapability(const std::string& name) const
 {
 	if (!capabilitiesReceived() && (name!=std::string("Seed")) && (name!=std::string("ObjectMedia")))
 	{
-		llwarns << "getCapability("<<name<<") called before caps received" << llendl;
+		LL_WARNS() << "getCapability("<<name<<") called before caps received" << LL_ENDL;
 	}
 	
 	CapabilityMap::const_iterator iter = mImpl->mCapabilities.find(name);
@@ -2064,10 +2094,10 @@ void LLViewerRegion::logActiveCapabilities() const
 	{
 		if (!iter->second.empty())
 		{
-			llinfos << iter->first << " URL is " << iter->second << llendl;
+			LL_INFOS() << iter->first << " URL is " << iter->second << LL_ENDL;
 		}
 	}
-	llinfos << "Dumped " << count << " entries." << llendl;
+	LL_INFOS() << "Dumped " << count << " entries." << LL_ENDL;
 }
 
 LLSpatialPartition* LLViewerRegion::getSpatialPartition(U32 type)

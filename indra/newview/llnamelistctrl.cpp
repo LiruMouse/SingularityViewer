@@ -63,7 +63,7 @@ LLNameListCtrl::LLNameListCtrl(const std::string& name, const LLRect& rect, BOOL
 LLScrollListItem* LLNameListCtrl::addNameItem(const LLUUID& agent_id, EAddPosition pos,
 								 BOOL enabled, const std::string& suffix)
 {
-	//llinfos << "LLNameListCtrl::addNameItem " << agent_id << llendl;
+	//LL_INFOS() << "LLNameListCtrl::addNameItem " << agent_id << LL_ENDL;
 
 	NameItem item;
 	item.value = agent_id;
@@ -116,7 +116,7 @@ BOOL LLNameListCtrl::handleDragAndDrop(
 	}
 
 	handled = TRUE;
-	lldebugst(LLERR_USER_INPUT) << "dragAndDrop handled by LLNameListCtrl " << getName() << llendl;
+	LL_DEBUGS("UserInput") << "dragAndDrop handled by LLNameListCtrl " << getName() << LL_ENDL;
 
 	return handled;
 }

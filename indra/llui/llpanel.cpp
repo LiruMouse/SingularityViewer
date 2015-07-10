@@ -343,8 +343,8 @@ BOOL LLPanel::checkRequirements()
 		args["COMPONENTS"] = mRequirementsError;
 		args["FLOATER"] = getName();
 
-		llwarns << getName() << " failed requirements check on: \n"  
-				<< mRequirementsError << llendl;
+		LL_WARNS() << getName() << " failed requirements check on: \n"  
+				<< mRequirementsError << LL_ENDL;
 		
 		LLNotifications::instance().add(LLNotification::Params("FailedRequirementsCheck").payload(args));
 		mRequirementsError.clear();
@@ -630,11 +630,11 @@ std::string LLPanel::getString(const std::string& name, const LLStringUtil::form
 	//if(LLUI::sConfigGroup->getBOOL("QAMode"))
 	if(LLUI::sQAMode)
 	{
-		llerrs << err_str << llendl;
+		LL_ERRS() << err_str << LL_ENDL;
 	}
 	else
 	{
-		llwarns << err_str << llendl;
+		LL_WARNS() << err_str << LL_ENDL;
 	}
 	return LLStringUtil::null;
 }
@@ -649,11 +649,11 @@ std::string LLPanel::getString(const std::string& name) const
 	std::string err_str("Failed to find string " + name + " in panel " + getName()); // *TODO: Translate
 	if(LLUI::sQAMode)
 	{
-		llerrs << err_str << llendl;
+		LL_ERRS() << err_str << LL_ENDL;
 	}
 	else
 	{
-		llwarns << err_str << llendl;
+		LL_WARNS() << err_str << LL_ENDL;
 	}
 	return LLStringUtil::null;
 }

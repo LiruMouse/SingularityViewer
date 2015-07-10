@@ -250,11 +250,11 @@ void LLLocalIDHashMap<DATA_TYPE, SIZE>::dumpIter()
 	{
 		if (mIters[i])
 		{
-			llinfos << i << " " << mIters[i]->mCurHashNodep << " " << mIters[i]->mCurHashNodeKey << llendl;
+			LL_INFOS() << i << " " << mIters[i]->mCurHashNodep << " " << mIters[i]->mCurHashNodeKey << LL_ENDL;
 		}
 		else
 		{
-			llinfos << i << "null" << llendl;
+			LL_INFOS() << i << "null" << LL_ENDL;
 		}
 	}
 }
@@ -701,7 +701,7 @@ void LLLocalIDHashMap<DATA_TYPE, SIZE>::removeIter(LLLocalIDHashMapIter<DATA_TYP
 			return;
 		}
 	}
-	llerrs << "Iterator " << iter << " not found for removal in hash map!" << llendl;
+	LL_ERRS() << "Iterator " << iter << " not found for removal in hash map!" << LL_ENDL;
 }
 
 template <class DATA_TYPE, int SIZE>
@@ -717,7 +717,7 @@ void LLLocalIDHashMap<DATA_TYPE, SIZE>::addIter(LLLocalIDHashMapIter<DATA_TYPE, 
 			return;
 		}
 	}
-	llerrs << "More than " << MAX_ITERS << " iterating over a map simultaneously!" << llendl;
+	LL_ERRS() << "More than " << MAX_ITERS << " iterating over a map simultaneously!" << LL_ENDL;
 }
 
 

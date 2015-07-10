@@ -715,10 +715,16 @@ BOOL LLViewerCamera::areVertsVisible(LLViewerObject* volumep, BOOL all_verts)
 // changes local camera and broadcasts change
 /* virtual */ void LLViewerCamera::setView(F32 vertical_fov_rads)
 {
-	F32 old_fov = LLViewerCamera::getInstance()->getView();
+	F32 old_fov = getView();
 
 	// cap the FoV
 	vertical_fov_rads = llclamp(vertical_fov_rads, getMinView(), getMaxView());
+
+// RLVa:LF - @camzoommax
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_CAMZOOMMAX))
+		vertical_fov_rads = llmin(vertical_fov_rads, gRlvHandler.camPole(RLV_BHVR_CAMZOOMMAX));
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_CAMZOOMMIN))
+		vertical_fov_rads = llmax(vertical_fov_rads, gRlvHandler.camPole(RLV_BHVR_CAMZOOMMIN));
 
 	if (vertical_fov_rads == old_fov) return;
 

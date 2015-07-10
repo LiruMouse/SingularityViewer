@@ -77,6 +77,8 @@
 #include "llworldmapview.h"
 #include "llnetmap.h"
 #include "llrender.h"
+#include "lldrawpoolwlsky.h"
+#include "llwlparammanager.h"
 #include "aistatemachine.h"
 #include "aithreadsafe.h"
 #include "lldrawpoolbump.h"
@@ -205,7 +207,6 @@ bool handleRenderAvatarComplexityLimitChanged(const LLSD& newvalue)
 
 bool handleRenderTransparentWaterChanged(const LLSD& newvalue)
 {
-	LLPipeline::sWaterReflections = gGLManager.mHasCubeMap && gSavedSettings.getBOOL("VertexShaderEnable");
 	if (gPipeline.isInit())	//If water is opaque then distortion/reflection fbos will not be needed.
 	{
 		gPipeline.releaseGLBuffers();
@@ -301,7 +302,7 @@ static bool handleGammaChanged(const LLSD& newvalue)
 		// Only save it if it's changed
 		if (!gViewerWindow->getWindow()->setGamma(gamma))
 		{
-			llwarns << "setGamma failed!" << llendl;
+			LL_WARNS() << "setGamma failed!" << LL_ENDL;
 		}
 	}
 
@@ -466,17 +467,9 @@ static bool handleRenderLocalLightsChanged(const LLSD& newvalue)
 
 static bool handleRenderDeferredChanged(const LLSD& newvalue)
 {
-	bool can_defer = LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred");
-	bool old_deferred = !newvalue.asBoolean() && can_defer;
-	LLRenderTarget::sUseFBO = (newvalue.asBoolean() && can_defer) || gSavedSettings.getBOOL("RenderUseFBO");
 	if (gPipeline.isInit())
 	{
-		LLPipeline::refreshCachedSettings();
-		gPipeline.updateRenderDeferred();
-		gPipeline.releaseGLBuffers();
-		gPipeline.createGLBuffers();
-		gPipeline.resetVertexBuffers();
-		if (old_deferred != newvalue.asBoolean())
+		if (LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred"))
 		{
 			LLViewerShaderMgr::instance()->setShaders();
 		}
@@ -486,13 +479,11 @@ static bool handleRenderDeferredChanged(const LLSD& newvalue)
 
 static bool handleRenderUseFBOChanged(const LLSD& newvalue)
 {
-	bool can_defer = LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred");
-	LLRenderTarget::sUseFBO = newvalue.asBoolean() || (gSavedSettings.getBOOL("RenderDeferred") && can_defer);
+	LLRenderTarget::sUseFBO = newvalue.asBoolean() || LLPipeline::sRenderDeferred;
 	if (gPipeline.isInit())
 	{
 		gPipeline.releaseGLBuffers();
 		gPipeline.createGLBuffers();
-		gPipeline.resetVertexBuffers();
 	}
 	return true;
 }
@@ -570,7 +561,7 @@ bool handleVelocityInterpolate(const LLSD& newvalue)
 		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
 		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 		gAgent.sendReliableMessage();
-		llinfos << "Velocity Interpolation On" << llendl;
+		LL_INFOS() << "Velocity Interpolation On" << LL_ENDL;
 	}
 	else
 	{
@@ -579,7 +570,45 @@ bool handleVelocityInterpolate(const LLSD& newvalue)
 		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
 		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 		gAgent.sendReliableMessage();
-		llinfos << "Velocity Interpolation Off" << llendl;
+		LL_INFOS() << "Velocity Interpolation Off" << LL_ENDL;
+	}
+	return true;
+}
+
+bool handleWindlightCloudChanged(const LLSD& new_value)
+{
+	std::string cloudNoiseFilename(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/clouds", new_value.asString()));
+	if (!gDirUtilp->fileExists(cloudNoiseFilename))
+	{
+		cloudNoiseFilename = gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/clouds", "Default.tga");
+	}
+	LL_INFOS() << "loading WindLight cloud noise from " << cloudNoiseFilename << LL_ENDL;
+
+	LLPointer<LLImageFormatted> cloudNoiseFile(LLImageFormatted::createFromExtension(cloudNoiseFilename));
+
+	if (cloudNoiseFile.isNull())
+	{
+		LL_WARNS() << "Error: Failed to load cloud noise image " << cloudNoiseFilename << LL_ENDL;
+		return true;
+	}
+
+	if (cloudNoiseFile->load(cloudNoiseFilename))
+	{
+		LLDrawPoolWLSky::sCloudNoiseRawImage = new LLImageRaw();
+
+		if (cloudNoiseFile->decode(LLDrawPoolWLSky::sCloudNoiseRawImage, 0.0f))
+		{
+			//debug use
+			LL_DEBUGS() << "cloud noise raw image width: " << LLDrawPoolWLSky::sCloudNoiseRawImage->getWidth() << " : height: " << LLDrawPoolWLSky::sCloudNoiseRawImage->getHeight() << " : components: " <<
+				(S32) LLDrawPoolWLSky::sCloudNoiseRawImage->getComponents() << " : data size: " << LLDrawPoolWLSky::sCloudNoiseRawImage->getDataSize() << LL_ENDL;
+			llassert_always(LLDrawPoolWLSky::sCloudNoiseRawImage->getData());
+
+			LLDrawPoolWLSky::sCloudNoiseTexture = LLViewerTextureManager::getLocalTexture(LLDrawPoolWLSky::sCloudNoiseRawImage.get(), TRUE);
+		}
+		else
+		{
+			LLDrawPoolWLSky::sCloudNoiseRawImage = NULL;
+		}
 	}
 	return true;
 }
@@ -600,7 +629,7 @@ bool handleCloudSettingsChanged(const LLSD& newvalue)
 
 bool handleAscentAvatarModifier(const LLSD& newvalue)
 {
-	llinfos << "Calling gAgent.sendAgentSetAppearance() because AscentAvatar*Modifier changed." << llendl;
+	LL_INFOS() << "Calling gAgent.sendAgentSetAppearance() because AscentAvatar*Modifier changed." << LL_ENDL;
 	gAgent.sendAgentSetAppearance();
 	return true;
 }
@@ -793,6 +822,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("CloudsEnabled")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _2));
 	gSavedSettings.getControl("SkyUseClassicClouds")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _2));
 	gSavedSettings.getControl("RenderTransparentWater")->getSignal()->connect(boost::bind(&handleRenderTransparentWaterChanged, _2));
+	gSavedSettings.getControl("AlchemyWLCloudTexture")->getSignal()->connect(boost::bind(&handleWindlightCloudChanged, _2));
 	
 	gSavedSettings.getControl("AscentAvatarXModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _2));
 	gSavedSettings.getControl("AscentAvatarYModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _2));

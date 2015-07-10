@@ -120,7 +120,7 @@ void LLViewerTexLayerSetBuffer::destroyGLTexture()
 // static
 void LLViewerTexLayerSetBuffer::dumpTotalByteCount()
 {
-	llinfos << "Composite System GL Buffers: " << (LLViewerTexLayerSetBuffer::sGLByteCount/1024) << "KB" << llendl;
+	LL_INFOS() << "Composite System GL Buffers: " << (LLViewerTexLayerSetBuffer::sGLByteCount/1024) << "KB" << LL_ENDL;
 }
 
 void LLViewerTexLayerSetBuffer::requestUpdate()
@@ -234,7 +234,7 @@ void LLViewerTexLayerSetBuffer::midRenderTexLayerSet(BOOL success)
 	{
 		if (!success)
 		{
-			llinfos << "Failed attempt to bake " << mTexLayerSet->getBodyRegionName() << llendl;
+			LL_INFOS() << "Failed attempt to bake " << mTexLayerSet->getBodyRegionName() << LL_ENDL;
 			mUploadPending = FALSE;
 		}
 		else
@@ -386,14 +386,14 @@ public:
 		const std::string& result = content["state"];
 		const LLUUID& new_id = content["new_asset"];
 
-		llinfos << "result: " << result << " new_id: " << new_id << llendl;
+		LL_INFOS() << "result: " << result << " new_id: " << new_id << LL_ENDL;
 		LLViewerTexLayerSetBuffer::onTextureUploadComplete(new_id, (void*) mBakedUploadData, (result == "complete" && mBakedUploadData) ? 0 : -1, LL_EXSTAT_NONE);
 		mBakedUploadData = NULL;	// deleted in onTextureUploadComplete()
 	}
 
 	/*virtual*/ void httpFailure()
 	{
-		llinfos << dumpResponse() << llendl;
+		LL_INFOS() << dumpResponse() << LL_ENDL;
 
 		// Invoke the original callback with an error result
 		LLViewerTexLayerSetBuffer::onTextureUploadComplete(LLUUID::null, (void*) mBakedUploadData, -1, LL_EXSTAT_NONE);
@@ -411,7 +411,7 @@ private:
 void LLViewerTexLayerSetBuffer::doUpload()
 {
 	LLViewerTexLayerSet* layer_set = getViewerTexLayerSet();
-	llinfos << "Uploading baked " << layer_set->getBodyRegionName() << llendl;
+	LL_INFOS() << "Uploading baked " << layer_set->getBodyRegionName() << LL_ENDL;
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_TEX_BAKES);
 
 	// Don't need caches since we're baked now.  (note: we won't *really* be baked 
@@ -494,7 +494,7 @@ void LLViewerTexLayerSetBuffer::doUpload()
 					LLSD body = LLSD::emptyMap();
 					// The responder will call LLViewerTexLayerSetBuffer::onTextureUploadComplete()
 					LLHTTPClient::post(url, body, new LLSendTexLayerResponder(body, mUploadID, LLAssetType::AT_TEXTURE, baked_upload_data));
-					llinfos << "Baked texture upload via capability of " << mUploadID << " to " << url << llendl;
+					LL_INFOS() << "Baked texture upload via capability of " << mUploadID << " to " << url << LL_ENDL;
 				} 
 				else
 				{
@@ -505,7 +505,7 @@ void LLViewerTexLayerSetBuffer::doUpload()
 												  TRUE,		// temp_file
 												  TRUE,		// is_priority
 												  TRUE);	// store_local
-					llinfos << "Baked texture upload via Asset Store." <<  llendl;
+					LL_INFOS() << "Baked texture upload via Asset Store." <<  LL_ENDL;
 				}
 
 				if (highest_lod)
@@ -542,7 +542,7 @@ void LLViewerTexLayerSetBuffer::doUpload()
 				mUploadPending = FALSE;
 				LLVFile file(gVFS, asset_id, LLAssetType::AT_TEXTURE, LLVFile::WRITE);
 				file.remove();
-				llinfos << "Unable to create baked upload file (reason: corrupted)." << llendl;
+				LL_INFOS() << "Unable to create baked upload file (reason: corrupted)." << LL_ENDL;
 			}
 		}
 	}
@@ -550,7 +550,7 @@ void LLViewerTexLayerSetBuffer::doUpload()
 	{
 		// The VFS write file operation failed.
 		mUploadPending = FALSE;
-		llinfos << "Unable to create baked upload file (reason: failed to write file)" << llendl;
+		LL_INFOS() << "Unable to create baked upload file (reason: failed to write file)" << LL_ENDL;
 	}
 
 	delete [] baked_color_data;
@@ -632,14 +632,14 @@ void LLViewerTexLayerSetBuffer::onTextureUploadComplete(const LLUUID& uuid,
 				LLAvatarAppearanceDefines::ETextureIndex baked_te = gAgentAvatarp->getBakedTE(layerset_buffer->getViewerTexLayerSet());
 				// Update baked texture info with the new UUID
 				U64 now = LLFrameTimer::getTotalTime();		// Record starting time
-				llinfos << "Baked" << resolution << "texture upload for " << name << " took " << (S32)((now - baked_upload_data->mStartTime) / 1000) << " ms" << llendl;
+				LL_INFOS() << "Baked" << resolution << "texture upload for " << name << " took " << (S32)((now - baked_upload_data->mStartTime) / 1000) << " ms" << LL_ENDL;
 				gAgentAvatarp->setNewBakedTexture(baked_te, uuid);
 			}
 			else
 			{	
 				++failures;
 				S32 max_attempts = baked_upload_data->mIsHighestRes ? BAKE_UPLOAD_ATTEMPTS : 1; // only retry final bakes
-				llwarns << "Baked" << resolution << "texture upload for " << name << " failed (attempt " << failures << "/" << max_attempts << ")" << llendl;
+				LL_WARNS() << "Baked" << resolution << "texture upload for " << name << " failed (attempt " << failures << "/" << max_attempts << ")" << LL_ENDL;
 				if (failures < max_attempts)
 				{
 					layerset_buffer->mUploadFailCount = failures;
@@ -650,7 +650,7 @@ void LLViewerTexLayerSetBuffer::onTextureUploadComplete(const LLUUID& uuid,
 		}
 		else
 		{
-			llinfos << "Received baked texture out of date, ignored." << llendl;
+			LL_INFOS() << "Received baked texture out of date, ignored." << LL_ENDL;
 		}
 
 		gAgentAvatarp->dirtyMesh();
@@ -662,7 +662,7 @@ void LLViewerTexLayerSetBuffer::onTextureUploadComplete(const LLUUID& uuid,
 		// and rebake it at some point in the future (after login?)),
 		// or this response to upload is out of date, in which case a
 		// current response should be on the way or already processed.
-		llwarns << "Baked upload failed" << llendl;
+		LL_WARNS() << "Baked upload failed" << LL_ENDL;
 	}
 
 	delete baked_upload_data;
@@ -739,7 +739,7 @@ void LLViewerTexLayerSet::createComposite()
 		// Composite other avatars at reduced resolution
 		if( !mAvatarAppearance->isSelf() )
 		{
-			llerrs << "composites should not be created for non-self avatars!" << llendl;
+			LL_ERRS() << "composites should not be created for non-self avatars!" << LL_ENDL;
 		}
 		mComposite = new LLViewerTexLayerSetBuffer( this, width, height );
 	}

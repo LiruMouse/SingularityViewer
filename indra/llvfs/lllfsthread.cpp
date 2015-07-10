@@ -93,7 +93,7 @@ LLLFSThread::handle_t LLLFSThread::read(const std::string& filename,	/* Flawfind
 	bool res = addRequest(req);
 	if (!res)
 	{
-		llerrs << "LLLFSThread::read called after LLLFSThread::cleanupClass()" << llendl;
+		LL_ERRS() << "LLLFSThread::read called after LLLFSThread::cleanupClass()" << LL_ENDL;
 	}
 
 	return handle;
@@ -115,7 +115,7 @@ LLLFSThread::handle_t LLLFSThread::write(const std::string& filename,
 	bool res = addRequest(req);
 	if (!res)
 	{
-		llerrs << "LLLFSThread::read called after LLLFSThread::cleanupClass()" << llendl;
+		LL_ERRS() << "LLLFSThread::read called after LLLFSThread::cleanupClass()" << LL_ENDL;
 	}
 	
 	return handle;
@@ -140,7 +140,7 @@ LLLFSThread::Request::Request(LLLFSThread* thread,
 {
 	if (numbytes <= 0)
 	{
-		llwarns << "LLLFSThread: Request with numbytes = " << numbytes << llendl;
+		LL_WARNS() << "LLLFSThread: Request with numbytes = " << numbytes << LL_ENDL;
 	}
 }
 
@@ -162,7 +162,7 @@ void LLLFSThread::Request::deleteRequest()
 {
 	if (getStatus() == STATUS_QUEUED)
 	{
-		llerrs << "Attempt to delete a queued LLLFSThread::Request!" << llendl;
+		LL_ERRS() << "Attempt to delete a queued LLLFSThread::Request!" << LL_ENDL;
 	}	
 	if (mResponder.notNull())
 	{
@@ -181,7 +181,7 @@ bool LLLFSThread::Request::processRequest()
 		LLAPRFile infile(mFileName, LL_APR_RB);
 		if (!infile.getFileHandle())
 		{
-			llwarns << "LLLFS: Unable to read file: " << mFileName << llendl;
+			LL_WARNS() << "LLLFS: Unable to read file: " << mFileName << LL_ENDL;
 			mBytesRead = 0; // fail
 			return true;
 		}
@@ -193,7 +193,7 @@ bool LLLFSThread::Request::processRequest()
 		llassert_always(off >= 0);
 		mBytesRead = infile.read(mBuffer, mBytes );
 		complete = true;
-// 		llinfos << "LLLFSThread::READ:" << mFileName << " Bytes: " << mBytesRead << llendl;
+// 		LL_INFOS() << "LLLFSThread::READ:" << mFileName << " Bytes: " << mBytesRead << LL_ENDL;
 	}
 	else if (mOperation ==  FILE_WRITE)
 	{
@@ -203,7 +203,7 @@ bool LLLFSThread::Request::processRequest()
 		LLAPRFile outfile(mFileName, flags);
 		if (!outfile.getFileHandle())
 		{
-			llwarns << "LLLFS: Unable to write file: " << mFileName << llendl;
+			LL_WARNS() << "LLLFS: Unable to write file: " << mFileName << LL_ENDL;
 			mBytesRead = 0; // fail
 			return true;
 		}
@@ -212,18 +212,18 @@ bool LLLFSThread::Request::processRequest()
 			S32 seek = outfile.seek(APR_SET, mOffset);
 			if (seek < 0)
 			{
-				llwarns << "LLLFS: Unable to write file (seek failed): " << mFileName << llendl;
+				LL_WARNS() << "LLLFS: Unable to write file (seek failed): " << mFileName << LL_ENDL;
 				mBytesRead = 0; // fail
 				return true;
 			}
 		}
 		mBytesRead = outfile.write(mBuffer, mBytes );
 		complete = true;
-// 		llinfos << "LLLFSThread::WRITE:" << mFileName << " Bytes: " << mBytesRead << "/" << mBytes << " Offset:" << mOffset << llendl;
+// 		LL_INFOS() << "LLLFSThread::WRITE:" << mFileName << " Bytes: " << mBytesRead << "/" << mBytes << " Offset:" << mOffset << LL_ENDL;
 	}
 	else
 	{
-		llerrs << "LLLFSThread::unknown operation: " << (S32)mOperation << llendl;
+		LL_ERRS() << "LLLFSThread::unknown operation: " << (S32)mOperation << LL_ENDL;
 	}
 	return complete;
 }

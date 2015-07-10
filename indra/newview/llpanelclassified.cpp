@@ -75,7 +75,6 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
-const S32 MINIMUM_PRICE_FOR_LISTING = 50;	// L$
 const S32 MATURE_UNDEFINED = -1;
 const S32 MATURE_CONTENT = 1;
 const S32 PG_CONTENT = 2;
@@ -139,7 +138,7 @@ public:
 			url += tokens[i].asString();
 			url += "/";
 		}
-		llinfos << "classified teleport to " << url << llendl;
+		LL_INFOS() << "classified teleport to " << url << LL_ENDL;
 		// *TODO: separately track old search, sidebar, and new search
 		// Right now detail HTML pages count as new search.
 		const bool from_search = true;
@@ -318,7 +317,7 @@ void LLPanelClassifiedInfo::processProperties(void* data, EAvatarProcessorType t
 {
 	if(APT_CLASSIFIED_INFO == type)
 	{
-		lldebugs << "processClassifiedInfoReply()" << llendl;
+		LL_DEBUGS() << "processClassifiedInfoReply()" << LL_ENDL;
 
 		LLAvatarClassifiedInfo* c_info = static_cast<LLAvatarClassifiedInfo*>(data);
 		if(c_info && mClassifiedID == c_info->classified_id)
@@ -572,7 +571,7 @@ void LLPanelClassifiedInfo::sendClassifiedInfoRequest()
 
 		if (!url.empty())
 		{
-			llinfos << "Classified stat request via capability" << llendl;
+			LL_INFOS() << "Classified stat request via capability" << LL_ENDL;
 			LLHTTPClient::post(url, body, new LLClassifiedStatsResponder(((LLView*)this)->getHandle(), mClassifiedID));
 		}
 	}
@@ -773,10 +772,12 @@ void LLPanelClassifiedInfo::gotMature()
 void LLPanelClassifiedInfo::callbackGotPriceForListing(const std::string& text)
 {
 	S32 price_for_listing = strtol(text.c_str(), NULL, 10);
-	if (price_for_listing < MINIMUM_PRICE_FOR_LISTING)
+	const HippoGridInfo& grid(*gHippoGridManager->getConnectedGrid());
+	const int& min_fee(grid.getClassifiedFee());
+	if (price_for_listing < min_fee)
 	{
 		LLSD args;
-		args["MIN_PRICE"] = llformat("%d", MINIMUM_PRICE_FOR_LISTING);
+		args["MIN_PRICE"] = llformat("%d", min_fee);
 		LLNotificationsUtil::add("MinClassifiedPrice", args);
 		return;
 	}
@@ -787,7 +788,7 @@ void LLPanelClassifiedInfo::callbackGotPriceForListing(const std::string& text)
 
 	LLSD args;
 	args["AMOUNT"] = llformat("%d", price_for_listing);
-	args["CURRENCY"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
+	args["CURRENCY"] = grid.getCurrencySymbol();
 	LLNotificationsUtil::add("PublishClassified", args, LLSD(), 
 									boost::bind(&LLPanelClassifiedInfo::confirmPublish, this, _1, _2));
 }
@@ -941,7 +942,7 @@ void LLPanelClassifiedInfo::sendClassifiedClickMessage(const std::string& type)
 	body["region_name"] = mSimName;
 
 	std::string url = gAgent.getRegion()->getCapability("SearchStatTracking");
-	llinfos << "LLPanelClassifiedInfo::sendClassifiedClickMessage via capability" << llendl;
+	LL_INFOS() << "LLPanelClassifiedInfo::sendClassifiedClickMessage via capability" << LL_ENDL;
 	LLHTTPClient::post(url, body, new LLHTTPClient::ResponderIgnore);
 }
 
@@ -971,7 +972,7 @@ BOOL LLFloaterPriceForListing::postBuild()
 	if (edit)
 	{
 		edit->setPrevalidate(LLLineEditor::prevalidateNonNegativeS32);
-		std::string min_price = llformat("%d", MINIMUM_PRICE_FOR_LISTING);
+		std::string min_price = llformat("%d", gHippoGridManager->getConnectedGrid()->getClassifiedFee());
 		edit->setText(min_price);
 		edit->selectAll();
 		edit->setFocus(TRUE);

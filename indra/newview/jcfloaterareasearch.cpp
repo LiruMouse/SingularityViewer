@@ -151,7 +151,7 @@ void JCFloaterAreaSearch::onStop()
 
 void JCFloaterAreaSearch::onRefresh()
 {
-	//llinfos << "Clicked search" << llendl;
+	//LL_INFOS() << "Clicked search" << LL_ENDL;
 	mStopped = false;
 	checkRegion(true);
 	results();
@@ -163,7 +163,7 @@ void JCFloaterAreaSearch::onCommitLine(LLUICtrl* caller, const LLSD& value, OBJE
 	LLStringUtil::toLower(text);
 	caller->setValue(text);
  	mFilterStrings[type] = text;
-	//llinfos << "loaded " << name << " with "<< text << llendl;
+	//LL_INFOS() << "loaded " << name << " with "<< text << LL_ENDL;
 	checkRegion();
 	results();
 }
@@ -175,7 +175,7 @@ bool JCFloaterAreaSearch::requestIfNeeded(LLUUID object_id)
 		if(mStopped)
 			return true;
 
-		//llinfos << "not in list" << llendl;
+		//LL_INFOS() << "not in list" << LL_ENDL;
 		mPendingObjects.insert(object_id);
 
 		LLMessageSystem* msg = gMessageSystem;
@@ -187,7 +187,7 @@ bool JCFloaterAreaSearch::requestIfNeeded(LLUUID object_id)
 		msg->addU32Fast(_PREHASH_RequestFlags, 0 );
 		msg->addUUIDFast(_PREHASH_ObjectID, object_id);
 		gAgent.sendReliableMessage();
-		//llinfos << "Sent data request for object " << object_id << llendl;
+		//LL_INFOS() << "Sent data request for object " << object_id << LL_ENDL;
 		return true;
 	}
 	return false;
@@ -198,7 +198,7 @@ void JCFloaterAreaSearch::results()
 	if (!getVisible()) return;
 
 	if (mPendingObjects.size() > 0 && mLastUpdateTimer.getElapsedTimeF32() < min_refresh_interval) return;
-	//llinfos << "results()" << llendl;
+	//LL_INFOS() << "results()" << LL_ENDL;
 	uuid_vec_t selected = mResultList->getSelectedIDs();
 	S32 scrollpos = mResultList->getScrollPos();
 	mResultList->deleteAllItems();
@@ -220,14 +220,14 @@ void JCFloaterAreaSearch::results()
 					std::map<LLUUID,ObjectData>::iterator it = mCachedObjects.find(object_id);
 					if(it != mCachedObjects.end())
 					{
-						//llinfos << "all entries are \"\" or we have data" << llendl;
+						//LL_INFOS() << "all entries are \"\" or we have data" << LL_ENDL;
 						std::string object_name = it->second.name;
 						std::string object_desc = it->second.desc;
 						std::string object_owner;
 						std::string object_group;
 						gCacheName->getFullName(it->second.owner_id, object_owner);
 						gCacheName->getGroupName(it->second.group_id, object_group);
-						//llinfos << "both names are loaded or aren't needed" << llendl;
+						//LL_INFOS() << "both names are loaded or aren't needed" << LL_ENDL;
 						std::string onU = object_owner;
 						std::string cnU = object_group;
 						LLStringUtil::toLower(object_name);
@@ -239,7 +239,7 @@ void JCFloaterAreaSearch::results()
 							(mFilterStrings[LIST_OBJECT_OWNER].empty() || object_owner.find(mFilterStrings[LIST_OBJECT_OWNER]) != std::string::npos) &&
 							(mFilterStrings[LIST_OBJECT_GROUP].empty() || object_group.find(mFilterStrings[LIST_OBJECT_GROUP]) != std::string::npos))
 						{
-							//llinfos << "pass" << llendl;
+							//LL_INFOS() << "pass" << LL_ENDL;
 							LLSD element;
 							element["id"] = object_id;
 							element["columns"][LIST_OBJECT_NAME]["column"] = "Name";
@@ -296,5 +296,5 @@ void JCFloaterAreaSearch::processObjectPropertiesFamily(LLMessageSystem* msg, vo
 	msg->getStringFast(_PREHASH_ObjectData, _PREHASH_Description, data->desc);
 	gCacheName->get(data->owner_id, false, boost::bind(&JCFloaterAreaSearch::results,floater));
 	gCacheName->get(data->group_id, true, boost::bind(&JCFloaterAreaSearch::results,floater));
-	//llinfos << "Got info for " << (exists ? "requested" : "unknown") << " object " << object_id << llendl;
+	//LL_INFOS() << "Got info for " << (exists ? "requested" : "unknown") << " object " << object_id << LL_ENDL;
 }

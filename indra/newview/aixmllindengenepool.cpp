@@ -188,7 +188,7 @@ AIArchetype::AIArchetype(AIXMLElementParser const& parser)
 
   if (!parser.attribute("name", name))
   {
-	llwarns << "The <archetype> tag in file \"" << parser.filename() << "\" is missing the 'name' parameter." << llendl;
+	LL_WARNS() << "The <archetype> tag in file \"" << parser.filename() << "\" is missing the 'name' parameter." << LL_ENDL;
   }
   else if (name != "???")
   {

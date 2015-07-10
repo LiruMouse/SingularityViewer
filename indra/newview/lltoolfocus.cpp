@@ -59,6 +59,7 @@
 #include "llvoavatarself.h"
 #include "llmorphview.h"
 #include "llfloatercustomize.h"
+#include "rlvhandler.h" // [RLVa:LF] - camunlock
 
 // Globals
 BOOL gCameraBtnZoom = TRUE;
@@ -200,6 +201,8 @@ void LLToolCamera::pickCallback(const LLPickInfo& pick_info)
 	else if (pick_info.mKeyMask & MASK_ALT || 
 			(LLToolMgr::getInstance()->getCurrentTool()->getName() == "Camera")) 
 	{
+		if (gRlvHandler.hasBehaviour(RLV_BHVR_CAMUNLOCK)) return; // [RLVa:LF] - camunlock
+
 		LLViewerObject* hit_obj = pick_info.getObject();
 		if (hit_obj)
 		{

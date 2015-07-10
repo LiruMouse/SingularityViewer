@@ -256,7 +256,7 @@ void LLPreviewAnim::gotAssetForCopy(LLVFS *vfs,
 	char* buffer = new char[size];
 	if (buffer == NULL)
 	{
-		llerrs << "Memory Allocation Failed" << llendl;
+		LL_ERRS() << "Memory Allocation Failed" << LL_ENDL;
 		return;
 	}
 
@@ -317,7 +317,7 @@ void LLPreviewAnim::onSaveCopyComplete(const LLUUID& asset_uuid, void* user_data
 	}
 	else
 	{
-		llwarns << "Problem saving animation: " << status << llendl;
+		LL_WARNS() << "Problem saving animation: " << status << LL_ENDL;
 		LLStringUtil::format_map_t args;
 		args["[REASON]"] = std::string(LLAssetStorage::getErrorString(status));
 		gViewerWindow->alertXml("CannotUploadReason",args);
@@ -390,7 +390,7 @@ void LLPreviewAnim::gotAssetForSave(LLVFS *vfs,
 	char* buffer = new char[size];
 	if (buffer == NULL)
 	{
-		llerrs << "Memory Allocation Failed" << llendl;
+		LL_ERRS() << "Memory Allocation Failed" << LL_ENDL;
 		return;
 	}
 

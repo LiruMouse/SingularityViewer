@@ -24,7 +24,6 @@ set(llcommon_SOURCE_FILES
     aithreadid.cpp
     imageids.cpp
     indra_constants.cpp
-    ll_template_cast.h
     llallocator.cpp
     llallocator_heap_profile.cpp
     llapp.cpp
@@ -116,12 +115,10 @@ set(llcommon_HEADER_FILES
     aithreadsafe.h
     bitpack.h
     ctype_workaround.h
-    doublelinkedlist.h
     fix_macros.h
     imageids.h
     indra_constants.h
     linden_common.h
-    linked_lists.h
     llaccountingcost.h
     llalignedarray.h
     llagentconstants.h
@@ -149,7 +146,6 @@ set(llcommon_HEADER_FILES
     lldarrayptr.h
     lldate.h
     lldefs.h
-    lldeleteutils.h
     lldependencies.h
     lldepthstack.h
     lldictionary.h
@@ -204,8 +200,6 @@ set(llcommon_HEADER_FILES
     llpriqueuemap.h
     llprocesslauncher.h
     llprocessor.h
-    llptrskiplist.h
-    llptrskipmap.h
     llptrto.h
     llqueuedthread.h
     llrand.h
@@ -224,7 +218,6 @@ set(llcommon_HEADER_FILES
     llskiplist.h
     llskipmap.h
     llsortedvector.h
-    llstack.h
     llstacktrace.h
     llstat.h
     llstatenums.h
@@ -252,7 +245,6 @@ set(llcommon_HEADER_FILES
     reflectivet.h
     stdenums.h
     stdtypes.h
-    string_table.h
     stringize.h
     timer.h
     timing.h

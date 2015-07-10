@@ -154,7 +154,7 @@ void LLFrameStats::addFrameData()
 	{
 		if (mTimer.getElapsedTimeF32() > mStopTime)
 		{
-			llinfos << "Grabbed stats for " << mStopTime << " seconds, stopping and dumping" << llendl;
+			LL_INFOS() << "Grabbed stats for " << mStopTime << " seconds, stopping and dumping" << LL_ENDL;
 			setTrackStats(FALSE);
 		}
 	}
@@ -188,10 +188,10 @@ void LLFrameStats::dump()
 		LLFILE *fp = LLFile::fopen(filename, "w");		/* Flawfinder: ignore */
 		if (!fp)
 		{
-			llinfos << "Couldn't open file for dumping frame stats!" << llendl;
+			LL_INFOS() << "Couldn't open file for dumping frame stats!" << LL_ENDL;
 			return;
 		}
-		llinfos << "Dumping frame statistics for " << mFrameData.count() << " frames" << llendl;
+		LL_INFOS() << "Dumping frame statistics for " << mFrameData.count() << " frames" << LL_ENDL;
 
 		fprintf(fp, "Time\tNumTriangles\t");
 
@@ -229,7 +229,7 @@ void LLFrameStats::dump()
 		fp = LLFile::fopen(filename, "a");		/* Flawfinder: ignore */
 		if (!fp)
 		{
-			llinfos << "Couldn't open file for dumping frame stats!" << llendl;
+			LL_INFOS() << "Couldn't open file for dumping frame stats!" << LL_ENDL;
 			return;
 		}
 
@@ -260,7 +260,7 @@ void LLFrameStats::setTrackStats(const BOOL track_stats)
 		}
 		else
 		{
-			llinfos << "Enabling stat logging" << llendl;
+			LL_INFOS() << "Enabling stat logging" << LL_ENDL;
 		}
 	}
 

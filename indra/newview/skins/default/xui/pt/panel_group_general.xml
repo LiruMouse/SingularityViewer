@@ -27,7 +27,7 @@
 	<button label="Unir ([CURRENCY]0)" label_selected="Unir ([CURRENCY]0)" name="join_button"/>
 	<button label="Vista detalhada" label_selected="Vista detalhada" name="info_button"/>
 	<text name="text_owners_and_visible_members">
-		Proprietários &amp; Membros visíveis
+		Proprietários &amp; Membros visíveis ([COUNT])
 	</text>
 	<text name="text_owners_are_shown_in_bold">
 		(Proprietários são mostrados em negrito )

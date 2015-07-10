@@ -126,7 +126,7 @@ BOOL LLFeatureList::isFeatureAvailable(const std::string& name)
 
 BOOL LLFeatureList::maskList(LLFeatureList &mask)
 {
-	//llinfos << "Masking with " << mask.mName << llendl;
+	//LL_INFOS() << "Masking with " << mask.mName << LL_ENDL;
 	//
 	// Lookup the specified feature mask, and overlay it on top of the
 	// current feature mask.
@@ -234,7 +234,7 @@ BOOL LLFeatureManager::loadFeatureTables()
 
 BOOL LLFeatureManager::parseFeatureTable(std::string filename)
 {
-	llinfos << "Looking for feature table in " << filename << llendl;
+	LL_INFOS() << "Looking for feature table in " << filename << LL_ENDL;
 
 	llifstream file;
 	std::string name;
@@ -448,7 +448,7 @@ void LLFeatureManager::applyRecommendedSettings()
 	// cap the level at 2 (high)
 	S32 level = llmax(GPU_CLASS_0, llmin(mGPUClass, GPU_CLASS_2));
 
-	llinfos << "Applying Recommended Features" << llendl;
+	LL_INFOS() << "Applying Recommended Features" << LL_ENDL;
 
 	setGraphicsLevel(level, false);
 	gSavedSettings.setU32("RenderQualityPerformance", level);
@@ -495,7 +495,7 @@ void LLFeatureManager::applyFeatures(bool skipFeatures)
 		LLControlVariable* ctrl = gSavedSettings.getControl(mIt->first);
 		if(ctrl == NULL)
 		{
-			llwarns << "AHHH! Control setting " << mIt->first << " does not exist!" << llendl;
+			LL_WARNS() << "AHHH! Control setting " << mIt->first << " does not exist!" << LL_ENDL;
 			continue;
 		}
 
@@ -525,7 +525,7 @@ void LLFeatureManager::applyFeatures(bool skipFeatures)
 		}
 		else
 		{
-			llwarns << "AHHH! Control variable is not a numeric type!" << llendl;
+			LL_WARNS() << "AHHH! Control variable is not a numeric type!" << LL_ENDL;
 		}
 	}
 }
@@ -559,7 +559,6 @@ void LLFeatureManager::setGraphicsLevel(S32 level, bool skipFeatures)
 
 	LLViewerShaderMgr::sSkipReload = false;
 	LLViewerShaderMgr::instance()->setShaders();
-	gPipeline.refreshCachedSettings();
 }
 
 void LLFeatureManager::applyBaseMasks()
@@ -673,7 +672,7 @@ void LLFeatureManager::applyBaseMasks()
 		}
 	}
 
-	//llinfos << "Masking features from gpu table match: " << gpustr << llendl;
+	//LL_INFOS() << "Masking features from gpu table match: " << gpustr << LL_ENDL;
 	maskFeatures(gpustr);
 
 	// now mask cpu type ones

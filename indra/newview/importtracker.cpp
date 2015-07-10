@@ -46,7 +46,7 @@ extern LLAgent gAgent;
 	asset_dir = filepath.substr(0,filepath.find_last_of(".")) + "_assets";
 
 	linksetgroups=file_data;
-	//llinfos << "LOADED LINKSETS, PREPARING.." << llendl;
+	//LL_INFOS() << "LOADED LINKSETS, PREPARING.." << LL_ENDL;
 	groupcounter=0;
 	LLSD ls_llsd;
 	ls_llsd=linksetgroups[groupcounter]["Object"];
@@ -68,7 +68,7 @@ void ImportTracker::import(LLSD& ls_data)
 	rootrot.mQ[VZ] = (F32)(rot[2].asReal());
 	rootrot.mQ[VW] = (F32)(rot[3].asReal());
 	state = BUILDING;
-	//llinfos << "IMPORTED, BUILDING.." << llendl;
+	//LL_INFOS() << "IMPORTED, BUILDING.." << LL_ENDL;
 	plywood_above_head();
 }*/
 
@@ -76,7 +76,7 @@ void ImportTracker::expectRez()
 {
 	numberExpected++;
 	state = WAND;
-	//llinfos << "EXPECTING CUBE..." << llendl;
+	//LL_INFOS() << "EXPECTING CUBE..." << LL_ENDL;
 }
 
 /*void ImportTracker::clear()
@@ -270,7 +270,7 @@ void ImportTracker::get_update(S32 newid, BOOL justCreated, BOOL createSelected)
 					msg->addU32Fast(_PREHASH_Mask, PERM_TRANSFER);
 					msg->sendReliable(gAgent.getRegion()->getHost());
 				}
-				//llinfos << "LGG SENDING CUBE TEXTURE.." << llendl;
+				//LL_INFOS() << "LGG SENDING CUBE TEXTURE.." << LL_ENDL;
 			}
 		break;
 /*		case BUILDING:
@@ -307,7 +307,7 @@ void ImportTracker::get_update(S32 newid, BOOL justCreated, BOOL createSelected)
 					if (updated >= linkset.size())
 					{
 						updated=0;
-						llinfos << "FINISHED BUILDING, LINKING.." << llendl;
+						LL_INFOS() << "FINISHED BUILDING, LINKING.." << LL_ENDL;
 						state = LINKING;
 						link();
 					}
@@ -1045,11 +1045,11 @@ void ImportTracker::link()
 		msg->sendReliable(gAgent.getRegion()->getHost());
 	}
 
-	llinfos << "FINISHED IMPORT" << llendl;
+	LL_INFOS() << "FINISHED IMPORT" << LL_ENDL;
 	
 	if (linkset[0].has("Attachment"))
 	{
-		llinfos << "OBJECT IS ATTACHMENT, WAITING FOR POSITION PACKETS.." << llendl;
+		LL_INFOS() << "OBJECT IS ATTACHMENT, WAITING FOR POSITION PACKETS.." << LL_ENDL;
 		state = POSITIONING;
 		wear(linkset[0]);
 	}
@@ -1102,7 +1102,7 @@ void ImportTracker::wear(LLSD &prim)
 	msg2->addBinaryDataFast(_PREHASH_Data, data, 12);
 	
 	msg2->sendReliable(gAgent.getRegion()->getHost());
-	llinfos << "POSITIONED, IMPORT COMPLETED" << llendl;
+	LL_INFOS() << "POSITIONED, IMPORT COMPLETED" << LL_ENDL;
 	cleanUp();
 }
 

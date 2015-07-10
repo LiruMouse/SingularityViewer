@@ -141,7 +141,7 @@ void LLFloaterEnvSettings::syncMenu()
 		childEnable("EnvUseEstateTimeButton");
 	}
 
-	if(!gPipeline.canUseVertexShaders())
+	if (!LLGLSLShader::sNoFixedFunction)
 	{
 		childDisable("EnvWaterColor");
 		childDisable("EnvWaterColorText");

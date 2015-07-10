@@ -110,13 +110,13 @@ static LLVector4	gJointPivot[32];
 //-----------------------------------------------------------------------------
 void LLViewerJointMesh::uploadJointMatrices()
 {
-	S32 joint_num;
+	U32 joint_num;
 	LLPolyMesh *reference_mesh = mMesh->getReferenceMesh();
 	LLDrawPool *poolp = mFace ? mFace->getPool() : NULL;
 	BOOL hardware_skinning = (poolp && poolp->getVertexShaderLevel() > 0) ? TRUE : FALSE;
 
 	//calculate joint matrices
-	for (joint_num = 0; joint_num < reference_mesh->mJointRenderData.count(); joint_num++)
+	for (joint_num = 0; joint_num < reference_mesh->mJointRenderData.size(); joint_num++)
 	{
 		LLMatrix4a joint_mat = *reference_mesh->mJointRenderData[joint_num]->mWorldMatrix;
 
@@ -133,7 +133,7 @@ void LLViewerJointMesh::uploadJointMatrices()
 	S32 j = 0;
 
 	//upload joint pivots
-	for (joint_num = 0; joint_num < reference_mesh->mJointRenderData.count(); joint_num++)
+	for (joint_num = 0; joint_num < reference_mesh->mJointRenderData.size(); joint_num++)
 	{
 		LLSkinJoint *sj = reference_mesh->mJointRenderData[joint_num]->mSkinJoint;
 		if (sj)
@@ -173,7 +173,7 @@ void LLViewerJointMesh::uploadJointMatrices()
 		GLfloat mat[45*4];
 		memset(mat, 0, sizeof(GLfloat)*45*4);
 
-		for (joint_num = 0; joint_num < reference_mesh->mJointRenderData.count(); joint_num++)
+		for (joint_num = 0; joint_num < reference_mesh->mJointRenderData.size(); joint_num++)
 		{
 			gJointMatUnaligned[joint_num].transpose();
 
@@ -194,7 +194,7 @@ void LLViewerJointMesh::uploadJointMatrices()
 	else
 	{
 		//load gJointMatUnaligned into gJointMatAligned
-		for (joint_num = 0; joint_num < reference_mesh->mJointRenderData.count(); ++joint_num)
+		for (joint_num = 0; joint_num < reference_mesh->mJointRenderData.size(); ++joint_num)
 		{
 			gJointMatAligned[joint_num].loadu(gJointMatUnaligned[joint_num]);
 		}
@@ -284,7 +284,7 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 			static const LLCachedControl<bool> render_unloaded_avatar("RenderUnloadedAvatar", false);
 			if (!render_unloaded_avatar)
 			{
-				llwarns << "Layerset without composite" << llendl;
+				LL_WARNS() << "Layerset without composite" << LL_ENDL;
 			}
 			gGL.getTexUnit(diffuse_channel)->bind(LLViewerTextureManager::getFetchedTexture(IMG_DEFAULT));
 		}
@@ -559,7 +559,7 @@ void LLViewerJointMesh::dump()
 {
 	if (mValid)
 	{
-		llinfos << "Usable LOD " << mName << llendl;
+		LL_INFOS() << "Usable LOD " << mName << LL_ENDL;
 	}
 }
 

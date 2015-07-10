@@ -38,7 +38,7 @@ namespace
 {
 	void test_that_error_h_includes_enough_things_to_compile_a_message()
 	{
-		llinfos << "!" << llendl;
+		LL_INFOS() << "!" << LL_ENDL;
 	}
 }
 
@@ -144,8 +144,8 @@ namespace tut
 	void ErrorTestObject::test<1>()
 		// basic test of output
 	{
-		llinfos << "test" << llendl;
-		llinfos << "bob" << llendl;
+		LL_INFOS() << "test" << LL_ENDL;
+		LL_INFOS() << "bob" << LL_ENDL;
 		
 		ensure_message_contains(0, "test");
 		ensure_message_contains(1, "bob");
@@ -156,10 +156,10 @@ namespace
 {
 	void writeSome()
 	{
-		lldebugs << "one" << llendl;
-		llinfos << "two" << llendl;
-		llwarns << "three" << llendl;
-		llerrs << "four" << llendl;
+		LL_DEBUGS() << "one" << LL_ENDL;
+		LL_INFOS() << "two" << LL_ENDL;
+		LL_WARNS() << "three" << LL_ENDL;
+		LL_ERRS() << "four" << LL_ENDL;
 			// fatal messages write out and addtional "error" message
 	}
 };
@@ -259,19 +259,19 @@ namespace
 	
 	std::string writeReturningLocation()
 	{
-		llinfos << "apple" << llendl;	int this_line = __LINE__;
+		LL_INFOS() << "apple" << LL_ENDL;	int this_line = __LINE__;
 		return locationString(this_line);
 	}
 	
 	std::string writeReturningLocationAndFunction()
 	{
-		llinfos << "apple" << llendl;	int this_line = __LINE__;
+		LL_INFOS() << "apple" << LL_ENDL;	int this_line = __LINE__;
 		return locationString(this_line) + __FUNCTION__;
 	}
 	
 	std::string errorReturningLocation()
 	{
-		llerrs << "die" << llendl;	int this_line = __LINE__;
+		LL_ERRS() << "die" << LL_ENDL;	int this_line = __LINE__;
 		return locationString(this_line);
 	}
 }
@@ -306,13 +306,13 @@ namespace tut
  
 std::string logFromGlobal(bool id)
 {
-	llinfos << (id ? "logFromGlobal: " : "") << "hi" << llendl;
+	LL_INFOS() << (id ? "logFromGlobal: " : "") << "hi" << LL_ENDL;
 	return "logFromGlobal";
 }
 
 static std::string logFromStatic(bool id)
 {
-	llinfos << (id ? "logFromStatic: " : "") << "hi" << llendl;
+	LL_INFOS() << (id ? "logFromStatic: " : "") << "hi" << LL_ENDL;
 	return "logFromStatic";
 }
 
@@ -320,7 +320,7 @@ namespace
 {
 	std::string logFromAnon(bool id)
 	{
-		llinfos << (id ? "logFromAnon: " : "") << "hi" << llendl;
+		LL_INFOS() << (id ? "logFromAnon: " : "") << "hi" << LL_ENDL;
 		return "logFromAnon";
 	}
 }
@@ -328,7 +328,7 @@ namespace
 namespace Foo {
 	std::string logFromNamespace(bool id)
 	{
-		llinfos << (id ? "Foo::logFromNamespace: " : "") << "hi" << llendl;
+		LL_INFOS() << (id ? "Foo::logFromNamespace: " : "") << "hi" << LL_ENDL;
 		//return "Foo::logFromNamespace";
 			// there is no standard way to get the namespace name, hence
 			// we won't be testing for it
@@ -342,12 +342,12 @@ namespace
 	public:
 		std::string logFromMember(bool id)
 		{
-			llinfos << (id ? "ClassWithNoLogType::logFromMember: " : "") << "hi" << llendl;
+			LL_INFOS() << (id ? "ClassWithNoLogType::logFromMember: " : "") << "hi" << LL_ENDL;
 			return "ClassWithNoLogType::logFromMember";
 		}
 		static std::string logFromStatic(bool id)
 		{
-			llinfos << (id ? "ClassWithNoLogType::logFromStatic: " : "") << "hi" << llendl;
+			LL_INFOS() << (id ? "ClassWithNoLogType::logFromStatic: " : "") << "hi" << LL_ENDL;
 			return "ClassWithNoLogType::logFromStatic";
 		}
 	};
@@ -357,12 +357,12 @@ namespace
 	public:
 		std::string logFromMember(bool id)
 		{
-			llinfos << (id ? "ClassWithLogType::logFromMember: " : "") << "hi" << llendl;
+			LL_INFOS() << (id ? "ClassWithLogType::logFromMember: " : "") << "hi" << LL_ENDL;
 			return "ClassWithLogType::logFromMember";
 		}
 		static std::string logFromStatic(bool id)
 		{
-			llinfos << (id ? "ClassWithLogType::logFromStatic: " : "") << "hi" << llendl;
+			LL_INFOS() << (id ? "ClassWithLogType::logFromStatic: " : "") << "hi" << LL_ENDL;
 			return "ClassWithLogType::logFromStatic";
 		}
 	};
@@ -434,19 +434,19 @@ namespace
 {
 	std::string innerLogger()
 	{
-		llinfos << "inside" << llendl;
+		LL_INFOS() << "inside" << LL_ENDL;
 		return "moo";
 	}
 	
 	std::string outerLogger()
 	{
-		llinfos << "outside(" << innerLogger() << ")" << llendl;
+		LL_INFOS() << "outside(" << innerLogger() << ")" << LL_ENDL;
 		return "bar";
 	}
 	
 	void uberLogger()
 	{
-		llinfos << "uber(" << outerLogger() << "," << innerLogger() << ")" << llendl;
+		LL_INFOS() << "uber(" << outerLogger() << "," << innerLogger() << ")" << LL_ENDL;
 	}
 	
 	class LogWhileLogging
@@ -454,7 +454,7 @@ namespace
 	public:
 		void print(std::ostream& out) const
 		{
-			llinfos << "logging" << llendl;
+			LL_INFOS() << "logging" << LL_ENDL;
 			out << "baz";
 		}
 	};
@@ -465,7 +465,7 @@ namespace
 	void metaLogger()
 	{
 		LogWhileLogging l;
-		llinfos << "meta(" << l << ")" << llendl;
+		LL_INFOS() << "meta(" << l << ")" << LL_ENDL;
 	}
 	
 }
@@ -518,7 +518,7 @@ namespace
 	
 	void ufoSighting()
 	{
-		llinfos << "ufo" << llendl;
+		LL_INFOS() << "ufo" << LL_ENDL;
 	}
 }
 
@@ -562,7 +562,7 @@ namespace tut
 		TestRecorder altRecorder;
 		LLError::addRecorder(&altRecorder);
 		
-		llinfos << "boo" << llendl;
+		LL_INFOS() << "boo" << LL_ENDL;
 
 		ensure_message_contains(0, "boo");
 		ensure_equals("alt recorder count", altRecorder.countMessages(), 1);
@@ -574,7 +574,7 @@ namespace tut
 		anotherRecorder.setWantsTime(true);
 		LLError::addRecorder(&anotherRecorder);
 		
-		llinfos << "baz" << llendl;
+		LL_INFOS() << "baz" << LL_ENDL;
 
 		std::string when = roswell();
 		
@@ -590,10 +590,10 @@ class TestAlpha
 {
 	LOG_CLASS(TestAlpha);
 public:
-	static void doDebug()	{ lldebugs << "add dice" << llendl; }
-	static void doInfo()	{ llinfos  << "any idea" << llendl; }
-	static void doWarn()	{ llwarns  << "aim west" << llendl; }
-	static void doError()	{ llerrs   << "ate eels" << llendl; }
+	static void doDebug()	{ LL_DEBUGS() << "add dice" << LL_ENDL; }
+	static void doInfo()	{ llinfos  << "any idea" << LL_ENDL; }
+	static void doWarn()	{ llwarns  << "aim west" << LL_ENDL; }
+	static void doError()	{ llerrs   << "ate eels" << LL_ENDL; }
 	static void doAll() { doDebug(); doInfo(); doWarn(); doError(); }
 };
 
@@ -601,10 +601,10 @@ class TestBeta
 {
 	LOG_CLASS(TestBeta);
 public:
-	static void doDebug()	{ lldebugs << "bed down" << llendl; }
-	static void doInfo()	{ llinfos  << "buy iron" << llendl; }
-	static void doWarn()	{ llwarns  << "bad word" << llendl; }
-	static void doError()	{ llerrs   << "big easy" << llendl; }
+	static void doDebug()	{ LL_DEBUGS() << "bed down" << LL_ENDL; }
+	static void doInfo()	{ llinfos  << "buy iron" << LL_ENDL; }
+	static void doWarn()	{ llwarns  << "bad word" << LL_ENDL; }
+	static void doError()	{ llerrs   << "big easy" << LL_ENDL; }
 	static void doAll() { doDebug(); doInfo(); doWarn(); doError(); }
 };
 

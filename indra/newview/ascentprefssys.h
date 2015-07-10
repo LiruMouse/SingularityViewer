@@ -103,6 +103,7 @@ private:
 	bool mBroadcastViewerEffects;
 	bool mDisablePointAtAndBeam;
 	bool mPrivateLookAt;
+	bool mHideOwnLookAt;
 	bool mShowLookAt;
 	S32  mLookAtNames;
 	bool mLookAtLines;

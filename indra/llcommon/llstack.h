@@ -33,8 +33,6 @@
 #ifndef LL_LLSTACK_H
 #define LL_LLSTACK_H
 
-#include "linked_lists.h"
-
 template <class DATA_TYPE> class LLStack
 {
 private:

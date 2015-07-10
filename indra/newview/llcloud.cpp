@@ -161,17 +161,17 @@ void LLCloudGroup::updatePuffOwnership()
 			continue;
 		}
 
-		//llinfos << "Cloud moving to new group" << llendl;
+		//LL_INFOS() << "Cloud moving to new group" << LL_ENDL;
 		LLCloudGroup *new_cgp = LLWorld::getInstance()->findCloudGroup(mCloudPuffs[i]);
 		if (!new_cgp)
 		{
-			//llinfos << "Killing puff not in group" << llendl;
+			//LL_INFOS() << "Killing puff not in group" << LL_ENDL;
 			mCloudPuffs[i].setLifeState(LL_PUFF_DYING);
 			mCloudPuffs[i].mRate = CLOUD_DECAY_RATE*CLOUD_UPDATE_RATE;
 			i++;
 			continue;
 		}
-		//llinfos << "Puff handed off!" << llendl;
+		//LL_INFOS() << "Puff handed off!" << LL_ENDL;
 		LLCloudPuff puff;
 		puff.mPositionGlobal = mCloudPuffs[i].mPositionGlobal;
 		puff.mAlpha = mCloudPuffs[i].mAlpha;
@@ -179,7 +179,7 @@ void LLCloudGroup::updatePuffOwnership()
 		new_cgp->mCloudPuffs.push_back(puff);
 	}
 
-	//llinfos << "Puff count: " << LLCloudPuff::sPuffCount << llendl;
+	//LL_INFOS() << "Puff count: " << LLCloudPuff::sPuffCount << LL_ENDL;
 }
 
 void LLCloudGroup::updatePuffCount()
@@ -229,7 +229,7 @@ void LLCloudGroup::updatePuffCount()
 	{
 		if (mCloudPuffs[i].getLifeState() != LL_PUFF_DYING)
 		{
-			//llinfos << "Killing extra live cloud" << llendl;
+			//LL_INFOS() << "Killing extra live cloud" << LL_ENDL;
 			mCloudPuffs[i].setLifeState(LL_PUFF_DYING);
 			mCloudPuffs[i].mRate = CLOUD_DECAY_RATE*CLOUD_UPDATE_RATE;
 			new_dying_count--;
@@ -243,7 +243,7 @@ void LLCloudGroup::updatePuffCount()
 	{
 		if (mCloudPuffs[i].isDead())
 		{
-			//llinfos << "Removing dead puff!" << llendl;
+			//LL_INFOS() << "Removing dead puff!" << LL_ENDL;
 			mCloudPuffs.erase(mCloudPuffs.begin() + i);
 			LLCloudPuff::sPuffCount--;
 		}

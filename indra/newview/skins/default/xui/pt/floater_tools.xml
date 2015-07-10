@@ -25,7 +25,7 @@
 	<check_box label="Posição" name="radio position"/>
 	<check_box label="Rotacionar (Ctrl)" name="radio rotate"/>
 	<check_box label="Esticar (Ctrl-Shift)" name="radio stretch"/>
-	<check_box label="Selecionar Textura" name="radio select face"/>
+	<check_box label="Selecionar face" name="radio select face"/>
 	<check_box label="Editar partes unidas" name="checkbox edit linked parts"/>
 	<text name="text ruler mode">
 		Régua:

@@ -210,7 +210,7 @@ BOOL wlfPanel_AdvSettings::postBuild()
 		}
 		else
 		{
-			llwarns << "Control not found for AvatarHoverOffsetZ" << LL_ENDL;
+			LL_WARNS() << "Control not found for AvatarHoverOffsetZ" << LL_ENDL;
 		}
 
 		updateEditHoverEnabled();

@@ -91,7 +91,8 @@
       <check_box bottom_delta="-25" control_name="BroadcastViewerEffects" follows="top" initial_value="true" label="Broadcast Viewer Effects (does not affect pointat and lookat)" left="10" name="broadcast_viewer_effects" width="400"/>
       <check_box bottom_delta="-20" control_name="DisablePointAtAndBeam" follows="top" initial_value="true" label="Disable Point At And Beam" tool_tip="Don't point at or show your edit beam when selecting an object." name="disable_point_at_and_beams_check"/>
       <check_box bottom_delta="-20" control_name="PrivateLookAt" follows="top" initial_value="false" label="Do not Look At objects and/or avatars" tool_tip="Disables headturns and lookat beacons, causing your avatar to look straight ahead (unless scripted to do otherwise)." name="private_look_at_check"/>
-      <check_box bottom_delta="-20" control_name="AscentShowLookAt" follows="top" initial_value="false" label="Show others' LookAt beacons" tool_tip="Shows you where others are looking." name="show_look_at_check"/>
+      <check_box bottom_delta="-20" control_name="AlchemyLookAtHideSelf" follows="top" initial_value="false" label="Don't show me my LookAt beacon" tool_tip="Don't show me my own camera crosshairs" name="LookAtHideOwn"/>
+      <check_box bottom_delta="-20" control_name="AscentShowLookAt" follows="top" initial_value="false" label="Show LookAt beacons" tool_tip="Shows you where people are looking." name="show_look_at_check"/>
       <combo_box bottom_delta="-1" left_delta="200" follows="top" height="18" control_name="LookAtNameSystem" name="lookat_namesystem_combobox" width="130" tool_tip="Style for displaying names on LookAt beacons">
         <combo_item name="No Names" value="-1">No Names</combo_item>
         <combo_item name="Old Names" value="0">Old Names</combo_item>

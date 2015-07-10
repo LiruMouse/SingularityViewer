@@ -464,37 +464,37 @@
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>1af152ce79422c791ccc6e04571b41d7</string>
+            <string>ec1d51c8a39e7a25f564c0e74bad6076</string>
             <key>url</key>
-            <uri>https://bitbucket.org/alchemyviewer/publiclibs-darwin/downloads/fmodstudio-1.05.11-darwin-201501281806.tar.bz2</uri>
+            <uri>https://bitbucket.org/alchemyviewer/publiclibs-darwin/downloads/fmodstudio-1.06.01-darwin-201504232122.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>5da725258b66d8f73fdb2ea574851486</string>
+            <string>d6235197e067183810409b295e88abf2</string>
             <key>url</key>
-            <uri>http://depot.alchemyviewer.org/pub/linux/lib/fmodstudio-1.05.11-linux-201501282022.tar.bz2</uri>
+            <uri>https://bitbucket.org/SingularityViewer/libraries/downloads/fmodstudio-1.06.01-linux-201505151557.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>58912a8d907a784a6bba435deac08c73</string>
+            <string>1a44dd9ff977d82141ab47e6e67983b3</string>
             <key>url</key>
-            <uri>http://depot.alchemyviewer.org/pub/linux64/lib/fmodstudio-1.05.11-linux64-201501282019.tar.bz2</uri>
+            <uri>http://depot.alchemyviewer.org/pub/linux64/lib/fmodstudio-1.06.01-linux64-201504222232.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>526d82fc9f91e6c974a0b50a4b89c7a6</string>
+            <string>b691d56fe977e04492213ca952181de2</string>
             <key>url</key>
-            <uri>http://depot.alchemyviewer.org/pub/windows/lib/fmodstudio-1.05.11-windows-201501282003.tar.bz2</uri>
+            <uri>http://depot.alchemyviewer.org/pub/windows/lib/fmodstudio-1.06.01-windows-201504262121.tar.bz2</uri>
           </map>
           <key>windows64</key>
           <map>
             <key>md5sum</key>
-            <string>70d3bb37400298694776d797ec16a1c1</string>
+            <string>8af3683654e72bb059383a105803e9fc</string>
             <key>url</key>
-            <uri>http://depot.alchemyviewer.org/pub/windows64/lib/fmodstudio-1.05.11-windows64-201501282002.tar.bz2</uri>
+            <uri>http://depot.alchemyviewer.org/pub/windows64/lib/fmodstudio-1.06.01-windows64-201504262127.tar.bz2</uri>
           </map>
 		</map>
       </map>

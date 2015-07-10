@@ -62,6 +62,7 @@ public:
 	const std::string& getRealCurrencySymbol() const { return mRealCurrencySymbol; }
 	std::string getUploadFee()                 const;
 	std::string getGroupCreationFee()          const;
+	const int& getClassifiedFee()              const { return mClassifiedFee; }
 	std::string getDirectoryFee()              const;
 
 	void setPlatform (const std::string& platform);
@@ -87,7 +88,8 @@ public:
 	void setCurrencySymbol(const std::string& sym);
 	void setCurrencyText(const std::string& text);
 	void setRealCurrencySymbol(const std::string& sym);
-	void setDirectoryFee(int fee);
+	void setClassifiedFee(int fee) { mClassifiedFee = fee; }
+	void setDirectoryFee(int fee) { mDirectoryFee = fee; }
 	bool supportsInvLinks();
 	void setSupportsInvLinks(bool b);
 	bool getAutoUpdate();
@@ -126,6 +128,7 @@ private:
 	std::string mCurrencySymbol;
 	std::string mCurrencyText;
 	std::string mRealCurrencySymbol;
+	int mClassifiedFee;
 	int mDirectoryFee;
 	std::string mGridMessage;
 

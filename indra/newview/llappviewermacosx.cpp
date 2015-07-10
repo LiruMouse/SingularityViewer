@@ -76,9 +76,9 @@ int main( int argc, char **argv )
 	// Set the working dir to <bundle>/Contents/Resources
 	if (chdir(gDirUtilp->getAppRODataDir().c_str()) == -1)
 	{
-		llwarns << "Could not change directory to "
+		LL_WARNS() << "Could not change directory to "
 				<< gDirUtilp->getAppRODataDir() << ": " << strerror(errno)
-				<< llendl;
+				<< LL_ENDL;
 	}
 
 	LLAppViewerMacOSX* viewer_app_ptr = new LLAppViewerMacOSX();
@@ -92,7 +92,7 @@ int main( int argc, char **argv )
 	bool ok = viewer_app_ptr->init();
 	if(!ok)
 	{
-		llwarns << "Application init failed." << llendl;
+		LL_WARNS() << "Application init failed." << LL_ENDL;
 		return -1;
 	}
 
@@ -167,7 +167,7 @@ bool LLAppViewerMacOSX::initParseCommandLine(LLCommandLineParser& clp)
 	llifstream ifs(filename, llifstream::binary);
 	if (!ifs.is_open())
 	{
-		llwarns << "Unable to open file" << filename << llendl;
+		LL_WARNS() << "Unable to open file" << filename << LL_ENDL;
 		return false;
 	}
 	
@@ -394,13 +394,13 @@ void init_apple_menu(const char* product)
 	if(AEInstallEventHandler('GURL', 'GURL', NewAEEventHandlerUPP(AEGURLHandler),0, false) != noErr)
 	{
 		// Couldn't install AppleEvent handler.  This error shouldn't be fatal.
-		llinfos << "Couldn't install 'GURL' AppleEvent handler.  Continuing..." << llendl;
+		LL_INFOS() << "Couldn't install 'GURL' AppleEvent handler.  Continuing..." << LL_ENDL;
 	}
 
 	// Install a handler for 'quit' AppleEvents.  This makes quitting the application from the dock work.
 	if(AEInstallEventHandler(kCoreEventClass, kAEQuitApplication, NewAEEventHandlerUPP(AEQuitHandler),0, false) != noErr)
 	{
 		// Couldn't install AppleEvent handler.  This error shouldn't be fatal.
-		llinfos << "Couldn't install Quit AppleEvent handler.  Continuing..." << llendl;
+		LL_INFOS() << "Couldn't install Quit AppleEvent handler.  Continuing..." << LL_ENDL;
 	}
 }

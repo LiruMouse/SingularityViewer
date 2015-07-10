@@ -178,7 +178,7 @@ BOOL LLInventoryView::postBuild()
 	// Now load the stored settings from disk, if available.
 	std::ostringstream filterSaveName;
 	filterSaveName << gDirUtilp->getExpandedFilename(LL_PATH_PER_SL_ACCOUNT, FILTERS_FILENAME);
-	llinfos << "LLInventoryView::init: reading from " << filterSaveName.str() << llendl;
+	LL_INFOS() << "LLInventoryView::init: reading from " << filterSaveName.str() << LL_ENDL;
 	llifstream file(filterSaveName.str());
 	LLSD savedFilterState;
 	if (file.is_open())
@@ -270,7 +270,7 @@ LLInventoryView::~LLInventoryView( void )
 	llofstream filtersFile(filterSaveName.str());
 	if(!LLSDSerialize::toPrettyXML(filterRoot, filtersFile))
 	{
-		llwarns << "Could not write to filters save file " << filterSaveName.str().c_str() << llendl;
+		LL_WARNS() << "Could not write to filters save file " << filterSaveName.str().c_str() << LL_ENDL;
 	}
 	else
 		filtersFile.close();
@@ -641,7 +641,7 @@ void LLInventoryView::onQuickFilterCommit(LLUICtrl* ctrl, void* user_data)
 		U32 filter_type = LLFilterDictionary::instance().lookup(item_type);
 		if(!filter_type)
 		{
-			llwarns << "Ignoring unknown filter: " << item_type << llendl;
+			LL_WARNS() << "Ignoring unknown filter: " << item_type << LL_ENDL;
 			return;
 		}
 		else
@@ -690,7 +690,7 @@ void LLInventoryView::refreshQuickFilter(LLUICtrl* ctrl)
  
 	filter_type &= filter_mask;
 
-  //llinfos << "filter_type: " << filter_type << llendl;
+  //LL_INFOS() << "filter_type: " << filter_type << LL_ENDL;
 	std::string selection;
 
 	if (filter_type == filter_mask)
@@ -711,7 +711,7 @@ void LLInventoryView::refreshQuickFilter(LLUICtrl* ctrl)
 
 	if( !result )
 	{
-		llinfos << "The item didn't exist: " << selection << llendl;
+		LL_INFOS() << "The item didn't exist: " << selection << LL_ENDL;
 	}
 }
 

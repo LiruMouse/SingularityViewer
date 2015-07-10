@@ -224,14 +224,14 @@ LLSavedLogins LLSavedLogins::loadFile(const std::string& filepath)
 
 	if (file.is_open())
 	{
-		llinfos << "Loading login history file at " << filepath << llendl;
+		LL_INFOS() << "Loading login history file at " << filepath << LL_ENDL;
 		LLSDSerialize::fromXML(data, file);
 	}
 
 	if (data.isUndefined())
 	{
-		llinfos << "Login History File \"" << filepath << "\" is missing, "
-		    "ill-formed, or simply undefined; not loading the file." << llendl;
+		LL_INFOS() << "Login History File \"" << filepath << "\" is missing, "
+		    "ill-formed, or simply undefined; not loading the file." << LL_ENDL;
 	}
 	else
 	{
@@ -241,8 +241,8 @@ LLSavedLogins LLSavedLogins::loadFile(const std::string& filepath)
 		}
 		catch(std::invalid_argument& error)
 		{
-			llwarns << "Login History File \"" << filepath << "\" is ill-formed (" <<
-			        error.what() << "); not loading the file." << llendl;
+			LL_WARNS() << "Login History File \"" << filepath << "\" is ill-formed (" <<
+			        error.what() << "); not loading the file." << LL_ENDL;
 		}
 	}
 
@@ -254,7 +254,7 @@ bool LLSavedLogins::saveFile(const LLSavedLogins& history, const std::string& fi
 	llofstream out(filepath);
 	if (!out.good())
 	{
-		llwarns << "Unable to open \"" << filepath << "\" for output." << llendl;
+		LL_WARNS() << "Unable to open \"" << filepath << "\" for output." << LL_ENDL;
 		return false;
 	}
 

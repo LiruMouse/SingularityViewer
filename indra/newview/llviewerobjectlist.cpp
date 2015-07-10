@@ -196,7 +196,7 @@ BOOL LLViewerObjectList::removeFromLocalIDTable(const LLViewerObject* objectp)
 		U64 ipport = (((U64)ip) << 32) | (U64)port;
 		U32 index = sIPAndPortToIndex[ipport];
 		
-		// llinfos << "Removing object from table, local ID " << local_id << ", ip " << ip << ":" << port << llendl;
+		// LL_INFOS() << "Removing object from table, local ID " << local_id << ", ip " << ip << ":" << port << LL_ENDL;
 		
 		U64	indexid = (((U64)index) << 32) | (U64)local_id;
 		
@@ -213,8 +213,8 @@ BOOL LLViewerObjectList::removeFromLocalIDTable(const LLViewerObject* objectp)
 			return TRUE;
 		}
 		// UUIDs did not match - this would zap a valid entry, so don't erase it
-		//llinfos << "Tried to erase entry where id in table (" 
-		//		<< iter->second	<< ") did not match object " << object.getID() << llendl;
+		//LL_INFOS() << "Tried to erase entry where id in table (" 
+		//		<< iter->second	<< ") did not match object " << object.getID() << LL_ENDL;
 	}
 	
 	return FALSE ;
@@ -239,8 +239,8 @@ void LLViewerObjectList::setUUIDAndLocal(const LLUUID &id,
 
 	sIndexAndLocalIDToUUID[indexid] = id;
 	
-	//llinfos << "Adding object to table, full ID " << id
-	//	<< ", local ID " << local_id << ", ip " << ip << ":" << port << llendl;
+	//LL_INFOS() << "Adding object to table, full ID " << id
+	//	<< ", local ID " << local_id << ", ip " << ip << ":" << port << LL_ENDL;
 }
 
 S32 gFullObjectUpdates = 0;
@@ -300,8 +300,8 @@ void LLViewerObjectList::processUpdateCore(LLViewerObject* objectp,
 	{
 		if ( LLToolMgr::getInstance()->getCurrentTool() != LLToolPie::getInstance() )
 		{
-			// llinfos << "DEBUG selecting " << objectp->mID << " " 
-			// << objectp->mLocalID << llendl;
+			// LL_INFOS() << "DEBUG selecting " << objectp->mID << " " 
+			// << objectp->mLocalID << LL_ENDL;
 			LLSelectMgr::getInstance()->selectObjectAndFamily(objectp);
 			dialog_refresh_all();
 		}
@@ -339,7 +339,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 	// I don't think this case is ever hit.  TODO* Test this.
 	if (!cached && !compressed && update_type != OUT_FULL)
 	{
-		//llinfos << "TEST: !cached && !compressed && update_type != OUT_FULL" << llendl;
+		//LL_INFOS() << "TEST: !cached && !compressed && update_type != OUT_FULL" << LL_ENDL;
 		gTerseObjectUpdates += num_objects;
 		/*
 		S32 size;
@@ -351,7 +351,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 		{
 			size = mesgsys->getReceiveSize();
 		}
-		llinfos << "Received terse " << num_objects << " in " << size << " byte (" << size/num_objects << ")" << llendl;
+		LL_INFOS() << "Received terse " << num_objects << " in " << size << " byte (" << size/num_objects << ")" << LL_ENDL;
 		*/
 	}
 	else
@@ -367,7 +367,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			size = mesgsys->getReceiveSize();
 		}
 
-		llinfos << "Received " << num_objects << " in " << size << " byte (" << size/num_objects << ")" << llendl;
+		LL_INFOS() << "Received " << num_objects << " in " << size << " byte (" << size/num_objects << ")" << LL_ENDL;
 		*/
 		gFullObjectUpdates += num_objects;
 	}
@@ -378,7 +378,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 
 	if (!regionp)
 	{
-		llwarns << "Object update from unknown region! " << region_handle << llendl;
+		LL_WARNS() << "Object update from unknown region! " << region_handle << LL_ENDL;
 		return;
 	}
 
@@ -451,7 +451,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 								 gMessageSystem->getSenderPort());
 				if (fullid.isNull())
 				{
-					// llwarns << "update for unknown localid " << local_id << " host " << gMessageSystem->getSender() << ":" << gMessageSystem->getSenderPort() << llendl;
+					// LL_WARNS() << "update for unknown localid " << local_id << " host " << gMessageSystem->getSender() << ":" << gMessageSystem->getSenderPort() << LL_ENDL;
 					mNumUnknownUpdates++;
 				}
 			}
@@ -467,7 +467,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 							gMessageSystem->getSenderPort());
 			if (fullid.isNull())
 			{
-				// llwarns << "update for unknown localid " << local_id << " host " << gMessageSystem->getSender() << llendl;
+				// LL_WARNS() << "update for unknown localid " << local_id << " host " << gMessageSystem->getSender() << LL_ENDL;
 				mNumUnknownUpdates++;
 			}
 		}
@@ -477,7 +477,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			mesgsys->getU32Fast(_PREHASH_ObjectData, _PREHASH_ID, local_id, i);
 			msg_size += sizeof(LLUUID);
 			msg_size += sizeof(U32);
-			// llinfos << "Full Update, obj " << local_id << ", global ID" << fullid << "from " << mesgsys->getSender() << llendl;
+			// LL_INFOS() << "Full Update, obj " << local_id << ", global ID" << fullid << "from " << mesgsys->getSender() << LL_ENDL;
 		}
 		objectp = findObject(fullid);
 
@@ -490,13 +490,13 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 		{
 			//if (objectp->getRegion())
 			//{
-			//	llinfos << "Local ID change: Removing object from table, local ID " << objectp->mLocalID 
+			//	LL_INFOS() << "Local ID change: Removing object from table, local ID " << objectp->mLocalID 
 			//			<< ", id from message " << local_id << ", from " 
 			//			<< LLHost(objectp->getRegion()->getHost().getAddress(), objectp->getRegion()->getHost().getPort())
 			//			<< ", full id " << fullid 
 			//			<< ", objects id " << objectp->getID()
 			//			<< ", regionp " << (U32) regionp << ", object region " << (U32) objectp->getRegion()
-			//			<< llendl;
+			//			<< LL_ENDL;
 			//}
 			removeFromLocalIDTable(objectp);
 			setUUIDAndLocal(fullid,
@@ -521,7 +521,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			{
 				if (update_type == OUT_TERSE_IMPROVED)
 				{
-					// llinfos << "terse update for an unknown object (compressed):" << fullid << llendl;
+					// LL_INFOS() << "terse update for an unknown object (compressed):" << fullid << LL_ENDL;
 					recorder.objectUpdateFailure(local_id, update_type, msg_size);
 					continue;
 				}
@@ -533,7 +533,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			{
 				if (update_type != OUT_FULL)
 				{
-					//llinfos << "terse update for an unknown object:" << fullid << llendl;
+					//LL_INFOS() << "terse update for an unknown object:" << fullid << LL_ENDL;
 					recorder.objectUpdateFailure(local_id, update_type, msg_size);
 					continue;
 				}
@@ -546,7 +546,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			if (mDeadObjects.find(fullid) != mDeadObjects.end())
 			{
 				mNumDeadObjectUpdates++;
-				//llinfos << "update for a dead object:" << fullid << llendl;
+				//LL_INFOS() << "update for a dead object:" << fullid << LL_ENDL;
 				recorder.objectUpdateFailure(local_id, update_type, msg_size);
 				continue;
 			}
@@ -556,7 +556,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			if(std::find(LLFloaterBlacklist::blacklist_objects.begin(),
 				LLFloaterBlacklist::blacklist_objects.end(),fullid) != LLFloaterBlacklist::blacklist_objects.end())
 			{
-				llinfos << "Blacklisted object asset " << fullid.asString() << " blocked." << llendl; 
+				LL_INFOS() << "Blacklisted object asset " << fullid.asString() << " blocked." << LL_ENDL; 
 				continue;
 			}
 
@@ -564,7 +564,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			objectp = createObject(pcode, regionp, fullid, local_id, gMessageSystem->getSender());
 			if (!objectp)
 			{
-				llinfos << "createObject failure for object: " << fullid << llendl;
+				LL_INFOS() << "createObject failure for object: " << fullid << LL_ENDL;
 				recorder.objectUpdateFailure(local_id, update_type, msg_size);
 				continue;
 			}
@@ -577,7 +577,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 
 		if (objectp->isDead())
 		{
-			llwarns << "Dead object " << objectp->mID << " in UUID map 1!" << llendl;
+			LL_WARNS() << "Dead object " << objectp->mID << " in UUID map 1!" << LL_ENDL;
 		}
 
 		bool bCached = false;
@@ -740,10 +740,10 @@ public:
 
 	/*virtual*/ void httpFailure(void)
 	{
-		llwarns
+		LL_WARNS()
 			<< "Transport error requesting object cost "
 			<< "HTTP status: " << mStatus << ", reason: "
-			<< mReason << "." << llendl;
+			<< mReason << "." << LL_ENDL;
 
 		// TODO*: Error message to user
 		// For now just clear the request from the pending list
@@ -756,11 +756,11 @@ public:
 		{
 			// Improper response or the request had an error,
 			// show an error to the user?
-			llwarns
+			LL_WARNS()
 				<< "Application level error when fetching object "
 				<< "cost. Message: " << mContent["error"]["message"].asString()
 				<< ", identifier: " << mContent["error"]["identifier"].asString()
-				<< llendl;
+				<< LL_ENDL;
 
 			// TODO*: Adaptively adjust request size if the
 			// service says we've requested too many and retry
@@ -831,10 +831,10 @@ public:
 
 	/*virtual*/ void httpFailure(void)
 	{
-		llwarns
+		LL_WARNS()
 			<< "Transport error requesting object physics flags "
 			<< "HTTP status: " << mStatus << ", reason: "
-			<< mReason << "." << llendl;
+			<< mReason << "." << LL_ENDL;
 
 		// TODO*: Error message to user
 		// For now just clear the request from the pending list
@@ -847,11 +847,11 @@ public:
 		{
 			// Improper response or the request had an error,
 			// show an error to the user?
-			llwarns
+			LL_WARNS()
 				<< "Application level error when fetching object "
 				<< "physics flags.  Message: " << mContent["error"]["message"].asString()
 				<< ", identifier: " << mContent["error"]["identifier"].asString()
-				<< llendl;
+				<< LL_ENDL;
 
 			// TODO*: Adaptively adjust request size if the
 			// service says we've requested too many and retry
@@ -920,7 +920,7 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 		phase_out_time < 0.0 ||
 		phase_out_time > interp_time)
 	{
-		llwarns << "Invalid values for InterpolationTime or InterpolationPhaseOut, resetting to defaults" << llendl;
+		LL_WARNS() << "Invalid values for InterpolationTime or InterpolationPhaseOut, resetting to defaults" << LL_ENDL;
 		interp_time = 3.0f;
 		phase_out_time = 1.0f;
 	}
@@ -985,7 +985,7 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 			else
 			{	// There shouldn't be any NULL pointers in the list, but they have caused
 				// crashes before.  This may be idleUpdate() messing with the list.
-				llwarns << "LLViewerObjectList::update has a NULL objectp" << llendl;
+				LL_WARNS() << "LLViewerObjectList::update has a NULL objectp" << LL_ENDL;
 			}
 		}
 	}
@@ -1245,7 +1245,7 @@ void LLViewerObjectList::cleanupReferences(LLViewerObject *objectp)
 {
 	if (mDeadObjects.find(objectp->mID) != mDeadObjects.end())
 	{
-		llinfos << "Object " << objectp->mID << " already on dead list!" << llendl;	
+		LL_INFOS() << "Object " << objectp->mID << " already on dead list!" << LL_ENDL;	
 	}
 	else
 	{
@@ -1260,16 +1260,16 @@ void LLViewerObjectList::cleanupReferences(LLViewerObject *objectp)
 	
 	//if (objectp->getRegion())
 	//{
-	//	llinfos << "cleanupReferences removing object from table, local ID " << objectp->mLocalID << ", ip " 
+	//	LL_INFOS() << "cleanupReferences removing object from table, local ID " << objectp->mLocalID << ", ip " 
 	//				<< objectp->getRegion()->getHost().getAddress() << ":" 
-	//				<< objectp->getRegion()->getHost().getPort() << llendl;
+	//				<< objectp->getRegion()->getHost().getPort() << LL_ENDL;
 	//}	
 	
 	removeFromLocalIDTable(objectp);
 
 	if (objectp->onActiveList())
 	{
-		//llinfos << "Removing " << objectp->mID << " " << objectp->getPCodeString() << " from active list in cleanupReferences." << llendl;
+		//LL_INFOS() << "Removing " << objectp->mID << " " << objectp->getPCodeString() << " from active list in cleanupReferences." << LL_ENDL;
 		objectp->setOnActiveList(FALSE);
 		removeFromActiveList(objectp);
 	}
@@ -1360,7 +1360,7 @@ void LLViewerObjectList::killObjects(LLViewerRegion *regionp)
 
 	// Have to clean right away because the region is becoming invalid.
 	cleanDeadObjects(FALSE);
-	llinfos << "Removed " << count << " objects for region " << regionp->getName() << ". (" << kill_timer.getElapsedTimeF64()*1000.0 << "ms)" << llendl;
+	LL_INFOS() << "Removed " << count << " objects for region " << regionp->getName() << ". (" << kill_timer.getElapsedTimeF64()*1000.0 << "ms)" << LL_ENDL;
 }
 
 void LLViewerObjectList::killAllObjects()
@@ -1381,19 +1381,19 @@ void LLViewerObjectList::killAllObjects()
 
 	if(!mObjects.empty())
 	{
-		llwarns << "LLViewerObjectList::killAllObjects still has entries in mObjects: " << mObjects.size() << llendl;
+		LL_WARNS() << "LLViewerObjectList::killAllObjects still has entries in mObjects: " << mObjects.size() << LL_ENDL;
 		mObjects.clear();
 	}
 
 	if (!mActiveObjects.empty())
 	{
-		llwarns << "Some objects still on active object list!" << llendl;
+		LL_WARNS() << "Some objects still on active object list!" << LL_ENDL;
 		mActiveObjects.clear();
 	}
 
 	if (!mMapObjects.empty())
 	{
-		llwarns << "Some objects still on map object list!" << llendl;
+		LL_WARNS() << "Some objects still on map object list!" << LL_ENDL;
 		mMapObjects.clear();
 	}
 }
@@ -1489,7 +1489,7 @@ void LLViewerObjectList::updateActive(LLViewerObject *objectp)
 	{
 		if (active)
 		{
-			//llinfos << "Adding " << objectp->mID << " " << objectp->getPCodeString() << " to active list." << llendl;
+			//LL_INFOS() << "Adding " << objectp->mID << " " << objectp->getPCodeString() << " to active list." << LL_ENDL;
 			S32 idx = objectp->getListIndex();
 			if (idx <= -1)
 			{
@@ -1505,13 +1505,13 @@ void LLViewerObjectList::updateActive(LLViewerObject *objectp)
 				if (idx >= (S32)mActiveObjects.size() ||
 					mActiveObjects[idx] != objectp)
 				{
-					llwarns << "Invalid object list index detected!" << llendl;
+					LL_WARNS() << "Invalid object list index detected!" << LL_ENDL;
 				}
 			}
 		}
 		else
 		{
-			//llinfos << "Removing " << objectp->mID << " " << objectp->getPCodeString() << " from active list." << llendl;
+			//LL_INFOS() << "Removing " << objectp->mID << " " << objectp->getPCodeString() << " from active list." << LL_ENDL;
 			removeFromActiveList(objectp);
 			objectp->setOnActiveList(FALSE);
 		}
@@ -1546,7 +1546,7 @@ void LLViewerObjectList::updateObjectCost(const LLUUID& object_id, F32 object_co
 
 void LLViewerObjectList::onObjectCostFetchFailure(const LLUUID& object_id)
 {
-	//llwarns << "Failed to fetch object cost for object: " << object_id << llendl;
+	//LL_WARNS() << "Failed to fetch object cost for object: " << object_id << LL_ENDL;
 	mPendingObjectCost.erase(object_id);
 }
 
@@ -1585,7 +1585,7 @@ void LLViewerObjectList::updatePhysicsProperties(const LLUUID& object_id,
 
 void LLViewerObjectList::onPhysicsFlagsFetchFailure(const LLUUID& object_id)
 {
-	//llwarns << "Failed to fetch physics flags for object: " << object_id << llendl;
+	//LL_WARNS() << "Failed to fetch physics flags for object: " << object_id << LL_ENDL;
 	mPendingPhysicsFlags.erase(object_id);
 }
 
@@ -1688,7 +1688,7 @@ void LLViewerObjectList::clearAllMapObjectsInRegion(LLViewerRegion* regionp)
 
 	if(dead_object_list.size() > 0)
 	{
-		llwarns << "There are " << dead_object_list.size() << " dead objects on the map!" << llendl ;
+		LL_WARNS() << "There are " << dead_object_list.size() << " dead objects on the map!" << LL_ENDL ;
 
 		for(std::set<LLViewerObject*>::iterator iter = dead_object_list.begin(); iter != dead_object_list.end(); ++iter)
 		{
@@ -1697,7 +1697,7 @@ void LLViewerObjectList::clearAllMapObjectsInRegion(LLViewerRegion* regionp)
 	}
 	if(region_object_list.size() > 0)
 	{
-		llwarns << "There are " << region_object_list.size() << " objects not removed from the deleted region!" << llendl ;
+		LL_WARNS() << "There are " << region_object_list.size() << " objects not removed from the deleted region!" << LL_ENDL ;
 
 		for(std::set<LLViewerObject*>::iterator iter = region_object_list.begin(); iter != region_object_list.end(); ++iter)
 		{
@@ -1969,7 +1969,7 @@ LLViewerObject *LLViewerObjectList::createObjectViewer(const LLPCode pcode, LLVi
 	LLViewerObject *objectp = LLViewerObject::createObject(fullid, pcode, regionp);
 	if (!objectp)
 	{
-// 		llwarns << "Couldn't create object of type " << LLPrimitive::pCodeToString(pcode) << llendl;
+// 		LL_WARNS() << "Couldn't create object of type " << LLPrimitive::pCodeToString(pcode) << LL_ENDL;
 		return NULL;
 	}
 
@@ -2009,7 +2009,7 @@ LLViewerObject *LLViewerObjectList::createObject(const LLPCode pcode, LLViewerRe
 	LLViewerObject *objectp = LLViewerObject::createObject(fullid, pcode, regionp);
 	if (!objectp)
 	{
-// 		llwarns << "Couldn't create object of type " << LLPrimitive::pCodeToString(pcode) << " id:" << fullid << llendl;
+// 		LL_WARNS() << "Couldn't create object of type " << LLPrimitive::pCodeToString(pcode) << " id:" << fullid << LL_ENDL;
 		return NULL;
 	}
 
@@ -2065,7 +2065,7 @@ S32 LLViewerObjectList::findReferences(LLDrawable *drawablep) const
 void LLViewerObjectList::orphanize(LLViewerObject *childp, U32 parent_id, U32 ip, U32 port)
 {
 #ifdef ORPHAN_SPAM
-	llinfos << "Orphaning object " << childp->getID() << " with parent " << parent_id << llendl;
+	LL_INFOS() << "Orphaning object " << childp->getID() << " with parent " << parent_id << LL_ENDL;
 #endif
 
 	// We're an orphan, flag things appropriately.
@@ -2082,7 +2082,7 @@ void LLViewerObjectList::orphanize(LLViewerObject *childp, U32 parent_id, U32 ip
 				// object probably ISN'T being reparented, but just got an object
 				// update out of order (child update before parent).
 				make_invisible = false;
-				//llinfos << "Don't make object handoffs invisible!" << llendl;
+				//LL_INFOS() << "Don't make object handoffs invisible!" << LL_ENDL;
 			}
 		}
 
@@ -2119,8 +2119,8 @@ void LLViewerObjectList::findOrphans(LLViewerObject* objectp, U32 ip, U32 port)
 
 	if (objectp->isDead())
 	{
-		llwarns << "Trying to find orphans for dead obj " << objectp->mID 
-			<< ":" << objectp->getPCodeString() << llendl;
+		LL_WARNS() << "Trying to find orphans for dead obj " << objectp->mID 
+			<< ":" << objectp->getPCodeString() << LL_ENDL;
 		return;
 	}
 
@@ -2154,16 +2154,16 @@ void LLViewerObjectList::findOrphans(LLViewerObject* objectp, U32 ip, U32 port)
 		{
 			if (childp == objectp)
 			{
-				llwarns << objectp->mID << " has self as parent, skipping!" 
-					<< llendl;
+				LL_WARNS() << objectp->mID << " has self as parent, skipping!" 
+					<< LL_ENDL;
 				continue;
 			}
 
 #ifdef ORPHAN_SPAM
-			llinfos << "Reunited parent " << objectp->mID 
-				<< " with child " << childp->mID << llendl;
-			llinfos << "Glob: " << objectp->getPositionGlobal() << llendl;
-			llinfos << "Agent: " << objectp->getPositionAgent() << llendl;
+			LL_INFOS() << "Reunited parent " << objectp->mID 
+				<< " with child " << childp->mID << LL_ENDL;
+			LL_INFOS() << "Glob: " << objectp->getPositionGlobal() << LL_ENDL;
+			LL_INFOS() << "Agent: " << objectp->getPositionAgent() << LL_ENDL;
 			addDebugBeacon(objectp->getPositionAgent(),"");
 #endif
 			gPipeline.markMoved(objectp->mDrawable);                
@@ -2188,7 +2188,7 @@ void LLViewerObjectList::findOrphans(LLViewerObject* objectp, U32 ip, U32 port)
 		}
 		else
 		{
-			llinfos << "Missing orphan child, removing from list" << llendl;
+			LL_INFOS() << "Missing orphan child, removing from list" << LL_ENDL;
 
 			iter = mOrphanChildren.erase(iter);
 		}

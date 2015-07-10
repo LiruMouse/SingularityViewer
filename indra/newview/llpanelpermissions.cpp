@@ -407,7 +407,7 @@ void LLPanelPermissions::refresh()
 	std::string owner_name;
 	const BOOL owners_identical = LLSelectMgr::getInstance()->selectGetOwner(mOwnerID, owner_name);
 
-//	llinfos << "owners_identical " << (owners_identical ? "TRUE": "FALSE") << llendl;
+//	LL_INFOS() << "owners_identical " << (owners_identical ? "TRUE": "FALSE") << LL_ENDL;
 	std::string last_owner_name;
 	LLSelectMgr::getInstance()->selectGetLastOwner(mLastOwnerID, last_owner_name);
 
@@ -446,19 +446,36 @@ void LLPanelPermissions::refresh()
 		if ( (creators_identical) && (mCreatorID != gAgent.getID()) && ((mCreatorID == mOwnerID) || (RlvUtil::isNearbyAgent(mCreatorID))) )
 		{
 			creator_name = RlvStrings::getAnonym(creator_name);
-			fRlvEnableOwner = false;
+			fRlvEnableCreator = false;
 		}
 
 		// Only anonymize the owner name if all of the selection is owned by the same avie and isn't group owned
 		if ( (owners_identical) && (!LLSelectMgr::getInstance()->selectIsGroupOwned()) && (mOwnerID != gAgent.getID()) )
 		{
 			owner_name = RlvStrings::getAnonym(owner_name);
-			fRlvEnableCreator = false;
+			fRlvEnableOwner = false;
 		}
 
 		if (RlvUtil::isNearbyAgent(mLastOwnerID))
 		{
+			last_owner_name = RlvStrings::getAnonym(last_owner_name);
+			fRlvEnableLastOwner = false;
+		}
+	}
+	else if ((objectp->isAttachment() || objectp->isAvatar()) && gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS) && mOwnerID != gAgentID)
+	{
+		owner_name = RlvStrings::getAnonym(owner_name);
+		fRlvEnableOwner = false;
+
+		if (mOwnerID == mCreatorID)
+		{
 			creator_name = RlvStrings::getAnonym(creator_name);
+			fRlvEnableCreator = false;
+		}
+
+		if (mOwnerID == mLastOwnerID)
+		{
+			last_owner_name = RlvStrings::getAnonym(last_owner_name);
 			fRlvEnableLastOwner = false;
 		}
 	}
@@ -1199,28 +1216,28 @@ void LLPanelPermissions::onCommitExport(const LLSD& param)
 // static
 void LLPanelPermissions::onCommitNextOwnerModify(LLUICtrl* ctrl, void* data)
 {
-	//llinfos << "LLPanelPermissions::onCommitNextOwnerModify" << llendl;
+	//LL_INFOS() << "LLPanelPermissions::onCommitNextOwnerModify" << LL_ENDL;
 	onCommitPerm(ctrl, data, PERM_NEXT_OWNER, PERM_MODIFY);
 }
 
 // static
 void LLPanelPermissions::onCommitNextOwnerCopy(LLUICtrl* ctrl, void* data)
 {
-	//llinfos << "LLPanelPermissions::onCommitNextOwnerCopy" << llendl;
+	//LL_INFOS() << "LLPanelPermissions::onCommitNextOwnerCopy" << LL_ENDL;
 	onCommitPerm(ctrl, data, PERM_NEXT_OWNER, PERM_COPY);
 }
 
 // static
 void LLPanelPermissions::onCommitNextOwnerTransfer(LLUICtrl* ctrl, void* data)
 {
-	//llinfos << "LLPanelPermissions::onCommitNextOwnerTransfer" << llendl;
+	//LL_INFOS() << "LLPanelPermissions::onCommitNextOwnerTransfer" << LL_ENDL;
 	onCommitPerm(ctrl, data, PERM_NEXT_OWNER, PERM_TRANSFER);
 }
 
 // static
 void LLPanelPermissions::onCommitName(LLUICtrl*, void* data)
 {
-	//llinfos << "LLPanelPermissions::onCommitName()" << llendl;
+	//LL_INFOS() << "LLPanelPermissions::onCommitName()" << LL_ENDL;
 	LLPanelPermissions* self = (LLPanelPermissions*)data;
 	LLLineEditor*	tb = self->getChild<LLLineEditor>("Object Name");
 	if(tb)
@@ -1234,7 +1251,7 @@ void LLPanelPermissions::onCommitName(LLUICtrl*, void* data)
 // static
 void LLPanelPermissions::onCommitDesc(LLUICtrl*, void* data)
 {
-	//llinfos << "LLPanelPermissions::onCommitDesc()" << llendl;
+	//LL_INFOS() << "LLPanelPermissions::onCommitDesc()" << LL_ENDL;
 	LLPanelPermissions* self = (LLPanelPermissions*)data;
 	LLLineEditor*	le = self->getChild<LLLineEditor>("Object Description");
 	if(le)
@@ -1259,7 +1276,7 @@ void LLPanelPermissions::onCommitSaleType(LLUICtrl*, void* data)
 
 void LLPanelPermissions::setAllSaleInfo()
 {
-	llinfos << "LLPanelPermissions::setAllSaleInfo()" << llendl;
+	LL_INFOS() << "LLPanelPermissions::setAllSaleInfo()" << LL_ENDL;
 	LLSaleInfo::EForSale sale_type = LLSaleInfo::FS_NOT;
 	
 	LLStringUtil::format_map_t argsCurrency;

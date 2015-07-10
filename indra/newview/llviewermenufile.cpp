@@ -274,7 +274,7 @@ bool AIFileUpload::is_valid(std::string const& filename, ELoadFilter type)
 		std::string error_msg;
 		if (check_for_invalid_wav_formats(filename,error_msg))
 		{
-			llinfos << error_msg << ": " << filename << llendl;
+			LL_INFOS() << error_msg << ": " << filename << LL_ENDL;
 			LLSD args;
 			args["FILE"] = filename;
 			LLNotificationsUtil::add( error_msg, args );
@@ -466,11 +466,11 @@ class LLFileUploadBulk : public view_listener_t
 
 void upload_error(const std::string& error_message, const std::string& label, const std::string& filename, const LLSD& args) 
 {
-	llwarns << error_message << llendl;
+	LL_WARNS() << error_message << LL_ENDL;
 	LLNotificationsUtil::add(label, args);
 	if(LLFile::remove(filename) == -1)
 	{
-		lldebugs << "unable to remove temp file" << llendl;
+		LL_DEBUGS() << "unable to remove temp file" << LL_ENDL;
 	}
 	//AIFIXME? LLFilePicker::instance().reset();						
 }
@@ -590,7 +590,7 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 				formatted = new LLImageBMP;
 				break;
 			  default: 
-				llwarns << "Unknown Local Snapshot format" << llendl;
+				LL_WARNS() << "Unknown Local Snapshot format" << LL_ENDL;
 				return true;
 			}
 
@@ -631,8 +631,8 @@ static void handle_compress_image_continued(AIFilePicker* filepicker)
 		std::string const& infile(*filename);
 		std::string outfile = infile + ".j2c";
 
-		llinfos << "Input:  " << infile << llendl;
-		llinfos << "Output: " << outfile << llendl;
+		LL_INFOS() << "Input:  " << infile << LL_ENDL;
+		LL_INFOS() << "Output: " << outfile << LL_ENDL;
 
 		BOOL success;
 
@@ -640,11 +640,11 @@ static void handle_compress_image_continued(AIFilePicker* filepicker)
 
 		if (success)
 		{
-			llinfos << "Compression complete" << llendl;
+			LL_INFOS() << "Compression complete" << LL_ENDL;
 		}
 		else
 		{
-			llinfos << "Compression failed: " << LLImage::getLastError() << llendl;
+			LL_INFOS() << "Compression failed: " << LLImage::getLastError() << LL_ENDL;
 		}
 	}
 }
@@ -722,7 +722,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 		asset_type = LLAssetType::AT_SOUND;  // tag it as audio
 		S32 encode_result = 0;
 
-		llinfos << "Attempting to encode wav as an ogg file" << llendl;
+		LL_INFOS() << "Attempting to encode wav as an ogg file" << LL_ENDL;
 
 		encode_result = encode_vorbis_file(src_filename, filename);
 		created_temp_file = true;
@@ -779,8 +779,8 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 											 "%254s %254s\n",
 											 label, value);	 	
 
-                                         llinfos << "got: " << label << " = " << value	 	
-                                                         << llendl;	 	
+                                         LL_INFOS() << "got: " << label << " = " << value	 	
+                                                         << LL_ENDL;	 	
 
                                          if (EOF == tokens_read)	 	
                                          {	 	
@@ -833,7 +833,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
                          // read in and throw out most of the header except for the type	 	
                          if (fread(buf, header_size, 1, in) != 1)
 						 {
-							 llwarns << "Short read" << llendl;
+							 LL_WARNS() << "Short read" << LL_ENDL;
 						 }
                          memcpy(&type_num, buf + 16, sizeof(S16));		/* Flawfinder: ignore */	 	
                          asset_type = (LLAssetType::EType)type_num;	 	
@@ -848,7 +848,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
                          {	 	
 							 if (fwrite(buf, 1, readbytes, out) != readbytes)
 							 {
-								 llwarns << "Short write" << llendl;
+								 LL_WARNS() << "Short write" << LL_ENDL;
 							 }
                          }	 	
                          fclose(out);	 	
@@ -866,7 +866,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
          }	 	
          else	 	
          {	 	
-                 llinfos << "Couldn't open .lin file " << src_filename << llendl;	 	
+                 LL_INFOS() << "Couldn't open .lin file " << src_filename << LL_ENDL;	 	
          }	 	
 	}
 	else if (exten == "bvh")
@@ -959,14 +959,14 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 	}
 	else
 	{
-		llwarns << error_message << llendl;
+		LL_WARNS() << error_message << LL_ENDL;
 		LLSD args;
 		args["ERROR_MESSAGE"] = error_message;
 		LLNotificationsUtil::add("ErrorMessage", args);
 	}
 	if (created_temp_file && LLFile::remove(filename) == -1)
 	{
-		lldebugs << "unable to remove temp file" << llendl;
+		LL_DEBUGS() << "unable to remove temp file" << LL_ENDL;
 	}
 }
 // <edit>
@@ -1079,7 +1079,7 @@ void upload_done_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 		if(is_balance_sufficient)
 		{
 			// Actually add the upload to inventory
-			llinfos << "Adding " << uuid << " to inventory." << llendl;
+			LL_INFOS() << "Adding " << uuid << " to inventory." << LL_ENDL;
 				const LLUUID folder_id = gInventory.findCategoryUUIDForType(dest_loc);
 			if(folder_id.notNull())
 			{
@@ -1096,7 +1096,7 @@ void upload_done_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 			}
 			else
 			{
-				llwarns << "Can't find a folder to put it in" << llendl;
+				LL_WARNS() << "Can't find a folder to put it in" << LL_ENDL;
 			}
 		}
 	}
@@ -1192,7 +1192,7 @@ bool upload_new_resource(
 			name,
 			display_name,
 			desc);
-	llinfos << "*** Uploading: "
+	LL_INFOS() << "*** Uploading: "
 			<< "\nType: " << LLAssetType::lookup(asset_type)
 			<< "\nUUID: " << uuid
 			<< "\nName: " << name
@@ -1201,7 +1201,7 @@ bool upload_new_resource(
 			<< gInventory.findCategoryUUIDForType(destination_folder_type == LLFolderType::FT_NONE ?
 												  LLFolderType::assetTypeToFolderType(asset_type) :
 												  destination_folder_type)
-			<< "\nExpected Upload Cost: " << expected_upload_cost << llendl;
+			<< "\nExpected Upload Cost: " << expected_upload_cost << LL_ENDL;
 
 	std::string url = gAgent.getRegion()->getCapability("NewFileAgentInventory");
 	// <edit>
@@ -1210,7 +1210,7 @@ bool upload_new_resource(
 	if (!url.empty() && !temporary)
 	// </edit>
 	{
-		llinfos << "New Agent Inventory via capability" << llendl;
+		LL_INFOS() << "New Agent Inventory via capability" << LL_ENDL;
 
 		LLSD body;
 		body["folder_id"] = gInventory.findCategoryUUIDForType((destination_folder_type == LLFolderType::FT_NONE) ? LLFolderType::assetTypeToFolderType(asset_type) : destination_folder_type);
@@ -1236,7 +1236,7 @@ bool upload_new_resource(
 		// <edit>
 		if(!temporary)
 		{
-			llinfos << "NewAgentInventory capability not found, new agent inventory via asset system." << llendl;
+			LL_INFOS() << "NewAgentInventory capability not found, new agent inventory via asset system." << LL_ENDL;
 			// check for adequate funds
 			// TODO: do this check on the sim
 			if (LLAssetType::AT_SOUND == asset_type ||

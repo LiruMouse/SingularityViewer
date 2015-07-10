@@ -84,7 +84,7 @@ void LLHUDEffectBeam::packData(LLMessageSystem *mesgsys)
 {
 	if (!mSourceObject)
 	{
-		llwarns << "Missing source object!" << llendl;
+		LL_WARNS() << "Missing source object!" << LL_ENDL;
 	}
 
 	// Pack the default data
@@ -121,7 +121,7 @@ void LLHUDEffectBeam::packData(LLMessageSystem *mesgsys)
 
 void LLHUDEffectBeam::unpackData(LLMessageSystem *mesgsys, S32 blocknum)
 {
-	llerrs << "Got beam!" << llendl;
+	LL_ERRS() << "Got beam!" << LL_ENDL;
 	BOOL use_target_object;
 	LLVector3d new_target;
 	U8 packed_data[41];
@@ -132,7 +132,7 @@ void LLHUDEffectBeam::unpackData(LLMessageSystem *mesgsys, S32 blocknum)
 	S32 size = mesgsys->getSizeFast(_PREHASH_Effect, blocknum, _PREHASH_TypeData);
 	if (size != 41)
 	{
-		llwarns << "Beam effect with bad size " << size << llendl;
+		LL_WARNS() << "Beam effect with bad size " << size << LL_ENDL;
 		return;
 	}
 	mesgsys->getBinaryDataFast(_PREHASH_Effect, _PREHASH_TypeData, packed_data, 41, blocknum);
@@ -178,7 +178,7 @@ void LLHUDEffectBeam::setSourceObject(LLViewerObject *objp)
 {
 	if (objp->isDead())
 	{
-		llwarns << "HUDEffectBeam: Source object is dead!" << llendl;
+		LL_WARNS() << "HUDEffectBeam: Source object is dead!" << LL_ENDL;
 		mSourceObject = NULL;
 		return;
 	}
@@ -216,7 +216,7 @@ void LLHUDEffectBeam::setTargetObject(LLViewerObject *objp)
 {
 	if (mTargetObject->isDead())
 	{
-		llwarns << "HUDEffectBeam: Target object is dead!" << llendl;
+		LL_WARNS() << "HUDEffectBeam: Target object is dead!" << LL_ENDL;
 	}
 
 	mTargetObject = objp;

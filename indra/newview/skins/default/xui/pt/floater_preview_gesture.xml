@@ -58,6 +58,6 @@ você inclua passos de espera.
 	<check_box bottom_delta="-30" label="tempo em segundos" name="wait_time_check"/>
 	<line_editor left_delta="130" name="wait_time_editor" />
 	<check_box label="Ativar" name="active_check" tool_tip="Gestos ativos podem ser gatilhados escrevendo suas frases de gatilho no chat ou através de suas teclas de atalho. Gestos normalmente ficam inativos quando existe um conflito nas teclas de atalho."/>
-	<button label="Prévia" name="preview_btn"/>
+	<flyout_button label="Prévia" name="preview_btn"/>
 	<button label="Salvar" name="save_btn"/>
 </floater>

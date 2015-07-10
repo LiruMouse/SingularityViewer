@@ -175,7 +175,7 @@ void LLFloaterAvatarTextures::onClickDump(void* data)
 		const LLTextureEntry* te = avatarp->getTE(i);
 		if (!te) continue;
 
-		llinfos << "Avatar TE " << i << " id " << te->getID() << llendl;
+		LL_INFOS() << "Avatar TE " << i << " id " << te->getID() << LL_ENDL;
 	}
 #endif
 }

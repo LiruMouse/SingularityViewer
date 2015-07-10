@@ -162,7 +162,7 @@ void LLPolyMeshSharedData::freeMeshData()
 }
 
 // compate_int is used by the qsort function to sort the index array
-int compare_int(const void *a, const void *b);
+S32 compare_int(const void *a, const void *b);
 
 //-----------------------------------------------------------------------------
 // genIndices()
@@ -277,13 +277,13 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 	//-------------------------------------------------------------------------
 	if(fileName.empty())
 	{
-		llerrs << "Filename is Empty!" << llendl;
+                LL_ERRS() << "Filename is Empty!" << LL_ENDL;
 		return FALSE;
 	}
 	LLFILE* fp = LLFile::fopen(fileName, "rb");			/*Flawfinder: ignore*/
 	if (!fp)
 	{
-		llerrs << "can't open: " << fileName << llendl;
+                LL_ERRS() << "can't open: " << fileName << LL_ENDL;
 		return FALSE;
 	}
 
@@ -293,7 +293,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 	char header[128];		/*Flawfinder: ignore*/
 	if (fread(header, sizeof(char), 128, fp) != 128)
 	{
-		llwarns << "Short read" << llendl;
+                LL_WARNS() << "Short read" << LL_ENDL;
 	}
 
 	//-------------------------------------------------------------------------
@@ -302,7 +302,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 	BOOL status = FALSE;
 	if ( strncmp(header, HEADER_BINARY, strlen(HEADER_BINARY)) == 0 )	/*Flawfinder: ignore*/
 	{
-		lldebugs << "Loading " << fileName << llendl;
+                LL_DEBUGS() << "Loading " << fileName << LL_ENDL;
 
 		//----------------------------------------------------------------
 		// File Header (seek past it)
@@ -316,7 +316,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 		size_t numRead = fread(&hasWeights, sizeof(U8), 1, fp);
 		if (numRead != 1)
 		{
-			llerrs << "can't read HasWeights flag from " << fileName << llendl;
+                        LL_ERRS() << "can't read HasWeights flag from " << fileName << LL_ENDL;
 			return FALSE;
 		}
 		if (!isLOD())
@@ -331,7 +331,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 		numRead = fread(&hasDetailTexCoords, sizeof(U8), 1, fp);
 		if (numRead != 1)
 		{
-			llerrs << "can't read HasDetailTexCoords flag from " << fileName << llendl;
+                        LL_ERRS() << "can't read HasDetailTexCoords flag from " << fileName << LL_ENDL;
 			return FALSE;
 		}
 
@@ -343,7 +343,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 		llendianswizzle(position.mV, sizeof(float), 3);
 		if (numRead != 3)
 		{
-			llerrs << "can't read Position from " << fileName << llendl;
+                        LL_ERRS() << "can't read Position from " << fileName << LL_ENDL;
 			return FALSE;
 		}
 		setPosition( position );
@@ -356,7 +356,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 		llendianswizzle(rotationAngles.mV, sizeof(float), 3);
 		if (numRead != 3)
 		{
-			llerrs << "can't read RotationAngles from " << fileName << llendl;
+                        LL_ERRS() << "can't read RotationAngles from " << fileName << LL_ENDL;
 			return FALSE;
 		}
 
@@ -365,7 +365,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 
 		if (numRead != 1)
 		{
-			llerrs << "can't read RotationOrder from " << fileName << llendl;
+                        LL_ERRS() << "can't read RotationOrder from " << fileName << LL_ENDL;
 			return FALSE;
 		}
 
@@ -384,7 +384,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 		llendianswizzle(scale.mV, sizeof(float), 3);
 		if (numRead != 3)
 		{
-			llerrs << "can't read Scale from " << fileName << llendl;
+                        LL_ERRS() << "can't read Scale from " << fileName << LL_ENDL;
 			return FALSE;
 		}
 		setScale( scale );
@@ -405,7 +405,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 			llendianswizzle(&numVertices, sizeof(U16), 1);
 			if (numRead != 1)
 			{
-				llerrs << "can't read NumVertices from " << fileName << llendl;
+                                LL_ERRS() << "can't read NumVertices from " << fileName << LL_ENDL;
 				return FALSE;
 			}
 
@@ -420,7 +420,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 				llendianswizzle(&mBaseCoords[i], sizeof(float), 3);
 				if (numRead != 3)
 					{
-						llerrs << "can't read Coordinates from " << fileName << llendl;
+									LL_ERRS() << "can't read Coordinates from " << fileName << LL_ENDL;
 						return FALSE;
 					}
 				}
@@ -434,7 +434,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 					llendianswizzle(&mBaseNormals[i], sizeof(float), 3);
 					if (numRead != 3)
 					{
-						llerrs << " can't read Normals from " << fileName << llendl;
+									LL_ERRS() << " can't read Normals from " << fileName << LL_ENDL;
 						return FALSE;
 					}
 				}
@@ -448,7 +448,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 				llendianswizzle(&mBaseBinormals[i], sizeof(float), 3);
 				if (numRead != 3)
 				{
-					llerrs << " can't read Binormals from " << fileName << llendl;
+									LL_ERRS() << " can't read Binormals from " << fileName << LL_ENDL;
 					return FALSE;
 				}
 			}
@@ -460,7 +460,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 			llendianswizzle(mTexCoords, sizeof(float), 2*numVertices);
 			if (numRead != numVertices)
 			{
-				llerrs << "can't read TexCoords from " << fileName << llendl;
+                                LL_ERRS() << "can't read TexCoords from " << fileName << LL_ENDL;
 				return FALSE;
 			}
 
@@ -473,7 +473,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 				llendianswizzle(mDetailTexCoords, sizeof(float), 2*numVertices);
 				if (numRead != numVertices)
 				{
-					llerrs << "can't read DetailTexCoords from " << fileName << llendl;
+                                        LL_ERRS() << "can't read DetailTexCoords from " << fileName << LL_ENDL;
 					return FALSE;
 				}
 			}
@@ -487,7 +487,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 				llendianswizzle(mWeights, sizeof(float), numVertices);
 				if (numRead != numVertices)
 				{
-					llerrs << "can't read Weights from " << fileName << llendl;
+                                        LL_ERRS() << "can't read Weights from " << fileName << LL_ENDL;
 					return FALSE;
 				}
 			}
@@ -501,7 +501,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 		llendianswizzle(&numFaces, sizeof(U16), 1);
 		if (numRead != 1)
 		{
-			llerrs << "can't read NumFaces from " << fileName << llendl;
+                        LL_ERRS() << "can't read NumFaces from " << fileName << LL_ENDL;
 			return FALSE;
 		}
 		allocateFaceData( numFaces );
@@ -519,7 +519,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 			llendianswizzle(face, sizeof(U16), 3);
 			if (numRead != 3)
 			{
-				llerrs << "can't read Face[" << i << "] from " << fileName << llendl;
+                                LL_ERRS() << "can't read Face[" << i << "] from " << fileName << LL_ENDL;
 				return FALSE;
 			}
 			if (mReferenceData)
@@ -559,10 +559,10 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 			numTris++;
 		}
 
-		lldebugs << "verts: " << numVertices 
+                LL_DEBUGS() << "verts: " << numVertices 
 			<< ", faces: "   << numFaces
 			<< ", tris: "    << numTris
-			<< llendl;
+                         << LL_ENDL;
 
 		//----------------------------------------------------------------
 		// NumSkinJoints
@@ -576,7 +576,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 				llendianswizzle(&numSkinJoints, sizeof(U16), 1);
 				if (numRead != 1)
 				{
-					llerrs << "can't read NumSkinJoints from " << fileName << llendl;
+                                        LL_ERRS() << "can't read NumSkinJoints from " << fileName << LL_ENDL;
 					return FALSE;
 				}
 				allocateJointNames( numSkinJoints );
@@ -592,7 +592,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 				jointName[sizeof(jointName)-1] = '\0'; // ensure nul-termination
 				if (numRead != 1)
 				{
-					llerrs << "can't read Skin[" << i << "].Name from " << fileName << llendl;
+                                        LL_ERRS() << "can't read Skin[" << i << "].Name from " << fileName << LL_ENDL;
 					return FALSE;
 				}
 
@@ -687,12 +687,12 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 					S32 remapDst;
 					if (fread(&remapSrc, sizeof(S32), 1, fp) != 1)
 					{
-						llerrs << "can't read source vertex in vertex remap data" << llendl;
+                                                LL_ERRS() << "can't read source vertex in vertex remap data" << LL_ENDL;
 						break;
 					}
 					if (fread(&remapDst, sizeof(S32), 1, fp) != 1)
 					{
-						llerrs << "can't read destination vertex in vertex remap data" << llendl;
+                                                LL_ERRS() << "can't read destination vertex in vertex remap data" << LL_ENDL;
 						break;
 					}
 					llendianswizzle(&remapSrc, sizeof(S32), 1);
@@ -707,7 +707,7 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 	}
 	else
 	{
-		llerrs << "invalid mesh file header: " << fileName << llendl;
+                LL_ERRS() << "invalid mesh file header: " << fileName << LL_ENDL;
 		status = FALSE;
 	}
 
@@ -808,15 +808,8 @@ LLPolyMesh::LLPolyMesh(LLPolyMeshSharedData *shared_data, LLPolyMesh *reference_
 //-----------------------------------------------------------------------------
 LLPolyMesh::~LLPolyMesh()
 {
-	S32 i;
-	for (i = 0; i < mJointRenderData.count(); i++)
-	{
-		delete mJointRenderData[i];
-                mJointRenderData[i] = NULL;
-        }
-
-		ll_aligned_free_16(mVertexData);
-
+	delete_and_clear(mJointRenderData);
+	ll_aligned_free_16(mVertexData);
 }
 
 
@@ -831,7 +824,7 @@ LLPolyMesh *LLPolyMesh::getMesh(const std::string &name, LLPolyMesh* reference_m
 	LLPolyMeshSharedData* meshSharedData = get_if_there(sGlobalSharedMeshList, name, (LLPolyMeshSharedData*)NULL);
 	if (meshSharedData)
 	{
-//		llinfos << "Polymesh " << name << " found in global mesh table." << llendl;
+//		LL_INFOS() << "Polymesh " << name << " found in global mesh table." << LL_ENDL;
 		LLPolyMesh *poly_mesh = new LLPolyMesh(meshSharedData, reference_mesh);
 		return poly_mesh;
 	}
@@ -855,7 +848,7 @@ LLPolyMesh *LLPolyMesh::getMesh(const std::string &name, LLPolyMesh* reference_m
 
 	LLPolyMesh *poly_mesh = new LLPolyMesh(mesh_data, reference_mesh);
 
-//	llinfos << "Polymesh " << name << " added to global mesh table." << llendl;
+//	LL_INFOS() << "Polymesh " << name << " added to global mesh table." << LL_ENDL;
 	sGlobalSharedMeshList[name] = poly_mesh->mSharedData;
 
 	return poly_mesh;
@@ -887,7 +880,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 	//-------------------------------------------------------------------------
 	if (fwrite(HEADER_BINARY, 1, strlen(HEADER_BINARY), fp) != strlen(HEADER_BINARY))
 	{
-		llwarns << "Short write" << llendl;
+		LL_WARNS() << "Short write" << LL_ENDL;
 	}
 
 	if (strlen(HEADER_BINARY) < 24)
@@ -896,7 +889,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 		int pad = 24 - strlen(HEADER_BINARY);
 		if (fwrite(&padding, 1, pad, fp) != pad)
 		{
-			llwarns << "Short write" << llendl;
+			LL_WARNS() << "Short write" << LL_ENDL;
 		}
 	}
 
@@ -906,7 +899,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 	U8 hasWeights = (U8) mSharedData->mHasWeights;
 	if (fwrite(&hasWeights, sizeof(U8), 1, fp) != 1)
 	{
-		llwarns << "Short write" << llendl;
+		LL_WARNS() << "Short write" << LL_ENDL;
 	}
 
 	//----------------------------------------------------------------
@@ -915,7 +908,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 	U8 hasDetailTexCoords = (U8) mSharedData->mHasDetailTexCoords;
 	if (fwrite(&hasDetailTexCoords, sizeof(U8), 1, fp) != 1)
 	{
-		llwarns << "Short write" << llendl;
+		LL_WARNS() << "Short write" << LL_ENDL;
 	}
 
 	//----------------------------------------------------------------
@@ -925,7 +918,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 	llendianswizzle(position.mV, sizeof(float), 3);
 	if (fwrite(position.mV, sizeof(float), 3, fp) != 3)
 	{
-		llwarns << "Short write" << llendl;
+		LL_WARNS() << "Short write" << LL_ENDL;
 	}
 
 	//----------------------------------------------------------------
@@ -946,13 +939,13 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 	llendianswizzle(rotationAngles.mV, sizeof(float), 3);
 	if (fwrite(rotationAngles.mV, sizeof(float), 3, fp) != 3)
 	{
-		llwarns << "Short write" << llendl;
+		LL_WARNS() << "Short write" << LL_ENDL;
 	}
 
 	U8 rotationOrder = 0;
 	if (fwrite(&rotationOrder, sizeof(U8), 1, fp) != 1)
 	{
-		llwarns << "Short write" << llendl;
+		LL_WARNS() << "Short write" << LL_ENDL;
 	}
 
 	//----------------------------------------------------------------
@@ -962,7 +955,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 	llendianswizzle(scale.mV, sizeof(float), 3);
 	if (fwrite(scale.mV, sizeof(float), 3, fp) != 3)
 	{
-		llwarns << "Short write" << llendl;
+		LL_WARNS() << "Short write" << LL_ENDL;
 	}
 
 	//----------------------------------------------------------------
@@ -975,7 +968,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 		llendianswizzle(&numVertices, sizeof(U16), 1);
 		if (fwrite(&numVertices, sizeof(U16), 1, fp) != 1)
 		{
-			llwarns << "Short write" << llendl;
+			LL_WARNS() << "Short write" << LL_ENDL;
 		}
 		numVertices = mSharedData->mNumVertices;  // without the swizzle again
 
@@ -989,7 +982,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 			llendianswizzle(coords.getF32ptr(), sizeof(float), 3);
 			if (fwrite(coords.getF32ptr(), 3*sizeof(float), 1, fp) != 1)
 			{
-				llwarns << "Short write" << llendl;
+				LL_WARNS() << "Short write" << LL_ENDL;
 			}
 			llendianswizzle(coords.getF32ptr(), sizeof(float), 3);
 		}
@@ -1004,7 +997,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 			llendianswizzle(normals.getF32ptr(), sizeof(float), 3);
 			if (fwrite(normals.getF32ptr(), 3*sizeof(float), 1, fp) != 1)
 			{
-				llwarns << "Short write" << llendl;
+				LL_WARNS() << "Short write" << LL_ENDL;
 			}
 			llendianswizzle(normals.getF32ptr(), sizeof(float), 3);
 		}
@@ -1019,7 +1012,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 			llendianswizzle(binormals.getF32ptr(), sizeof(float), 3);
 			if (fwrite(binormals.getF32ptr(), 3*sizeof(float), 1, fp) != 1)
 			{
-				llwarns << "Short write" << llendl;
+				LL_WARNS() << "Short write" << LL_ENDL;
 			}
 			llendianswizzle(binormals.getF32ptr(), sizeof(float), 3);
 		}
@@ -1032,7 +1025,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 		llendianswizzle(tex, sizeof(float), 2*numVertices);
 		if (fwrite(tex, 2*sizeof(float), numVertices, fp) != numVertices)
 		{
-			llwarns << "Short write" << llendl;
+			LL_WARNS() << "Short write" << LL_ENDL;
 		}
 		llendianswizzle(tex, sizeof(float), 2*numVertices);
 
@@ -1046,7 +1039,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 			llendianswizzle(detail, sizeof(float), 2*numVertices);
 			if (fwrite(detail, 2*sizeof(float), numVertices, fp) != numVertices)
 			{
-				llwarns << "Short write" << llendl;
+				LL_WARNS() << "Short write" << LL_ENDL;
 			}
 			llendianswizzle(detail, sizeof(float), 2*numVertices);
 		}
@@ -1061,7 +1054,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 			llendianswizzle(weights, sizeof(float), numVertices);
 			if (fwrite(weights, sizeof(float), numVertices, fp) != numVertices)
 			{
-				llwarns << "Short write" << llendl;
+				LL_WARNS() << "Short write" << LL_ENDL;
 			}
 			llendianswizzle(weights, sizeof(float), numVertices);
 		}
@@ -1075,7 +1068,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 	llendianswizzle(&numFaces, sizeof(U16), 1);
 	if (fwrite(&numFaces, sizeof(U16), 1, fp) != 1)
 	{
-		llwarns << "Short write" << llendl;
+		LL_WARNS() << "Short write" << LL_ENDL;
 	}
 	numFaces = mSharedData->mNumFaces;	// without the swizzle again
 
@@ -1094,7 +1087,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 		llendianswizzle(face, sizeof(U16), 3);
 		if (fwrite(face, sizeof(U16), 3, fp) != 3)
 		{
-			llwarns << "Short write" << llendl;
+			LL_WARNS() << "Short write" << LL_ENDL;
 		}
 	}
 
@@ -1121,7 +1114,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 		llendianswizzle(&numSkinJoints, sizeof(U16), 1);
 		if (fwrite(&numSkinJoints, sizeof(U16), 1, fp) != 1)
 		{
-			llwarns << "Short write" << llendl;
+			LL_WARNS() << "Short write" << LL_ENDL;
 		}
 		llendianswizzle(&numSkinJoints, sizeof(U16), 1);
 
@@ -1134,7 +1127,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 			jn = &mSharedData->mJointNames[i];
 			if (fwrite(jn->c_str(), 1, jn->length(), fp) != jn->length())
 			{
-				llwarns << "Short write" << llendl;
+				LL_WARNS() << "Short write" << LL_ENDL;
 			}
 
 			if (jn->length() < 64)
@@ -1142,7 +1135,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 				int pad = 64 - jn->length();
 				if (fwrite(&padding, 1, pad, fp) != pad)
 				{
-					llwarns << "Short write" << llendl;
+					LL_WARNS() << "Short write" << LL_ENDL;
 				}
 			}
 		}
@@ -1173,7 +1166,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 
 		if (fwrite(morph_name.c_str(), 1, morph_name.length(), fp) != morph_name.length())
 		{
-			llwarns << "Short write" << llendl;
+			LL_WARNS() << "Short write" << LL_ENDL;
 		}
 
 		if (morph_name.length() < 64)
@@ -1181,20 +1174,20 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 			int pad = 64 - morph_name.length();
 			if (fwrite(&padding, 1, pad, fp) != pad)
 			{
-				llwarns << "Short write" << llendl;
+				LL_WARNS() << "Short write" << LL_ENDL;
 			}
 		}
 
 		if (!morph_data->saveLLM(fp))
 		{
-			llwarns << "Problem writing morph" << llendl;
+			LL_WARNS() << "Problem writing morph" << LL_ENDL;
 		}
 	}
 
 	char end_morphs[64] = "End Morphs";  // padded with zeroes
 	if (fwrite(end_morphs, sizeof(char), 64, fp) != 64)
 	{
-		llwarns << "Short write" << llendl;
+		LL_WARNS() << "Short write" << LL_ENDL;
 	}
 
 	//-------------------------------------------------------------------------
@@ -1204,7 +1197,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 	llendianswizzle(&numRemaps, sizeof(S32), 1);
 	if (fwrite(&numRemaps, sizeof(S32), 1, fp) != 1)
 	{
-		llwarns << "Short write" << llendl;
+		LL_WARNS() << "Short write" << LL_ENDL;
 	}
 
 	std::map<S32, S32>::iterator remap_iter = mSharedData->mSharedVerts.begin();
@@ -1217,7 +1210,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 		llendianswizzle(&remapSrc, sizeof(S32), 1);
 		if (fwrite(&remapSrc, sizeof(S32), 1, fp) != 1)
 		{
-			llwarns << "Short write" << llendl;
+			LL_WARNS() << "Short write" << LL_ENDL;
 		}
 
 		S32 remapDst = remap_iter->second;
@@ -1225,7 +1218,7 @@ BOOL LLPolyMesh::saveLLM(LLFILE *fp)
 		llendianswizzle(&remapDst, sizeof(S32), 1);
 		if (fwrite(&remapDst, sizeof(S32), 1, fp) != 1)
 		{
-			llwarns << "Short write" << llendl;
+			LL_WARNS() << "Short write" << LL_ENDL;
 		}
 	}
 
@@ -1257,7 +1250,7 @@ BOOL LLPolyMesh::saveOBJ(LLFILE *fp)
 										 coords[i].getF32ptr()[2]);
 		if (fwrite(outstring.c_str(), 1, outstring.length(), fp) != outstring.length())
 		{
-			llwarns << "Short write" << llendl;
+			LL_WARNS() << "Short write" << LL_ENDL;
 		}
 	}
 
@@ -1269,7 +1262,7 @@ BOOL LLPolyMesh::saveOBJ(LLFILE *fp)
 										 normals[i].getF32ptr()[2]);
 		if (fwrite(outstring.c_str(), 1, outstring.length(), fp) != outstring.length())
 		{
-			llwarns << "Short write" << llendl;
+			LL_WARNS() << "Short write" << LL_ENDL;
 		}
 	}
 
@@ -1280,7 +1273,7 @@ BOOL LLPolyMesh::saveOBJ(LLFILE *fp)
 										 tex[i][1]);
 		if (fwrite(outstring.c_str(), 1, outstring.length(), fp) != outstring.length())
 		{
-			llwarns << "Short write" << llendl;
+			LL_WARNS() << "Short write" << LL_ENDL;
 		}
 	}
 
@@ -1295,7 +1288,7 @@ BOOL LLPolyMesh::saveOBJ(LLFILE *fp)
 										 f3, f3, f3);
 		if (fwrite(outstring.c_str(), 1, outstring.length(), fp) != outstring.length())
 		{
-			llwarns << "Short write" << llendl;
+			LL_WARNS() << "Short write" << LL_ENDL;
 		}
 	}
 
@@ -1404,12 +1397,12 @@ BOOL LLPolyMesh::loadOBJ(LLFILE *fp)
 			values = sscanf (buffer," %255s %f %f %f", keyword, &tempX, &tempY, &tempZ);
 			if (values != 4)
 			{
-				llwarns << "Expecting v x y z, but found: " << buffer <<llendl;
+				LL_WARNS() << "Expecting v x y z, but found: " << buffer <<LL_ENDL;
 				continue;
 			}
 			if (ncoords == nverts)
 			{
-				llwarns << "Too many vertices.  Ignoring from: " << buffer <<llendl;
+				LL_WARNS() << "Too many vertices.  Ignoring from: " << buffer <<LL_ENDL;
 			}
 			if (ncoords < nverts)
 			{
@@ -1422,12 +1415,12 @@ BOOL LLPolyMesh::loadOBJ(LLFILE *fp)
 			values = sscanf (buffer," %255s %f %f %f", keyword, &tempX, &tempY, &tempZ);
 			if (values != 4)
 			{
-				llwarns << "Expecting vn x y z, but found: " << buffer <<llendl;
+				LL_WARNS() << "Expecting vn x y z, but found: " << buffer <<LL_ENDL;
 				continue;
 			}
 			if (nnormals == nverts)
 			{
-				llwarns << "Too many normals.  Ignoring from: " << buffer <<llendl;
+				LL_WARNS() << "Too many normals.  Ignoring from: " << buffer <<LL_ENDL;
 			}
 			if (nnormals < nverts)
 			{
@@ -1440,12 +1433,12 @@ BOOL LLPolyMesh::loadOBJ(LLFILE *fp)
 			values = sscanf (buffer," %255s %f %f", keyword, &tempX, &tempY);
 			if (values != 3)
 			{
-				llwarns << "Expecting vt x y, but found: " << buffer <<llendl;
+				LL_WARNS() << "Expecting vt x y, but found: " << buffer <<LL_ENDL;
 				continue;
 			}
 			if (ntexcoords == nverts)
 			{
-				llwarns << "Too many texture vertices.  Ignoring from: " << buffer <<llendl;
+				LL_WARNS() << "Too many texture vertices.  Ignoring from: " << buffer <<LL_ENDL;
 			}
 			if (ntexcoords < nverts)
 			{
@@ -1457,13 +1450,13 @@ BOOL LLPolyMesh::loadOBJ(LLFILE *fp)
 		{
 			if (nfaces == 0)
 			{
-				llwarns << "Ignoring face keywords for now." <<llendl;
+				LL_WARNS() << "Ignoring face keywords for now." <<LL_ENDL;
 			}
 			nfaces++;
 		}
 		else
 		{
-			llinfos << "Unrecognized keyword.  Ignoring: " << buffer << llendl;
+			LL_INFOS() << "Unrecognized keyword.  Ignoring: " << buffer << LL_ENDL;
 		}
 	}
 
@@ -1625,10 +1618,10 @@ void LLPolyMesh::dumpDiagInfo(void*)
 
 	std::string buf;
 
-	llinfos << "-----------------------------------------------------" << llendl;
-	llinfos << "       Global PolyMesh Table (DEBUG only)" << llendl;
-	llinfos << "   Verts    Faces  Mem(KB) Type Name" << llendl;
-	llinfos << "-----------------------------------------------------" << llendl;
+        LL_INFOS() << "-----------------------------------------------------" << LL_ENDL;
+        LL_INFOS() << "       Global PolyMesh Table (DEBUG only)" << LL_ENDL;
+        LL_INFOS() << "   Verts    Faces  Mem(KB) Name" << LL_ENDL;
+        LL_INFOS() << "-----------------------------------------------------" << LL_ENDL;
 
 	// print each loaded mesh, and it's memory usage
 	for(LLPolyMeshSharedDataTable::iterator iter = sGlobalSharedMeshList.begin();
@@ -1649,17 +1642,17 @@ void LLPolyMesh::dumpDiagInfo(void*)
 		}
 
 		buf = llformat("%8d %8d %8d %s %s", num_verts, num_faces, num_kb, type.c_str(), mesh_name.c_str());
-		llinfos << buf << llendl;
+		LL_INFOS() << buf << LL_ENDL;
 
 		total_verts += num_verts;
 		total_faces += num_faces;
 		total_kb += num_kb;
 	}
 
-	llinfos << "-----------------------------------------------------" << llendl;
+        LL_INFOS() << "-----------------------------------------------------" << LL_ENDL;
 	buf = llformat("%8d %8d %8d TOTAL", total_verts, total_faces, total_kb );
-	llinfos << buf << llendl;
-	llinfos << "-----------------------------------------------------" << llendl;
+        LL_INFOS() << buf << LL_ENDL;
+        LL_INFOS() << "-----------------------------------------------------" << LL_ENDL;
 }
 
 //-----------------------------------------------------------------------------

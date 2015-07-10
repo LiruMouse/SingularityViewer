@@ -185,7 +185,7 @@ bool LLPluginProcessParent::accept()
 	
 	if(status == APR_SUCCESS)
 	{
-//		llinfos << "SUCCESS" << llendl;
+//		LL_INFOS() << "SUCCESS" << LL_ENDL;
 		// Success.  Create a message pipe on the new socket
 		new LLPluginMessagePipe(this, mSocket);
 

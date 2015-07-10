@@ -462,12 +462,12 @@ void LLWorldMap::sendMapLayerRequest()
 	{
 		LLSD body;
 		body["Flags"] = (LLSD::Integer)flags;
-		//llinfos << "LLWorldMap::sendMapLayerRequest via capability" << llendl;
+		//LL_INFOS() << "LLWorldMap::sendMapLayerRequest via capability" << LL_ENDL;
 		LLHTTPClient::post(url, body, new LLMapLayerResponder);
 	}
 	else
 	{
-		//llinfos << "LLWorldMap::sendMapLayerRequest via message system" << llendl;
+		//LL_INFOS() << "LLWorldMap::sendMapLayerRequest via message system" << LL_ENDL;
 		LLMessageSystem* msg = gMessageSystem;
 
 		// Request for layer
@@ -487,7 +487,7 @@ void LLWorldMap::sendMapLayerRequest()
 // public static
 void LLWorldMap::processMapLayerReply(LLMessageSystem* msg, void**)
 {
-	//llinfos << "LLWorldMap::processMapLayerReply from message system" << llendl;
+	//LL_INFOS() << "LLWorldMap::processMapLayerReply from message system" << LL_ENDL;
 
 	U32 agent_flags;
 	msg->getU32Fast(_PREHASH_AgentData, _PREHASH_Flags, agent_flags);
@@ -495,7 +495,7 @@ void LLWorldMap::processMapLayerReply(LLMessageSystem* msg, void**)
 	U32 layer = flagsToLayer(agent_flags);
 	if (layer != SIM_LAYER_COMPOSITE)
 	{
-		llwarns << "Invalid or out of date map image type returned!" << llendl;
+		LL_WARNS() << "Invalid or out of date map image type returned!" << LL_ENDL;
 		return;
 	}
 

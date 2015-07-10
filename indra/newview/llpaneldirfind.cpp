@@ -159,7 +159,7 @@ namespace
 				return "lang=[LANG]&m=[MATURITY]&t=[TEEN]&region=[REGION]&x=[X]&y=[Y]&z=[Z]&session=[SESSION]&dice=[DICE]";
 			}
 		}
-		llinfos << "Illegal search URL type " << ty << llendl;
+		LL_INFOS() << "Illegal search URL type " << ty << LL_ENDL;
 		return "";
 	}
 }
@@ -328,7 +328,7 @@ void LLPanelDirFindAll::search(const std::string& search_text)
 		}
 		else
 		{
-			llwarns << "search panel not found! How can this be?!" << llendl;
+			LL_WARNS() << "search panel not found! How can this be?!" << LL_ENDL;
 		}
 
 		std::string selected_collection = childGetValue( "Category" ).asString();
@@ -390,7 +390,7 @@ void LLPanelDirFind::navigateToDefaultPage()
 		}
 	}
 
-	llinfos << "default web search url: "  << start_url << llendl;
+	LL_INFOS() << "default web search url: "  << start_url << LL_ENDL;
 
 	if (mWebBrowser)
 	{
@@ -448,14 +448,14 @@ const std::string LLPanelDirFind::buildSearchURL(const std::string& search_text,
 
 	}
 	url += getSearchURLSuffix(inc_pg, inc_mature, inc_adult, is_web);
-	llinfos << "web search url " << url << llendl;
+	LL_INFOS() << "web search url " << url << LL_ENDL;
 	return url;
 }
 
 const std::string LLPanelDirFind::getSearchURLSuffix(bool inc_pg, bool inc_mature, bool inc_adult, bool is_web) const
 {
 	std::string url = getSearchUrl(SEARCH_ALL_TEMPLATE, is_web);
-	llinfos << "Suffix template " << url << llendl;
+	LL_INFOS() << "Suffix template " << url << LL_ENDL;
 
 	if (!url.empty())
 	{
@@ -585,7 +585,7 @@ void LLPanelDirFind::handleMediaEvent(LLPluginClassMedia* self, EMediaEvent even
 		
 		case MEDIA_EVENT_LOCATION_CHANGED:
 			// Debugging info to console
-			llinfos << self->getLocation() << llendl;
+			LL_INFOS() << self->getLocation() << LL_ENDL;
 		break;
 
 		default:

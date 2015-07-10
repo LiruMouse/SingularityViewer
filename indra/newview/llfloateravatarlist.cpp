@@ -66,13 +66,26 @@ const F32 DEAD_KEEP_TIME = 0.5f;
 
 extern U32 gFrameCount;
 
+const S32& radar_namesystem()
+{
+	static const LLCachedControl<S32> namesystem("RadarNameSystem");
+	return namesystem;
+}
+
 namespace
 {
 	void chat_avatar_status(const std::string& name, const LLUUID& key, ERadarStatType type, bool entering, const F32& dist)
 	{
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) return; // RLVa:LF Don't announce people are around when blind, that cheats the system.
 		static LLCachedControl<bool> radar_chat_alerts(gSavedSettings, "RadarChatAlerts");
 		if (!radar_chat_alerts) return;
+		// <Alchemy>
+		// If we're teleporting, we don't want to see the radar's alerts about EVERY agent leaving.
+		if (!entering && gAgent.getTeleportState() != LLAgent::TELEPORT_NONE)
+		{
+			return;
+		}
+		// </Alchemy>
+		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS)) return; // RLVa:LF Don't announce people are around when blind, that cheats the system.
 		static LLCachedControl<bool> radar_alert_sim(gSavedSettings, "RadarAlertSim");
 		static LLCachedControl<bool> radar_alert_draw(gSavedSettings, "RadarAlertDraw");
 		static LLCachedControl<bool> radar_alert_shout_range(gSavedSettings, "RadarAlertShoutRange");
@@ -102,7 +115,8 @@ namespace
 			if (radar_show_dist) chat.mText += llformat(" (%.2fm)", dist);
 		}
 		chat.mFromName = name;
-		chat.mURL = llformat("secondlife:///app/agent/%s/about",key.asString().c_str());
+		if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) // RLVa:LF - No way!
+			chat.mURL = llformat("secondlife:///app/agent/%s/about", key.asString().c_str());
 		chat.mSourceType = CHAT_SOURCE_SYSTEM;
 		LLFloaterChat::addChat(chat);
 	}
@@ -155,7 +169,7 @@ void LLAvatarListEntry::processProperties(void* data, EAvatarProcessorType type)
 			}
 			catch(const std::exception&)
 			{
-				llwarns << "Failed to extract age from APT_PROPERTIES for " << mID << ", received \"" << pAvatarData->born_on << "\". Requesting properties again." << llendl;
+				LL_WARNS() << "Failed to extract age from APT_PROPERTIES for " << mID << ", received \"" << pAvatarData->born_on << "\". Requesting properties again." << LL_ENDL;
 				LLAvatarPropertiesProcessor::getInstance()->addObserver(mID, this);
 				LLAvatarPropertiesProcessor::getInstance()->sendAvatarPropertiesRequest(mID);
 				return;
@@ -202,6 +216,18 @@ bool LLAvatarListEntry::isDead() const
 {
 	return getEntryAgeSeconds() > DEAD_KEEP_TIME;
 }
+
+void LLAvatarListEntry::resetName(const bool& hide_tags, const bool& anon_names, const std::string& hidden)
+{
+	if (hide_tags)
+		mName = hidden;
+	else
+	{
+		LLAvatarNameCache::getNSName(mID, mName, radar_namesystem()); // We wouldn't be alive if this were to fail now.
+		if (anon_names) mName = RlvStrings::getAnonym(mName);
+	}
+}
+
 const F32 ACTIVITY_TIMEOUT = 1.0f;
 void LLAvatarListEntry::setActivity(ACTIVITY_TYPE activity)
 {
@@ -241,14 +267,6 @@ LLFloaterAvatarList::~LLFloaterAvatarList()
 //static
 void LLFloaterAvatarList::toggleInstance(const LLSD&)
 {
-// [RLVa:KB]
-	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
-	{
-		if(instanceExists())
-			getInstance()->close();
-	}
-	else
-// [/RLVa:KB]
 	if (!instanceVisible())
 	{
 		showInstance();
@@ -262,10 +280,6 @@ void LLFloaterAvatarList::toggleInstance(const LLSD&)
 //static
 void LLFloaterAvatarList::showInstance()
 {
-// [RLVa:KB]
-	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
-		return;
-// [/RLVa:KB]
 	getInstance()->open();
 }
 
@@ -290,6 +304,12 @@ void LLFloaterAvatarList::onClose(bool app_quitting)
 	{
 		destroy();
 	}
+}
+
+BOOL LLFloaterAvatarList::handleRightMouseDown(S32 x, S32 y, MASK mask)
+{
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS) || gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) return TRUE; // RLVa:LF - No menu, menus share listeners with others that we may want to work; plus the user has no idea who these people are!!
+	return LLFloater::handleRightMouseDown(x, y, mask);
 }
 
 static void cmd_profile(const LLAvatarListEntry* entry);
@@ -520,7 +540,7 @@ void updateParticleActivity(LLDrawable *drawablep)
 
 void LLFloaterAvatarList::updateAvatarList()
 {
-	//llinfos << "radar refresh: updating map" << llendl;
+	//LL_INFOS() << "radar refresh: updating map" << LL_ENDL;
 
 	// Check whether updates are enabled
 	if (!mUpdate)
@@ -538,12 +558,16 @@ void LLFloaterAvatarList::updateAvatarList()
 		static LLCachedControl<bool> announce(gSavedSettings, "RadarChatKeys");
 		std::queue<LLUUID> announce_keys;
 
+		bool no_names(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS));
+		bool anon_names(!no_names && gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES));
+		const std::string& rlv_hidden(RlvStrings::getString(RLV_STRING_HIDDEN));
 		for (LLWorld::pos_map_t::const_iterator i = avs.cbegin(), end = avs.cend(); i != end; ++i)
 		{
 			const LLUUID& avid = i->first;
 			std::string name;
-			static const LLCachedControl<S32> namesystem("RadarNameSystem");
-			if (!LLAvatarNameCache::getNSName(avid, name, namesystem)) continue; //prevent (Loading...)
+			if (no_names) name = rlv_hidden;
+			else if (!LLAvatarNameCache::getNSName(avid, name, radar_namesystem())) continue; //prevent (Loading...)
+			else if (anon_names) name = RlvStrings::getAnonym(name);
 
 			LLVector3d position = i->second;
 
@@ -594,7 +618,7 @@ void LLFloaterAvatarList::updateAvatarList()
 		}
 	}
 
-//	llinfos << "radar refresh: done" << llendl;
+//	LL_INFOS() << "radar refresh: done" << LL_ENDL;
 
 	expireAvatarList();
 
@@ -615,7 +639,7 @@ void LLFloaterAvatarList::updateAvatarList()
 
 void LLFloaterAvatarList::expireAvatarList()
 {
-//	llinfos << "radar: expiring" << llendl;
+//	LL_INFOS() << "radar: expiring" << LL_ENDL;
 	for(av_list_t::iterator it = mAvatars.begin(); it != mAvatars.end();)
 	{
 		LLAvatarListEntry* entry = it->get();
@@ -650,7 +674,7 @@ void LLFloaterAvatarList::updateAvatarSorting()
 	}
 }
 
-bool getCustomColor(const LLUUID& id, LLColor4& color, LLViewerRegion* parent_estate);
+bool getCustomColorRLV(const LLUUID& id, LLColor4& color, LLViewerRegion* parent_estate, bool name_restricted);
 
 /**
  * Redraws the avatar list
@@ -680,6 +704,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 	localRectToScreen(getLocalRect(), &screen_rect);
 	speakermgr.update(!(screen_rect.pointInRect(gViewerWindow->getCurrentMouseX(), gViewerWindow->getCurrentMouseY()) && gMouseIdleTimer.getElapsedTimeF32() < 5.f));
 
+	bool name_restricted(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS) || gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES));
 	BOOST_FOREACH(av_list_t::value_type& entry, mAvatars)
 	{
 		// Skip if avatar hasn't been around
@@ -737,7 +762,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 			}
 
 			//<edit> custom colors for certain types of avatars!
-			getCustomColor(av_id, color, LLWorld::getInstance()->getRegionFromPosGlobal(entry->getPosition()));
+			getCustomColorRLV(av_id, color, LLWorld::getInstance()->getRegionFromPosGlobal(entry->getPosition()), name_restricted);
 			name.color = color*0.5f + unselected_color*0.5f;
 			element.columns.add(name);
 		}
@@ -993,13 +1018,26 @@ void LLFloaterAvatarList::refreshAvatarList()
 	
 	mDirtyAvatarSorting = true;
 
-//	llinfos << "radar refresh: done" << llendl;
+//	LL_INFOS() << "radar refresh: done" << LL_ENDL;
 
+}
+
+void LLFloaterAvatarList::resetAvatarNames()
+{
+	bool hide_tags(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS));
+	bool anon_names(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES));
+	const std::string& hidden(RlvStrings::getString(RLV_STRING_HIDDEN));
+	BOOST_FOREACH(av_list_t::value_type& entry, mAvatars)
+	{
+		entry->resetName(hide_tags, anon_names, hidden);
+	}
+	getChildView("profile_btn")->setEnabled(!hide_tags && !anon_names);
+	getChildView("im_btn")->setEnabled(!hide_tags && !anon_names);
 }
 
 void LLFloaterAvatarList::onClickIM()
 {
-	//llinfos << "LLFloaterFriends::onClickIM()" << llendl;
+	//LL_INFOS() << "LLFloaterFriends::onClickIM()" << LL_ENDL;
 	const uuid_vec_t ids = mAvatarList->getSelectedIDs();
 	if (!ids.empty())
 	{
@@ -1065,7 +1103,7 @@ void LLFloaterAvatarList::refreshTracker()
 	{	// Tracker stopped.
 		LLTracker::stopTracking(false);
 		mTracking = false;
-//		llinfos << "Tracking stopped." << llendl;
+//		LL_INFOS() << "Tracking stopped." << LL_ENDL;
 	}
 }
 
@@ -1100,13 +1138,18 @@ BOOL LLFloaterAvatarList::handleKeyHere(KEY key, MASK mask)
 			{
 				if (const LLAvatarListEntry* entry = getAvatarEntry(agent_id))
 				{
-//					llinfos << "Trying to teleport to " << entry->getName() << " at " << entry->getPosition() << llendl;
+//					LL_INFOS() << "Trying to teleport to " << entry->getName() << " at " << entry->getPosition() << LL_ENDL;
 					gAgent.teleportViaLocation(entry->getPosition());
 				}
 				return true;
 			}
 			if (MASK_SHIFT == mask)
 			{
+				if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS) || gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) // RLVa:LF - Don't you dare!
+				{
+					make_ui_sound("UISndInvalidOp");
+					return true;
+				}
 				onClickIM();
 				return true;
 			}
@@ -1349,7 +1392,7 @@ static void send_estate_message(
 	// replying to. I think this can be ignored for now.
 	invoice.generate();
 
-	llinfos << "Sending estate request '" << request << "'" << llendl;
+	LL_INFOS() << "Sending estate request '" << request << "'" << LL_ENDL;
 	msg->newMessage("EstateOwnerMessage");
 	msg->nextBlockFast(_PREHASH_AgentData);
 	msg->addUUIDFast(_PREHASH_AgentID, gAgentID);
@@ -1396,7 +1439,7 @@ void LLFloaterAvatarList::doCommand(avlist_command_t func, bool single/*=false*/
 		if (avid.isNull()) continue;
 		if (LLAvatarListEntry* entry = getAvatarEntry(avid))
 		{
-			llinfos << "Executing command on " << entry->getName() << llendl;
+			LL_INFOS() << "Executing command on " << entry->getName() << LL_ENDL;
 			func(entry);
 		}
 	}

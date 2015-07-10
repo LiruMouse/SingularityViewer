@@ -232,7 +232,7 @@ void LLFloaterTOS::updateAgree(LLUICtrl*, void* userdata )
 void LLFloaterTOS::onContinue( void* userdata )
 {
 	LLFloaterTOS* self = (LLFloaterTOS*) userdata;
-	llinfos << "User agrees with TOS." << llendl;
+	LL_INFOS() << "User agrees with TOS." << LL_ENDL;
 	if (self->mType == TOS_TOS)
 	{
 		gAcceptTOS = TRUE;
@@ -259,7 +259,7 @@ void LLFloaterTOS::onContinue( void* userdata )
 void LLFloaterTOS::onCancel( void* userdata )
 {
 	LLFloaterTOS* self = (LLFloaterTOS*) userdata;
-	llinfos << "User disagrees with TOS." << llendl;
+	LL_INFOS() << "User disagrees with TOS." << LL_ENDL;
 	LLNotificationsUtil::add("MustAgreeToLogIn", LLSD(), LLSD(), login_alert_done);
 	LLStartUp::setStartupState( STATE_LOGIN_SHOW );
 	self->mLoadCompleteCount = 0;  // reset counter for next time we come to TOS
@@ -274,7 +274,7 @@ void LLFloaterTOS::handleMediaEvent(LLPluginClassMedia* /*self*/, EMediaEvent ev
 		// skip past the loading screen navigate complete
 		if ( ++mLoadCompleteCount == 2 )
 		{
-			llinfos << "NAVIGATE COMPLETE" << llendl;
+			LL_INFOS() << "NAVIGATE COMPLETE" << LL_ENDL;
 			// enable Agree to TOS radio button now that page has loaded
 			LLCheckBoxCtrl * tos_agreement = getChild<LLCheckBoxCtrl>("agree_chk");
 			tos_agreement->setEnabled( true );

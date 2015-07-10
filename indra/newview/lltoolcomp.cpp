@@ -72,7 +72,7 @@ void LLToolComposite::setCurrentTool( LLTool* new_tool )
 	if( mCur != new_tool )
 	{
 		if(new_tool)
-			lldebugs << "Current Tool: " << new_tool->getName() << llendl;
+			LL_DEBUGS() << "Current Tool: " << new_tool->getName() << LL_ENDL;
 		if( mSelected )
 		{
 			mCur->handleDeselect();

@@ -31,7 +31,7 @@
 #include <map>
 #include <typeinfo>
 
-#include "string_table.h"
+#include "llstringtable.h"
 #include "llerror.h"			// llassert_always
 #include <boost/utility.hpp>
 #include <boost/function.hpp>

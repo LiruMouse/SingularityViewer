@@ -191,7 +191,7 @@ LLPanelLogin::LLPanelLogin(const LLRect& rect)
 	sendChildToBack(getChildView("channel_text"));
 	sendChildToBack(getChildView("forgot_password_text"));
 
-	//llinfos << " url history: " << LLSDOStreamer<LLSDXMLFormatter>(LLURLHistory::getURLHistory("regionuri")) << llendl;
+	//LL_INFOS() << " url history: " << LLSDOStreamer<LLSDXMLFormatter>(LLURLHistory::getURLHistory("regionuri")) << LL_ENDL;
 
 	LLComboBox* location_combo = getChild<LLComboBox>("start_location_combo");
 	updateLocationSelectorsVisibility(); // separate so that it can be called from preferences
@@ -390,7 +390,7 @@ BOOL LLPanelLogin::handleKeyHere(KEY key, MASK mask)
 # if !LL_RELEASE_FOR_DOWNLOAD
 	if ( KEY_F2 == key )
 	{
-		llinfos << "Spawning floater TOS window" << llendl;
+		LL_INFOS() << "Spawning floater TOS window" << LL_ENDL;
 		LLFloaterTOS* tos_dialog = LLFloaterTOS::show(LLFloaterTOS::TOS_TOS,"");
 		tos_dialog->startModal();
 		return TRUE;
@@ -479,7 +479,7 @@ void LLPanelLogin::setFields(const std::string& firstname,
 {
 	if (!sInstance)
 	{
-		llwarns << "Attempted fillFields with no login view shown" << llendl;
+		LL_WARNS() << "Attempted fillFields with no login view shown" << LL_ENDL;
 		return;
 	}
 
@@ -518,7 +518,7 @@ void LLPanelLogin::setFields(const LLSavedLoginEntry& entry, bool takeFocus)
 {
 	if (!sInstance)
 	{
-		llwarns << "Attempted setFields with no login view shown" << llendl;
+		LL_WARNS() << "Attempted setFields with no login view shown" << LL_ENDL;
 		return;
 	}
 
@@ -561,7 +561,7 @@ void LLPanelLogin::getFields(std::string& firstname, std::string& lastname, std:
 {
 	if (!sInstance)
 	{
-		llwarns << "Attempted getFields with no login view shown" << llendl;
+		LL_WARNS() << "Attempted getFields with no login view shown" << LL_ENDL;
 		return;
 	}
 	
@@ -577,7 +577,7 @@ void LLPanelLogin::getFields(std::string& firstname, std::string& lastname, std:
 {
 	if (!sInstance)
 	{
-		llwarns << "Attempted getLocation with no login view shown" << llendl;
+		LL_WARNS() << "Attempted getLocation with no login view shown" << LL_ENDL;
 		return;
 	}
 	
@@ -825,7 +825,7 @@ bool LLPanelLogin::newAccountAlertCallback(const LLSD& notification, const LLSD&
 {
 	if (0 == LLNotification::getSelectedOption(notification, response))
 	{
-		llinfos << "Going to account creation URL" << llendl;
+		LL_INFOS() << "Going to account creation URL" << LL_ENDL;
 		LLWeb::loadURLExternal(CREATE_ACCOUNT_URL);
 	}
 	return false;
@@ -838,12 +838,12 @@ void LLPanelLogin::onClickNewAccount()
 	const std::string& url = gHippoGridManager->getCurrentGrid()->getRegisterUrl();
 	if (!url.empty())
 	{
-		llinfos << "Going to account creation URL." << llendl;
+		LL_INFOS() << "Going to account creation URL." << LL_ENDL;
 		LLWeb::loadURLExternal(url);
 	}
 	else
 	{
-		llinfos << "Account creation URL is empty." << llendl;
+		LL_INFOS() << "Account creation URL is empty." << LL_ENDL;
 	}
 }
 
@@ -862,7 +862,7 @@ void LLPanelLogin::onClickForgotPassword()
 	if (!url.empty())
 		LLWeb::loadURLExternal(url);
 	else
-		llwarns << "Link for 'forgotton password' not set." << llendl;
+		LL_WARNS() << "Link for 'forgotton password' not set." << LL_ENDL;
 }
 
 // static

@@ -2,31 +2,25 @@
  * @file llhudeffectlookat.cpp
  * @brief LLHUDEffectLookAt class implementation
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -39,24 +33,22 @@
 #include "message.h"
 #include "llagent.h"
 #include "llagentcamera.h"
-#include "llvoavatarself.h"
+#include "llvoavatar.h"
 #include "lldrawable.h"
 #include "llviewerobjectlist.h"
 #include "llrendersphere.h"
 #include "llselectmgr.h"
 #include "llglheaders.h"
-
-
 #include "llxmltree.h"
-// <edit>
+
+// <alchemy>
 #include "llavatarnamecache.h"
-#include "llresmgr.h"
 #include "llhudrender.h"
-#include "llviewerwindow.h"
 #include "llviewercontrol.h"
-// </edit>
+// </alchemy>
 #include "rlvhandler.h"
 
+//BOOL LLHUDEffectLookAt::sDebugLookAt = FALSE; // <alchemy/>
 
 // packet layout
 const S32 SOURCE_AVATAR = 0;
@@ -216,7 +208,7 @@ static BOOL loadAttentions()
 	//-------------------------------------------------------------------------
 	if( !root->hasName( "linden_attentions" ) )
 	{
-		llwarns << "Invalid linden_attentions file header: " << filename << llendl;
+		LL_WARNS() << "Invalid linden_attentions file header: " << filename << LL_ENDL;
 		return FALSE;
 	}
 
@@ -224,7 +216,7 @@ static BOOL loadAttentions()
 	static LLStdStringHandle version_string = LLXmlTree::addAttributeString("version");
 	if( !root->getFastAttributeString( version_string, version ) || (version != "1.0") )
 	{
-		llwarns << "Invalid linden_attentions file version: " << version << llendl;
+		LL_WARNS() << "Invalid linden_attentions file version: " << version << LL_ENDL;
 		return FALSE;
 	}
 
@@ -253,7 +245,10 @@ static BOOL loadAttentions()
 LLHUDEffectLookAt::LLHUDEffectLookAt(const U8 type) : 
 	LLHUDEffect(type), 
 	mKillTime(0.f),
-	mLastSendTime(0.f)
+// <alchemy>
+	mLastSendTime(0.f),
+	mDebugLookAt(gSavedSettings, "AscentShowLookAt", false)
+// </alchemy>
 {
 	clearLookAtTarget();
 	// parse the default sets
@@ -334,27 +329,27 @@ void LLHUDEffectLookAt::unpackData(LLMessageSystem *mesgsys, S32 blocknum)
 	S32 size = mesgsys->getSizeFast(_PREHASH_Effect, blocknum, _PREHASH_TypeData);
 	if (size != PKT_SIZE)
 	{
-		llwarns << "LookAt effect with bad size " << size << llendl;
+		LL_WARNS() << "LookAt effect with bad size " << size << LL_ENDL;
 		return;
 	}
 	mesgsys->getBinaryDataFast(_PREHASH_Effect, _PREHASH_TypeData, packed_data, PKT_SIZE, blocknum);
 	
 	htonmemcpy(source_id.mData, &(packed_data[SOURCE_AVATAR]), MVT_LLUUID, 16);
 
-	LLVOAvatar *avatarp = gObjectList.findAvatar(source_id);
-	if (avatarp)
+	LLViewerObject *objp = gObjectList.findObject(source_id);
+	if (objp && objp->isAvatar())
 	{
-		setSourceObject(avatarp);
+		setSourceObject(objp);
 	}
 	else
 	{
-		//llwarns << "Could not find source avatar for lookat effect" << llendl;
+		//LL_WARNS() << "Could not find source avatar for lookat effect" << LL_ENDL;
 		return;
 	}
 
 	htonmemcpy(target_id.mData, &(packed_data[TARGET_OBJECT]), MVT_LLUUID, 16);
 
-	LLViewerObject *objp = gObjectList.findObject(target_id);
+	objp = gObjectList.findObject(target_id);
 
 	htonmemcpy(new_target.mdV, &(packed_data[TARGET_POS]), MVT_LLVector3d, 24);
 
@@ -368,13 +363,22 @@ void LLHUDEffectLookAt::unpackData(LLMessageSystem *mesgsys, S32 blocknum)
 	}
 	else
 	{
-		//llwarns << "Could not find target object for lookat effect" << llendl;
+		//LL_WARNS() << "Could not find target object for lookat effect" << LL_ENDL;
 	}
 
 	U8 lookAtTypeUnpacked = 0;
 	htonmemcpy(&lookAtTypeUnpacked, &(packed_data[LOOKAT_TYPE]), MVT_U8, 1);
-	mTargetType = (ELookAtType)lookAtTypeUnpacked;
-
+	// <alchemy>
+	if ((U8)LOOKAT_NUM_TARGETS > lookAtTypeUnpacked)
+	{
+		mTargetType = (ELookAtType)lookAtTypeUnpacked;
+	}
+	else
+	{
+		mTargetType = LOOKAT_TARGET_NONE;
+		LL_DEBUGS("HUDEffect") << "Invalid target type: " << lookAtTypeUnpacked << LL_ENDL;
+	}
+	// </alchemy>
 	if (mTargetType == LOOKAT_TARGET_NONE)
 	{
 		clearLookAtTarget();
@@ -412,7 +416,7 @@ BOOL LLHUDEffectLookAt::setLookAt(ELookAtType target_type, LLViewerObject *objec
 	
 	if (target_type >= LOOKAT_NUM_TARGETS)
 	{
-		llwarns << "Bad target_type " << (int)target_type << " - ignoring." << llendl;
+		LL_WARNS() << "Bad target_type " << (int)target_type << " - ignoring." << LL_ENDL;
 		return FALSE;
 	}
 
@@ -505,15 +509,15 @@ void LLHUDEffectLookAt::setSourceObject(LLViewerObject* objectp)
 //-----------------------------------------------------------------------------
 void LLHUDEffectLookAt::render()
 {
-	static const LLCachedControl<bool> private_look_at("PrivateLookAt",false);
-	static const LLCachedControl<bool> show_look_at("AscentShowLookAt", false);
-
-    if (private_look_at && (gAgentAvatarp == ((LLVOAvatar*)(LLViewerObject*)mSourceObject)))
-        return;
-
-	if (show_look_at && mSourceObject.notNull())
+	// <alchemy>
+	if (mDebugLookAt && mSourceObject.notNull())
 	{
-		LLGLDepthTest gls_depth(GL_TRUE,GL_FALSE);
+		static LLCachedControl<bool> isOwnHidden(gSavedSettings, "AlchemyLookAtHideSelf", true);
+		static LLCachedControl<bool> isPrivate(gSavedSettings, "PrivateLookAt", false);
+		static const LLCachedControl<bool> show_look_at("AscentShowLookAt", false);
+
+		if ((isOwnHidden || isPrivate) && static_cast<LLVOAvatar*>(mSourceObject.get())->isSelf())
+			return;
 
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
@@ -534,57 +538,70 @@ void LLHUDEffectLookAt::render()
 
 			gGL.vertex3f(0.f, 0.f, -1.f);
 			gGL.vertex3f(0.f, 0.f, 1.f);
-			static const LLCachedControl<bool> lookAtLines(gSavedSettings, "AlchemyLookAtLines", false);
+
+			static LLCachedControl<bool> lookAtLines(gSavedSettings, "AlchemyLookAtLines", false);
 			if (lookAtLines)
 			{
 				const std::string targname = (*mAttentions)[mTargetType].mName;
 				if (targname != "None" && targname != "Idle" && targname != "AutoListen")
 				{
-					LLVector3 dist = (mSourceObject->getWorldPosition() - mTargetPos) * 10/3;
-					gGL.vertex3f(0.f, 0.f, 0.f);
-					gGL.vertex3f(dist.mV[VX], dist.mV[VY], dist.mV[VZ] + 0.5f);
+					const LLVector3& source_pos(mSourceObject->getWorldPosition());
+					if (!gRlvHandler.hasBehaviour(RLV_BHVR_CAMAVDIST) || (gAgent.getPosGlobalFromAgent(source_pos) - gAgent.getPositionGlobal()).magVec() <= gRlvHandler.camPole(RLV_BHVR_CAMAVDIST))
+					{
+						LLVector3 dist = (source_pos - mTargetPos) * 10/3;
+						gGL.vertex3f(0.f, 0.f, 0.f);
+						gGL.vertex3f(dist.mV[VX], dist.mV[VY], dist.mV[VZ] + 0.5f);
+					}
 				}
 			}
-		} gGL.end();
+		}
+		gGL.end();
 		gGL.popMatrix();
-		// <edit>
-		static const LLCachedControl<S32> lookAtNames("LookAtNameSystem");
-		if (lookAtNames < 0) return;
-		std::string text;
-		if (!LLAvatarNameCache::getNSName(static_cast<LLVOAvatar*>(mSourceObject.get())->getID(), text, lookAtNames)) return;
-		if (text.length() > 9 && 0 == text.compare(text.length() - 9, 9, " Resident"))
-			text.erase(text.length() - 9);
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
-			text = RlvStrings::getAnonym(text);
-		LLVector3 offset = gAgentCamera.getCameraPositionAgent() - target;
-		offset.normalize();
-		LLVector3 shadow_offset = offset * 0.49f;
-		offset *= 0.5f;
-		const LLFontGL* font = LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF);
-		LLGLEnable gl_blend(GL_BLEND);
-		gGL.pushMatrix();
-		gViewerWindow->setup2DViewport();
-		hud_render_utf8text(text,
-			target + shadow_offset,
-			*font,
-			LLFontGL::NORMAL,
-			LLFontGL::NO_SHADOW,
-			-0.5f * font->getWidthF32(text) + 2.0f,
-			-2.0f,
-			LLColor4::black,
-			FALSE);
-		hud_render_utf8text(text,
-			target + offset,
-			*font,
-			LLFontGL::NORMAL,
-			LLFontGL::NO_SHADOW,
-			-0.5f * font->getWidthF32(text),
-			0.0f,
-			(*mAttentions)[mTargetType].mColor,
-			FALSE);
-		gGL.popMatrix();
-		// </edit>
+
+		static LLCachedControl<S32> lookAtNames(gSavedSettings, "LookAtNameSystem", 0);
+		if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS) && lookAtNames >= 0)
+		{
+			std::string text;
+			if (!LLAvatarNameCache::getNSName(static_cast<LLVOAvatar*>(mSourceObject.get())->getID(), text, lookAtNames)) return;
+			if (text.length() > 9 && 0 == text.compare(text.length() - 9, 9, " Resident"))
+				text.erase(text.length() - 9);
+			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
+				text = RlvStrings::getAnonym(text);
+
+			LLVector3 offset = gAgentCamera.getCameraPositionAgent() - target;
+			offset.normalize();
+			LLVector3 shadow_offset = offset * 0.49f;
+			offset *= 0.5f;
+			LLGLEnable gl_blend(GL_BLEND);
+
+			const LLFontGL* fontp = LLFontGL::getFontSansSerif();
+			gGL.pushMatrix();
+			hud_render_utf8text(
+				text,
+				target + shadow_offset,
+				*fontp,
+				LLFontGL::NORMAL,
+				LLFontGL::NO_SHADOW,
+				-0.5f * fontp->getWidthF32(text) + 2.0f,
+				-2.0f,
+				LLColor4::black,
+				FALSE
+			);
+			hud_render_utf8text(
+				text,
+				target + offset,
+				*fontp,
+				LLFontGL::NORMAL,
+				LLFontGL::NO_SHADOW,
+				-0.5f * fontp->getWidthF32(text),
+				0.0f,
+				(*mAttentions)[mTargetType].mColor,
+				FALSE
+			);
+			gGL.popMatrix();
+		}
 	}
+	// </alchemy>
 }
 
 //-----------------------------------------------------------------------------
@@ -592,8 +609,6 @@ void LLHUDEffectLookAt::render()
 //-----------------------------------------------------------------------------
 void LLHUDEffectLookAt::update()
 {
-	static const LLCachedControl<bool> show_look_at("AscentShowLookAt", false);
-
     // If the target object is dead, set the target object to NULL
 	if (!mTargetObject.isNull() && mTargetObject->isDead())
 	{
@@ -640,14 +655,10 @@ void LLHUDEffectLookAt::update()
 		}
 	}
 
-	// Singu note: this displays extra information for look at targets. Due to the bug in llvoavatar.cpp
-	// it was never displayed before and is not something users exect: turning it off for now
-#if 0
-	if (show_look_at)
+	if (mDebugLookAt) // <alchemy/>
 	{
-		((LLVOAvatar*)(LLViewerObject*)mSourceObject)->addDebugText((*mAttentions)[mTargetType].mName);
+		// ((LLVOAvatar*)(LLViewerObject*)mSourceObject)->addDebugText((*mAttentions)[mTargetType].mName); // <alchemy/>
 	}
-#endif
 }
 
 /**
@@ -662,11 +673,6 @@ void LLHUDEffectLookAt::update()
  */
 bool LLHUDEffectLookAt::calcTargetPosition()
 {
-	if (gNoRender)
-	{
-		return false;
-	}
-
 	LLViewerObject *target_obj = (LLViewerObject *)mTargetObject;
 	LLVector3 local_offset;
 	

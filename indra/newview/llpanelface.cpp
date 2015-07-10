@@ -1822,7 +1822,7 @@ void LLPanelFace::onSelectTexture(const LLSD& data)
 		case GL_RGB: break;
 		default:
 			{
-				llwarns << "Unexpected tex format in LLPanelFace...resorting to no alpha" << llendl;
+				LL_WARNS() << "Unexpected tex format in LLPanelFace...resorting to no alpha" << LL_ENDL;
 			}
 			break;
 		}
@@ -2361,7 +2361,7 @@ void LLPanelFace::onClickCopy()
 				tex_params["imageid"] = tex;
 			}
 		}
-		llinfos << "Copying params on face " << i << "." << llendl;
+		LL_INFOS() << "Copying params on face " << i << "." << LL_ENDL;
 		textures.append(tex_params);
 	}
 }
@@ -2392,7 +2392,7 @@ void LLPanelFace::onClickPaste()
 	
 	for (int i = 0; i < textures.size() && i < objectp->getNumTEs(); i++)
 	{
-		llinfos << "Pasting params on face " << i << "." << llendl;
+		LL_INFOS() << "Pasting params on face " << i << "." << LL_ENDL;
 		LLSD cur_tex = objectp->getTE(i)->asLLSD();
 		if (textures[i]["imageid"].asUUID() == LLUUID::null)
 			textures[i]["imageid"] = cur_tex["imageid"];

@@ -320,7 +320,7 @@ void print_statemachine_diagnostics(U64 total_clocks, AIStateMachine::StateTimer
 
 	AIStateMachine::StateTimerBase::DumpTimers(msg);
 
-	llwarns << msg.str() << llendl;
+	LL_WARNS() << msg.str() << LL_ENDL;
 }
 #endif
 
@@ -1264,7 +1264,7 @@ void AIStateMachine::abort(void)
   // Block until the current run finished.
   if (!mRunMutex.try_lock())
   {
-	llwarns << "AIStateMachine::abort() blocks because the statemachine is still executing code in another thread." << llendl;
+	LL_WARNS() << "AIStateMachine::abort() blocks because the statemachine is still executing code in another thread." << LL_ENDL;
 	mRunMutex.lock();
   }
   mRunMutex.unlock();
@@ -1463,6 +1463,6 @@ void stopEngineThread(void)
   {
 	ms_sleep(10);
   }
-  llinfos << "State machine thread" << (!AIEngineThread::sInstance->isStopped() ? " not" : "") << " stopped after " << ((400 - count) * 10) << "ms." << llendl;
+  LL_INFOS() << "State machine thread" << (!AIEngineThread::sInstance->isStopped() ? " not" : "") << " stopped after " << ((400 - count) * 10) << "ms." << LL_ENDL;
 }
 

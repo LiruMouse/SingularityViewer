@@ -77,7 +77,7 @@ int vfs_seek(void *datasource, ogg_int64_t offset, int whence)
 		origin = -1;
 		break;
 	default:
-		llerrs << "Invalid whence argument to vfs_seek" << llendl;
+		LL_ERRS() << "Invalid whence argument to vfs_seek" << LL_ENDL;
 		return -1;
 	}
 
@@ -124,7 +124,7 @@ BOOL decode_vorbis_file(LLVFS *vfs, const LLUUID &in_uuid, char *out_fname)
 
 	U32 data_length = 0;
 
-	llinfos << "Vorbis decode from vfile: " << in_uuid << llendl;
+	LL_INFOS() << "Vorbis decode from vfile: " << in_uuid << LL_ENDL;
 
 	in_vfile = new LLVFile(vfs, in_uuid, LLAssetType::AT_SOUND);
 	if (! in_vfile->getSize())
@@ -226,7 +226,7 @@ BOOL decode_vorbis_file(LLVFS *vfs, const LLUUID &in_uuid, char *out_fname)
 	int r = ov_open_callbacks(in_vfile, &vf, NULL, 0, vfs_callbacks);
 	if(r < 0) 
 	{
-		llwarns << r << " Input to vorbis decode does not appear to be an Ogg bitstream: " << in_uuid << llendl;		
+		LL_WARNS() << r << " Input to vorbis decode does not appear to be an Ogg bitstream: " << in_uuid << LL_ENDL;		
 		return(FALSE);
 	}
 
@@ -247,7 +247,7 @@ BOOL decode_vorbis_file(LLVFS *vfs, const LLUUID &in_uuid, char *out_fname)
 		if (ret == 0) {
 			/* EOF */
 			eof=1;
-//			llinfos << "Vorbis EOF" << llendl;
+//			LL_INFOS() << "Vorbis EOF" << LL_ENDL;
 		} else if (ret < 0) {
 			/* error in the stream.  Not a problem, just reporting it in
 			   case we (the app) cares.  In this case, we don't. */
@@ -255,7 +255,7 @@ BOOL decode_vorbis_file(LLVFS *vfs, const LLUUID &in_uuid, char *out_fname)
 			break;
 
 		} else {
-//			llinfos << "Vorbis read " << ret << "bytes" << llendl;
+//			LL_INFOS() << "Vorbis read " << ret << "bytes" << LL_ENDL;
 			/* we don't bother dealing with sample rate changes, etc, but.
 			   you'll have to*/
 			data_length += outfile.write(pcmout, ret);

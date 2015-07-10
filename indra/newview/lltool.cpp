@@ -61,7 +61,7 @@ LLTool::~LLTool()
 {
 	if( hasMouseCapture() )
 	{
-		llwarns << "Tool deleted holding mouse capture.  Mouse capture removed." << llendl;
+		LL_WARNS() << "Tool deleted holding mouse capture.  Mouse capture removed." << LL_ENDL;
 		gFocusMgr.removeMouseCaptureWithoutCallback( this );
 	}
 }
@@ -86,7 +86,7 @@ BOOL LLTool::handleMouseDown(S32 x, S32 y, MASK mask)
 {
 	if (gDebugClicks)
 	{
-		llinfos << "LLTool left mouse down" << llendl;
+		LL_INFOS() << "LLTool left mouse down" << LL_ENDL;
 	}
 	// by default, didn't handle it
 	// LL_INFOS() << "LLTool::handleMouseDown" << LL_ENDL;
@@ -98,7 +98,7 @@ BOOL LLTool::handleMouseUp(S32 x, S32 y, MASK mask)
 {
 	if (gDebugClicks) 
 	{
-		llinfos << "LLTool left mouse up" << llendl;
+		LL_INFOS() << "LLTool left mouse up" << LL_ENDL;
 	}
 	// by default, didn't handle it
 	// LL_INFOS() << "LLTool::handleMouseUp" << LL_ENDL;
@@ -109,7 +109,7 @@ BOOL LLTool::handleMouseUp(S32 x, S32 y, MASK mask)
 BOOL LLTool::handleHover(S32 x, S32 y, MASK mask)
 {
 	gViewerWindow->getWindow()->setCursor(UI_CURSOR_ARROW);
-	lldebugst(LLERR_USER_INPUT) << "hover handled by a tool" << llendl;		
+	LL_DEBUGS("UserInput") << "hover handled by a tool" << LL_ENDL;
 	// by default, do nothing, say we handled it
 	return TRUE;
 }

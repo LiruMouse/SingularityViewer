@@ -166,7 +166,7 @@ void LLFloaterWebContent::showInstance(const std::string& window_class, Params& 
 	LLFloaterWebContent* old_inst = getInstance(p.id());
 	if(old_inst)
 	{
-		llwarns << "Replacing unexpected duplicate floater: " << p.id() << llendl;
+		LL_WARNS() << "Replacing unexpected duplicate floater: " << p.id() << LL_ENDL;
 		old_inst->mKey = key;
 		old_inst->mAgeTimer.reset();
 		old_inst->open();
@@ -224,7 +224,7 @@ void LLFloaterWebContent::geometryChanged(S32 x, S32 y, S32 width, S32 height)
 						width + getRect().getWidth() - browser_rect.getWidth(), 
 						height + getRect().getHeight() - browser_rect.getHeight());
 
-	lldebugs << "geometry change: " << geom << llendl;
+	LL_DEBUGS() << "geometry change: " << geom << LL_ENDL;
 	
 	LLRect new_rect;
 	getParent()->screenRectToLocal(geom, &new_rect);
@@ -234,7 +234,7 @@ void LLFloaterWebContent::geometryChanged(S32 x, S32 y, S32 width, S32 height)
 // static
 void LLFloaterWebContent::preCreate(LLFloaterWebContent::Params& p)
 {
-	lldebugs << "url = " << p.url() << ", target = " << p.target() << ", uuid = " << p.id() << llendl;
+	LL_DEBUGS() << "url = " << p.url() << ", target = " << p.target() << ", uuid = " << p.id() << LL_ENDL;
 
 	if (!p.id.isProvided())
 	{
@@ -263,11 +263,11 @@ void LLFloaterWebContent::preCreate(LLFloaterWebContent::Params& p)
 		std::sort(instances.begin(), instances.end(), CompareAgeDescending());
 
 		//LLFloaterReg::const_instance_list_t &instances = LLFloaterReg::getFloaterList(p.window_class);
-		lldebugs << "total instance count is " << instances.size() << llendl;
+		LL_DEBUGS() << "total instance count is " << instances.size() << LL_ENDL;
 
 		for(std::vector<LLFloaterWebContent*>::const_iterator iter = instances.begin(); iter != instances.end(); iter++)
 		{
-			lldebugs << "    " << (*iter)->mKey["target"] << llendl;
+			LL_DEBUGS() << "    " << (*iter)->mKey["target"] << LL_ENDL;
 		}
 
 		if(instances.size() >= (size_t)browser_window_limit)

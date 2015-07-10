@@ -186,7 +186,7 @@ LLAlertDialog::LLAlertDialog( LLNotificationPtr notification, bool modal)
 	// Message: create text box using raw string, as text has been structure deliberately
 	// Use size of created text box to generate dialog box size
 	std::string msg = mNote->getMessage();
-	llwarns << "Alert: " << msg << llendl;
+	LL_WARNS() << "Alert: " << msg << LL_ENDL;
 	LLTextBox* msg_box = new LLTextBox( std::string("Alert message"), msg, (F32)MAX_ALLOWED_MSG_WIDTH, font );
 
 	const LLRect& text_rect = msg_box->getRect();
@@ -504,7 +504,7 @@ void LLAlertDialog::setEditTextArgs(const LLSD& edit_args)
 	}
 	else
 	{
-		llwarns << "LLAlertDialog::setEditTextArgs called on dialog with no line editor" << llendl;
+		LL_WARNS() << "LLAlertDialog::setEditTextArgs called on dialog with no line editor" << LL_ENDL;
 	}
 }
 

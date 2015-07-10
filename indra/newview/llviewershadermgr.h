@@ -57,6 +57,7 @@ public:
 	void initAttribsAndUniforms(void);
 	void setShaders();
 	void unloadShaders();
+	void unloadShaderObjects();
 	S32 getVertexShaderLevel(S32 type);
 	BOOL loadBasicShaders();
 	BOOL loadShadersEffects();
@@ -70,7 +71,6 @@ public:
 	BOOL loadTransformShaders();
 
 	std::vector<S32> mVertexShaderLevel;
-	S32	mMaxAvatarShaderLevel;
 
 	enum EShaderClass
 	{
@@ -252,8 +252,6 @@ extern LLGLSLShader			gHighlightSpecularProgram;
 // avatar shader handles
 extern LLGLSLShader			gAvatarProgram;
 extern LLGLSLShader			gAvatarWaterProgram;
-extern LLGLSLShader			gAvatarEyeballProgram;
-extern LLGLSLShader			gAvatarPickProgram;
 extern LLGLSLShader			gImpostorProgram;
 
 // WindLight shader handles

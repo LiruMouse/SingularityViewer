@@ -6,20 +6,20 @@
 	<text name="type_label">
 		Destino
 	</text>
-	<radio_group label="Tipo de foto" name="snapshot_type_radio">
-		<radio_item name="feed">
+	<combo_box name="snapshot_type_radio">
+		<combo_item name="feed">
 			Publicar en my.secondlife.com
-		</radio_item>	
-		<radio_item name="postcard">
+		</combo_item>
+		<combo_item name="postcard">
 			Enviar por Email
-		</radio_item>
-		<radio_item name="texture">
-			Guardarla en tu inventario ([UPLOADFEE])
-		</radio_item>
-		<radio_item name="local">
+		</combo_item>
+		<combo_item name="texture">
+			Guardarla en tu inventario
+		</combo_item>
+		<combo_item name="local">
 			Guardarla en disco duro
-		</radio_item>
-	</radio_group>
+		</combo_item>
+	</combo_box>
 	<button label="Actualizar foto" name="new_snapshot_btn"/>
 	<button label="Congelar" name="freeze_time_btn" tool_tip="Congelar la imagen y mostrar la vista previa en pantalla completa. Permite mover la cámara por la escena congelada y tomar múltiples fotos de la misma. ¡Presiona ESC para deshacer!" />
 	<button label="Publicar" name="feed_btn"/>	
@@ -160,4 +160,4 @@
 		Aspecto Resolución y Destino
 	</string>	
 </floater>
- 
+

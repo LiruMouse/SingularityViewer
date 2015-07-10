@@ -355,7 +355,7 @@ namespace tut
 		LLFILE* fp = LLFile::fopen(TEST_FILE_NAME, "w+");
 		if(!fp)
 		{
-			llerrs << "File couldnt be open" <<llendl;
+			LL_ERRS() << "File couldnt be open" <<LL_ENDL;
 			return;
 		}
 
@@ -410,7 +410,7 @@ namespace tut
 		LLFILE* fp = LLFile::fopen(TEST_FILE_NAME,"w+");
 		if(!fp)
 		{
-			llerrs << "File couldnt be open" <<llendl;
+			LL_ERRS() << "File couldnt be open" <<LL_ENDL;
 			return;
 		}
 

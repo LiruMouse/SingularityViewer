@@ -183,11 +183,11 @@ HRESULT GetVideoMemoryViaWMI( WCHAR* strInputDeviceID, DWORD* pdwAdapterRam )
 						SAFE_RELEASE( pVideoControllers[iController] );
 					}
 				}
+				SAFE_RELEASE(pEnumVideoControllers);
 			}
 
 			if( pClassName )
 				SysFreeString( pClassName );
-			SAFE_RELEASE( pEnumVideoControllers );
 		}
 
 		if( pNamespace )
@@ -318,10 +318,10 @@ std::string LLDXDriverFile::dump()
 		gWriteDebug(mDateString.c_str());
 		gWriteDebug("\n");
 	}
-	llinfos << mFilepath << llendl;
-	llinfos << mName << llendl;
-	llinfos << mVersionString << llendl;
-	llinfos << mDateString << llendl;
+	LL_INFOS() << mFilepath << LL_ENDL;
+	LL_INFOS() << mName << LL_ENDL;
+	LL_INFOS() << mVersionString << LL_ENDL;
+	LL_INFOS() << mDateString << LL_ENDL;
 
 	return "";
 }
@@ -344,11 +344,11 @@ std::string LLDXDevice::dump()
 		gWriteDebug(mPCIString.c_str());
 		gWriteDebug("\n");
 	}
-	llinfos << llendl;
-	llinfos << "DeviceName:" << mName << llendl;
-	llinfos << "PCIString:" << mPCIString << llendl;
-	llinfos << "Drivers" << llendl;
-	llinfos << "-------" << llendl;
+	LL_INFOS() << LL_ENDL;
+	LL_INFOS() << "DeviceName:" << mName << LL_ENDL;
+	LL_INFOS() << "PCIString:" << mPCIString << LL_ENDL;
+	LL_INFOS() << "Drivers" << LL_ENDL;
+	LL_INFOS() << "-------" << LL_ENDL;
 	for (driver_file_map_t::iterator iter = mDriverFiles.begin(),
 			 end = mDriverFiles.end();
 		 iter != end; iter++)
@@ -449,7 +449,13 @@ BOOL LLDXHardware::getInfo(BOOL vram_only)
 	BOOL ok = FALSE;
     HRESULT       hr;
 
-    CoInitialize(NULL);
+    hr = CoInitialize(NULL);
+	if (FAILED(hr))
+	{
+		LL_WARNS("AppInit") << "COM library initialization failed!" << LL_ENDL;
+		gWriteDebug("COM library initialization failed!\n");
+		return FALSE;
+	}
 
     IDxDiagProvider *dx_diag_providerp = NULL;
     IDxDiagContainer *dx_diag_rootp = NULL;
@@ -709,7 +715,13 @@ LLSD LLDXHardware::getDisplayInfo()
 	LLTimer hw_timer;
     HRESULT       hr;
 	LLSD ret;
-    CoInitialize(NULL);
+    hr = CoInitialize(NULL);
+	if (FAILED(hr))
+	{
+		LL_WARNS("AppInit") << "COM library initialization failed!" << LL_ENDL;
+		gWriteDebug("COM library initialization failed!\n");
+		return ret;
+	}
 
     IDxDiagProvider *dx_diag_providerp = NULL;
     IDxDiagContainer *dx_diag_rootp = NULL;
@@ -719,7 +731,7 @@ LLSD LLDXHardware::getDisplayInfo()
 	IDxDiagContainer *driver_containerp = NULL;
 
     // CoCreate a IDxDiagProvider*
-	llinfos << "CoCreateInstance IID_IDxDiagProvider" << llendl;
+	LL_INFOS() << "CoCreateInstance IID_IDxDiagProvider" << LL_ENDL;
     hr = CoCreateInstance(CLSID_DxDiagProvider,
                           NULL,
                           CLSCTX_INPROC_SERVER,
@@ -728,7 +740,7 @@ LLSD LLDXHardware::getDisplayInfo()
 
 	if (FAILED(hr))
 	{
-		llwarns << "No DXDiag provider found!  DirectX 9 not installed!" << llendl;
+		LL_WARNS() << "No DXDiag provider found!  DirectX 9 not installed!" << LL_ENDL;
 		gWriteDebug("No DXDiag provider found!  DirectX 9 not installed!\n");
 		goto LCleanup;
 	}
@@ -746,14 +758,14 @@ LLSD LLDXHardware::getDisplayInfo()
         dx_diag_init_params.bAllowWHQLChecks        = TRUE;
         dx_diag_init_params.pReserved               = NULL;
 
-		llinfos << "dx_diag_providerp->Initialize" << llendl;
+		LL_INFOS() << "dx_diag_providerp->Initialize" << LL_ENDL;
         hr = dx_diag_providerp->Initialize(&dx_diag_init_params);
         if(FAILED(hr))
 		{
             goto LCleanup;
 		}
 
-		llinfos << "dx_diag_providerp->GetRootContainer" << llendl;
+		LL_INFOS() << "dx_diag_providerp->GetRootContainer" << LL_ENDL;
         hr = dx_diag_providerp->GetRootContainer( &dx_diag_rootp );
         if(FAILED(hr) || !dx_diag_rootp)
 		{
@@ -763,7 +775,7 @@ LLSD LLDXHardware::getDisplayInfo()
 		HRESULT hr;
 
 		// Get display driver information
-		llinfos << "dx_diag_rootp->GetChildContainer" << llendl;
+		LL_INFOS() << "dx_diag_rootp->GetChildContainer" << LL_ENDL;
 		hr = dx_diag_rootp->GetChildContainer(L"DxDiag_DisplayDevices", &devices_containerp);
 		if(FAILED(hr) || !devices_containerp)
 		{
@@ -771,7 +783,7 @@ LLSD LLDXHardware::getDisplayInfo()
 		}
 
 		// Get device 0
-		llinfos << "devices_containerp->GetChildContainer" << llendl;
+		LL_INFOS() << "devices_containerp->GetChildContainer" << LL_ENDL;
 		hr = devices_containerp->GetChildContainer(L"0", &device_containerp);
 		if(FAILED(hr) || !device_containerp)
 		{

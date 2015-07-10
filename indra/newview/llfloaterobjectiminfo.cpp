@@ -69,7 +69,7 @@ LLFloaterObjectIMInfo::LLFloaterObjectIMInfo(const LLSD& seed)
 static void show_avatar_profile(const LLUUID& id)
 {
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
-	if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) || !RlvUtil::isNearbyAgent(id))
+	if ((gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) || gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS)) && RlvUtil::isNearbyAgent(id))
 		return;
 // [/RLVa:KB]
 	LLAvatarActions::showProfile(id);
@@ -114,7 +114,7 @@ void LLFloaterObjectIMInfo::update(const LLSD& data)
 
 //	bool my_object = (owner_id == gAgentID);
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
-	bool my_object = (mOwnerID == gAgentID) || ((gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(mOwnerID)));
+	bool my_object = (mOwnerID == gAgentID) || ((gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) || gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS)) && (RlvUtil::isNearbyAgent(mOwnerID)));
 // [/RLVa:KB]
 	childSetEnabled("Mute",!my_object);
 	
@@ -125,7 +125,7 @@ void LLFloaterObjectIMInfo::update(const LLSD& data)
 void LLFloaterObjectIMInfo::onClickMute()
 {
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
-	if (!mGroupOwned && gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) && RlvUtil::isNearbyAgent(mOwnerID))
+	if (!mGroupOwned && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) || gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS)) && RlvUtil::isNearbyAgent(mOwnerID))
 		return;
 // [/RLVa:KB]
 
@@ -139,7 +139,7 @@ void LLFloaterObjectIMInfo::nameCallback(const std::string& full_name)
 {
 	childSetText("OwnerName", mName =
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
-	(!mGroupOwned && gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) && RlvUtil::isNearbyAgent(mOwnerID)) ? RlvStrings::getAnonym(mName) :
+	(!mGroupOwned && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) || gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS))  && RlvUtil::isNearbyAgent(mOwnerID)) ? RlvStrings::getAnonym(mName) :
 // [/RLVa:KB]
 	full_name);
 }

@@ -135,7 +135,7 @@ int LLProcessLauncher::launch(void)
 			char message[256];
 			wcstombs(message, error_str, 256);
 			message[255] = 0;
-			llwarns << "CreateProcessA failed: " << message << llendl;
+			LL_WARNS() << "CreateProcessA failed: " << message << LL_ENDL;
 			LocalFree(error_str);
 		}
 
@@ -285,7 +285,7 @@ static std::string read_pipe(apr_file_t* in, bool timeout_ok = false)
 		{
 			return "TIMEOUT";
 		}
-		llwarns << "apr_file_read_full: " << apr_strerror(status, buf, sizeof(buf)) << llendl;
+		LL_WARNS() << "apr_file_read_full: " << apr_strerror(status, buf, sizeof(buf)) << LL_ENDL;
 		assert(APR_STATUS_IS_EOF(status));
 		return "END OF FILE";
 	}
@@ -293,13 +293,13 @@ static std::string read_pipe(apr_file_t* in, bool timeout_ok = false)
 	status = apr_file_read_full(in, buf, bytes_to_read, &bytes_read);
 	if (status != APR_SUCCESS)
 	{
-		llwarns << "apr_file_read_full: " << apr_strerror(status, buf, sizeof(buf)) << llendl;
+		LL_WARNS() << "apr_file_read_full: " << apr_strerror(status, buf, sizeof(buf)) << LL_ENDL;
 		assert(status == APR_SUCCESS);	// Fail
 	}
 	assert(bytes_read == bytes_to_read);
 
 	std::string received(buf, bytes_read);
-	llinfos << "Received: \"" << received << "\" (bytes read: " << bytes_read << ")" << llendl;
+	LL_INFOS() << "Received: \"" << received << "\" (bytes read: " << bytes_read << ")" << LL_ENDL;
 	return received;
 }
 
@@ -423,7 +423,7 @@ int LLProcessLauncher::launch(void)
 				if (message != "TIMEOUT" && message != "END OF FILE")
 				{
 					// Most likely execv failed.
-					llwarns << message << llendl;
+					LL_WARNS() << message << LL_ENDL;
 					assert(false);	// Fail in debug mode.
 				}
 			}

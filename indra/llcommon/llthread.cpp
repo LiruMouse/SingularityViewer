@@ -68,7 +68,7 @@ LL_COMMON_API void assert_main_thread()
 {
 	if (!AIThreadID::in_main_thread_inline())
 	{
-		llerrs << "Illegal execution outside main thread." << llendl;
+		LL_ERRS() << "Illegal execution outside main thread." << LL_ENDL;
 	}
 }
 
@@ -110,7 +110,7 @@ void *APR_THREAD_FUNC LLThread::staticRun(apr_thread_t *apr_threadp, void *datap
 	// after the AICurlPrivate::curlthread::AICurlThread::run() function
 	// exits and we actually change this variable (which really SHOULD
 	// have been inside the critical area of the mSignal lock)].
-	lldebugs << "LLThread::staticRun() Exiting: " << name << llendl;
+	LL_DEBUGS() << "LLThread::staticRun() Exiting: " << name << LL_ENDL;
 
 	return NULL;
 }
@@ -146,7 +146,7 @@ void LLThread::shutdown()
 			// First, set the flag that indicates that we're ready to die
 			setQuitting();
 
-			llinfos << "LLThread::shutdown() Killing thread " << mName << " Status: " << mStatus << llendl;
+			LL_INFOS() << "LLThread::shutdown() Killing thread " << mName << " Status: " << mStatus << LL_ENDL;
 			// Now wait a bit for the thread to exit
 			// It's unclear whether I should even bother doing this - this destructor
 			// should netver get called unless we're already stopped, really...
@@ -168,7 +168,7 @@ void LLThread::shutdown()
 		if (!isStopped())
 		{
 			// This thread just wouldn't stop, even though we gave it time
-			llwarns << "LLThread::shutdown() exiting thread before clean exit!" << llendl;
+			LL_WARNS() << "LLThread::shutdown() exiting thread before clean exit!" << LL_ENDL;
 			// Put a stake in its heart.
 			apr_thread_exit(mAPRThreadp, -1);
 			return;
@@ -200,7 +200,7 @@ void LLThread::start()
 	{
 		--sRunning;
 		mStatus = STOPPED;
-		llwarns << "failed to start thread " << mName << llendl;
+		LL_WARNS() << "failed to start thread " << mName << LL_ENDL;
 		ll_apr_warn_status(status);
 	}
 }

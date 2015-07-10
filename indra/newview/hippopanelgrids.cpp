@@ -272,7 +272,7 @@ void HippoPanelGridsImpl::loadCurGrid()
 		childSetText("gridname", std::string("<required>"));
 		enableEditing(true);
 	} else if (mState != NORMAL) {
-		llwarns << "Illegal state " << mState << '.' << llendl;
+		LL_WARNS() << "Illegal state " << mState << '.' << LL_ENDL;
 	}
 	
 	refresh();
@@ -333,7 +333,7 @@ bool HippoPanelGridsImpl::saveCurGrid()
 			if (error.getCode() == HTTP_NOT_FOUND || error.getCode() == HTTP_METHOD_NOT_ALLOWED)
 			{
 				// Ignore this error; it might be a user entered entry for a grid that has no get_grid_info support.
-				llwarns << AIAlert::text(error) << llendl;
+				LL_WARNS() << AIAlert::text(error) << LL_ENDL;
 			}
 			else if (error.getCode() == HTTP_OK)
 			{
@@ -349,7 +349,7 @@ bool HippoPanelGridsImpl::saveCurGrid()
 	}
 
 	if (!gridInfo) {
-		llwarns << "Grid not found, ignoring changes." << llendl;
+		LL_WARNS() << "Grid not found, ignoring changes." << LL_ENDL;
 		return true;
 	}
 
@@ -397,11 +397,11 @@ void HippoPanelGridsImpl::retrieveGridInfo()
 		grid = new HippoGridInfo("");
 		cleanupGrid = true;
 	} else {
-		llerrs << "Illegal state " << mState << '.' << llendl;
+		LL_ERRS() << "Illegal state " << mState << '.' << LL_ENDL;
 		return;
 	}
 	if (!grid) {
-		llerrs << "Internal error retrieving grid info." << llendl;
+		LL_ERRS() << "Internal error retrieving grid info." << LL_ENDL;
 		return;
 	}
 	

@@ -273,7 +273,7 @@ void LLHUDText::setString(const std::string &text_utf8)
 		{
 			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
 				RlvUtil::filterLocation(text);
-			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
+			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) || gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS))
 				RlvUtil::filterNames(text);
 		}
 		else
@@ -397,7 +397,7 @@ void LLHUDText::updateVisibility()
 
 	if (!mSourceObject)
 	{
-		//llwarns << "LLHUDText::updateScreenPos -- mSourceObject is NULL!" << llendl;
+		//LL_WARNS() << "LLHUDText::updateScreenPos -- mSourceObject is NULL!" << LL_ENDL;
 		mVisible = TRUE;
 		if (mOnHUDAttachment)
 		{

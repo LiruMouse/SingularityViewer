@@ -169,8 +169,8 @@ GetMemoryUsage (MonoObject *obj)
 int printObjectSize(MonoObject* obj, MonoType* type, int total) 
 {
   total += mono_object_get_size (obj);
-  llinfos << "Object type: " << mono_type_full_name(type) << " size: "
-	  << total << llendl;
+  LL_INFOS() << "Object type: " << mono_type_full_name(type) << " size: "
+	  << total << LL_ENDL;
     
   return total;
 }

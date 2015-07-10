@@ -699,8 +699,8 @@ public:
 	//If we get back an error (not found, etc...), handle it here
 	/*virtual*/ void httpFailure(void)
 	{
-		llinfos << "LLPanelGroupVotingResponder::error "
-			<< mStatus << ": " << mReason << llendl;
+		LL_INFOS() << "LLPanelGroupVotingResponder::error "
+			<< mStatus << ": " << mReason << LL_ENDL;
 
 		LLPanelGroupVoting::handleFailure(mGroupID);
 	}
@@ -733,8 +733,8 @@ public:
 	//If we get back an error (not found, etc...), handle it here
 	/*virtual*/ void httpFailure(void)
 	{
-		llinfos << "LLPanelGroupVotingResponder::error "
-			<< mStatus << ": " << mReason << llendl;
+		LL_INFOS() << "LLPanelGroupVotingResponder::error "
+			<< mStatus << ": " << mReason << LL_ENDL;
 
 		LLPanelGroupVoting::handleFailure(mGroupID);
 	}
@@ -968,7 +968,7 @@ void LLPanelGroupVoting::impl::processGroupActiveProposalItemReply(LLMessageSyst
 	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AgentID, agent_id );
 	if (gAgent.getID() != agent_id)
 	{
-		llwarns << "Got active group proposals reply for another agent!" << llendl;
+		LL_WARNS() << "Got active group proposals reply for another agent!" << LL_ENDL;
 		return;
 	}
 
@@ -1130,7 +1130,7 @@ void LLPanelGroupVoting::impl::processGroupVoteHistoryItemReply(LLMessageSystem 
 	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AgentID, agent_id );
 	if (gAgent.getID() != agent_id)
 	{
-		llwarns << "Got group voting history reply for another agent!" << llendl;
+		LL_WARNS() << "Got group voting history reply for another agent!" << LL_ENDL;
 		return;
 	}
 
@@ -1275,7 +1275,7 @@ void LLPanelGroupVoting::impl::processGroupVoteHistoryItemReply(LLMessageSystem 
 		} //end if proposal
 		else
 		{
-			llinfos << "Vote is not a proposal, but a " << vote_type << llendl;
+			LL_INFOS() << "Vote is not a proposal, but a " << vote_type << LL_ENDL;
 			self->mOtherGroupHistoryItems++;
 		}
 	} //end if vote_items > 0

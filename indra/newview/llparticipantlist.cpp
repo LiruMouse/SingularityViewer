@@ -490,7 +490,7 @@ void LLParticipantList::toggleMute(const LLSD& userdata, U32 flags)
 	LLPointer<LLSpeaker> speakerp = mSpeakerMgr->findSpeaker(speaker_id);
 	if (speakerp.isNull())
 	{
-		LL_WARNS("Speakers") << "Speaker " << speaker_id << " not found" << llendl;
+		LL_WARNS("Speakers") << "Speaker " << speaker_id << " not found" << LL_ENDL;
 		return;
 	}
 

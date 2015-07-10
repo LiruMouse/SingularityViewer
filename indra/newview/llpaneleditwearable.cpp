@@ -28,6 +28,7 @@
 
 #include "lfsimfeaturehandler.h"
 #include "llpaneleditwearable.h"
+#include "lllocaltextureobject.h"
 #include "llpanel.h"
 #include "llviewerwearable.h"
 #include "lluictrl.h"
@@ -425,7 +426,7 @@ get_pickers_indexes<LLColorSwatchCtrl> (const LLEditWearableDictionary::Wearable
 {
 	if (!wearable_entry)
 	{
-		llwarns << "could not get LLColorSwatchCtrl indexes for null wearable entry." << llendl;
+		LL_WARNS() << "could not get LLColorSwatchCtrl indexes for null wearable entry." << LL_ENDL;
 		return null_texture_vec;
 	}
 	return wearable_entry->mColorSwatchCtrls;
@@ -438,7 +439,7 @@ get_pickers_indexes<LLTextureCtrl> (const LLEditWearableDictionary::WearableEntr
 {
 	if (!wearable_entry)
 	{
-		llwarns << "could not get LLTextureCtrl indexes for null wearable entry." << llendl;
+		LL_WARNS() << "could not get LLTextureCtrl indexes for null wearable entry." << LL_ENDL;
 		return null_texture_vec;
 	}
 	return wearable_entry->mTextureCtrls;
@@ -468,7 +469,7 @@ find_picker_ctrl_entry_if(LLWearableType::EType type, const Predicate pred)
 		= LLEditWearableDictionary::getInstance()->getWearable(type);
 	if (!wearable_entry)
 	{
-		llwarns << "could not get wearable dictionary entry for wearable of type: " << type << llendl;
+		LL_WARNS() << "could not get wearable dictionary entry for wearable of type: " << type << LL_ENDL;
 		return NULL;
 	}
 	const texture_vec_t& indexes = get_pickers_indexes<CtrlType>(wearable_entry);
@@ -481,7 +482,7 @@ find_picker_ctrl_entry_if(LLWearableType::EType type, const Predicate pred)
 		const LLEditWearableDictionary::PickerControlEntry* entry = get_picker_entry<CtrlType>(te);
 		if (!entry)
 		{
-			llwarns << "could not get picker dictionary entry (" << te << ") for wearable of type: " << type << llendl;
+			LL_WARNS() << "could not get picker dictionary entry (" << te << ") for wearable of type: " << type << LL_ENDL;
 			continue;
 		}
 		if (pred(entry))
@@ -497,13 +498,13 @@ void for_each_picker_ctrl_entry(LLPanel* panel, LLWearableType::EType type, func
 {
 	if (!panel)
 	{
-		llwarns << "the panel wasn't passed for wearable of type: " << type << llendl;
+		LL_WARNS() << "the panel wasn't passed for wearable of type: " << type << LL_ENDL;
 		return;
 	}
 	const LLEditWearableDictionary::WearableEntry* wearable_entry = LLEditWearableDictionary::getInstance()->getWearable(type);
 	if (!wearable_entry)
 	{
-		llwarns << "could not get wearable dictionary entry for wearable of type: " << type << llendl;
+		LL_WARNS() << "could not get wearable dictionary entry for wearable of type: " << type << LL_ENDL;
 		return;
 	}
 	const texture_vec_t& indexes = get_pickers_indexes<CtrlType>(wearable_entry);
@@ -516,7 +517,7 @@ void for_each_picker_ctrl_entry(LLPanel* panel, LLWearableType::EType type, func
 		const LLEditWearableDictionary::PickerControlEntry* entry = get_picker_entry<CtrlType>(te);
 		if (!entry)
 		{
-			llwarns << "could not get picker dictionary entry (" << te << ") for wearable of type: " << type << llendl;
+			LL_WARNS() << "could not get picker dictionary entry (" << te << ") for wearable of type: " << type << LL_ENDL;
 			continue;
 		}
 		fun (panel, entry);
@@ -732,7 +733,7 @@ BOOL LLPanelEditWearable::postBuild()
 		const LLEditWearableDictionary::WearableEntry *wearable_entry = LLEditWearableDictionary::getInstance()->getWearable(mType);
 		if (!wearable_entry)
 		{
-			llwarns << "could not get wearable dictionary entry for wearable of type: " << mType << llendl;
+			LL_WARNS() << "could not get wearable dictionary entry for wearable of type: " << mType << LL_ENDL;
 		}
 		U8 num_subparts = wearable_entry->mSubparts.size();
 
@@ -744,14 +745,14 @@ BOOL LLPanelEditWearable::postBuild()
 			
 			if (!subpart_entry)
 			{
-				llwarns << "could not get wearable subpart dictionary entry for subpart: " << subpart_e << llendl;
+				LL_WARNS() << "could not get wearable subpart dictionary entry for subpart: " << subpart_e << LL_ENDL;
 				mSubpartBtns.push_back(NULL);
 				continue;
 			}
 			
 			if (!subpart_entry->mButtonName.empty())
 			{
-				llinfos << "Finding button " << subpart_entry->mButtonName << llendl;
+				LL_INFOS() << "Finding button " << subpart_entry->mButtonName << LL_ENDL;
 				LLButton* btn(findChild<LLButton>(subpart_entry->mButtonName));
 				llassert_always(btn);
 				mSubpartBtns.push_back(btn);
@@ -760,7 +761,7 @@ BOOL LLPanelEditWearable::postBuild()
 			else
 			{
 				mSubpartBtns.push_back(NULL);
-				llwarns << "could not get wearable subpart button for subpart num: " << subpart_e << llendl;
+				LL_WARNS() << "could not get wearable subpart button for subpart num: " << subpart_e << LL_ENDL;
 			}
 		}
 		// initialize texture and color picker controls
@@ -864,7 +865,7 @@ void LLPanelEditWearable::draw()
 
 			if (!subpart_entry)
 			{
-					llwarns << "could not get wearable subpart dictionary entry for subpart: " << subpart_e << llendl;
+					LL_WARNS() << "could not get wearable subpart dictionary entry for subpart: " << subpart_e << LL_ENDL;
 					continue;
 			}
 
@@ -1136,7 +1137,7 @@ void LLPanelEditWearable::onTexturePickerCommit(const LLUICtrl* ctrl)
 	const LLTextureCtrl* texture_ctrl = dynamic_cast<const LLTextureCtrl*>(ctrl);
 	if (!texture_ctrl)
 	{
-		llwarns << "got commit signal from not LLTextureCtrl." << llendl;
+		LL_WARNS() << "got commit signal from not LLTextureCtrl." << LL_ENDL;
 		return;
 	}
 	
@@ -1153,7 +1154,7 @@ void LLPanelEditWearable::onTexturePickerCommit(const LLUICtrl* ctrl)
 		}
 		else
 		{
-			llwarns << "could not get texture picker dictionary entry for wearable of type: " << type << llendl;
+			LL_WARNS() << "could not get texture picker dictionary entry for wearable of type: " << type << LL_ENDL;
 		}
 	}
 }
@@ -1200,7 +1201,7 @@ void LLPanelEditWearable::onColorSwatchCommit(const LLUICtrl* base_ctrl )
 		}
 		else
 		{
-			llwarns << "could not get color swatch dictionary entry for wearable of type: " << type << llendl;
+			LL_WARNS() << "could not get color swatch dictionary entry for wearable of type: " << type << LL_ENDL;
 		}
 	}
 }
@@ -1336,13 +1337,13 @@ void LLPanelEditWearable::changeCamera(U8 subpart)
 	const LLEditWearableDictionary::WearableEntry *wearable_entry = LLEditWearableDictionary::getInstance()->getWearable(mType);
 	if (!wearable_entry)
 	{
-		llinfos << "could not get wearable dictionary entry for wearable type: " << mType << llendl;
+		LL_INFOS() << "could not get wearable dictionary entry for wearable type: " << mType << LL_ENDL;
 		return;
 	}
 
 	if (subpart >= wearable_entry->mSubparts.size())
 	{
-		llinfos << "accordion tab expanded for invalid subpart. Wearable type: " << mType << " subpart num: " << subpart << llendl;
+		LL_INFOS() << "accordion tab expanded for invalid subpart. Wearable type: " << mType << " subpart num: " << subpart << LL_ENDL;
 		return;
 	}
 
@@ -1351,7 +1352,7 @@ void LLPanelEditWearable::changeCamera(U8 subpart)
 
 	if (!subpart_entry)
 	{
-		llwarns << "could not get wearable subpart dictionary entry for subpart: " << subpart_e << llendl;
+		LL_WARNS() << "could not get wearable subpart dictionary entry for subpart: " << subpart_e << LL_ENDL;
 		return;
 	}
 
@@ -1442,8 +1443,8 @@ void LLPanelEditWearable::updateScrollingPanelUI()
 		return;
 	}
 	
-	llinfos << llformat("%#.8lX",wearable) << llendl;
-	llinfos << "cur_wearable->isDirty()=" << wearable->isDirty() << llendl;
+	LL_INFOS() << llformat("%#.8lX",wearable) << LL_ENDL;
+	LL_INFOS() << "cur_wearable->isDirty()=" << wearable->isDirty() << LL_ENDL;
 
 	LLViewerInventoryItem* item = gInventory.getItem(wearable->getItemID());
 	if (item)
@@ -1533,7 +1534,7 @@ void LLPanelEditWearable::onInvisibilityCommit(LLUICtrl* ctrl, LLAvatarAppearanc
 	if (!getWearable())
 		return;
 	
-	llinfos << "onInvisibilityCommit, self " << this << " ctrl " << ctrl << llendl;
+	LL_INFOS() << "onInvisibilityCommit, self " << this << " ctrl " << ctrl << LL_ENDL;
 	
 	bool new_invis_state = ctrl->getValue();
 	if (new_invis_state)

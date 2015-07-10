@@ -149,7 +149,7 @@ void AIStateMachineThreadBase::abort_impl(void)
 	{
 	  // The thread is still happily running (and will clean up itself).
 	  // Lets make sure we're not flooded with this situation.
-	  llwarns << "Thread state machine aborted while the thread is still running. That is a waste of CPU and should be avoided." << llendl;
+	  LL_WARNS() << "Thread state machine aborted while the thread is still running. That is a waste of CPU and should be avoided." << LL_ENDL;
 	}
   }
 }

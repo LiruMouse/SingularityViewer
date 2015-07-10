@@ -425,7 +425,7 @@ namespace tut
 		LLFILE* fp = LLFile::fopen("linden_file.dat","w+");
 		if(!fp)
 		{
-			llerrs << "file coudnt be opened\n" << llendl;
+			LL_ERRS() << "file coudnt be opened\n" << LL_ENDL;
 			return;
 		}
 		LLPermissions perm,perm1;
@@ -448,7 +448,7 @@ namespace tut
 		fp = LLFile::fopen("linden_file.dat","r+");
 		if(!fp)
 		{
-			llerrs << "file coudnt be opened\n" << llendl;
+			LL_ERRS() << "file coudnt be opened\n" << LL_ENDL;
 			return;
 		}
 		perm1.importFile(fp);

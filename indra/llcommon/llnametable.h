@@ -35,7 +35,7 @@
 
 #include <map>
 
-#include "string_table.h"
+#include "llstringtable.h"
 
 template <class DATA>
 class LLNameTable

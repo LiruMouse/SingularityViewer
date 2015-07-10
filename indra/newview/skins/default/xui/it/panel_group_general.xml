@@ -31,7 +31,7 @@ Passa il mouse sulle opzioni per un aiuto aggiuntivo.
 	<button label="Unisciti (0 [CURRENCY])" label_selected="Unisciti (0 [CURRENCY])" name="join_button"/>
 	<button label="Visualizza dettagli" label_selected="Visualizza dettagli" name="info_button"/>
 	<text name="text_owners_and_visible_members">
-		Proprietari &amp; Membri visibili
+		Proprietari &amp; Membri visibili ([COUNT])
 	</text>
 	<text name="text_owners_are_shown_in_bold">
 		(I proprietari sono scritti in neretto)

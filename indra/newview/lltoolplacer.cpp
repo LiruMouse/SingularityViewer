@@ -150,7 +150,7 @@ BOOL LLToolPlacer::raycastForNewObjPos( S32 x, S32 y, LLViewerObject** hit_obj, 
 	LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromPosGlobal(surface_pos_global);
 	if (!regionp)
 	{
-		llwarns << "Trying to add object outside of all known regions!" << llendl;
+		LL_WARNS() << "Trying to add object outside of all known regions!" << LL_ENDL;
 		return FALSE;
 	}
 
@@ -213,7 +213,7 @@ BOOL LLToolPlacer::addObject( LLPCode pcode, S32 x, S32 y, U8 use_physics )
 
 	if (NULL == regionp)
 	{
-		llwarns << "regionp was NULL; aborting function." << llendl;
+		LL_WARNS() << "regionp was NULL; aborting function." << LL_ENDL;
 		return FALSE;
 	}
 
@@ -593,7 +593,7 @@ BOOL LLToolPlacer::placeObject(S32 x, S32 y, MASK mask)
 
 BOOL LLToolPlacer::handleHover(S32 x, S32 y, MASK mask)
 {
-	lldebugst(LLERR_USER_INPUT) << "hover handled by LLToolPlacer" << llendl;		
+	LL_DEBUGS("UserInput") << "hover handled by LLToolPlacer" << LL_ENDL;
 	gViewerWindow->getWindow()->setCursor(UI_CURSOR_TOOLCREATE);
 	return TRUE;
 }

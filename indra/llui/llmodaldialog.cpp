@@ -73,7 +73,7 @@ LLModalDialog::~LLModalDialog()
 	std::list<LLModalDialog*>::iterator iter = std::find(sModalStack.begin(), sModalStack.end(), this);
 	if (iter != sModalStack.end())
 	{
-			llerrs << "Attempt to delete dialog while still in sModalStack!" << llendl;
+			LL_ERRS() << "Attempt to delete dialog while still in sModalStack!" << LL_ENDL;
 	}
 }
 
@@ -115,7 +115,7 @@ void LLModalDialog::startModal()
 		if (iter != sModalStack.end())
 		{
 			sModalStack.erase(iter);
-			llwarns << "Dialog already on modal stack" << llendl;
+			LL_WARNS() << "Dialog already on modal stack" << LL_ENDL;
 			//TODO: incvestigate in which specific cases it happens, cause that's not good! -SG
 		}
 
@@ -139,7 +139,7 @@ void LLModalDialog::stopModal()
 		}
 		else
 		{
-			llwarns << "LLModalDialog::stopModal not in list!" << llendl;
+			LL_WARNS() << "LLModalDialog::stopModal not in list!" << LL_ENDL;
 		}
 	}
 	if (!sModalStack.empty())
@@ -194,7 +194,7 @@ BOOL LLModalDialog::handleHover(S32 x, S32 y, MASK mask)
 	if( childrenHandleHover(x, y, mask) == NULL )
 	{
 		getWindow()->setCursor(UI_CURSOR_ARROW);
-		lldebugst(LLERR_USER_INPUT) << "hover handled by " << getName() << llendl;		
+		LL_DEBUGS("UserInput") << "hover handled by " << getName() << LL_ENDL;		
 	}
 	return TRUE;
 }

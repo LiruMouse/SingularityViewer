@@ -34,7 +34,7 @@ Coloca el cursor sobre las opciones para más información.
 	<button label="Entrar ([CURRENCY]0)" label_selected="Entrar ([CURRENCY]0)" name="join_button"/>
 	<button label="Ver Detalles" label_selected="Ver Detalles" name="info_button"/>
 	<text name="text_owners_and_visible_members">
-		Propietarios y Miembros Visibles
+		Propietarios y Miembros Visibles ([COUNT])
 	</text>
 	<text name="text_owners_are_shown_in_bold">
 		(Los Propietarios aparecen en Negrita)

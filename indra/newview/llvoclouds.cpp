@@ -163,7 +163,7 @@ BOOL LLVOClouds::updateGeometry(LLDrawable *drawable)
 		facep = drawable->getFace(face_indx);
 		if (!facep)
 		{
-			llwarns << "No facep for index " << face_indx << llendl;
+			LL_WARNS() << "No facep for index " << face_indx << LL_ENDL;
 			continue;
 		}
 
@@ -185,7 +185,7 @@ BOOL LLVOClouds::updateGeometry(LLDrawable *drawable)
 		facep = drawable->getFace(face_indx);
 		if (!facep)
 		{
-			llwarns << "No facep for index " << face_indx << llendl;
+			LL_WARNS() << "No facep for index " << face_indx << LL_ENDL;
 			continue;
 		}
 

@@ -299,7 +299,7 @@ void LLFloaterAvatarPicker::onList()
 		RLV_ASSERT( (pTabs) && (pNearMePanel) );
 		if ( (pTabs) && (pNearMePanel) )
 		{
-			bool fRlvEnable = !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES);
+			bool fRlvEnable = !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) && !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS);
 			pTabs->enableTabButton(pTabs->getIndexForPanel(pNearMePanel), fRlvEnable);
 			if ( (!fRlvEnable) && (pTabs->getCurrentPanel() == pNearMePanel) )
 				pTabs->selectTabByName("SearchPanel");
@@ -514,7 +514,7 @@ protected:
 		}
 		else
 		{
-			llwarns << "avatar picker failed " << dumpResponse() << LL_ENDL;
+			LL_WARNS() << "avatar picker failed " << dumpResponse() << LL_ENDL;
 		}
 	}
 
@@ -547,7 +547,7 @@ void LLFloaterAvatarPicker::find()
 		url += "?page_size=100&names=";
 		std::replace(text.begin(), text.end(), '.', ' ');
 		url += LLURI::escape(text);
-		llinfos << "avatar picker " << url << llendl;
+		LL_INFOS() << "avatar picker " << url << LL_ENDL;
 		LLHTTPClient::get(url, new LLAvatarPickerResponder(mQueryID));
 	}
 	else

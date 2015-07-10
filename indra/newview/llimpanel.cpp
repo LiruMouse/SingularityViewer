@@ -69,6 +69,8 @@
 #include "rlvcommon.h"
 // [/RLVa:KB]
 
+BOOL is_agent_mappable(const LLUUID& agent_id); // For map stalkies
+
 class AIHTTPTimeoutPolicy;
 extern AIHTTPTimeoutPolicy sessionInviteResponder_timeout;
 
@@ -312,7 +314,7 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 {
 	if (mOtherParticipantUUID.isNull())
 	{
-		llwarns << "Other participant is NULL" << llendl;
+		LL_WARNS() << "Other participant is NULL" << LL_ENDL;
 	}
 
 	// set P2P type by default
@@ -343,7 +345,7 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 		mVoiceChannel = new LLVoiceChannelGroup(mSessionUUID, mLogLabel);
 		break;
 	default:
-		llwarns << "Unknown session type: " << mDialog << llendl;
+		LL_WARNS() << "Unknown session type: " << mDialog << LL_ENDL;
 		// fallthrough, Singu TODO: Find out which cases this happens in, seems to only be P2P, though.
 	// just received text from another user
 	case IM_NOTHING_SPECIAL:
@@ -468,17 +470,43 @@ LLFloaterIMPanel::~LLFloaterIMPanel()
 	mVoiceChannel = NULL;
 }
 
+void add_map_option(LLComboBox& flyout, const std::string& map, const LLUUID& id, U8& did)
+{
+	flyout.remove(map);
+	if (is_agent_mappable(id) && LLAvatarTracker::instance().isBuddyOnline(id))
+	{
+		flyout.add(map, -2);
+		did |= 0x02; // Added map, needs rebuild.
+	}
+	did |= 0x01; // Checked map
+}
+
 // virtual
 void LLFloaterIMPanel::changed(U32 mask)
 {
-	if (mask & (REMOVE|ADD)) // Fix remove/add friend choices
-		rebuildDynamics(getChild<LLComboBox>("instant_message_flyout"));
-	/* Singu TODO: Chat UI - Online icons?
-	if (mask & ONLINE)
-		// Show online icon here
-	else
-		// Show offline icon here
-	*/
+	if (mask & (REMOVE|ADD|POWERS|ONLINE)) // Fix remove/add and map friend choices
+	{
+		U8 did(0);
+		LLComboBox& flyout = *getChild<LLComboBox>("instant_message_flyout");
+		if (mask & POWERS)
+		{
+			// Powers changed, unfortunately, we never know which.
+			add_map_option(flyout, getString("find on map"), mOtherParticipantUUID, did);
+		}
+		if (mask & ONLINE)
+		{
+			if (~did & 0x01)
+				add_map_option(flyout, getString("find on map"), mOtherParticipantUUID, did);
+			/* Singu TODO: Chat UI - Online icons?
+			if (LLAvatarTracker::instance().isBuddyOnline(mOtherParticipantUUID))
+				// Show online icon here?
+			else
+				// Show offline icon here?
+			*/
+		}
+		if (mask & (REMOVE|ADD) || did & 0x02) // Only rebuild if necessary
+			rebuildDynamics(&flyout);
+	}
 }
 
 // virtual
@@ -514,6 +542,8 @@ BOOL LLFloaterIMPanel::postBuild()
 		if (LLComboBox* flyout = findChild<LLComboBox>("instant_message_flyout"))
 		{
 			flyout->setCommitCallback(boost::bind(&LLFloaterIMPanel::onFlyoutCommit, this, flyout, _2));
+			if (is_agent_mappable(mOtherParticipantUUID))
+				flyout->add(getString("find on map"), -2);
 			addDynamics(flyout);
 		}
 		if (LLUICtrl* ctrl = findChild<LLUICtrl>("tp_btn"))
@@ -665,7 +695,7 @@ public:
 
 	/*virtual*/ void httpFailure()
 	{
-		llwarns << "Error inviting all agents to session [status:" << mStatus << "]: " << mReason << llendl;
+		LL_WARNS() << "Error inviting all agents to session [status:" << mStatus << "]: " << mReason << LL_ENDL;
 		//throw something back to the viewer here?
 	}
 	/*virtual*/ char const* getName() const { return "LLSessionInviteResponder"; }
@@ -686,7 +716,7 @@ bool LLFloaterIMPanel::inviteToSession(const LLDynamicArray<LLUUID>& ids)
 
 	if( isInviteAllowed() && (count > 0) )
 	{
-		llinfos << "LLFloaterIMPanel::inviteToSession() - inviting participants" << llendl;
+		LL_INFOS() << "LLFloaterIMPanel::inviteToSession() - inviting participants" << LL_ENDL;
 
 		std::string url = region->getCapability("ChatSessionRequest");
 
@@ -708,9 +738,9 @@ bool LLFloaterIMPanel::inviteToSession(const LLDynamicArray<LLUUID>& ids)
 	}
 	else
 	{
-		llinfos << "LLFloaterIMPanel::inviteToSession -"
+		LL_INFOS() << "LLFloaterIMPanel::inviteToSession -"
 				<< " no need to invite agents for "
-				<< mDialog << llendl;
+				<< mDialog << LL_ENDL;
 		// successful add, because everyone that needed to get added
 		// was added.
 	}
@@ -1055,6 +1085,7 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 	else if (option == 4) LLAvatarActions::pay(mOtherParticipantUUID);
 	else if (option == 5) LLAvatarActions::inviteToGroup(mOtherParticipantUUID);
 	else if (option == -1) copy_profile_uri(mOtherParticipantUUID);
+	else if (option == -2) LLAvatarActions::showOnMap(mOtherParticipantUUID);
 	else if (option >= 6) // Options that use dynamic items
 	{
 		// First remove them all
@@ -1155,28 +1186,12 @@ void LLFloaterIMPanel::onInputEditorKeystroke(LLLineEditor* caller)
 	setTyping(!caller->getText().empty());
 }
 
+void leave_group_chat(const LLUUID& from_id, const LLUUID& session_id);
 void LLFloaterIMPanel::onClose(bool app_quitting)
 {
 	setTyping(false);
 
-	if(mSessionUUID.notNull())
-	{
-		std::string name;
-		gAgent.buildFullname(name);
-		pack_instant_message(
-			gMessageSystem,
-			gAgent.getID(),
-			FALSE,
-			gAgent.getSessionID(),
-			mOtherParticipantUUID,
-			name, 
-			LLStringUtil::null,
-			IM_ONLINE,
-			IM_SESSION_LEAVE,
-			mSessionUUID);
-		gAgent.sendReliableMessage();
-	}
-	gIMMgr->removeSession(mSessionUUID);
+	leave_group_chat(mOtherParticipantUUID, mSessionUUID);
 
 	destroy();
 }
@@ -1267,7 +1282,7 @@ void LLFloaterIMPanel::onSendMsg()
 		&& (mSessionType == P2P_SESSION)
 		&& mOtherParticipantUUID.isNull())
 	{
-		llinfos << "Cannot send IM to everyone unless you're a god." << llendl;
+		LL_INFOS() << "Cannot send IM to everyone unless you're a god." << LL_ENDL;
 		return;
 	}
 

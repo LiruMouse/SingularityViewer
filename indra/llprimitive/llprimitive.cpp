@@ -127,7 +127,7 @@ void LLPrimitive::setVolumeManager( LLVolumeMgr* volume_manager )
 {
 	if ( !volume_manager || sVolumeManager )
 	{
-		llerrs << "LLPrimitive::sVolumeManager attempting to be set to NULL or it already has been set." << llendl;
+		LL_ERRS() << "LLPrimitive::sVolumeManager attempting to be set to NULL or it already has been set." << LL_ENDL;
 	}
 	sVolumeManager = volume_manager;
 }
@@ -197,7 +197,7 @@ LLPrimitive *LLPrimitive::createPrimitive(LLPCode p_code)
 	}
 	else
 	{
-		llerrs << "primitive allocation failed" << llendl;
+		LL_ERRS() << "primitive allocation failed" << LL_ENDL;
 	}
 
 	return retval;
@@ -477,7 +477,7 @@ LLPCode LLPrimitive::legacyToPCode(const U8 legacy)
 		pcode = LL_PCODE_TREE_NEW;
 		break;
 	default:
-		llwarns << "Unknown legacy code " << legacy << " [" << (S32)legacy << "]!" << llendl;
+		LL_WARNS() << "Unknown legacy code " << legacy << " [" << (S32)legacy << "]!" << LL_ENDL;
 	}
 
 	return pcode;
@@ -572,7 +572,7 @@ U8 LLPrimitive::pCodeToLegacy(const LLPCode pcode)
 		legacy = TREE_NEW;
 		break;
 	default:
-		llwarns << "Unknown pcode " << (S32)pcode << ":" << pcode << "!" << llendl;
+		LL_WARNS() << "Unknown pcode " << (S32)pcode << ":" << pcode << "!" << LL_ENDL;
 		return 0;
 	}
 	return legacy;
@@ -659,7 +659,7 @@ std::string LLPrimitive::pCodeToString(const LLPCode pcode)
 		}
 		else
 		{
-			llwarns << "Unknown base mask for pcode: " << base_code << llendl;
+			LL_WARNS() << "Unknown base mask for pcode: " << base_code << LL_ENDL;
 		}
 
 		U8 mask_code = pcode & (~LL_PCODE_BASE_MASK);
@@ -695,7 +695,7 @@ void LLPrimitive::copyTEs(const LLPrimitive *primitivep)
 	U32 i;
 	if (primitivep->getExpectedNumTEs() != getExpectedNumTEs())
 	{
-		llwarns << "Primitives don't have same expected number of TE's" << llendl;
+		LL_WARNS() << "Primitives don't have same expected number of TE's" << LL_ENDL;
 	}
 	U32 num_tes = llmin(primitivep->getExpectedNumTEs(), getExpectedNumTEs());
 	if (mTextureList.size() < getExpectedNumTEs())
@@ -797,7 +797,7 @@ BOOL LLPrimitive::setVolume(const LLVolumeParams &volume_params, const S32 detai
 		{
 			S32 te_index = face_index_from_id(cur_mask, old_faces);
 			old_tes.copyTexture(face_bit, *(getTE(te_index)));
-			//llinfos << face_bit << ":" << te_index << ":" << old_tes[face_bit].getID() << llendl;
+			//LL_INFOS() << face_bit << ":" << te_index << ":" << old_tes[face_bit].getID() << LL_ENDL;
 		}
 	}
 
@@ -817,7 +817,7 @@ BOOL LLPrimitive::setVolume(const LLVolumeParams &volume_params, const S32 detai
 
 	if (mVolumep->getNumFaces() == 0 && new_face_mask != 0)
 	{
-		llwarns << "Object with 0 faces found...INCORRECT!" << llendl;
+		LL_WARNS() << "Object with 0 faces found...INCORRECT!" << LL_ENDL;
 		setNumTEs(mVolumep->getNumFaces());
 		return TRUE;
 	}
@@ -875,7 +875,7 @@ BOOL LLPrimitive::setVolume(const LLVolumeParams &volume_params, const S32 detai
 				}
 				if (i == 4)
 				{
-					llwarns << "No path end or outer face in volume!" << llendl;
+					LL_WARNS() << "No path end or outer face in volume!" << LL_ENDL;
 				}
 				continue;
 			}
@@ -911,7 +911,7 @@ BOOL LLPrimitive::setVolume(const LLVolumeParams &volume_params, const S32 detai
 				}
 				if (i == 4)
 				{
-					llwarns << "No path end or outer face in volume!" << llendl;
+					LL_WARNS() << "No path end or outer face in volume!" << LL_ENDL;
 				}
 				continue;
 			}
@@ -937,8 +937,8 @@ BOOL LLPrimitive::setVolume(const LLVolumeParams &volume_params, const S32 detai
 		}
 		if (-1 == min_outer_bit)
 		{
-			llinfos << (LLVolume *)mVolumep << llendl;
-			llwarns << "Bad!  No outer faces, impossible!" << llendl;
+			LL_INFOS() << (LLVolume *)mVolumep << LL_ENDL;
+			LL_WARNS() << "Bad!  No outer faces, impossible!" << LL_ENDL;
 		}
 		face_mapping[face_bit] = min_outer_bit;
 	}
@@ -957,7 +957,7 @@ BOOL LLPrimitive::setVolume(const LLVolumeParams &volume_params, const S32 detai
 		{
 			if (-1 == face_mapping[face_bit])
 			{
-				llwarns << "No mapping from old face to new face!" << llendl;
+				LL_WARNS() << "No mapping from old face to new face!" << LL_ENDL;
 			}
 
 			S32 te_num = face_index_from_id(cur_mask, mVolumep->getProfile().mFaces);
@@ -1415,7 +1415,7 @@ S32 LLPrimitive::unpackTEMessage(LLDataPacker &dp)
 	if (!dp.unpackBinaryData(packed_buffer, size, "TextureEntry"))
 	{
 		retval = TEM_INVALID;
-		llwarns << "Bad texture entry block!  Abort!" << llendl;
+		LL_WARNS() << "Bad texture entry block!  Abort!" << LL_ENDL;
 		return retval;
 	}
 

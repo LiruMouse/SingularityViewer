@@ -78,7 +78,7 @@ public:
 
 		if (mStatus != HTTP_OK)
 		{
-			llwarns << "Failed to get upload config (" << mStatus << ")" << llendl;
+			LL_WARNS() << "Failed to get upload config (" << mStatus << ")" << LL_ENDL;
 			LLWebProfile::reportImageUploadStatus(false);
 			return;
 		}
@@ -87,7 +87,7 @@ public:
 		Json::Reader reader;
 		if (!reader.parse(body, root))
 		{
-			llwarns << "Failed to parse upload config: " << reader.getFormatedErrorMessages() << llendl;
+			LL_WARNS() << "Failed to parse upload config: " << reader.getFormatedErrorMessages() << LL_ENDL;
 			LLWebProfile::reportImageUploadStatus(false);
 			return;
 		}
@@ -133,7 +133,7 @@ public:
 	{
 		if (mStatus != HTTP_OK)
 		{
-			llwarns << "Failed to upload image: " << mStatus << " " << mReason << llendl;
+			LL_WARNS() << "Failed to upload image: " << mStatus << " " << mReason << LL_ENDL;
 			LLWebProfile::reportImageUploadStatus(false);
 			return;
 		}
@@ -142,7 +142,7 @@ public:
 		std::stringstream strstrm;
 		strstrm << istr.rdbuf();
 		const std::string body = strstrm.str();
-		llinfos << "Image uploaded." << llendl;
+		LL_INFOS() << "Image uploaded." << LL_ENDL;
 		LL_DEBUGS("Snapshots") << "Uploading image succeeded. Response: [" << body << "]" << LL_ENDL;
 		LLWebProfile::reportImageUploadStatus(true);
 	}
@@ -184,7 +184,7 @@ public:
 		}
 		else
 		{
-			llwarns << "Unexpected POST status: " << mStatus << " " << mReason << llendl;
+			LL_WARNS() << "Unexpected POST status: " << mStatus << " " << mReason << LL_ENDL;
 			LL_DEBUGS("Snapshots") << "received_headers: [" << mReceivedHeaders << "]" << LL_ENDL;
 			LLWebProfile::reportImageUploadStatus(false);
 		}
@@ -235,7 +235,7 @@ void LLWebProfile::post(LLPointer<LLImageFormatted> image, const LLSD& config, c
 {
 	if (dynamic_cast<LLImagePNG*>(image.get()) == 0)
 	{
-		llwarns << "Image to upload is not a PNG" << llendl;
+		LL_WARNS() << "Image to upload is not a PNG" << LL_ENDL;
 		llassert(dynamic_cast<LLImagePNG*>(image.get()) != 0);
 		return;
 	}

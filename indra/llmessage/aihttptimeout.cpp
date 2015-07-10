@@ -309,13 +309,13 @@ bool HTTPTimeout::lowspeed(size_t bytes, bool finished)
 	{
 	  if (finished)
 	  {
-		llwarns <<
+		LL_WARNS() <<
 #ifdef CWDEBUG
 		(void*)get_lockobj() << ": "
 #endif
 		"Transfer rate timeout (average transfer rate below " << low_speed_limit <<
 		" bytes/s for more than " << low_speed_time << " second" << ((low_speed_time == 1) ? "" : "s") <<
-		") but we just sent the LAST bytes! Waiting an additional 4 seconds." << llendl;
+		") but we just sent the LAST bytes! Waiting an additional 4 seconds." << LL_ENDL;
 		// Lets hope these last bytes will make it and do not time out on transfer speed anymore.
 		// Just give these bytes 4 more seconds to be written to the socket (after which we'll
 		// assume that the 'upload finished' detection failed and we'll wait another ReplyDelay
@@ -325,12 +325,12 @@ bool HTTPTimeout::lowspeed(size_t bytes, bool finished)
 		return false;
 	  }
 	  // The average transfer rate over the passed low_speed_time seconds is too low. Abort the transfer.
-	  llwarns <<
+	  LL_WARNS() <<
 #ifdef CWDEBUG
 		(void*)get_lockobj() << ": "
 #endif
 		"aborting slow connection (average transfer rate below " << low_speed_limit <<
-		" bytes/s for more than " << low_speed_time << " second" << ((low_speed_time == 1) ? "" : "s") << ")." << llendl;
+		" bytes/s for more than " << low_speed_time << " second" << ((low_speed_time == 1) ? "" : "s") << ")." << LL_ENDL;
 	  // This causes curl to exit with CURLE_WRITE_ERROR.
 	  return true;
 	}
@@ -393,7 +393,7 @@ void HTTPTimeout::done(AICurlEasyRequest_wat const& curlEasyRequest_w, CURLcode 
 	if (code == CURLE_COULDNT_RESOLVE_HOST)
 	{
 	  // Note that CURLINFO_OS_ERRNO returns 0; we don't know any more than this.
-	  llwarns << "Failed to resolve hostname " << curlEasyRequest_w->getLowercaseHostname() << llendl;
+	  LL_WARNS() << "Failed to resolve hostname " << curlEasyRequest_w->getLowercaseHostname() << LL_ENDL;
 	  dns_problem = true;
 	}
 	else if (mNothingReceivedYet)
@@ -440,8 +440,8 @@ bool HTTPTimeout::maybe_upload_finished(void)
 void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, char const* eff_url)
 {
 #ifndef HTTPTIMEOUT_TESTSUITE
-  llwarns << "Request to \"" << curl_easy_request->getLowercaseServicename() << "\" timed out for " << curl_easy_request->getTimeoutPolicy()->name() << llendl;
-  llinfos << "Effective URL: \"" << eff_url << "\"." << llendl;
+  LL_WARNS() << "Request to \"" << curl_easy_request->getLowercaseServicename() << "\" timed out for " << curl_easy_request->getTimeoutPolicy()->name() << LL_ENDL;
+  LL_INFOS() << "Effective URL: \"" << eff_url << "\"." << LL_ENDL;
   double namelookup_time, connect_time, appconnect_time, pretransfer_time, starttransfer_time;
   curl_easy_request->getinfo(CURLINFO_NAMELOOKUP_TIME, &namelookup_time);
   curl_easy_request->getinfo(CURLINFO_CONNECT_TIME, &connect_time);
@@ -455,9 +455,9 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
 	  )
   {
 #if LOWRESTIMER
-	llinfos << "Hostname seems to have been still in the DNS cache." << llendl;
+	LL_INFOS() << "Hostname seems to have been still in the DNS cache." << LL_ENDL;
 #else
-	llwarns << "Curl returned CURLE_OPERATION_TIMEDOUT and DNS lookup did not occur according to timings. Apparently the resolve attempt timed out (bad network?)" << llendl;
+	LL_WARNS() << "Curl returned CURLE_OPERATION_TIMEDOUT and DNS lookup did not occur according to timings. Apparently the resolve attempt timed out (bad network?)" << LL_ENDL;
 	llassert(connect_time == 0);
 	llassert(appconnect_time == 0);
 	llassert(pretransfer_time == 0);
@@ -469,14 +469,14 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
   else if (namelookup_time < 500e-6)
   {
 #if LOWRESTIMER
-	llinfos << "Hostname was most likely still in DNS cache (or lookup occured in under ~10ms)." << llendl;
+	LL_INFOS() << "Hostname was most likely still in DNS cache (or lookup occured in under ~10ms)." << LL_ENDL;
 #else
-	llinfos << "Hostname was still in DNS cache." << llendl;
+	LL_INFOS() << "Hostname was still in DNS cache." << LL_ENDL;
 #endif
   }
   else
   {
-	llinfos << "DNS lookup of " << curl_easy_request->getLowercaseHostname() << " took " << namelookup_time << " seconds." << llendl;
+	LL_INFOS() << "DNS lookup of " << curl_easy_request->getLowercaseHostname() << " took " << namelookup_time << " seconds." << LL_ENDL;
   }
   if (connect_time == 0
 #if LOWRESTIMER
@@ -484,7 +484,7 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
 #endif
 	  )
   {
-	llwarns << "Curl returned CURLE_OPERATION_TIMEDOUT and connection did not occur according to timings: apparently the connect attempt timed out (bad network?)" << llendl;
+	LL_WARNS() << "Curl returned CURLE_OPERATION_TIMEDOUT and connection did not occur according to timings: apparently the connect attempt timed out (bad network?)" << LL_ENDL;
 	llassert(appconnect_time == 0);
 	llassert(pretransfer_time == 0);
 	llassert(starttransfer_time == 0);
@@ -494,68 +494,68 @@ void HTTPTimeout::print_diagnostics(CurlEasyRequest const* curl_easy_request, ch
   if (connect_time - namelookup_time <= 1e-5)
   {
 #if LOWRESTIMER		// Assuming 10ms resolution.
-	llinfos << "The socket was most likely already connected (or you connected to a proxy with a connect time of under ~10 ms)." << llendl;
+	LL_INFOS() << "The socket was most likely already connected (or you connected to a proxy with a connect time of under ~10 ms)." << LL_ENDL;
 #else
-	llinfos << "The socket was already connected (to remote or proxy)." << llendl;
+	LL_INFOS() << "The socket was already connected (to remote or proxy)." << LL_ENDL;
 #endif
 	// I'm assuming that the SSL/TLS handshake can be measured with a low res timer.
 	if (appconnect_time == 0)
 	{
-	  llwarns << "The SSL/TLS handshake never occurred according to the timings!" << llendl;
+	  LL_WARNS() << "The SSL/TLS handshake never occurred according to the timings!" << LL_ENDL;
 	  return;
 	}
 	// If appconnect_time is almost equal to connect_time, then it was just set because this is a connection re-use.
 	if (appconnect_time - connect_time <= 1e-5)
 	{
-	  llinfos << "Connection with HTTP server was already established; this was a re-used connection." << llendl;
+	  LL_INFOS() << "Connection with HTTP server was already established; this was a re-used connection." << LL_ENDL;
 	}
 	else
 	{
-	  llinfos << "SSL/TLS handshake with HTTP server took " << (appconnect_time - connect_time) << " seconds." << llendl;
+	  LL_INFOS() << "SSL/TLS handshake with HTTP server took " << (appconnect_time - connect_time) << " seconds." << LL_ENDL;
 	}
   }
   else
   {
-	llinfos << "Socket connected to remote host (or proxy) in " << (connect_time - namelookup_time) << " seconds." << llendl;
+	LL_INFOS() << "Socket connected to remote host (or proxy) in " << (connect_time - namelookup_time) << " seconds." << LL_ENDL;
 	if (appconnect_time == 0)
 	{
-	  llwarns << "The SSL/TLS handshake never occurred according to the timings!" << llendl;
+	  LL_WARNS() << "The SSL/TLS handshake never occurred according to the timings!" << LL_ENDL;
 	  return;
 	}
-	llinfos << "SSL/TLS handshake with HTTP server took " << (appconnect_time - connect_time) << " seconds." << llendl;
+	LL_INFOS() << "SSL/TLS handshake with HTTP server took " << (appconnect_time - connect_time) << " seconds." << LL_ENDL;
   }
   if (pretransfer_time == 0)
   {
-	llwarns << "The transfer never happened because there was too much in the pipeline (apparently)." << llendl;
+	LL_WARNS() << "The transfer never happened because there was too much in the pipeline (apparently)." << LL_ENDL;
 	return;
   }
   else if (pretransfer_time - appconnect_time >= 1e-5)
   {
-	llinfos << "Apparently there was a delay, due to waits in line for the pipeline, of " << (pretransfer_time - appconnect_time) << " seconds before the transfer began." << llendl;
+	LL_INFOS() << "Apparently there was a delay, due to waits in line for the pipeline, of " << (pretransfer_time - appconnect_time) << " seconds before the transfer began." << LL_ENDL;
   }
   if (starttransfer_time == 0)
   {
-	llwarns << "No data was ever received from the server according to the timings." << llendl;
+	LL_WARNS() << "No data was ever received from the server according to the timings." << LL_ENDL;
   }
   else
   {
-	llinfos << "The time it took to send the request to the server plus the time it took before the server started to reply was " << (starttransfer_time - pretransfer_time) << " seconds." << llendl;
+	LL_INFOS() << "The time it took to send the request to the server plus the time it took before the server started to reply was " << (starttransfer_time - pretransfer_time) << " seconds." << LL_ENDL;
   }
   if (mNothingReceivedYet)
   {
-	llinfos << "No data at all was actually received from the server." << llendl;
+	LL_INFOS() << "No data at all was actually received from the server." << LL_ENDL;
   }
   if (mUploadFinished)
   {
-	llinfos << "The request upload finished successfully." << llendl;
+	LL_INFOS() << "The request upload finished successfully." << LL_ENDL;
   }
   else if (mLastBytesSent)
   {
-	llinfos << "All bytes where sent to libcurl for upload." << llendl;
+	LL_INFOS() << "All bytes where sent to libcurl for upload." << LL_ENDL;
   }
   if (mLastSecond > 0 && mLowSpeedOn)
   {
-	llinfos << "The " << (mNothingReceivedYet ? "upload" : "download") << " did last " << mLastSecond << " second" << ((mLastSecond == 1) ? "" : "s") << ", before it timed out." << llendl;
+	LL_INFOS() << "The " << (mNothingReceivedYet ? "upload" : "download") << " did last " << mLastSecond << " second" << ((mLastSecond == 1) ? "" : "s") << ", before it timed out." << LL_ENDL;
   }
 #endif // HTTPTIMEOUT_TESTSUITE
 }

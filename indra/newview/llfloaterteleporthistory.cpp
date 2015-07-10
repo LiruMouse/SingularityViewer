@@ -84,7 +84,7 @@ BOOL LLFloaterTeleportHistory::postBuild()
 	mPlacesList=getChild<LLScrollListCtrl>("places_list");
 	if (!mPlacesList)
 	{
-		llwarns << "coud not get pointer to places list" << llendl;
+		LL_WARNS() << "coud not get pointer to places list" << LL_ENDL;
 		return FALSE;
 	}
 
@@ -170,7 +170,7 @@ void LLFloaterTeleportHistory::addEntry(std::string parcelName)
 	}
 	else
 	{
-		llwarns << "pointer to places list is NULL" << llendl;
+		LL_WARNS() << "pointer to places list is NULL" << LL_ENDL;
 	}
 
 	mPendingRegionName.clear();
@@ -200,14 +200,14 @@ void LLFloaterTeleportHistory::loadFile(const std::string &file_name)
 
 	if (file.is_open())
 	{
-		llinfos << "Loading "<< file_name << " file at " << temp_str << llendl;
+		LL_INFOS() << "Loading "<< file_name << " file at " << temp_str << LL_ENDL;
 		LLSD data;
 		LLSDSerialize::fromXML(data, file);
 		if (data.isUndefined())
 		{
-			llinfos << "file missing, ill-formed, "
+			LL_INFOS() << "file missing, ill-formed, "
 				"or simply undefined; not reading the"
-				" file" << llendl;
+				" file" << LL_ENDL;
 		}
 		else
 		{
@@ -241,17 +241,17 @@ void LLFloaterTeleportHistory::saveFile(const std::string &file_name)
 	std::string temp_str = gDirUtilp->getLindenUserDir(true);
 	if( temp_str.empty() )
 	{
-		llinfos << "Can't save teleport history - no user directory set yet." << llendl;
+		LL_INFOS() << "Can't save teleport history - no user directory set yet." << LL_ENDL;
 		return;
 	}
 	temp_str += gDirUtilp->getDirDelimiter() + file_name;
 	llofstream export_file(temp_str);
 	if (!export_file.good())
 	{
-		llwarns << "Unable to open " << file_name << " for output." << llendl;
+		LL_WARNS() << "Unable to open " << file_name << " for output." << LL_ENDL;
 		return;
 	}
-	llinfos << "Writing "<< file_name << " file at " << temp_str << llendl;
+	LL_INFOS() << "Writing "<< file_name << " file at " << temp_str << LL_ENDL;
 
 	LLSD elements;
 	LLScrollListCtrl* pScrollList = pFloaterHistory->mPlacesList;

@@ -163,15 +163,18 @@ void LLToolGun::draw()
 		static const LLCachedControl<LLColor4> color("LiruCrosshairColor");
 		LLColor4 targetColor = color;
 		targetColor.mV[VALPHA] = 0.5f;
-		if (show_iff)
+		if (show_iff && !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWMINIMAP))
 		{
 			LLVector3d myPosition = gAgentCamera.getCameraPositionGlobal();
 			LLQuaternion myRotation = LLViewerCamera::getInstance()->getQuaternion();
 			myRotation.set(-myRotation.mQ[VX], -myRotation.mQ[VY], -myRotation.mQ[VZ], myRotation.mQ[VW]);
 
+			bool no_names(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS));
+			bool name_restricted = no_names || gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES);
+
 			LLWorld::pos_map_t positions;
 			LLWorld& world(LLWorld::instance());
-			world.getAvatars(&positions, gAgent.getPositionGlobal(), iff_range);
+			world.getAvatars(&positions, gAgent.getPositionGlobal(), name_restricted && gRlvHandler.hasBehaviour(RLV_BHVR_CAMAVDIST) ? llmin(iff_range(), gRlvHandler.camPole(RLV_BHVR_CAMAVDIST)) : iff_range);
 			for (LLWorld::pos_map_t::const_iterator iter = positions.cbegin(), iter_end = positions.cend(); iter != iter_end; ++iter)
 			{
 				const LLUUID& id = iter->first;
@@ -186,13 +189,13 @@ void LLToolGun::draw()
 				if (magicVector.mdV[VX] > -0.75 && magicVector.mdV[VX] < 0.75 && magicVector.mdV[VZ] > 0.0 && magicVector.mdV[VY] > -1.5 && magicVector.mdV[VY] < 1.5) // Do not fuck with these, cheater. :(
 				{
 					LLAvatarName avatarName;
-					LLAvatarNameCache::get(id, &avatarName);
-					bool name_restricted = gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES);
+					if (!no_names)
+						LLAvatarNameCache::get(id, &avatarName);
 					getCustomColorRLV(id, targetColor, world.getRegionFromPosGlobal(targetPosition), name_restricted);
-					const std::string name(name_restricted ? RlvStrings::getAnonym(avatarName.getNSName()) : avatarName.getNSName());
+					const std::string name(no_names ? LLStringUtil::null : name_restricted ? RlvStrings::getAnonym(avatarName.getNSName()) : avatarName.getNSName());
 					targetColor.mV[VALPHA] = 0.5f;
 					LLFontGL::getFontSansSerifBold()->renderUTF8(
-						gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC) ? name : llformat("%s : %.2fm", name.c_str(), (targetPosition - myPosition).magVec()),
+						llformat("%s : %.2fm", name.c_str(), (targetPosition - myPosition).magVec()),
 						0, (windowWidth / 2.f), (windowHeight / 2.f) - 25.f, targetColor,
 						LLFontGL::HCENTER, LLFontGL::TOP, LLFontGL::BOLD, LLFontGL::NO_SHADOW
 						);

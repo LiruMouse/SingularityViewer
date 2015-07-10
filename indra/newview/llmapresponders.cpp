@@ -44,14 +44,14 @@
 //virtual 
 void LLMapLayerResponder::httpSuccess(void)
 {
-	llinfos << "LLMapLayerResponder::mContent from capabilities" << llendl;
+	LL_INFOS() << "LLMapLayerResponder::mContent from capabilities" << LL_ENDL;
 
 	S32 agent_flags = mContent["AgentData"]["Flags"];
 	U32 layer = flagsToLayer(agent_flags);
 
 	if (layer != SIM_LAYER_COMPOSITE)
 	{
-		llwarns << "Invalid or out of date map image type returned!" << llendl;
+		LL_WARNS() << "Invalid or out of date map image type returned!" << LL_ENDL;
 		return;
 	}
 

@@ -127,7 +127,7 @@ void LLStatBar::draw()
 {
 	if (!mStatp)
 	{
-//		llinfos << "No stats for statistics bar!" << llendl;
+//		LL_INFOS() << "No stats for statistics bar!" << LL_ENDL;
 		return;
 	}
 
@@ -247,7 +247,7 @@ void LLStatBar::draw()
 		if (left < 0)
 		{
 			left = 0;
-			llwarns << "Min:" << min << llendl;
+			LL_WARNS() << "Min:" << min << LL_ENDL;
 		}
 
 		right = (S32) ((max - mMinBar) * value_scale);

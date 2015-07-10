@@ -1516,10 +1516,10 @@ BOOL LLVOSky::updateHeavenlyBodyGeometry(LLDrawable *drawable, const S32 f, cons
 	*indicesp++ = index_offset + 2;
 	*indicesp++ = index_offset + 3;
 
-	*(colorsp++) = LLColor4::white;
-	*(colorsp++) = LLColor4::white;
-	*(colorsp++) = LLColor4::white;
-	*(colorsp++) = LLColor4::white;
+	*(colorsp++) = LLColor4U::white;
+	*(colorsp++) = LLColor4U::white;
+	*(colorsp++) = LLColor4U::white;
+	*(colorsp++) = LLColor4U::white;
 
 	facep->getVertexBuffer()->flush();
 

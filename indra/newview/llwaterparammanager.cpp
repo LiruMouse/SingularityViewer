@@ -108,7 +108,7 @@ void LLWaterParamManager::loadAllPresets()
 
 void LLWaterParamManager::loadPresetsFromDir(const std::string& dir)
 {
-	LL_INFOS2("AppInit", "Shaders") << "Loading water presets from " << dir << LL_ENDL;
+	LL_INFOS("AppInit", "Shaders") << "Loading water presets from " << dir << LL_ENDL;
 
 	LLDirIterator dir_iter(dir, "*.xml");
 	while (1)
@@ -122,7 +122,7 @@ void LLWaterParamManager::loadPresetsFromDir(const std::string& dir)
 		std::string path = dir + file;
 		if (!loadPreset(path))
 		{
-			llwarns << "Error loading water preset from " << path << llendl;
+			LL_WARNS() << "Error loading water preset from " << path << LL_ENDL;
 		}
 	}
 }
@@ -138,7 +138,7 @@ bool LLWaterParamManager::loadPreset(const std::string& path)
 		return false;
 	}
 
-	LL_DEBUGS2("AppInit", "Shaders") << "Loading water " << name << LL_ENDL;
+	LL_DEBUGS("AppInit", "Shaders") << "Loading water " << name << LL_ENDL;
 
 	LLSD params_data;
 	LLPointer<LLSDParser> parser = new LLSDXMLParser();
@@ -298,7 +298,7 @@ bool LLWaterParamManager::savePresetToNotecard(const std::string & name)
 void LLWaterParamManager::propagateParameters(void)
 {
 	// bind the variables only if we're using shaders
-	if(gPipeline.canUseVertexShaders())
+	if(LLGLSLShader::sNoFixedFunction)
 	{
 		std::vector<LLGLSLShader*>::iterator shaders_iter=mShaderList.begin();
 		for(; shaders_iter != mShaderList.end(); ++shaders_iter)
@@ -333,7 +333,7 @@ void LLWaterParamManager::applyParams(const LLSD& params, bool interpolate)
 {
 	if (params.size() == 0)
 	{
-		llwarns << "Undefined water params" << llendl;
+		LL_WARNS() << "Undefined water params" << LL_ENDL;
 		return;
 	}
 
@@ -387,7 +387,7 @@ void LLWaterParamManager::update(LLViewerCamera * cam)
 	stop_glerror();
 
 	// only do this if we're dealing with shaders
-	if(gPipeline.canUseVertexShaders()) 
+	if(LLGLSLShader::sNoFixedFunction) 
 	{
 		//transform water plane to eye space
 		LLVector4a enorm(0.f, 0.f, 1.f);

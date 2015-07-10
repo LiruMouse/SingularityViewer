@@ -166,7 +166,7 @@ void LLWorld::setRegionSize(const U32& width, const U32& length)
 
 LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 {
-	llinfos << "Add region with handle: " << region_handle << " on host " << host << llendl;
+	LL_INFOS() << "Add region with handle: " << region_handle << " on host " << host << LL_ENDL;
 	LLViewerRegion *regionp = getRegionFromHandle(region_handle);
 	if (regionp)
 	{
@@ -175,19 +175,19 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 		if (host == old_host && regionp->isAlive())
 		{
 			// This is a duplicate for the same host and it's alive, don't bother.
-			llinfos << "Region already exists and is alive, using existing region" << llendl;
+			LL_INFOS() << "Region already exists and is alive, using existing region" << LL_ENDL;
 			return regionp;
 		}
 
 		if (host != old_host)
 		{
-			llwarns << "LLWorld::addRegion exists, but old host " << old_host
+			LL_WARNS() << "LLWorld::addRegion exists, but old host " << old_host
 					<< " does not match new host " << host
 					<< ", removing old region and creating new" << LL_ENDL;
 		}
 		if (!regionp->isAlive())
 		{
-			llwarns << "LLWorld::addRegion exists, but isn't alive" << llendl;
+			LL_WARNS() << "LLWorld::addRegion exists, but isn't alive" << LL_ENDL;
 		}
 
 		// Kill the old host, and then we can continue on and add the new host.  We have to kill even if the host
@@ -196,7 +196,7 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 	}
 	else
 	{
-		llinfos << "Region does not exist, creating new one" << llendl;
+		LL_INFOS() << "Region does not exist, creating new one" << LL_ENDL;
 	}
 
 	U32 iindex = 0;
@@ -208,7 +208,7 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 	S32 x = (S32)(iindex/256); //MegaRegion
 	S32 y = (S32)(jindex/256); //MegaRegion
 // </FS:CR> Aurora Sim
-	llinfos << "Adding new region (" << x << ":" << y << ")"
+	LL_INFOS() << "Adding new region (" << x << ":" << y << ")"
 		<< " on host: " << host << LL_ENDL;
 
 	LLVector3d origin_global;
@@ -222,7 +222,7 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 									getRegionWidthInMeters() );
 	if (!regionp)
 	{
-		llerrs << "Unable to create new region!" << llendl;
+		LL_ERRS() << "Unable to create new region!" << LL_ENDL;
 	}
 
 	//Classic clouds
@@ -264,7 +264,7 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 			neighborp = getRegionFromHandle(adj_handle);
 			if (neighborp)
 			{
-				//llinfos << "Connecting " << region_x << ":" << region_y << " -> " << adj_x << ":" << adj_y << llendl;
+				//LL_INFOS() << "Connecting " << region_x << ":" << region_y << " -> " << adj_x << ":" << adj_y << LL_ENDL;
 				regionp->connectNeighbor(neighborp, dir);
 			}
 		}
@@ -310,7 +310,7 @@ void LLWorld::removeRegion(const LLHost &host)
 	LLViewerRegion *regionp = getRegion(host);
 	if (!regionp)
 	{
-		llwarns << "Trying to remove region that doesn't exist!" << llendl;
+		LL_WARNS() << "Trying to remove region that doesn't exist!" << LL_ENDL;
 		return;
 	}
 	
@@ -320,21 +320,21 @@ void LLWorld::removeRegion(const LLHost &host)
 			 iter != iter_end; ++iter)
 		{
 			LLViewerRegion* reg = *iter;
-			llwarns << "RegionDump: " << reg->getName()
+			LL_WARNS() << "RegionDump: " << reg->getName()
 				<< " " << reg->getHost()
 				<< " " << reg->getOriginGlobal()
 				<< LL_ENDL;
 		}
 
-		llwarns << "Agent position global " << gAgent.getPositionGlobal() 
+		LL_WARNS() << "Agent position global " << gAgent.getPositionGlobal() 
 			<< " agent " << gAgent.getPositionAgent()
 			<< LL_ENDL;
 
-		llwarns << "Regions visited " << gAgent.getRegionsVisited() << llendl;
+		LL_WARNS() << "Regions visited " << gAgent.getRegionsVisited() << LL_ENDL;
 
-		llwarns << "gFrameTimeSeconds " << gFrameTimeSeconds << llendl;
+		LL_WARNS() << "gFrameTimeSeconds " << gFrameTimeSeconds << LL_ENDL;
 
-		llwarns << "Disabling region " << regionp->getName() << " that agent is in!" << llendl;
+		LL_WARNS() << "Disabling region " << regionp->getName() << " that agent is in!" << LL_ENDL;
 		LLAppViewer::instance()->forceDisconnect(LLTrans::getString("YouHaveBeenDisconnected"));
 
 		regionp->saveObjectCache() ; //force to save objects here in case that the object cache is about to be destroyed.
@@ -342,7 +342,7 @@ void LLWorld::removeRegion(const LLHost &host)
 	}
 
 	from_region_handle(regionp->getHandle(), &x, &y);
-	llinfos << "Removing region " << x << ":" << y << llendl;
+	LL_INFOS() << "Removing region " << x << ":" << y << LL_ENDL;
 
 	mRegionList.remove(regionp);
 	mActiveRegionList.remove(regionp);
@@ -897,8 +897,8 @@ void LLWorld::updateNetStats()
 
 void LLWorld::printPacketsLost()
 {
-	llinfos << "Simulators:" << llendl;
-	llinfos << "----------" << llendl;
+	LL_INFOS() << "Simulators:" << LL_ENDL;
+	LL_INFOS() << "----------" << LL_ENDL;
 
 	LLCircuitData *cdp = NULL;
 	for (region_list_t::iterator iter = mActiveRegionList.begin(), iter_end(mActiveRegionList.end());
@@ -910,7 +910,7 @@ void LLWorld::printPacketsLost()
 		{
 			LLVector3d range = regionp->getCenterGlobal() - gAgent.getPositionGlobal();
 				
-			llinfos << regionp->getHost() << ", range: " << range.length()
+			LL_INFOS() << regionp->getHost() << ", range: " << range.length()
 					<< " packets lost: " << cdp->getPacketsLost() << LL_ENDL;
 		}
 	}
@@ -1006,7 +1006,7 @@ void LLWorld::updateWaterObjects()
 	}
 	if (mRegionList.empty())
 	{
-		llwarns << "No regions!" << llendl;
+		LL_WARNS() << "No regions!" << LL_ENDL;
 		return;
 	}
 
@@ -1176,19 +1176,19 @@ void LLWorld::updateWaterObjects()
 			LL_DEBUGS("WaterHeight") << "  Found a new region (name: " << new_region_found->getName() << "; water height: " << water_heights[cindex] << " m)!" << LL_ENDL;
 		}
 	}
-	llinfos << "Number of connected regions: " << number_of_connected_regions << " (" << uninitialized_regions <<
+	LL_INFOS() << "Number of connected regions: " << number_of_connected_regions << " (" << uninitialized_regions <<
 		" uninitialized); number of regions bordering Hole water: " << bordering_hole <<
-		"; number of regions bordering Edge water: " << bordering_edge << llendl;
-	llinfos << "Coastline count (height, count): ";
+		"; number of regions bordering Edge water: " << bordering_edge << LL_ENDL;
+	LL_INFOS() << "Coastline count (height, count): ";
 	bool first = true;
 	for (std::map<S32, int>::iterator iter = water_height_counts.begin(); iter != water_height_counts.end(); ++iter)
 	{
-		if (!first) llcont << ", ";
-		llcont << "(" << (iter->first / 100.f) << ", " << iter->second << ")";
+		if (!first) LL_CONT << ", ";
+		LL_CONT << "(" << (iter->first / 100.f) << ", " << iter->second << ")";
 		first = false;
 	}
-	llcont << llendl;
-	llinfos << "Water height used for Hole and Edge water objects: " << water_height << llendl;
+	LL_CONT << LL_ENDL;
+	LL_INFOS() << "Water height used for Hole and Edge water objects: " << water_height << LL_ENDL;
 
 	// Update all Region water objects.
 	for (region_list_t::iterator iter = mRegionList.begin(), iter_end(mRegionList.end()); iter != iter_end; ++iter)
@@ -1339,7 +1339,7 @@ void LLWorld::disconnectRegions()
 			continue;
 		}
 
-		llinfos << "Sending AgentQuitCopy to: " << regionp->getHost() << llendl;
+		LL_INFOS() << "Sending AgentQuitCopy to: " << regionp->getHost() << LL_ENDL;
 		msg->newMessageFast(_PREHASH_AgentQuitCopy);
 		msg->nextBlockFast(_PREHASH_AgentData);
 		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
@@ -1392,7 +1392,7 @@ void process_enable_simulator(LLMessageSystem *msg, void **user_data)
 	LLWorld::getInstance()->addRegion(handle, sim);
 
 	// give the simulator a message it can use to get ip and port
-	llinfos << "simulator_enable() Enabling " << sim << " with code " << msg->getOurCircuitCode() << llendl;
+	LL_INFOS() << "simulator_enable() Enabling " << sim << " with code " << msg->getOurCircuitCode() << LL_ENDL;
 	msg->newMessageFast(_PREHASH_UseCircuitCode);
 	msg->nextBlockFast(_PREHASH_CircuitCode);
 	msg->addU32Fast(_PREHASH_Code, msg->getOurCircuitCode());
@@ -1420,7 +1420,7 @@ public:
 			!input["body"].has("sim-ip-and-port") ||
 			!input["body"].has("seed-capability"))
 		{
-			llwarns << "invalid parameters" << llendl;
+			LL_WARNS() << "invalid parameters" << LL_ENDL;
             return;
 		}
 
@@ -1429,7 +1429,7 @@ public:
 		LLViewerRegion* regionp = LLWorld::getInstance()->getRegion(sim);
 		if (!regionp)
 		{
-			llwarns << "Got EstablishAgentCommunication for unknown region "
+			LL_WARNS() << "Got EstablishAgentCommunication for unknown region "
 					<< sim << LL_ENDL;
 			return;
 		}
@@ -1456,7 +1456,7 @@ void process_region_handshake(LLMessageSystem* msg, void** user_data)
 	LLViewerRegion* regionp = LLWorld::getInstance()->getRegion(host);
 	if (!regionp)
 	{
-		llwarns << "Got region handshake for unknown region "
+		LL_WARNS() << "Got region handshake for unknown region "
 			<< host << LL_ENDL;
 		return;
 	}

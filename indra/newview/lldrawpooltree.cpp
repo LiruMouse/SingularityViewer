@@ -79,7 +79,7 @@ void LLDrawPoolTree::beginRenderPass(S32 pass)
 		shader = &gTreeProgram;
 	}
 
-	if (gPipeline.canUseVertexShaders())
+	if (LLGLSLShader::sNoFixedFunction)
 	{
 		shader->bind();
 		shader->setMinimumAlpha(0.5f);

@@ -39,7 +39,7 @@ LLXform::~LLXform()
 // Link optimization - don't inline these LL_WARNS()
 void LLXform::warn(const char* const msg)
 {
-	llwarns << msg << llendl;
+	LL_WARNS() << msg << LL_ENDL;
 }
 
 LLXform* LLXform::getRoot() const

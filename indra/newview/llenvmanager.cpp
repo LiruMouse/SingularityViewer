@@ -53,7 +53,7 @@ std::string LLEnvPrefs::getWaterPresetName() const
 {
 	if (mWaterPresetName.empty())
 	{
-		llwarns << "Water preset name is empty" << llendl;
+		LL_WARNS() << "Water preset name is empty" << LL_ENDL;
 	}
 
 	return mWaterPresetName;
@@ -63,7 +63,7 @@ std::string LLEnvPrefs::getSkyPresetName() const
 {
 	if (mSkyPresetName.empty())
 	{
-		llwarns << "Sky preset name is empty" << llendl;
+		LL_WARNS() << "Sky preset name is empty" << LL_ENDL;
 	}
 
 	return mSkyPresetName;
@@ -73,7 +73,7 @@ std::string LLEnvPrefs::getDayCycleName() const
 {
 	if (mDayCycleName.empty())
 	{
-		llwarns << "Day cycle name is empty" << llendl;
+		LL_WARNS() << "Day cycle name is empty" << LL_ENDL;
 	}
 
 	return mDayCycleName;
@@ -214,7 +214,7 @@ bool LLEnvManagerNew::useSkyPreset(const std::string& name, bool interpolate /*=
 
 	if (!sky_mgr.getParamSet(LLWLParamKey(name, LLEnvKey::SCOPE_LOCAL), param_set))
 	{
-		llwarns << "No sky preset named " << name << llendl;
+		LL_WARNS() << "No sky preset named " << name << LL_ENDL;
 		return false;
 	}
 
@@ -245,7 +245,7 @@ bool LLEnvManagerNew::useDayCycle(const std::string& name, LLEnvKey::EScope scop
 
 		if (!LLDayCycleManager::instance().getPreset(name, params))
 		{
-			llwarns << "No day cycle named " << name << llendl;
+			LL_WARNS() << "No day cycle named " << name << LL_ENDL;
 			return false;
 		}
 	}
@@ -273,7 +273,7 @@ void LLEnvManagerNew::setUseWaterPreset(const std::string& name, bool interpolat
 	// *TODO: make sure the preset exists.
 	if (name.empty())
 	{
-		llwarns << "Empty water preset name passed" << llendl;
+		LL_WARNS() << "Empty water preset name passed" << LL_ENDL;
 		return;
 	}
 
@@ -287,7 +287,7 @@ void LLEnvManagerNew::setUseSkyPreset(const std::string& name, bool interpolate 
 	// *TODO: make sure the preset exists.
 	if (name.empty())
 	{
-		llwarns << "Empty sky preset name passed" << llendl;
+		LL_WARNS() << "Empty sky preset name passed" << LL_ENDL;
 		return;
 	}
 
@@ -300,7 +300,7 @@ void LLEnvManagerNew::setUseDayCycle(const std::string& name, bool interpolate /
 {
 	if (!LLDayCycleManager::instance().presetExists(name))
 	{
-		llwarns << "Invalid day cycle name passed" << llendl;
+		LL_WARNS() << "Invalid day cycle name passed" << LL_ENDL;
 		return;
 	}
 
@@ -593,7 +593,7 @@ void LLEnvManagerNew::updateWaterFromPrefs(bool interpolate)
 		LLWaterParamSet params;
 		if (!water_mgr.getParamSet(water, params))
 		{
-			llwarns << "No water preset named " << water << ", falling back to defaults" << llendl;
+			LL_WARNS() << "No water preset named " << water << ", falling back to defaults" << LL_ENDL;
 			water_mgr.getParamSet("Default", params);
 
 			// *TODO: Fix user preferences accordingly.
@@ -711,12 +711,12 @@ class WindLightRefresh : public LLHTTPNode
 	{
 		if (!input || !context || !input.isMap() || !input.has("body"))
 		{
-			llinfos << "malformed WindLightRefresh!" << llendl;
+			LL_INFOS() << "malformed WindLightRefresh!" << LL_ENDL;
 			return;
 		}
 
 		//std::string dump = input["body"].asString();
-		//llwarns << dump << llendl;
+		//LL_WARNS() << dump << LL_ENDL;
 
 		LLSD body = input["body"];
 		LLEnvManagerNew *env = &LLEnvManagerNew::instance();
@@ -729,7 +729,7 @@ class WindLightRefresh : public LLHTTPNode
 
 		env->mInterpNextChangeMessage = !body.has("Interpolate") || body["Interpolate"].asInteger() == 1;
 
-		llinfos << "Windlight Refresh, interpolate:" << env->mInterpNextChangeMessage << llendl;
+		LL_INFOS() << "Windlight Refresh, interpolate:" << env->mInterpNextChangeMessage << LL_ENDL;
 		env->requestRegionSettings();
 		env->onRegionChange();
 	}

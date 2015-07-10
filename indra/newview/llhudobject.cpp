@@ -131,7 +131,7 @@ void LLHUDObject::cleanupHUDObjects()
 		(*object_it)->markDead();
 		if ((*object_it)->getNumRefs() > 1)
 		{
-			llinfos << "LLHUDObject " << (LLHUDObject *)(*object_it) << " type " << (S32)(*object_it)->getType() << " has " << (*object_it)->getNumRefs() << " refs!" << llendl;			
+			LL_INFOS() << "LLHUDObject " << (LLHUDObject *)(*object_it) << " type " << (S32)(*object_it)->getType() << " has " << (*object_it)->getNumRefs() << " refs!" << LL_ENDL;			
 		}
 	}
 	sHUDObjects.clear();
@@ -154,7 +154,7 @@ LLHUDObject *LLHUDObject::addHUDObject(const U8 type)
 		hud_objectp = new LLHUDNameTag(type);
 		break;
 	default:
-		llwarns << "Unknown type of hud object:" << (U32) type << llendl;
+		LL_WARNS() << "Unknown type of hud object:" << (U32) type << LL_ENDL;
 	}
 	if (hud_objectp)
 	{
@@ -247,7 +247,7 @@ LLHUDEffect *LLHUDObject::addHUDEffect(const U8 type)
 		hud_objectp = new LLHUDEffectPointAt(type);
 		break;
 	default:
-		llwarns << "Unknown type of hud effect:" << (U32) type << llendl;
+		LL_WARNS() << "Unknown type of hud effect:" << (U32) type << LL_ENDL;
 	}
 
 	if (hud_objectp)
@@ -289,7 +289,7 @@ void LLHUDObject::renderAll()
 		}
 	}
 
-	LLVertexBuffer::unbind();
+	//LLVertexBuffer::unbind();
 }
 
 // static

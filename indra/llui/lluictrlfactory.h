@@ -157,7 +157,7 @@ private:
 
 		if (!params.validateBlock())
 		{
-			llwarns << /*getInstance()->getCurFileName() <<*/ ": Invalid parameter block for " << typeid(T).name() << llendl;
+			LL_WARNS() << /*getInstance()->getCurFileName() <<*/ ": Invalid parameter block for " << typeid(T).name() << LL_ENDL;
 			//return NULL;
 		}
 

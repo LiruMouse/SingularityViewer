@@ -121,14 +121,14 @@ void AIFetchInventoryFolder::multiplex_impl(state_type run_state)
 		if (mFolderName.empty())
 		{
 		  // We can only find a folder by name, or create it, if we know it's name.
-		  llwarns << "Unknown folder ID " << mFolderUUID << llendl;
+		  LL_WARNS() << "Unknown folder ID " << mFolderUUID << LL_ENDL;
 		  abort();
 		  break;
 		}
 		// Check if the parent exists.
 		if (mParentFolder != gInventory.getRootFolderID() && !gInventory.getCategory(mParentFolder))
 		{
-		  llwarns << "Unknown parent folder ID " << mParentFolder << llendl;
+		  LL_WARNS() << "Unknown parent folder ID " << mParentFolder << LL_ENDL;
 		  abort();
 		  break;
 		}

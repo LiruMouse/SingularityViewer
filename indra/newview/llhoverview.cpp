@@ -271,6 +271,8 @@ void LLHoverView::updateText()
 		line.clear();
 		if (hit_object->isAvatar())
 		{
+			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS))
+				return; // No tag, no tip.
 			LLNameValue* title = hit_object->getNVPair("Title");
 			LLNameValue* firstname = hit_object->getNVPair("FirstName");
 			LLNameValue* lastname =  hit_object->getNVPair("LastName");

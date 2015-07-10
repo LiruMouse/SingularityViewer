@@ -91,7 +91,7 @@ void LLSkinJoint::setupSkinJoint( LLJoint *joint)
 	// find the named joint
 	if (!(mJoint = joint))
 	{
-		llinfos << "Can't find joint" << llendl;
+		LL_INFOS() << "Can't find joint" << LL_ENDL;
 		return;
 	}
 
@@ -304,7 +304,7 @@ void LLAvatarJointMesh::setMesh( LLPolyMesh *mesh )
 		U32 jn;
 		for (jn = 0; jn < numJointNames; jn++)
 		{
-			//llinfos << "Setting up joint " << jointNames[jn] << llendl;
+			//LL_INFOS() << "Setting up joint " << jointNames[jn] << LL_ENDL;
 			mSkinJoints[jn].setupSkinJoint( getRoot()->findJoint(jointNames[jn]) );
 		}
 	}
@@ -315,7 +315,7 @@ void LLAvatarJointMesh::setMesh( LLPolyMesh *mesh )
 		setupJoint(getRoot());
 	}
 
-//	llinfos << "joint render entries: " << mMesh->mJointRenderData.count() << llendl;
+	LL_DEBUGS() << "joint render entries: " << mMesh->mJointRenderData.size() << LL_ENDL;
 }
 
 //-----------------------------------------------------------------------------
@@ -323,7 +323,7 @@ void LLAvatarJointMesh::setMesh( LLPolyMesh *mesh )
 //-----------------------------------------------------------------------------
 void LLAvatarJointMesh::setupJoint(LLJoint* current_joint)
 {
-//	llinfos << "Mesh: " << getName() << llendl;
+//	LL_INFOS() << "Mesh: " << getName() << LL_ENDL;
 
 //	S32 joint_count = 0;
 	U32 sj;
@@ -339,22 +339,22 @@ void LLAvatarJointMesh::setupJoint(LLJoint* current_joint)
 		// we've found a skinjoint for this joint..
 
 		// is the last joint in the array our parent?
-		if(mMesh->mJointRenderData.count() && mMesh->mJointRenderData[mMesh->mJointRenderData.count() - 1]->mWorldMatrix == &current_joint->getParent()->getWorldMatrix())
+		if(mMesh->mJointRenderData.size() && mMesh->mJointRenderData[mMesh->mJointRenderData.size() - 1]->mWorldMatrix == &current_joint->getParent()->getWorldMatrix())
 		{
 			// ...then just add ourselves
 			LLJoint* jointp = js.mJoint;
-			mMesh->mJointRenderData.put(new LLJointRenderData(&jointp->getWorldMatrix(), &js));
-//			llinfos << "joint " << joint_count << js.mJoint->getName() << llendl;
+			mMesh->mJointRenderData.push_back(new LLJointRenderData(&jointp->getWorldMatrix(), &js));
+//			LL_INFOS() << "joint " << joint_count << js.mJoint->getName() << LL_ENDL;
 //			joint_count++;
 		}
 		// otherwise add our parent and ourselves
 		else
 		{
-			mMesh->mJointRenderData.put(new LLJointRenderData(&current_joint->getParent()->getWorldMatrix(), NULL));
-//			llinfos << "joint " << joint_count << current_joint->getParent()->getName() << llendl;
+			mMesh->mJointRenderData.push_back(new LLJointRenderData(&current_joint->getParent()->getWorldMatrix(), NULL));
+//			LL_INFOS() << "joint " << joint_count << current_joint->getParent()->getName() << LL_ENDL;
 //			joint_count++;
-			mMesh->mJointRenderData.put(new LLJointRenderData(&current_joint->getWorldMatrix(), &js));
-//			llinfos << "joint " << joint_count << current_joint->getName() << llendl;
+			mMesh->mJointRenderData.push_back(new LLJointRenderData(&current_joint->getWorldMatrix(), &js));
+//			LL_INFOS() << "joint " << joint_count << current_joint->getName() << LL_ENDL;
 //			joint_count++;
 		}
 	}

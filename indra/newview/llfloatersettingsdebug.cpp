@@ -103,7 +103,7 @@ BOOL LLFloaterSettingsDebug::postBuild()
 	}
 	mSettingsScrollList->sortByColumnIndex(0, true);
 
-	llinfos << mSettingsScrollList->getItemCount() << " total debug settings displayed." << llendl;
+	LL_INFOS() << mSettingsScrollList->getItemCount() << " total debug settings displayed." << LL_ENDL;
 
 	mComment = getChild<LLTextEditor>("comment_text");
 	return TRUE;
@@ -246,8 +246,8 @@ void LLFloaterSettingsDebug::updateControl()
 
 	if (!spinner1 || !spinner2 || !spinner3 || !spinner4 || !color_swatch)
 	{
-		llwarns << "Could not find all desired controls by name"
-			<< llendl;
+		LL_WARNS() << "Could not find all desired controls by name"
+			<< LL_ENDL;
 		return;
 	}
 

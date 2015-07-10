@@ -64,13 +64,13 @@ LLDirIterator::Impl::Impl(const std::string &dirname, const std::string &mask)
 	catch (fs::basic_filesystem_error<fs::path>& e)
 #endif
 	{
-		llwarns << e.what() << llendl;
+		LL_WARNS() << e.what() << LL_ENDL;
 		return;
 	}
 
 	if (!is_dir)
 	{
-		llwarns << "Invalid path: \"" << dir_path.string() << "\"" << llendl;
+		LL_WARNS() << "Invalid path: \"" << dir_path.string() << "\"" << LL_ENDL;
 		return;
 	}
 
@@ -85,7 +85,7 @@ LLDirIterator::Impl::Impl(const std::string &dirname, const std::string &mask)
 	catch (fs::basic_filesystem_error<fs::path>& e)
 #endif
 	{
-		llerrs << e.what() << llendl;
+		LL_ERRS() << e.what() << LL_ENDL;
 		return;
 	}
 
@@ -101,8 +101,8 @@ LLDirIterator::Impl::Impl(const std::string &dirname, const std::string &mask)
 	}
 	catch (boost::regex_error& e)
 	{
-		llerrs << "\"" << exp << "\" is not a valid regular expression: "
-				<< e.what() << llendl;
+		LL_ERRS() << "\"" << exp << "\" is not a valid regular expression: "
+				<< e.what() << LL_ENDL;
 		return;
 	}
 
@@ -119,7 +119,7 @@ bool LLDirIterator::Impl::next(std::string &fname)
 
 	if (!mIsValid)
 	{
-		llwarns << "The iterator is not correctly initialized." << llendl;
+		LL_WARNS() << "The iterator is not correctly initialized." << LL_ENDL;
 		return false;
 	}
 
@@ -186,7 +186,7 @@ std::string glob_to_regex(const std::string& glob)
 			case '}':
 				if (!braces)
 				{
-					llerrs << "glob_to_regex: Closing brace without an equivalent opening brace: " << glob << llendl;
+					LL_ERRS() << "glob_to_regex: Closing brace without an equivalent opening brace: " << glob << LL_ENDL;
 				}
 
 				regex+=')';
@@ -217,7 +217,7 @@ std::string glob_to_regex(const std::string& glob)
 
 	if (braces)
 	{
-		llerrs << "glob_to_regex: Unterminated brace expression: " << glob << llendl;
+		LL_ERRS() << "glob_to_regex: Unterminated brace expression: " << glob << LL_ENDL;
 	}
 
 	return regex;

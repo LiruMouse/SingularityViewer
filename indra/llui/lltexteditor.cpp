@@ -638,7 +638,7 @@ void LLTextEditor::spell_correct(void* data)
 	LLTextEditor* line = tempBind->origin;
 	if(tempBind && line)
 	{
-		llinfos << tempBind->menuItem->getName() << " : " << tempBind->origin->getName() << " : " << tempBind->word << llendl;
+		LL_INFOS() << tempBind->menuItem->getName() << " : " << tempBind->origin->getName() << " : " << tempBind->word << LL_ENDL;
 		if(line)line->spellReplace(tempBind);
 	}
 }
@@ -921,7 +921,7 @@ const std::string& LLTextEditor::getText() const
 	{
 		if (mAllowEmbeddedItems)
 		{
-			llwarns << "getText() called on text with embedded items (not supported)" << llendl;
+			LL_WARNS() << "getText() called on text with embedded items (not supported)" << LL_ENDL;
 		}
 		mUTF8Text = wstring_to_utf8str(mWText);
 		mTextIsUpToDate = TRUE;
@@ -1136,10 +1136,10 @@ S32 LLTextEditor::getLineStart( S32 line ) const
 	S32 res = seg->getStart() + segoffset;
 	if (res > seg->getEnd()) 
 	{
-		//llerrs << "wtf" << llendl;
+		//LL_ERRS() << "wtf" << LL_ENDL;
 		// This happens when creating a new notecard using the AO on certain opensims.
 		// Play it safe instead of bringing down the viewer - MC
-		llwarns << "BAD JOOJOO! Text length (" << res << ") greater than text end (" << seg->getEnd() << "). Setting line start to " << seg->getEnd() << llendl;
+		LL_WARNS() << "BAD JOOJOO! Text length (" << res << ") greater than text end (" << seg->getEnd() << "). Setting line start to " << seg->getEnd() << LL_ENDL;
 		res = seg->getEnd();
 	}
 	return res;
@@ -1745,7 +1745,7 @@ BOOL LLTextEditor::handleHover(S32 x, S32 y, MASK mask)
 			mSelectionEnd = mCursorPos;
 		}
 
-		lldebugst(LLERR_USER_INPUT) << "hover handled by " << getName() << " (active)" << llendl;		
+		LL_DEBUGS("UserInput") << "hover handled by " << getName() << " (active)" << LL_ENDL;		
 		getWindow()->setCursor(UI_CURSOR_IBEAM);
 		handled = TRUE;
 	}
@@ -1773,14 +1773,14 @@ BOOL LLTextEditor::handleHover(S32 x, S32 y, MASK mask)
 			{
 				if(cur_segment->getStyle()->isLink())
 				{
-					lldebugst(LLERR_USER_INPUT) << "hover handled by " << getName() << " (over link, inactive)" << llendl;		
+					LL_DEBUGS("UserInput") << "hover handled by " << getName() << " (over link, inactive)" << LL_ENDL;		
 					getWindow()->setCursor(UI_CURSOR_HAND);
 					handled = TRUE;
 				}
 				else
 				if(cur_segment->getStyle()->getIsEmbeddedItem())
 				{
-					lldebugst(LLERR_USER_INPUT) << "hover handled by " << getName() << " (over embedded item, inactive)" << llendl;		
+					LL_DEBUGS("UserInput") << "hover handled by " << getName() << " (over embedded item, inactive)" << LL_ENDL;		
 					getWindow()->setCursor(UI_CURSOR_HAND);
 					//getWindow()->setCursor(UI_CURSOR_ARROW);
 					handled = TRUE;
@@ -1791,7 +1791,7 @@ BOOL LLTextEditor::handleHover(S32 x, S32 y, MASK mask)
 
 		if( !handled )
 		{
-			lldebugst(LLERR_USER_INPUT) << "hover handled by " << getName() << " (inactive)" << llendl;		
+			LL_DEBUGS("UserInput") << "hover handled by " << getName() << " (inactive)" << LL_ENDL;		
 			if (!mScrollbar->getVisible() || x < getRect().getWidth() - SCROLLBAR_SIZE)
 			{
 				getWindow()->setCursor(UI_CURSOR_IBEAM);
@@ -3735,7 +3735,7 @@ void LLTextEditor::drawText()
 				seg_iter++;
 				if (seg_iter == mSegments.end())
 				{
-					llwarns << "Ran off the segmentation end!" << llendl;
+					LL_WARNS() << "Ran off the segmentation end!" << LL_ENDL;
 					return;
 				}
 				cur_segment = *seg_iter;
@@ -4708,7 +4708,7 @@ void LLTextEditor::pruneSegments()
 	}
 	else
 	{
-		llwarns << "Tried to erase end of empty LLTextEditor" << llendl;
+		LL_WARNS() << "Tried to erase end of empty LLTextEditor" << LL_ENDL;
 	}
 }
 
@@ -4852,20 +4852,20 @@ BOOL LLTextEditor::importBuffer(const char* buffer, S32 length )
 	instream.getline(tbuf, MAX_STRING);
 	if( 1 != sscanf(tbuf, "Linden text version %d", &version) )
 	{
-		llwarns << "Invalid Linden text file header " << llendl;
+		LL_WARNS() << "Invalid Linden text file header " << LL_ENDL;
 		return FALSE;
 	}
 
 	if( 1 != version )
 	{
-		llwarns << "Invalid Linden text file version: " << version << llendl;
+		LL_WARNS() << "Invalid Linden text file version: " << version << LL_ENDL;
 		return FALSE;
 	}
 
 	instream.getline(tbuf, MAX_STRING);
 	if( 0 != sscanf(tbuf, "{") )
 	{
-		llwarns << "Invalid Linden text file format" << llendl;
+		LL_WARNS() << "Invalid Linden text file format" << LL_ENDL;
 		return FALSE;
 	}
 
@@ -4873,13 +4873,13 @@ BOOL LLTextEditor::importBuffer(const char* buffer, S32 length )
 	instream.getline(tbuf, MAX_STRING);
 	if( 1 != sscanf(tbuf, "Text length %d", &text_len) )
 	{
-		llwarns << "Invalid Linden text length field" << llendl;
+		LL_WARNS() << "Invalid Linden text length field" << LL_ENDL;
 		return FALSE;
 	}
 
 	if( text_len > mMaxTextByteLength )
 	{
-		llwarns << "Invalid Linden text length: " << text_len << llendl;
+		LL_WARNS() << "Invalid Linden text length: " << text_len << LL_ENDL;
 		return FALSE;
 	}
 
@@ -4888,21 +4888,21 @@ BOOL LLTextEditor::importBuffer(const char* buffer, S32 length )
 	char* text = new char[ text_len + 1];
 	if (text == NULL)
 	{
-		llerrs << "Memory allocation failure." << llendl;			
+		LL_ERRS() << "Memory allocation failure." << LL_ENDL;			
 		return FALSE;
 	}
 	instream.get(text, text_len + 1, '\0');
 	text[text_len] = '\0';
 	if( text_len != (S32)strlen(text) )/* Flawfinder: ignore */
 	{
-		llwarns << llformat("Invalid text length: %d != %d ",strlen(text),text_len) << llendl;/* Flawfinder: ignore */
+		LL_WARNS() << llformat("Invalid text length: %d != %d ",strlen(text),text_len) << LL_ENDL;/* Flawfinder: ignore */
 		success = FALSE;
 	}
 
 	instream.getline(tbuf, MAX_STRING);
 	if( success && (0 != sscanf(tbuf, "}")) )
 	{
-		llwarns << "Invalid Linden text file format: missing terminal }" << llendl;
+		LL_WARNS() << "Invalid Linden text file format: missing terminal }" << LL_ENDL;
 		success = FALSE;
 	}
 
@@ -4993,13 +4993,13 @@ BOOL LLTextSegment::getToolTip(std::string& msg) const
 
 void LLTextSegment::dump() const
 {
-	llinfos << "Segment [" << 
+	LL_INFOS() << "Segment [" << 
 //			mColor.mV[VX] << ", " <<
 //			mColor.mV[VY] << ", " <<
 //			mColor.mV[VZ] << "]\t[" <<
 		mStart << ", " <<
 		getEnd() << "]" <<
-		llendl;
+		LL_ENDL;
 
 }
 
@@ -5295,7 +5295,7 @@ void LLTextEditor::resetPreedit()
 	{
 		if (hasSelection())
 		{
-			llwarns << "Preedit and selection!" << llendl;
+			LL_WARNS() << "Preedit and selection!" << LL_ENDL;
 			deselect();
 		}
 
@@ -5484,7 +5484,7 @@ void LLTextEditor::markAsPreedit(S32 position, S32 length)
 	setCursorPos(position);
 	if (hasPreeditString())
 	{
-		llwarns << "markAsPreedit invoked when hasPreeditString is true." << llendl;
+		LL_WARNS() << "markAsPreedit invoked when hasPreeditString is true." << LL_ENDL;
 	}
 	mPreeditWString = LLWString( mWText, position, length );
 	if (length > 0)

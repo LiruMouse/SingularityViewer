@@ -168,7 +168,7 @@ void LLCRC::update(const std::string& filename)
 {
 	if (filename.empty())
 	{
-		llerrs << "No filename specified" << llendl;
+		LL_ERRS() << "No filename specified" << LL_ENDL;
 		return;
 	}
 
@@ -191,7 +191,7 @@ void LLCRC::update(const std::string& filename)
 			
 			if (nread < (size_t) size)
 			{
-				llwarns << "Short read on " << filename << llendl;
+				LL_WARNS() << "Short read on " << filename << LL_ENDL;
 			}
 
 			update(data, nread);

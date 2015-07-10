@@ -71,21 +71,21 @@ sample error callback expecting a LLFILE* client object
 */
 void error_callback(const char* msg, void*)
 {
-	lldebugs << "LLImageJ2COJ: " << chomp(msg) << llendl;
+	LL_DEBUGS() << "LLImageJ2COJ: " << chomp(msg) << LL_ENDL;
 }
 /**
 sample warning callback expecting a LLFILE* client object
 */
 void warning_callback(const char* msg, void*)
 {
-	lldebugs << "LLImageJ2COJ: " << chomp(msg) << llendl;
+	LL_DEBUGS() << "LLImageJ2COJ: " << chomp(msg) << LL_ENDL;
 }
 /**
 sample debug callback expecting no client object
 */
 void info_callback(const char* msg, void*)
 {
-	lldebugs << "LLImageJ2COJ: " << chomp(msg) << llendl;
+	LL_DEBUGS() << "LLImageJ2COJ: " << chomp(msg) << LL_ENDL;
 }
 
 // Divide a by 2 to the power of b and round upwards
@@ -222,7 +222,7 @@ BOOL LLImageJ2COJ::decodeImpl(LLImageJ2C &base, LLImageRaw &raw_image, F32 decod
 	{
 		if (image->comps[i].factor != base.getRawDiscardLevel())
 		{
-			LL_WARNS("Texture") <<  "Expected discard level not reached!" << llendl;			
+			LL_WARNS("Texture") <<  "Expected discard level not reached!" << LL_ENDL;			
 			// if we didn't get the discard level we're expecting, fail
 			opj_image_destroy(image);
 			base.decodeFailed();
@@ -232,7 +232,7 @@ BOOL LLImageJ2COJ::decodeImpl(LLImageJ2C &base, LLImageRaw &raw_image, F32 decod
 	
 	if(image->numcomps <= first_channel)
 	{
-		LL_WARNS("Texture") << "trying to decode more channels than are present in image: numcomps: " << image->numcomps << " first_channel: " << first_channel << llendl;
+		LL_WARNS("Texture") << "trying to decode more channels than are present in image: numcomps: " << image->numcomps << " first_channel: " << first_channel << LL_ENDL;
 		if (image)
 		{
 			opj_image_destroy(image);
@@ -283,7 +283,7 @@ BOOL LLImageJ2COJ::decodeImpl(LLImageJ2C &base, LLImageRaw &raw_image, F32 decod
 		}
 		else // Some rare OpenJPEG versions have this bug.
 		{
-			LL_WARNS("Texture") << "ERROR -> decodeImpl: failed to decode image! (NULL comp data - OpenJPEG bug)" << llendl;
+			LL_WARNS("Texture") << "ERROR -> decodeImpl: failed to decode image! (NULL comp data - OpenJPEG bug)" << LL_ENDL;
 			opj_image_destroy(image);
 			
 			base.decodeFailed();
@@ -418,7 +418,7 @@ BOOL LLImageJ2COJ::encodeImpl(LLImageJ2C &base, const LLImageRaw &raw_image, con
 	if (!bSuccess)
 	{
 		opj_cio_close(cio);
-		LL_WARNS("Texture") << "Failed to encode image." << llendl;
+		LL_WARNS("Texture") << "Failed to encode image." << LL_ENDL;
 		return FALSE;
 	}
 	codestream_length = cio_tell(cio);
@@ -572,7 +572,7 @@ BOOL LLImageJ2COJ::getMetadata(LLImageJ2C &base)
 
 	if(!image)
 	{
-		llwarns << "ERROR -> getMetadata: failed to decode image!" << llendl;
+		LL_WARNS() << "ERROR -> getMetadata: failed to decode image!" << LL_ENDL;
 		return FALSE;
 	}
 

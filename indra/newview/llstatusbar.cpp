@@ -705,7 +705,7 @@ void LLStatusBar::sendMoneyBalanceRequest()
 
 void LLStatusBar::setHealth(S32 health)
 {
-	//llinfos << "Setting health to: " << buffer << llendl;
+	//LL_INFOS() << "Setting health to: " << buffer << LL_ENDL;
 	mTextHealth->setText(llformat("%d%%", health));
 
 	if( mHealth > health )

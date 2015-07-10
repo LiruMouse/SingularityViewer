@@ -57,6 +57,6 @@ non aggiunga pause.
 	<check_box label="tempo in secondi" name="wait_time_check"/>
 	<line_editor left_delta="114" name="wait_time_editor" />
 	<check_box label="Attiva" name="active_check" tool_tip="Le gesture attivate possono essere eseguite scrivendo in chat la parola chiave o premendo i tasti chiave. Le gesture generalmente si disattivano quando c&apos;è un conflitto nei relativi tasti."/>
-	<button label="Anteprima" name="preview_btn"/>
+	<flyout_button label="Anteprima" name="preview_btn"/>
 	<button label="Salva" name="save_btn"/>
 </floater>

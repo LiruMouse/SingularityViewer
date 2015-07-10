@@ -793,6 +793,8 @@
    <map/>
    <key>llClearCameraParams</key>
    <map/>
+   <key>llListStatistics</key>
+   <map/>
    <key>llGetUnixTime</key>
    <map/>
    <key>llGetParcelFlags</key>

@@ -64,14 +64,14 @@ namespace
 			if (LLFILE* fp = LLFile::fopen(selected_filename, "wb"))
 			{
 				wfsaver->saveFile(fp);
-				llinfos << "OBJ file saved to " << selected_filename << llendl;
+				LL_INFOS() << "OBJ file saved to " << selected_filename << LL_ENDL;
 				if (gSavedSettings.getBOOL("OBJExportNotifySuccess"))
 					LLNotificationsUtil::add("WavefrontExportSuccess", LLSD().with("FILENAME", selected_filename));
 				fclose(fp);
 			}
-			else llerrs << "can't open: " << selected_filename << llendl;
+			else LL_ERRS() << "can't open: " << selected_filename << LL_ENDL;
 		}
-		else llwarns << "No file; bailing" << llendl;
+		else LL_WARNS() << "No file; bailing" << LL_ENDL;
 
 		delete wfsaver;
 	}
@@ -436,7 +436,7 @@ namespace
 	{
 		const size_t size = outstring.length();
 		if (fwrite(outstring.c_str(), 1, size, fp) != size)
-			llwarns << "Short write" << llendl;
+			LL_WARNS() << "Short write" << LL_ENDL;
 	}
 }
 

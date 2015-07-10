@@ -90,12 +90,12 @@ private:
 
 	void savePersistentNotifications()
 	{
-		llinfos << "Saving open notifications to " << mFileName << llendl;
+		LL_INFOS() << "Saving open notifications to " << mFileName << LL_ENDL;
 
 		llofstream notify_file(mFileName.c_str());
 		if (!notify_file.is_open()) 
 		{
-			llwarns << "Failed to open " << mFileName << llendl;
+			LL_WARNS() << "Failed to open " << mFileName << LL_ENDL;
 			return;
 		}
 
@@ -121,12 +121,12 @@ private:
 
 	void loadPersistentNotifications()
 	{
-		llinfos << "Loading open notifications from " << mFileName << llendl;
+		LL_INFOS() << "Loading open notifications from " << mFileName << LL_ENDL;
 
 		llifstream notify_file(mFileName.c_str());
 		if (!notify_file.is_open()) 
 		{
-			llwarns << "Failed to open " << mFileName << llendl;
+			LL_WARNS() << "Failed to open " << mFileName << LL_ENDL;
 			return;
 		}
 
@@ -134,7 +134,7 @@ private:
 		LLPointer<LLSDParser> parser = new LLSDXMLParser();
 		if (parser->parse(notify_file, input, LLSDSerialize::SIZE_UNLIMITED) < 0)
 		{
-			llwarns << "Failed to parse open notifications" << llendl;
+			LL_WARNS() << "Failed to parse open notifications" << LL_ENDL;
 			return;
 		}
 
@@ -142,7 +142,7 @@ private:
 		std::string version = input["version"];
 		if (version != NOTIFICATION_PERSIST_VERSION)
 		{
-			llwarns << "Bad open notifications version: " << version << llendl;
+			LL_WARNS() << "Bad open notifications version: " << version << LL_ENDL;
 			return;
 		}
 		LLSD& data = input["data"];
@@ -230,7 +230,7 @@ LLNotificationForm::LLNotificationForm(const std::string& name, const LLXMLNodeP
 {
 	if (!xml_node->hasName("form"))
 	{
-		llwarns << "Bad xml node for form: " << xml_node->getName() << llendl;
+		LL_WARNS() << "Bad xml node for form: " << xml_node->getName() << LL_ENDL;
 	}
 	LLXMLNodePtr child = xml_node->getFirstChild();
 	while(child)
@@ -284,7 +284,7 @@ LLNotificationForm::LLNotificationForm(const LLSD& sd)
 	}
 	else
 	{
-		llwarns << "Invalid form data " << sd << llendl;
+		LL_WARNS() << "Invalid form data " << sd << LL_ENDL;
 		mFormData = LLSD::emptyArray();
 	}
 }
@@ -891,7 +891,7 @@ bool LLNotificationChannelBase::updateItem(const LLSD& payload, LLNotificationPt
 		assert(!wasFound);
 		if (passesFilter)
 		{
-			llinfos << "Inserting " << pNotification->getName() << llendl;
+			LL_INFOS() << "Inserting " << pNotification->getName() << LL_ENDL;
 			// not in our list, add it and say so
 			mItems.insert(pNotification);
 			abortProcessing = mChanged(payload);
@@ -1109,7 +1109,7 @@ LLNotificationChannelPtr LLNotifications::getChannel(const std::string& channelN
 	ChannelMap::iterator p = mChannels.find(channelName);
 	if(p == mChannels.end())
 	{
-		llerrs << "Did not find channel named " << channelName << llendl;
+		LL_ERRS() << "Did not find channel named " << channelName << LL_ENDL;
 		return LLNotificationChannelPtr();
 	}
 	return p->second;
@@ -1171,7 +1171,7 @@ bool LLNotificationTemplates::addTemplate(const std::string &name,
 {
 	if (mTemplates.count(name))
 	{
-		llwarns << "LLNotifications -- attempted to add template '" << name << "' twice." << llendl;
+		LL_WARNS() << "LLNotifications -- attempted to add template '" << name << "' twice." << LL_ENDL;
 		return false;
 	}
 	mTemplates[name] = theTemplate;
@@ -1208,7 +1208,7 @@ void LLNotifications::forceResponse(const LLNotification::Params& params, S32 op
 	
 	if (selected_item.isUndefined())
 	{
-		llwarns << "Invalid option" << option << " for notification " << (std::string)params.name << llendl;
+		LL_WARNS() << "Invalid option" << option << " for notification " << (std::string)params.name << LL_ENDL;
 		return;
 	}
 	response[selected_item["name"].asString()] = true;
@@ -1229,7 +1229,7 @@ LLNotificationTemplates::TemplateNames LLNotificationTemplates::getTemplateNames
 typedef std::map<std::string, std::string> StringMap;
 void replaceSubstitutionStrings(LLXMLNodePtr node, StringMap& replacements)
 {
-	//llwarns << "replaceSubstitutionStrings" << llendl;
+	//LL_WARNS() << "replaceSubstitutionStrings" << LL_ENDL;
 	// walk the list of attributes looking for replacements
 	for (LLXMLAttribList::iterator it=node->mAttributes.begin();
 		 it != node->mAttributes.end(); ++it)
@@ -1243,13 +1243,13 @@ void replaceSubstitutionStrings(LLXMLNodePtr node, StringMap& replacements)
 			if (found != replacements.end())
 			{
 				replacement = found->second;
-				//llinfos << "replaceSubstitutionStrings: value: \"" << value << "\" repl: \"" << replacement << "\"." << llendl;
+				//LL_INFOS() << "replaceSubstitutionStrings: value: \"" << value << "\" repl: \"" << replacement << "\"." << LL_ENDL;
 
 				it->second->setValue(replacement);
 			}
 			else
 			{
-				llwarns << "replaceSubstitutionStrings FAILURE: could not find replacement \"" << value << "\"." << llendl;
+				LL_WARNS() << "replaceSubstitutionStrings FAILURE: could not find replacement \"" << value << "\"." << LL_ENDL;
 			}
 		}
 	}
@@ -1288,7 +1288,7 @@ LLXMLNodePtr LLNotificationTemplates::checkForXMLTemplate(LLXMLNodePtr item)
 			}
 			else
 			{
-				llwarns << "XML template lookup failure on '" << replacementName << "' " << llendl;
+				LL_WARNS() << "XML template lookup failure on '" << replacementName << "' " << LL_ENDL;
 			}
 		}
 	}
@@ -1304,7 +1304,7 @@ bool LLNotificationTemplates::loadTemplates()
 	
 	if (!success || root.isNull() || !root->hasName( "notifications" ))
 	{
-		llerrs << "Problem reading UI Notifications file: " << xml_filename << llendl;
+		LL_ERRS() << "Problem reading UI Notifications file: " << xml_filename << LL_ENDL;
 		return false;
 	}
 	
@@ -1336,8 +1336,8 @@ bool LLNotificationTemplates::loadTemplates()
 		
 		if (!item->hasName("notification"))
 		{
-            llwarns << "Unexpected entity " << item->getName()->mString << 
-                       " found in " << xml_filename << llendl;
+            LL_WARNS() << "Unexpected entity " << item->getName()->mString << 
+                       " found in " << xml_filename << LL_ENDL;
 			continue;
 		}
 	}
@@ -1354,7 +1354,7 @@ bool LLNotifications::loadNotifications()
 	
 	if (!success || root.isNull() || !root->hasName( "notifications" ))
 	{
-		llerrs << "Problem reading UI Notifications file: " << xml_filename << llendl;
+		LL_ERRS() << "Problem reading UI Notifications file: " << xml_filename << LL_ENDL;
 		return false;
 	}
 	
@@ -1374,11 +1374,11 @@ bool LLNotifications::loadNotifications()
 
 		if (!item->getAttributeString("name", pTemplate->mName))
 		{
-			llwarns << "Unable to parse notification with no name" << llendl;
+			LL_WARNS() << "Unable to parse notification with no name" << LL_ENDL;
 			continue;
 		}
 		
-		//llinfos << "Parsing " << pTemplate->mName << llendl;
+		//LL_INFOS() << "Parsing " << pTemplate->mName << LL_ENDL;
 		
 		pTemplate->mMessage = item->getTextContents();
 		pTemplate->mDefaultFunctor = pTemplate->mName;
@@ -1436,12 +1436,12 @@ bool LLNotifications::loadNotifications()
                         std::string key;
                         formitem->getAttributeString("key", key);
                         pTemplate->mUniqueContext.push_back(key);
-                        //llwarns << "adding " << key << " to unique context" << llendl;
+                        //LL_WARNS() << "adding " << key << " to unique context" << LL_ENDL;
                     }
                     else
                     {
-                        llwarns << "'unique' has unrecognized subelement " 
-                        << formitem->getName()->mString << llendl;
+                        LL_WARNS() << "'unique' has unrecognized subelement " 
+                        << formitem->getName()->mString << LL_ENDL;
                     }
                 }
             }
@@ -1457,7 +1457,7 @@ bool LLNotifications::loadNotifications()
 	
 	//std::ostringstream ostream;
 	//root->writeToOstream(ostream, "\n  ");
-	//llwarns << ostream.str() << llendl;
+	//LL_WARNS() << ostream.str() << LL_ENDL;
 	
 	return true;
 }
@@ -1630,7 +1630,7 @@ void LLNotifications::add(const LLNotificationPtr pNotif)
 	LLNotificationSet::iterator it=mItems.find(pNotif);
 	if (it != mItems.end())
 	{
-		llerrs << "Notification added a second time to the master notification channel." << llendl;
+		LL_ERRS() << "Notification added a second time to the master notification channel." << LL_ENDL;
 	}
 
 	UpdateItemSM::add(UpdateItem("add", pNotif));
@@ -1644,7 +1644,7 @@ void LLNotifications::cancel(LLNotificationPtr pNotif)
 	LLNotificationSet::iterator it=mItems.find(pNotif);
 	if (it == mItems.end())
 	{
-		llerrs << "Attempted to delete nonexistent notification " << pNotif->getName() << llendl;
+		LL_ERRS() << "Attempted to delete nonexistent notification " << pNotif->getName() << LL_ENDL;
 	}
 	UpdateItemSM::add(UpdateItem("delete", pNotif));
 }
@@ -1667,7 +1667,7 @@ LLNotificationPtr LLNotifications::find(LLUUID const& uuid)
 	LLNotificationSet::iterator it=mItems.find(target);
 	if (it == mItems.end())
 	{
-		llwarns << "Tried to dereference uuid '" << uuid << "' as a notification key but didn't find it." << llendl;
+		LL_WARNS() << "Tried to dereference uuid '" << uuid << "' as a notification key but didn't find it." << LL_ENDL;
 		return LLNotificationPtr((LLNotification*)NULL);
 	}
 	else

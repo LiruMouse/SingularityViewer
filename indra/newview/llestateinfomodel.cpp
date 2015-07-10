@@ -93,7 +93,7 @@ void LLEstateInfoModel::update(const strings_t& strings)
 	LL_DEBUGS("Windlight Sync") << "Received estate info: "
 		<< "is_sun_fixed = " << getUseFixedSun()
 		<< ", sun_hour = " << getSunHour() << LL_ENDL;
-	lldebugs << getInfoDump() << llendl;
+	LL_DEBUGS() << getInfoDump() << LL_ENDL;
 
 	// Update region owner.
 	LLViewerRegion* regionp = gAgent.getRegion();
@@ -117,14 +117,14 @@ public:
 	// if we get a normal response, handle it here
 	virtual void httpSuccess()
 	{
-		llinfos << "Committed estate info" << llendl;
+		LL_INFOS() << "Committed estate info" << LL_ENDL;
 		LLEstateInfoModel::instance().notifyCommit();
 	}
 
 	// if we get an error response
 	virtual void httpFailure()
 	{
-		llwarns << "Failed to commit estate info [status:" << mStatus << "]: " << mReason << llendl;
+		LL_WARNS() << "Failed to commit estate info [status:" << mStatus << "]: " << mReason << LL_ENDL;
 	}
 
 	/*virtual*/ char const* getName(void) const { return "LLEstateChangeInfoResponder"; }
@@ -157,7 +157,7 @@ bool LLEstateInfoModel::commitEstateInfoCaps()
 	LL_DEBUGS("Windlight Sync") << "Sending estate caps: "
 		<< "is_sun_fixed = " << getUseFixedSun()
 		<< ", sun_hour = " << getSunHour() << LL_ENDL;
-	lldebugs << body << LL_ENDL;
+	LL_DEBUGS() << body << LL_ENDL;
 
 	// we use a responder so that we can re-get the data after committing to the database
 	LLHTTPClient::post(url, body, new LLEstateChangeInfoResponder);
@@ -176,7 +176,7 @@ void LLEstateInfoModel::commitEstateInfoDataserver()
 	LL_DEBUGS("Windlight Sync") << "Sending estate info: "
 		<< "is_sun_fixed = " << getUseFixedSun()
 		<< ", sun_hour = " << getSunHour() << LL_ENDL;
-	lldebugs << getInfoDump() << LL_ENDL;
+	LL_DEBUGS() << getInfoDump() << LL_ENDL;
 
 	LLMessageSystem* msg = gMessageSystem;
 	msg->newMessage("EstateOwnerMessage");

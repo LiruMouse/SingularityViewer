@@ -113,7 +113,7 @@ LLView* LLGroupDropTarget::fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFa
 
 void LLGroupDropTarget::doDrop(EDragAndDropType cargo_type, void* cargo_data)
 {
-	llinfos << "LLGroupDropTarget::doDrop()" << llendl;
+	LL_INFOS() << "LLGroupDropTarget::doDrop()" << LL_ENDL;
 }
 
 BOOL LLGroupDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
@@ -393,7 +393,7 @@ void LLPanelGroupNotices::onClickNewMessage(void* data)
 
 void LLPanelGroupNotices::onClickRefreshNotices(void* data)
 {
-	lldebugs << "LLPanelGroupNotices::onClickGetPastNotices" << llendl;
+	LL_DEBUGS() << "LLPanelGroupNotices::onClickGetPastNotices" << LL_ENDL;
 	LLPanelGroupNotices* self = (LLPanelGroupNotices*)data;
 	
 	self->mNoticesList->deleteAllItems();
@@ -420,16 +420,16 @@ void LLPanelGroupNotices::processGroupNoticesListReply(LLMessageSystem* msg, voi
 	std::map<LLUUID,LLPanelGroupNotices*>::iterator it = sInstances.find(group_id);
 	if (it == sInstances.end())
 	{
-		llinfos << "Group Panel Notices " << group_id << " no longer in existence."
-				<< llendl;
+		LL_INFOS() << "Group Panel Notices " << group_id << " no longer in existence."
+				<< LL_ENDL;
 		return;
 	}
 	
 	LLPanelGroupNotices* selfp = it->second;
 	if(!selfp)
 	{
-		llinfos << "Group Panel Notices " << group_id << " no longer in existence."
-				<< llendl;
+		LL_INFOS() << "Group Panel Notices " << group_id << " no longer in existence."
+				<< LL_ENDL;
 		return;
 	}
 
@@ -516,7 +516,7 @@ void LLPanelGroupNotices::onSelectNotice()
 	msg->addUUID("GroupNoticeID",item->getUUID());
 	gAgent.sendReliableMessage();
 
-	lldebugs << "Item " << item->getUUID() << " selected." << llendl;
+	LL_DEBUGS() << "Item " << item->getUUID() << " selected." << LL_ENDL;
 }
 
 bool is_openable(LLAssetType::EType type);

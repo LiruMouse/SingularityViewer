@@ -203,7 +203,7 @@ bool LLGiveInventory::doGiveInventoryItem(const LLUUID& to_agent,
 
 {
 	bool res = true;
-	llinfos << "LLGiveInventory::giveInventory()" << llendl;
+	LL_INFOS() << "LLGiveInventory::giveInventory()" << LL_ENDL;
 	if(!isInventoryGiveAcceptable(item))
 	{
 		return false;
@@ -241,8 +241,8 @@ bool LLGiveInventory::doGiveInventoryCategory(const LLUUID& to_agent,
 	{
 		return false;
 	}
-	llinfos << "LLGiveInventory::giveInventoryCategory() - "
-		<< cat->getUUID() << llendl;
+	LL_INFOS() << "LLGiveInventory::giveInventoryCategory() - "
+		<< cat->getUUID() << LL_ENDL;
 
 	if (!isAgentAvatarValid())
 	{
@@ -327,7 +327,7 @@ void LLGiveInventory::logInventoryOffer(const LLUUID& to_agent, const LLUUID &im
 		gIMMgr->addSystemMessage(im_session_id, "inventory_item_offered", args);
 	}
 // [RLVa:KB] - Checked: 2010-05-26 (RLVa-1.2.2a) | Modified: RLVa-1.2.0h
-	else if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(to_agent)) &&
+	else if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES) || gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMETAGS)) && (RlvUtil::isNearbyAgent(to_agent)) &&
 		      (!RlvUIEnabler::hasOpenProfile(to_agent)) )
 	{
 		// Log to chat history if the user didn't drop on an IM session or a profile to avoid revealing the name of the recipient
@@ -512,8 +512,8 @@ bool LLGiveInventory::commitGiveInventoryCategory(const LLUUID& to_agent,
 	{
 		return false;
 	}
-	llinfos << "LLGiveInventory::commitGiveInventoryCategory() - "
-			<< cat->getUUID() << llendl;
+	LL_INFOS() << "LLGiveInventory::commitGiveInventoryCategory() - "
+			<< cat->getUUID() << LL_ENDL;
 
 	// Test out how many items are being given.
 	LLViewerInventoryCategory::cat_array_t cats;

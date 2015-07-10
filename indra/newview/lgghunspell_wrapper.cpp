@@ -502,7 +502,7 @@ std::string lggHunSpell_Wrapper::getCorrectPath(std::string file)
 void lggHunSpell_Wrapper::setNewDictionary(std::string newDict)
 {
 
-	llinfos << "Setting new base dictionary long name is-> " << newDict.c_str() << llendl;
+	LL_INFOS() << "Setting new base dictionary long name is-> " << newDict.c_str() << LL_ENDL;
 
 	currentBaseDic = newDict;
 	
@@ -517,10 +517,10 @@ void lggHunSpell_Wrapper::setNewDictionary(std::string newDict)
 	std::string dicaffpath = getCorrectPath(newDict+".aff");
 	std::string dicdicpath = getCorrectPath(newDict+".dic");
 	
-	llinfos << "Setting new base dictionary -> " << dicaffpath.c_str() << llendl;
+	LL_INFOS() << "Setting new base dictionary -> " << dicaffpath.c_str() << LL_ENDL;
 
 	myHunspell = new Hunspell(dicaffpath.c_str(), dicdicpath.c_str());
-	llinfos << "Adding custom dictionary " << llendl;
+	LL_INFOS() << "Adding custom dictionary " << LL_ENDL;
 	createCustomDic();
 	addDictionary("custom");
 	std::vector<std::string> toInstall = getInstalledDicts();
@@ -614,23 +614,23 @@ std::vector<std::string> lggHunSpell_Wrapper::getSuggestionList(std::string badW
 
 void lggHunSpell_Wrapper::debugTest(std::string testWord)
 {
-	llinfos << "Testing to see if " << testWord.c_str() << " is spelled correct" << llendl;
+	LL_INFOS() << "Testing to see if " << testWord.c_str() << " is spelled correct" << LL_ENDL;
 
 	if (isSpelledRight(testWord))
 	{
-		llinfos << testWord.c_str() << " is spelled correctly" << llendl;
+		LL_INFOS() << testWord.c_str() << " is spelled correctly" << LL_ENDL;
 	}
 	else
 	{
-		llinfos << testWord.c_str() << " is not spelled correctly, getting suggestions" << llendl;
+		LL_INFOS() << testWord.c_str() << " is not spelled correctly, getting suggestions" << LL_ENDL;
 		std::vector<std::string> suggList;
 		suggList.clear();
 		suggList = getSuggestionList(testWord);
-		llinfos << "Got suggestions.. " << llendl;
+		LL_INFOS() << "Got suggestions.. " << LL_ENDL;
 
 		for (int i = 0; i < (int)suggList.size(); i++)
 		{
-			llinfos << "Suggestion for " << testWord.c_str() << ":" << suggList[i].c_str() << llendl;
+			LL_INFOS() << "Suggestion for " << testWord.c_str() << ":" << suggList[i].c_str() << LL_ENDL;
 		}
 	}
 }
@@ -659,7 +659,7 @@ void lggHunSpell_Wrapper::addDictionary(std::string additionalDictionary)
 	std::string dicpath = getCorrectPath(fullName2DictName(additionalDictionary)+".dic");
 	if (gDirUtilp->fileExists(dicpath))
 	{
-		llinfos << "Adding additional dictionary -> " << dicpath.c_str() << llendl;
+		LL_INFOS() << "Adding additional dictionary -> " << dicpath.c_str() << LL_ENDL;
 		myHunspell->add_dic(dicpath.c_str());
 	}
 }
@@ -709,7 +709,7 @@ std::string lggHunSpell_Wrapper::dictName2FullName(std::string dictName)
 	{
 		for (int i =0; i<COUNTRY_CODES_RAW_SIZE; i++)
 		{		
-			//llinfos << i << llendl;
+			//LL_INFOS() << i << LL_ENDL;
 			if (0 == LLStringUtil::compareInsensitive(countryCode, std::string(countryCodesraw[i])))
 			{
 				countryCode = countryCodesraw[i+1];
@@ -739,7 +739,7 @@ std::string lggHunSpell_Wrapper::fullName2DictName(std::string fullName)
 	//get long language code
 	for (int i = 1; i<LANGUAGE_CODES_RAW_SIZE; i+=2)
 	{
-		//llinfos << i << llendl;
+		//LL_INFOS() << i << LL_ENDL;
 		if (0 == LLStringUtil::compareInsensitive(languageCode, std::string(languageCodesraw[i])))
 		{
 			languageCode = std::string(languageCodesraw[i-1]);
@@ -752,7 +752,7 @@ std::string lggHunSpell_Wrapper::fullName2DictName(std::string fullName)
 	{
 		for (int i = 1; i<COUNTRY_CODES_RAW_SIZE; i+=2)
 		{
-			//llinfos << i << " comparing " <<countryCode<<" and "<<std::string(countryCodesraw[i]).c_str()<< llendl;
+			//LL_INFOS() << i << " comparing " <<countryCode<<" and "<<std::string(countryCodesraw[i]).c_str()<< LL_ENDL;
 			if (0 == LLStringUtil::compareInsensitive(countryCode, std::string(countryCodesraw[i])))
 			{
 				countryCode = std::string(countryCodesraw[i-1]);

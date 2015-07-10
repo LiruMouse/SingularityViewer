@@ -75,7 +75,7 @@ void LLClassifiedStatsResponder::httpSuccess(void)
 /*virtual*/
 void LLClassifiedStatsResponder::httpFailure(void)
 {
-	llinfos << "httpFailure: " << dumpResponse() << llendl;
+	LL_INFOS() << "httpFailure: " << dumpResponse() << LL_ENDL;
 }
 
 

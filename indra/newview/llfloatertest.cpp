@@ -304,56 +304,56 @@ LLFloaterTestImpl::LLFloaterTestImpl()
 // static
 void LLFloaterTestImpl::onClickButton()
 {
-	llinfos << "button clicked" << llendl;
+	LL_INFOS() << "button clicked" << LL_ENDL;
 }
 
 // static
 void LLFloaterTestImpl::onClickText()
 {
-	llinfos << "text clicked" << llendl;
+	LL_INFOS() << "text clicked" << LL_ENDL;
 }
 
 // static
 void LLFloaterTestImpl::onClickTab()
 {
-	llinfos << "click tab" << llendl;
+	LL_INFOS() << "click tab" << LL_ENDL;
 }
 
 // static
 void LLFloaterTestImpl::onCommitCheck()
 {
-	llinfos << "commit check" << llendl;
+	LL_INFOS() << "commit check" << LL_ENDL;
 }
 
 // static
 void LLFloaterTestImpl::onCommitCombo(LLUICtrl* ctrl, const LLSD& value)
 {
 	LLComboBox* combo = (LLComboBox*)ctrl;
-	llinfos << "commit combo name " << combo->getSimple() << " value " << value.asString() << llendl;
+	LL_INFOS() << "commit combo name " << combo->getSimple() << " value " << value.asString() << LL_ENDL;
 }
 
 // static
 void LLFloaterTestImpl::onCommitLine()
 {
-	llinfos << "commit line editor" << llendl;
+	LL_INFOS() << "commit line editor" << LL_ENDL;
 }
 
 // static
 void LLFloaterTestImpl::onKeyLine()
 {
-	llinfos << "keystroke line editor" << llendl;
+	LL_INFOS() << "keystroke line editor" << LL_ENDL;
 }
 
 // static
 void LLFloaterTestImpl::onFocusLostLine()
 {
-	llinfos << "focus lost line editor" << llendl;
+	LL_INFOS() << "focus lost line editor" << LL_ENDL;
 }
 
 // static
 void LLFloaterTestImpl::onChangeRadioGroup()
 {
-	llinfos << "change radio group" << llendl;
+	LL_INFOS() << "change radio group" << LL_ENDL;
 }
 
 //---------------------------------------------------------------------------

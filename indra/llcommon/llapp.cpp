@@ -235,8 +235,8 @@ bool LLApp::parseCommandOptions(int argc, char** argv)
 	{
 		if(argv[ii][0] != '-')
 		{
-			llinfos << "Did not find option identifier while parsing token: "
-				<< argv[ii] << llendl;
+			LL_INFOS() << "Did not find option identifier while parsing token: "
+				<< argv[ii] << LL_ENDL;
 			return false;
 		}
 		int offset = 1;
@@ -415,7 +415,7 @@ void LLApp::startErrorThread()
 	//
 	if(!mThreadErrorp)
 	{
-		llinfos << "Starting error thread" << llendl;
+		LL_INFOS() << "Starting error thread" << LL_ENDL;
 		mThreadErrorp = new LLErrorThread();
 		mThreadErrorp->setUserData((void *) this);
 		mThreadErrorp->start();
@@ -432,7 +432,7 @@ void LLApp::stopErrorThread()
 	}
 	if (mThreadErrorp && !mThreadErrorp->isStopped())
 	{
-		llwarns << "Failed to stop Error Thread." << llendl;
+		LL_WARNS() << "Failed to stop Error Thread." << LL_ENDL;
 	}
 }
 
@@ -450,7 +450,7 @@ void LLApp::runErrorHandler()
 		LLApp::sErrorHandler();
 	}
 
-	//llinfos << "App status now STOPPED" << llendl;
+	//LL_INFOS() << "App status now STOPPED" << LL_ENDL;
 	LLApp::setStopped();
 }
 
@@ -512,7 +512,7 @@ void LLApp::setQuitting()
 	if (!isExiting())
 	{
 		// If we're already exiting, we don't want to reset our state back to quitting.
-		llinfos << "Setting app state to QUITTING" << llendl;
+		LL_INFOS() << "Setting app state to QUITTING" << LL_ENDL;
 		setStatus(APP_STATUS_QUITTING);
 	}
 }
@@ -620,7 +620,7 @@ LONG WINAPI default_windows_exception_handler(struct _EXCEPTION_POINTERS *except
 
 	if (LLApp::isError())
 	{
-		llwarns << "Got another fatal signal while in the error handler, die now!" << llendl;
+		LL_WARNS() << "Got another fatal signal while in the error handler, die now!" << LL_ENDL;
 		retval = EXCEPTION_EXECUTE_HANDLER;
 		return retval;
 	}
@@ -666,7 +666,7 @@ BOOL ConsoleCtrlHandler(DWORD fdwCtrlType)
 				// We're already trying to die, just ignore this signal
 				if (LLApp::sLogInSignal)
 				{
-					llinfos << "Signal handler - Already trying to quit, ignoring signal!" << llendl;
+					LL_INFOS() << "Signal handler - Already trying to quit, ignoring signal!" << LL_ENDL;
 				}
 				return TRUE;
 			}
@@ -698,8 +698,8 @@ pid_t LLApp::fork()
 	if( pid < 0 )
 	{
 		int system_error = errno;
-		llwarns << "Unable to fork! Operating system error code: "
-				<< system_error << llendl;
+		LL_WARNS() << "Unable to fork! Operating system error code: "
+				<< system_error << LL_ENDL;
 	}
 	else if (pid == 0)
 	{
@@ -712,7 +712,7 @@ pid_t LLApp::fork()
 	}
 	else
 	{
-		llinfos << "Forked child process " << pid << llendl;
+		LL_INFOS() << "Forked child process " << pid << LL_ENDL;
 	}
 	return pid;
 }
@@ -803,7 +803,7 @@ void default_unix_signal_handler(int signum, siginfo_t *info, void *)
 
 	if (LLApp::sLogInSignal)
 	{
-		llinfos << "Signal handler - Got signal " << signum << " - " << apr_signal_description_get(signum) << llendl;
+		LL_INFOS() << "Signal handler - Got signal " << signum << " - " << apr_signal_description_get(signum) << LL_ENDL;
 	}
 
 
@@ -812,7 +812,7 @@ void default_unix_signal_handler(int signum, siginfo_t *info, void *)
 	case SIGCHLD:
 		if (LLApp::sLogInSignal)
 		{
-			llinfos << "Signal handler - Got SIGCHLD from " << info->si_pid << llendl;
+			LL_INFOS() << "Signal handler - Got SIGCHLD from " << info->si_pid << LL_ENDL;
 		}
 
 		// Check result code for all child procs for which we've
@@ -833,7 +833,7 @@ void default_unix_signal_handler(int signum, siginfo_t *info, void *)
 		// Abort just results in termination of the app, no funky error handling.
 		if (LLApp::sLogInSignal)
 		{
-			llwarns << "Signal handler - Got SIGABRT, terminating" << llendl;
+			LL_WARNS() << "Signal handler - Got SIGABRT, terminating" << LL_ENDL;
 		}
 		clear_signals();
 		raise(signum);
@@ -843,7 +843,7 @@ void default_unix_signal_handler(int signum, siginfo_t *info, void *)
 	case SIGTERM:
 		if (LLApp::sLogInSignal)
 		{
-			llwarns << "Signal handler - Got SIGINT, HUP, or TERM, exiting gracefully" << llendl;
+			LL_WARNS() << "Signal handler - Got SIGINT, HUP, or TERM, exiting gracefully" << LL_ENDL;
 		}
 		// Graceful exit
 		// Just set our state to quitting, not error
@@ -852,7 +852,7 @@ void default_unix_signal_handler(int signum, siginfo_t *info, void *)
 			// We're already trying to die, just ignore this signal
 			if (LLApp::sLogInSignal)
 			{
-				llinfos << "Signal handler - Already trying to quit, ignoring signal!" << llendl;
+				LL_INFOS() << "Signal handler - Already trying to quit, ignoring signal!" << LL_ENDL;
 			}
 			return;
 		}
@@ -874,7 +874,7 @@ void default_unix_signal_handler(int signum, siginfo_t *info, void *)
 				// Smackdown treated just like any other app termination, for now
 				if (LLApp::sLogInSignal)
 				{
-					llwarns << "Signal handler - Handling smackdown signal!" << llendl;
+					LL_WARNS() << "Signal handler - Handling smackdown signal!" << LL_ENDL;
 				}
 				else
 				{
@@ -888,7 +888,7 @@ void default_unix_signal_handler(int signum, siginfo_t *info, void *)
 			
 			if (LLApp::sLogInSignal)
 			{
-				llwarns << "Signal handler - Handling fatal signal!" << llendl;
+				LL_WARNS() << "Signal handler - Handling fatal signal!" << LL_ENDL;
 			}
 			if (LLApp::isError())
 			{
@@ -898,7 +898,7 @@ void default_unix_signal_handler(int signum, siginfo_t *info, void *)
 				
 				if (LLApp::sLogInSignal)
 				{
-					llwarns << "Signal handler - Got another fatal signal while in the error handler, die now!" << llendl;
+					LL_WARNS() << "Signal handler - Got another fatal signal while in the error handler, die now!" << LL_ENDL;
 				}
 				raise(signum);
 				return;
@@ -906,13 +906,13 @@ void default_unix_signal_handler(int signum, siginfo_t *info, void *)
 			
 			if (LLApp::sLogInSignal)
 			{
-				llwarns << "Signal handler - Flagging error status and waiting for shutdown" << llendl;
+				LL_WARNS() << "Signal handler - Flagging error status and waiting for shutdown" << LL_ENDL;
 			}
 									
 			if (LLApp::isCrashloggerDisabled())	// Don't gracefully handle any signal, crash and core for a gdb post mortem
 			{
 				clear_signals();
-				llwarns << "Fatal signal received, not handling the crash here, passing back to operating system" << llendl;
+				LL_WARNS() << "Fatal signal received, not handling the crash here, passing back to operating system" << LL_ENDL;
 				raise(signum);
 				return;
 			}		
@@ -927,7 +927,7 @@ void default_unix_signal_handler(int signum, siginfo_t *info, void *)
 			
 			if (LLApp::sLogInSignal)
 			{
-				llwarns << "Signal handler - App is stopped, reraising signal" << llendl;
+				LL_WARNS() << "Signal handler - App is stopped, reraising signal" << LL_ENDL;
 			}
 			clear_signals();
 			raise(signum);
@@ -935,7 +935,7 @@ void default_unix_signal_handler(int signum, siginfo_t *info, void *)
 		} else {
 			if (LLApp::sLogInSignal)
 			{
-				llinfos << "Signal handler - Unhandled signal " << signum << ", ignoring!" << llendl;
+				LL_INFOS() << "Signal handler - Unhandled signal " << signum << ", ignoring!" << LL_ENDL;
 			}
 		}
 	}
@@ -969,7 +969,7 @@ bool unix_minidump_callback(const google_breakpad::MinidumpDescriptor& minidump_
 
 	strncpy(path, minidump_desc.path(), remaining);
 	
-	llinfos << "generated minidump: " << LLApp::instance()->getMiniDumpFilename() << llendl;
+	LL_INFOS() << "generated minidump: " << LLApp::instance()->getMiniDumpFilename() << LL_ENDL;
 	LLApp::runErrorHandler();
 	
 #ifndef LL_RELEASE_FOR_DOWNLOAD
@@ -1015,7 +1015,7 @@ bool unix_post_minidump_callback(const char *dump_dir,
 		strncpy(path, ".dmp", remaining);
 	}
 	
-	llinfos << "generated minidump: " << path << llendl;
+	LL_INFOS() << "generated minidump: " << path << LL_ENDL;
 	LLApp::runErrorHandler();
 	
 #ifndef LL_RELEASE_FOR_DOWNLOAD
@@ -1058,16 +1058,16 @@ bool windows_post_minidump_callback(const wchar_t* dump_path,
 		strncpy(path, ".dmp", remaining);
 	}
 
-	llinfos << "generated minidump: " << LLApp::instance()->getMiniDumpFilename() << llendl;
+	LL_INFOS() << "generated minidump: " << LLApp::instance()->getMiniDumpFilename() << LL_ENDL;
    // *NOTE:Mani - this code is stolen from LLApp, where its never actually used.
 	//OSMessageBox("Attach Debugger Now", "Error", OSMB_OK);
    // *TODO: Translate the signals/exceptions into cross-platform stuff
 	// Windows implementation
-	llinfos << "Entering Windows Exception Handler..." << llendl;
+	LL_INFOS() << "Entering Windows Exception Handler..." << LL_ENDL;
 
 	if (LLApp::isError())
 	{
-		llwarns << "Got another fatal signal while in the error handler, die now!" << llendl;
+		LL_WARNS() << "Got another fatal signal while in the error handler, die now!" << LL_ENDL;
 	}
 
 	// Flag status to error, so thread_error starts its work

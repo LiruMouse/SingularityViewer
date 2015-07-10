@@ -581,7 +581,6 @@ set(viewer_SOURCE_FILES
     llworldmipmap.cpp
     llxmlrpcresponder.cpp
     m7wlinterface.cpp
-    noise.cpp
     pipeline.cpp
     qtoolalign.cpp
     rlvactions.cpp
@@ -1119,7 +1118,6 @@ set(viewer_HEADER_FILES
     llxmlrpcresponder.h
     m7wlinterface.h
     macmain.h
-    noise.h
     pipeline.h
     qtoolalign.h
     rlvactions.h

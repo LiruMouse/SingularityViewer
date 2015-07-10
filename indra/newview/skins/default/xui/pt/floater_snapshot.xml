@@ -3,17 +3,17 @@
 	<text name="type_label">
 		Destino da foto
 	</text>
-	<radio_group label="Tipo de Foto" name="snapshot_type_radio">
-		<radio_item name="postcard">
+	<combo_box name="snapshot_type_radio">
+		<combo_item name="postcard">
 			Enviar por email
-		</radio_item>
-		<radio_item name="texture">
-			Salvar no seu inventário ([UPLOADFEE])
-		</radio_item>
-		<radio_item name="local">
+		</combo_item>
+		<combo_item name="texture">
+			Salvar no seu inventário
+		</combo_item>
+		<combo_item name="local">
 			Salvar no seu disco rígido
-		</radio_item>
-	</radio_group>
+		</combo_item>
+	</combo_box>
 	<text name="file_size_label">
 		Tamanho do arquivo: [SIZE] KB
 	</text>

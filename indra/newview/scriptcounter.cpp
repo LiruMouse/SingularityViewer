@@ -123,7 +123,7 @@ void ScriptCounter::requestInventoriesFor(LLViewerObject* object)
 // Request inventory for each individual prim
 void ScriptCounter::requestInventoryFor(LLViewerObject* object)
 {
-	//llinfos << "Requesting inventory of " << object->getID() << llendl;
+	//LL_INFOS() << "Requesting inventory of " << object->getID() << LL_ENDL;
 	++inventories;
 	object->registerInventoryListener(this, NULL);
 	object->dirtyInventory();
@@ -136,7 +136,7 @@ void ScriptCounter::inventoryChanged(LLViewerObject* obj, LLInventoryObject::obj
 	obj->removeInventoryListener(this);
 	--inventories;
 	//const LLUUID& objid = obj->getID();
-	//llinfos << "Counting scripts in " << objid << llendl;
+	//LL_INFOS() << "Counting scripts in " << objid << LL_ENDL;
 
 	if (inv)
 	{
@@ -151,7 +151,7 @@ void ScriptCounter::inventoryChanged(LLViewerObject* obj, LLInventoryObject::obj
 						const LLUUID& id = asset->getUUID();
 						if (id.notNull())
 						{
-							//llinfos << "Deleting script " << id << " in " << objid << llendl;
+							//LL_INFOS() << "Deleting script " << id << " in " << objid << LL_ENDL;
 							obj->removeInventory(id);
 							--i; // Avoid iteration when removing, everything has shifted
 							end = inv->end();

@@ -434,7 +434,7 @@ const LLMatrix4a &LLJoint::getWorldMatrix()
 //--------------------------------------------------------------------
 void LLJoint::setWorldMatrix( const LLMatrix4& mat )
 {
-llinfos << "WARNING: LLJoint::setWorldMatrix() not correctly implemented yet" << llendl;
+LL_INFOS() << "WARNING: LLJoint::setWorldMatrix() not correctly implemented yet" << LL_ENDL;
 	// extract global translation
 	LLVector3 trans(	mat.mMatrix[VW][VX],
 						mat.mMatrix[VW][VY],

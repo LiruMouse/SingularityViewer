@@ -2,12 +2,12 @@
 <floater name="Snapshot" title="Foto-Anzeige">
 	<text name="file_size_label">Dateigröße: [SIZE] KB</text>
 	<text name="type_label">Ziel</text>
-	<radio_group label="Fototyp" name="snapshot_type_radio">
-		<radio_item name="feed">Sende an Profil-Feed</radio_item>
-		<radio_item name="postcard">Per E-Mail senden</radio_item>
-		<radio_item name="texture">Speichere in Inventar ([UPLOADFEE])</radio_item>
-		<radio_item name="local">Auf Festplatte speichern</radio_item>
-	</radio_group>
+	<combo_box name="snapshot_type_radio">
+		<combo_item name="feed">Sende an Profil-Feed</combo_item>
+		<combo_item name="postcard">Per E-Mail senden</combo_item>
+		<combo_item name="texture">Speichere in Inventar</combo_item>
+		<combo_item name="local">Auf Festplatte speichern</combo_item>
+	</combo_box>
 	<button label="Aktualisieren" name="new_snapshot_btn"/>
 	<button label="Einfrieren" name="freeze_time_btn" tool_tip="Zeige Vollansicht. Erlaubt Kammeraführung als stünde die Zeit still, um mehrere Fotos der gleichen Szene zu machen. ESC beendet den Zustand!"/>
 	<button label="Hochladen" name="feed_btn"/>

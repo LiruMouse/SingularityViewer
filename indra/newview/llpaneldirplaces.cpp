@@ -68,7 +68,7 @@ LLPanelDirPlaces::LLPanelDirPlaces(const std::string& name, LLFloaterDirectory* 
 	// The crash seems unrelated to this code, but the commit that introduced it was narrowed down to this file.
 	// Adding llinfos calls to both the constructor and destructor here makes the crash go away, even though they don't get called before the point of the crash.
 	// This is wrong on many levels and scares the hell out of me.
-	llinfos << "called" << llendl;
+	LL_INFOS() << "called" << LL_ENDL;
 	mMinSearchChars = 3;
 }
 
@@ -115,7 +115,7 @@ LLPanelDirPlaces::~LLPanelDirPlaces()
 	// The crash seems unrelated to this code, but the commit that introduced it was narrowed down to this file.
 	// Adding llinfos calls to both the constructor and destructor here makes the crash go away, even though they don't get called before the point of the crash.
 	// This is wrong on many levels and scares the hell out of me.
-	llinfos << "called" << llendl;
+	LL_INFOS() << "called" << LL_ENDL;
 	// Children all cleaned up by default view destructor.
 }
 

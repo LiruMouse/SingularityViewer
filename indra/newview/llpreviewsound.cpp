@@ -214,7 +214,7 @@ void LLPreviewSound::gotAssetForCopy(LLVFS *vfs,
 	char* buffer = new char[size];
 	if (buffer == NULL)
 	{
-		llerrs << "Memory Allocation Failed" << llendl;
+		LL_ERRS() << "Memory Allocation Failed" << LL_ENDL;
 		return;
 	}
 
@@ -272,7 +272,7 @@ void LLPreviewSound::onSaveCopyComplete(const LLUUID& asset_uuid, void* user_dat
 	}
 	else
 	{
-		llwarns << "Problem saving sound: " << status << llendl;
+		LL_WARNS() << "Problem saving sound: " << status << LL_ENDL;
 		LLStringUtil::format_map_t args;
 		args["[REASON]"] = std::string(LLAssetStorage::getErrorString(status));
 		gViewerWindow->alertXml("CannotUploadReason",args);
@@ -325,7 +325,7 @@ void LLPreviewSound::gotAssetForSave(LLVFS *vfs,
 	char* buffer = new char[size];
 	if (buffer == NULL)
 	{
-		llerrs << "Memory Allocation Failed" << llendl;
+		LL_ERRS() << "Memory Allocation Failed" << LL_ENDL;
 		return;
 	}
 

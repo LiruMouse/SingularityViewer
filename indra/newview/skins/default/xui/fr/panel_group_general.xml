@@ -52,7 +52,7 @@
 	     height="22" label="Detailed View" label_selected="Detailed View"
 	     left_delta="0" mouse_opaque="true" name="info_button" width="128" />
 	<text bottom_delta="-16" font="SansSerif" name="text_owners_and_visible_members">
-		Propri&#xE9;taires et membres visibles
+		Propri&#xE9;taires et membres visibles ([COUNT])
 	</text>
 	<text bottom_delta="-16" font="SansSerifSmall" left_delta="0"
 	     name="text_owners_are_shown_in_bold">

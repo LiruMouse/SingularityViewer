@@ -3,20 +3,20 @@
 	<text name="type_label">
 		Destination de la photo
 	</text>
-	<radio_group label="Type de photo" name="snapshot_type_radio" width="228">
-		<radio_item name="feed">
+	<combo_box name="snapshot_type_radio" width="228">
+		<combo_item name="feed">
 			Poster sur my.secondlife.com
-		</radio_item>
-		<radio_item name="postcard">
+		</combo_item>
+		<combo_item name="postcard">
 			Envoyez par e-mail
-		</radio_item>
-		<radio_item name="texture">
-			Enregistrez dans votre inventaire ([UPLOADFEE])
-		</radio_item>
-		<radio_item name="local">
+		</combo_item>
+		<combo_item name="texture">
+			Enregistrez dans votre inventaire
+		</combo_item>
+		<combo_item name="local">
 			Enregistrez sur votre disque dur
-		</radio_item>
-	</radio_group>
+		</combo_item>
+	</combo_box>
 	<button label="Plus &gt;&gt;" name="more_btn" tool_tip="Options avancées"/>
 	<button label="&lt;&lt; Moins" name="less_btn" tool_tip="Options avancées"/>
 	<text name="type_label2">

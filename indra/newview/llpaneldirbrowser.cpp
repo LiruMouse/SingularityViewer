@@ -470,7 +470,7 @@ void LLPanelDirBrowser::showDetailPanel(S32 type, LLSD id)
 		break;
 	default:
 		{
-			llwarns << "Unknown event type!" << llendl;
+			LL_WARNS() << "Unknown event type!" << LL_ENDL;
 		}
 		break;
 	}
@@ -722,7 +722,7 @@ void LLPanelDirBrowser::processDirEventsReply(LLMessageSystem* msg, void**)
 		if (owner_id.isNull())
 		{
 			//RN: should this check event_id instead?
-			llwarns << "skipped event due to owner_id null, event_id " << event_id << llendl;
+			LL_WARNS() << "skipped event due to owner_id null, event_id " << event_id << LL_ENDL;
 			continue;
 		}
 
@@ -730,19 +730,19 @@ void LLPanelDirBrowser::processDirEventsReply(LLMessageSystem* msg, void**)
 		// there's no PG flag, so we make sure neither adult nor mature is set
 		if (((event_flags & (EVENT_FLAG_ADULT | EVENT_FLAG_MATURE)) == EVENT_FLAG_NONE) && !show_pg)
 		{
-			//llwarns << "Skipped pg event because we're not showing pg, event_id " << event_id << llendl;
+			//LL_WARNS() << "Skipped pg event because we're not showing pg, event_id " << event_id << LL_ENDL;
 			continue;
 		}
 		
 		if ((event_flags & EVENT_FLAG_MATURE) && !show_mature)
 		{
-			//llwarns << "Skipped mature event because we're not showing mature, event_id " << event_id << llendl;
+			//LL_WARNS() << "Skipped mature event because we're not showing mature, event_id " << event_id << LL_ENDL;
 			continue;
 		}
 		
 		if ((event_flags & EVENT_FLAG_ADULT) && !show_adult)
 		{
-			//llwarns << "Skipped adult event because we're not showing adult, event_id " << event_id << llendl;
+			//LL_WARNS() << "Skipped adult event because we're not showing adult, event_id " << event_id << LL_ENDL;
 			continue;
 		}
 		
@@ -903,8 +903,8 @@ void LLPanelDirBrowser::processDirClassifiedReply(LLMessageSystem* msg, void**)
 	msg->getUUID("AgentData", "AgentID", agent_id);
 	if (agent_id != gAgent.getID())
 	{
-		llwarns << "Message for wrong agent " << agent_id
-			<< " in processDirClassifiedReply" << llendl;
+		LL_WARNS() << "Message for wrong agent " << agent_id
+			<< " in processDirClassifiedReply" << LL_ENDL;
 		return;
 	}
 
@@ -1032,7 +1032,7 @@ void LLPanelDirBrowser::processDirLandReply(LLMessageSystem *msg, void**)
 		if ( msg->getSizeFast(_PREHASH_QueryReplies, i, _PREHASH_ProductSKU) > 0 )
 		{
 			msg->getStringFast(	_PREHASH_QueryReplies, _PREHASH_ProductSKU, land_sku, i);
-			llinfos << "Land sku: " << land_sku << llendl;
+			LL_INFOS() << "Land sku: " << land_sku << LL_ENDL;
 			land_type = LLProductInfoRequestManager::instance().getDescriptionForSku(land_sku);
 		}
 		else

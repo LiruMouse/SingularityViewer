@@ -35,7 +35,6 @@
 
 #include "v3math.h"
 #include "llquaternion.h"
-#include "linked_lists.h"
 #include "lscript_error.h"
 #include "lscript_typecheck.h"
 #include "lscript_byteformat.h"
@@ -2310,20 +2309,20 @@ public:
 	LLScriptAllocationManager() {}
 	~LLScriptAllocationManager() 
 	{
-		mAllocationList.deleteAllData();
+		deleteAllocations();
 	}
 
 	void addAllocation(LLScriptFilePosition *ptr)
 	{
-		mAllocationList.addData(ptr);
+		mAllocationList.push_front(ptr);
 	}
 
 	void deleteAllocations()
 	{
-		mAllocationList.deleteAllData();
+		delete_and_clear(mAllocationList);
 	}
 
-	LLLinkedList<LLScriptFilePosition> mAllocationList;
+	std::list<LLScriptFilePosition*> mAllocationList;
 };
 
 extern LLScriptAllocationManager *gAllocationManager;

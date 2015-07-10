@@ -54,15 +54,15 @@ bool LLURLHistory::loadFile(const std::string& filename)
 
 		if (file.is_open())
 		{
-			llinfos << "Loading history.xml file at " << temp_str + filename << llendl;
+			LL_INFOS() << "Loading history.xml file at " << temp_str + filename << LL_ENDL;
 			LLSDSerialize::fromXML(data, file);
 		}
 
 		if (data.isUndefined())
 		{
-			llinfos << "file missing, ill-formed, "
+			LL_INFOS() << "file missing, ill-formed, "
 				"or simply undefined; not changing the"
-				" file" << llendl;
+				" file" << LL_ENDL;
 			sHistorySD = LLSD();
 			return false;
 		}
@@ -77,7 +77,7 @@ bool LLURLHistory::saveFile(const std::string& filename)
 	std::string temp_str = gDirUtilp->getLindenUserDir(true);
 	if( temp_str.empty() )
 	{
-		llinfos << "Can't save URL history - no user directory set yet." << llendl;
+		LL_INFOS() << "Can't save URL history - no user directory set yet." << LL_ENDL;
 		return false;
 	}
 
@@ -85,7 +85,7 @@ bool LLURLHistory::saveFile(const std::string& filename)
 	llofstream out(temp_str);
 	if (!out.good())
 	{
-		llwarns << "Unable to open " << filename << " for output." << llendl;
+		LL_WARNS() << "Unable to open " << filename << " for output." << LL_ENDL;
 		return false;
 	}
 

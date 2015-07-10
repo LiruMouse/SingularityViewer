@@ -146,7 +146,7 @@ LLFloaterCustomize::LLFloaterCustomize()
 
 LLFloaterCustomize::~LLFloaterCustomize()
 {
-	llinfos << "Destroying LLFloaterCustomize" << llendl;
+	LL_INFOS() << "Destroying LLFloaterCustomize" << LL_ENDL;
 	mResetParams = NULL;
 	gInventory.removeObserver(mInventoryObserver);
 	delete mInventoryObserver;
@@ -485,7 +485,7 @@ void LLFloaterCustomize::onBtnExport()
 	if (!is_modifiable)
 	{
 		// We should never get here, because in that case the Export button is disabled.
-		llwarns << "Cannot export current wearable \"" << name << "\" of type " << (int)edit_type << "because user lacks modify permissions." << llendl;
+		LL_WARNS() << "Cannot export current wearable \"" << name << "\" of type " << (int)edit_type << "because user lacks modify permissions." << LL_ENDL;
 		return;
 	}
 

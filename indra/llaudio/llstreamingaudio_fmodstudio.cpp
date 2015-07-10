@@ -173,7 +173,7 @@ void LLStreamingAudio_FMODSTUDIO::start(const std::string& url)
 {
 	//if (!mInited)
 	//{
-	//	llwarns << "startInternetStream before audio initialized" << llendl;
+	//	LL_WARNS() << "startInternetStream before audio initialized" << LL_ENDL;
 	//	return;
 	//}
 
@@ -184,20 +184,20 @@ void LLStreamingAudio_FMODSTUDIO::start(const std::string& url)
 	{
 		if(mDeadStreams.empty())
 		{
-			llinfos << "Starting internet stream: " << url << llendl;
+			LL_INFOS() << "Starting internet stream: " << url << LL_ENDL;
 			mCurrentInternetStreamp = new LLAudioStreamManagerFMODSTUDIO(mSystem, mStreamGroup, url);
 			mURL = url;
 			mMetaData = new LLSD;
 		}
 		else
 		{
-			llinfos << "Deferring stream load until buffer release: " << url << llendl;
+			LL_INFOS() << "Deferring stream load until buffer release: " << url << LL_ENDL;
 			mPendingURL = url;
 		}
 	}
 	else
 	{
-		llinfos << "Set internet stream to null" << llendl;
+		LL_INFOS() << "Set internet stream to null" << LL_ENDL;
 		mURL.clear();
 	}
 }
@@ -253,7 +253,7 @@ void LLStreamingAudio_FMODSTUDIO::update()
 	if(!mPendingURL.empty())
 	{
 		llassert_always(mCurrentInternetStreamp == NULL);
-		llinfos << "Starting internet stream: " << mPendingURL << llendl;
+		LL_INFOS() << "Starting internet stream: " << mPendingURL << LL_ENDL;
 		mCurrentInternetStreamp = new LLAudioStreamManagerFMODSTUDIO(mSystem,mStreamGroup, mPendingURL);
 		mURL = mPendingURL;
 		mMetaData = new LLSD;
@@ -329,7 +329,7 @@ void LLStreamingAudio_FMODSTUDIO::update()
 					case(FMOD_TAGTYPE_FMOD):
 						if (!LLStringUtil::compareInsensitive(name, "Sample Rate Change"))
 						{
-							llinfos << "Stream forced changing sample rate to " << *((float *)tag.data) << llendl;
+							LL_INFOS() << "Stream forced changing sample rate to " << *((float *)tag.data) << LL_ENDL;
 							Check_FMOD_Error(mFMODInternetStreamChannelp->setFrequency(*((float *)tag.data)), "FMOD::Channel::setFrequency");
 						}
 						continue;
@@ -344,11 +344,11 @@ void LLStreamingAudio_FMODSTUDIO::update()
 					{
 						case(FMOD_TAGDATATYPE_INT):
 							(*mMetaData)[name]=*(LLSD::Integer*)(tag.data);
-							llinfos << tag.name << ": " << *(int*)(tag.data) << llendl;
+							LL_INFOS() << tag.name << ": " << *(int*)(tag.data) << LL_ENDL;
 							break;
 						case(FMOD_TAGDATATYPE_FLOAT):
 							(*mMetaData)[name]=*(LLSD::Float*)(tag.data);
-							llinfos << tag.name << ": " << *(float*)(tag.data) << llendl;
+							LL_INFOS() << tag.name << ": " << *(float*)(tag.data) << LL_ENDL;
 							break;
 						case(FMOD_TAGDATATYPE_STRING):
 						{
@@ -356,7 +356,7 @@ void LLStreamingAudio_FMODSTUDIO::update()
 							if (out.length() && out[out.size() - 1] == 0)
 								out.erase(out.size() - 1);
 							(*mMetaData)[name]=out;
-							llinfos << tag.name << "(RAW): " << out << llendl;
+							LL_INFOS() << tag.name << "(RAW): " << out << LL_ENDL;
 						}
 							break;
 						case(FMOD_TAGDATATYPE_STRING_UTF8) :
@@ -368,7 +368,7 @@ void LLStreamingAudio_FMODSTUDIO::update()
 							if (out.length() && out[out.size() - 1] == 0)
 								out.erase(out.size() - 1);
 							(*mMetaData)[name] = out;
-							llinfos << tag.name << "(UTF8): " << out << llendl;
+							LL_INFOS() << tag.name << "(UTF8): " << out << LL_ENDL;
 						}
 							break;
 						case(FMOD_TAGDATATYPE_STRING_UTF16):
@@ -377,7 +377,7 @@ void LLStreamingAudio_FMODSTUDIO::update()
 							if (out.length() && out[out.size() - 1] == 0)
 								out.erase(out.size() - 1);
 							(*mMetaData)[name] = out;
-							llinfos << tag.name << "(UTF16): " << out << llendl;
+							LL_INFOS() << tag.name << "(UTF16): " << out << LL_ENDL;
 						}
 							break;
 						case(FMOD_TAGDATATYPE_STRING_UTF16BE):
@@ -386,7 +386,7 @@ void LLStreamingAudio_FMODSTUDIO::update()
 							if (out.length() && out[out.size() - 1] == 0)
 								out.erase(out.size() - 1);
 							(*mMetaData)[name] = out;
-							llinfos << tag.name << "(UTF16BE): " << out << llendl;
+							LL_INFOS() << tag.name << "(UTF16BE): " << out << LL_ENDL;
 						}
 						default:
 							break;
@@ -398,9 +398,9 @@ void LLStreamingAudio_FMODSTUDIO::update()
 				bool paused = false;
 				if (mFMODInternetStreamChannelp->getPaused(&paused) == FMOD_OK && !paused)
 				{
-					llinfos << "Stream starvation detected! Pausing stream until buffer nearly full." << llendl;
-					llinfos << "  (diskbusy="<<diskbusy<<")" << llendl;
-					llinfos << "  (progress="<<progress<<")" << llendl;
+					LL_INFOS() << "Stream starvation detected! Pausing stream until buffer nearly full." << LL_ENDL;
+					LL_INFOS() << "  (diskbusy="<<diskbusy<<")" << LL_ENDL;
+					LL_INFOS() << "  (progress="<<progress<<")" << LL_ENDL;
 					Check_FMOD_Error(mFMODInternetStreamChannelp->setPaused(true), "FMOD::Channel::setPaused");
 				}
 			}
@@ -435,14 +435,14 @@ void LLStreamingAudio_FMODSTUDIO::stop()
 
 	if (mCurrentInternetStreamp)
 	{
-		llinfos << "Stopping internet stream: " << mCurrentInternetStreamp->getURL() << llendl;
+		LL_INFOS() << "Stopping internet stream: " << mCurrentInternetStreamp->getURL() << LL_ENDL;
 		if (mCurrentInternetStreamp->stopStream())
 		{
 			delete mCurrentInternetStreamp;
 		}
 		else
 		{
-			llwarns << "Pushing stream to dead list: " << mCurrentInternetStreamp->getURL() << llendl;
+			LL_WARNS() << "Pushing stream to dead list: " << mCurrentInternetStreamp->getURL() << LL_ENDL;
 			mDeadStreams.push_back(mCurrentInternetStreamp);
 		}
 		mCurrentInternetStreamp = NULL;
@@ -558,9 +558,9 @@ LLAudioStreamManagerFMODSTUDIO::LLAudioStreamManagerFMODSTUDIO(FMOD::System *sys
 
 	if (result!= FMOD_OK)
 	{
-		llwarns << "Couldn't open fmod stream, error "
+		LL_WARNS() << "Couldn't open fmod stream, error "
 			<< FMOD_ErrorString(result)
-			<< llendl;
+			<< LL_ENDL;
 		mReady = false;
 		return;
 	}
@@ -574,7 +574,7 @@ FMOD::Channel *LLAudioStreamManagerFMODSTUDIO::startStream()
 	FMOD_OPENSTATE open_state;
 	if (getOpenState(open_state) != FMOD_OK || open_state != FMOD_OPENSTATE_READY)
 	{
-		llwarns << "No internet stream to start playing!" << llendl;
+		LL_WARNS() << "No internet stream to start playing!" << LL_ENDL;
 		return NULL;
 	}
 
@@ -648,7 +648,7 @@ bool LLStreamingAudio_FMODSTUDIO::releaseDeadStreams()
 		LLAudioStreamManagerFMODSTUDIO *streamp = *iter;
 		if (streamp->stopStream())
 		{
-			llinfos << "Closed dead stream" << llendl;
+			LL_INFOS() << "Closed dead stream" << LL_ENDL;
 			delete streamp;
 			mDeadStreams.erase(iter++);
 		}

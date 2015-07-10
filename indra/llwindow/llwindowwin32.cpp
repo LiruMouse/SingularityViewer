@@ -395,7 +395,7 @@ LLWindowWin32::LLWindowWin32(LLWindowCallbacks* callbacks,
 	mhDC = NULL;
 	mhRC = NULL;
 
-	llinfos<<"Desired FSAA Samples = "<<mFSAASamples<<llendl;
+	LL_INFOS() << "Desired FSAA Samples = " << mFSAASamples << LL_ENDL;
 
 	// Initialize the keyboard
 	gKeyboard = new LLKeyboardWin32();
@@ -1254,7 +1254,7 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 		
 		while(!result && mFSAASamples > 0) 
 		{
-			llwarns << "FSAASamples: " << mFSAASamples << " not supported." << llendl ;
+			LL_WARNS() << "FSAASamples: " << mFSAASamples << " not supported." << LL_ENDL ;
 
 			mFSAASamples /= 2 ; //try to decrease sample pixel number until to disable anti-aliasing
 			if(mFSAASamples < 2)
@@ -1276,13 +1276,13 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 
 			if(result)
 			{
-				llwarns << "Only support FSAASamples: " << mFSAASamples << llendl ;
+				LL_WARNS() << "Only support FSAASamples: " << mFSAASamples << LL_ENDL ;
 			}
 		}
 
 		if (!result)
 		{
-			llwarns << "mFSAASamples: " << mFSAASamples << llendl ;
+			LL_WARNS() << "mFSAASamples: " << mFSAASamples << LL_ENDL ;
 
 			close();
 			show_window_creation_error("Error after wglChoosePixelFormatARB 32-bit");
@@ -1501,8 +1501,8 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 			}
 			else
 			{
-				llinfos << "Created OpenGL " << llformat("%d.%d", attribs[1], attribs[3]) << 
-					(LLRender::sGLCoreProfile ? " core" : " compatibility") << " context." << llendl;
+				LL_INFOS() << "Created OpenGL " << llformat("%d.%d", attribs[1], attribs[3]) << 
+					(LLRender::sGLCoreProfile ? " core" : " compatibility") << " context." << LL_ENDL;
 				done = true;
 
 				if (LLRender::sGLCoreProfile)
@@ -1581,7 +1581,7 @@ BOOL LLWindowWin32::switchContext(BOOL fullscreen, const LLCoordScreen &size, co
 
 	int buf = 0;
 	glGetIntegerv(GL_SAMPLES, &buf);
-	llinfos << "Acquired FSAA Samples = " << buf << llendl;
+	LL_INFOS() << "Acquired FSAA Samples = " << buf << LL_ENDL;
 
 	return TRUE;
 }
@@ -1932,8 +1932,8 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 			window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_DEVICECHANGE");
 			if (gDebugWindowProc)
 			{
-				llinfos << "  WM_DEVICECHANGE: wParam=" << w_param 
-						<< "; lParam=" << l_param << llendl;
+				LL_INFOS() << "  WM_DEVICECHANGE: wParam=" << w_param 
+						<< "; lParam=" << l_param << LL_ENDL;
 			}
 			if (w_param == DBT_DEVNODES_CHANGED || w_param == DBT_DEVICEARRIVAL)
 			{
@@ -2149,7 +2149,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 			window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_IME_SETCONTEXT");
 			if (gDebugWindowProc)
 			{
-				llinfos << "WM_IME_SETCONTEXT" << llendl;
+				LL_INFOS() << "WM_IME_SETCONTEXT" << LL_ENDL;
 			}
 			if (LLWinImm::isAvailable() && window_imp->mPreeditor)
 			{
@@ -2162,7 +2162,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 			window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_IME_STARTCOMPOSITION");
 			if (gDebugWindowProc)
 			{
-				llinfos << "WM_IME_STARTCOMPOSITION" << llendl;
+				LL_INFOS() << "WM_IME_STARTCOMPOSITION" << LL_ENDL;
 			}
 			if (LLWinImm::isAvailable() && window_imp->mPreeditor)
 			{
@@ -2175,7 +2175,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 			window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_IME_ENDCOMPOSITION");
 			if (gDebugWindowProc)
 			{
-				llinfos << "WM_IME_ENDCOMPOSITION" << llendl;
+				LL_INFOS() << "WM_IME_ENDCOMPOSITION" << LL_ENDL;
 			}
 			if (LLWinImm::isAvailable() && window_imp->mPreeditor)
 			{
@@ -2187,7 +2187,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 			window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_IME_COMPOSITION");
 			if (gDebugWindowProc)
 			{
-				llinfos << "WM_IME_COMPOSITION" << llendl;
+				LL_INFOS() << "WM_IME_COMPOSITION" << LL_ENDL;
 			}
 			if (LLWinImm::isAvailable() && window_imp->mPreeditor)
 			{
@@ -2200,7 +2200,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 			window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_IME_REQUEST");
 			if (gDebugWindowProc)
 			{
-				llinfos << "WM_IME_REQUEST" << llendl;
+				LL_INFOS() << "WM_IME_REQUEST" << LL_ENDL;
 			}
 			if (LLWinImm::isAvailable() && window_imp->mPreeditor)
 			{

@@ -883,12 +883,12 @@ bool LLFollowCamMgr::isScriptedCameraSource(const LLUUID& source)
 void LLFollowCamMgr::dump()
 {
 	S32 param_count = 0;
-	llinfos << "Scripted camera active stack" << llendl;
+	LL_INFOS() << "Scripted camera active stack" << LL_ENDL;
 	for (param_stack_t::iterator param_it = sParamStack.begin();
 		param_it != sParamStack.end();
 		++param_it)
 	{
-		llinfos << param_count++ << 
+		LL_INFOS() << param_count++ << 
 			" rot_limit: " << (*param_it)->getBehindnessAngle() << 
 			" rot_lag: " << (*param_it)->getBehindnessLag() << 
 			" distance: " << (*param_it)->getDistance() << 
@@ -901,7 +901,7 @@ void LLFollowCamMgr::dump()
 			" pos: " << (*param_it)->getPosition() << 
 			" pos_lag: " << (*param_it)->getPositionLag() << 
 			" pos_lock: " << ((*param_it)->getPositionLocked() ? "Y" : "N") << 
-			" pos_thresh: " << (*param_it)->getPositionThreshold() << llendl;
+			" pos_thresh: " << (*param_it)->getPositionThreshold() << LL_ENDL;
 	}
 }
 

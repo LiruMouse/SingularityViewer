@@ -1424,7 +1424,7 @@ void LLScrollListCtrl::drawItems()
 				mLineHeight );
 			item->setRect(item_rect);
 
-			//llinfos << item_rect.getWidth() << llendl;
+			//LL_INFOS() << item_rect.getWidth() << LL_ENDL;
 
 			max_columns = llmax(max_columns, item->getNumColumns());
 

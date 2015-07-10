@@ -49,6 +49,7 @@
 #include "llviewerregion.h"
 #include "pipeline.h"
 #include "llspatialpartition.h"
+#include "llglslshader.h"
 
 const F32 MAX_PART_LIFETIME = 120.f;
 
@@ -423,7 +424,7 @@ BOOL LLVOPartGroup::updateGeometry(LLDrawable *drawable)
 		facep = drawable->getFace(i);
 		if (!facep)
 		{
-			llwarns << "No face found for index " << i << "!" << llendl;
+			LL_WARNS() << "No face found for index " << i << "!" << LL_ENDL;
 			continue;
 		}
 
@@ -469,7 +470,7 @@ BOOL LLVOPartGroup::updateGeometry(LLDrawable *drawable)
 		LLFace* facep = drawable->getFace(i);
 		if (!facep)
 		{
-			llwarns << "No face found for index " << i << "!" << llendl;
+			LL_WARNS() << "No face found for index " << i << "!" << LL_ENDL;
 			continue;
 		}
 		facep->setTEOffset(i);
@@ -715,7 +716,7 @@ void LLVOPartGroup::getGeometry(S32 idx,
 	*colorsp++ = color;
 
 	//Only add emissive attributes if glowing (doing it for all particles is INCREDIBLY inefficient as it leads to a second, slower, render pass.)
-	if (gPipeline.canUseVertexShaders() && (pglow.mV[3] > 0 || part.mGlow.mV[3] > 0))
+	if (LLGLSLShader::sNoFixedFunction && (pglow.mV[3] > 0 || part.mGlow.mV[3] > 0))
 	{ //only write glow if it is not zero
 		*emissivep++ = pglow;
 		*emissivep++ = pglow;

@@ -199,7 +199,7 @@ void LLFloaterHtml::onClickHome( void* data )
 			}
 			else
 			{
-				llwarns << "Invalid home page specified for HTML floater - navigating to default" << llendl;
+				LL_WARNS() << "Invalid home page specified for HTML floater - navigating to default" << LL_ENDL;
 				self->mWebBrowser->navigateTo( "http://secondlife.com" );
 			}
 		};

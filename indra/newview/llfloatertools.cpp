@@ -297,7 +297,7 @@ BOOL	LLFloaterTools::postBuild()
 			found->setClickedCallback(boost::bind(&LLFloaterTools::setObjectType, toolData[t]));
 			mButtons.push_back( found );
 		}else{
-			llwarns << "Tool button not found! DOA Pending." << llendl;
+			LL_WARNS() << "Tool button not found! DOA Pending." << LL_ENDL;
 		}
 	}
 	if ((mComboTreesGrass = findChild<LLComboBox>("trees_grass")))
@@ -1222,7 +1222,7 @@ void LLFloaterTools::setTool(const LLSD& user_data)
 	else if (control_name == "Land" )
 		LLToolMgr::getInstance()->getCurrentToolset()->selectTool( (LLTool *) LLToolSelectLand::getInstance());
 	else
-		llwarns<<" no parameter name "<<control_name<<" found!! No Tool selected!!"<< llendl;
+		LL_WARNS() <<" no parameter name "<<control_name<<" found!! No Tool selected!!"<< LL_ENDL;
 }
 
 void LLFloaterTools::onFocusReceived()
