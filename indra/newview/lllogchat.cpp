@@ -146,6 +146,7 @@ void LLLogChat::saveHistory(std::string const& filename, std::string line)
 }
 
 
+// only increases the buffer
 static long const LOG_RECALL_BUFSIZ = 8192;
 
 long LLLogChat::computeFileposition(LLFILE *fptr, U32 lines)
