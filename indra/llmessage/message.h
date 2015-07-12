@@ -70,7 +70,7 @@ namespace
 const U32 MESSAGE_MAX_STRINGS_LENGTH = 64;
 const U32 MESSAGE_NUMBER_OF_HASH_BUCKETS = 8192;
 
-const S32 MESSAGE_MAX_PER_FRAME = 40000;
+const S32 MESSAGE_MAX_PER_FRAME = 800;
 
 class LLMessageStringTable : public LLSingleton<LLMessageStringTable>
 {

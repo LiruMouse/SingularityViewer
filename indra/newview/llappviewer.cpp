@@ -4347,7 +4347,7 @@ void LLAppViewer::idleNameCache()
 #define TIME_THROTTLE_MESSAGES
 
 #ifdef TIME_THROTTLE_MESSAGES
-#define CHECK_MESSAGES_DEFAULT_MAX_TIME 5.500f // 50 ms = 50 fps (just for messages!)
+#define CHECK_MESSAGES_DEFAULT_MAX_TIME 0.250f // 50 ms = 50 fps (just for messages!)
 static F32 CheckMessagesMaxTime = CHECK_MESSAGES_DEFAULT_MAX_TIME;
 #endif
 

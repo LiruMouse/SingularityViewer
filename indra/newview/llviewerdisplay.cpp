@@ -274,9 +274,9 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 
 	//Nope
 	/*if (LLPipeline::sRenderDeferred)
-	{ //hack to make sky show up in deferred snapshots
-		for_snapshot = FALSE;
-	}*/
+	  { //hack to make sky show up in deferred snapshots
+	  for_snapshot = FALSE;
+	  }*/
 
 	if (LLPipeline::sRenderFrameTest)
 	{
@@ -306,8 +306,8 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	// In fact, must explicitly check the minimized state before drawing.
 	// Attempting to draw into a minimized window causes a GL error. JC
 	if (   !gViewerWindow->getActive()
-		|| !gViewerWindow->getWindow()->getVisible() 
-		|| gViewerWindow->getWindow()->getMinimized() )
+	       || !gViewerWindow->getWindow()->getVisible() 
+	       || gViewerWindow->getWindow()->getMinimized() )
 	{
 		// Clean up memory the pools may have allocated
 		if (rebuild)
@@ -464,7 +464,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		case LLAgent::TELEPORT_START_ARRIVAL:
 			// Transition to ARRIVING.  Viewer has received avatar update, etc., from destination simulator
 			gTeleportArrivalTimer.reset();
-				gViewerWindow->setProgressCancelButtonVisible(FALSE, LLTrans::getString("Cancel"));
+			gViewerWindow->setProgressCancelButtonVisible(FALSE, LLTrans::getString("Cancel"));
 			gViewerWindow->setProgressPercent(75.f);
 			gAgent.setTeleportState( LLAgent::TELEPORT_ARRIVING );
 			gAgent.setTeleportMessage(
@@ -476,34 +476,34 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 
 		case LLAgent::TELEPORT_ARRIVING:
 			// Make the user wait while content "pre-caches"
+		{
+			F32 arrival_fraction = (gTeleportArrivalTimer.getElapsedTimeF32() / TELEPORT_ARRIVAL_DELAY);
+			if( arrival_fraction > 1.f || hide_tp_screen)
 			{
-				F32 arrival_fraction = (gTeleportArrivalTimer.getElapsedTimeF32() / TELEPORT_ARRIVAL_DELAY);
-				if( arrival_fraction > 1.f || hide_tp_screen)
-				{
-					arrival_fraction = 1.f;
-					LLFirstUse::useTeleport();
-					gAgent.setTeleportState( LLAgent::TELEPORT_NONE );
-				}
-				gViewerWindow->setProgressCancelButtonVisible(FALSE, LLTrans::getString("Cancel"));
-				gViewerWindow->setProgressPercent(  arrival_fraction * 25.f + 75.f);
-				gViewerWindow->setProgressString(message);
+				arrival_fraction = 1.f;
+				LLFirstUse::useTeleport();
+				gAgent.setTeleportState( LLAgent::TELEPORT_NONE );
 			}
-			break;
+			gViewerWindow->setProgressCancelButtonVisible(FALSE, LLTrans::getString("Cancel"));
+			gViewerWindow->setProgressPercent(  arrival_fraction * 25.f + 75.f);
+			gViewerWindow->setProgressString(message);
+		}
+		break;
 
 		case LLAgent::TELEPORT_LOCAL:
 			// Short delay when teleporting in the same sim (progress screen active but not shown - did not
 			// fall-through from TELEPORT_START)
+		{
+			// <edit>
+			// is this really needed.... I say no.
+			//if( gTeleportDisplayTimer.getElapsedTimeF32() > TELEPORT_LOCAL_DELAY )
+			// </edit>
 			{
-				// <edit>
-				// is this really needed.... I say no.
-				//if( gTeleportDisplayTimer.getElapsedTimeF32() > TELEPORT_LOCAL_DELAY )
-				// </edit>
-				{
-					LLFirstUse::useTeleport();
-					gAgent.setTeleportState( LLAgent::TELEPORT_NONE );
-				}
+				LLFirstUse::useTeleport();
+				gAgent.setTeleportState( LLAgent::TELEPORT_NONE );
 			}
-			break;
+		}
+		break;
 
 		case LLAgent::TELEPORT_NONE:
 			// No teleport in progress
@@ -513,10 +513,10 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			break;
 
 		default: 
-			 break;
+			break;
 		}
 	}
-    else if(LLAppViewer::instance()->logoutRequestSent())
+	else if(LLAppViewer::instance()->logoutRequestSent())
 	{
 		LLAppViewer::instance()->pingMainloopTimeout("Display:Logout");
 		F32 percent_done = gLogoutTimer.getElapsedTimeF32() * 100.f / gLogoutMaxTime;
@@ -533,32 +533,32 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		gViewerWindow->setProgressPercent( percent_done );
 	}
 	else
-	if (gRestoreGL)
-	{
-		LLAppViewer::instance()->pingMainloopTimeout("Display:RestoreGL");
-		F32 percent_done = gRestoreGLTimer.getElapsedTimeF32() * 100.f / RESTORE_GL_TIME;
-		if( percent_done > 100.f )
+		if (gRestoreGL)
 		{
-			gViewerWindow->setShowProgress(FALSE);
-			gRestoreGL = FALSE;
-		}
-		else
-		{
-
-			if( LLApp::isExiting() )
+			LLAppViewer::instance()->pingMainloopTimeout("Display:RestoreGL");
+			F32 percent_done = gRestoreGLTimer.getElapsedTimeF32() * 100.f / RESTORE_GL_TIME;
+			if( percent_done > 100.f )
 			{
-				percent_done = 100.f;
+				gViewerWindow->setShowProgress(FALSE);
+				gRestoreGL = FALSE;
 			}
+			else
+			{
+
+				if( LLApp::isExiting() )
+				{
+					percent_done = 100.f;
+				}
 			
-			gViewerWindow->setProgressPercent( percent_done );
+				gViewerWindow->setProgressPercent( percent_done );
+			}
 		}
-	}
 
 	// Progressively increase draw distance after TP when required.
 	if (gSavedDrawDistance > 0.0f && gAgent.getTeleportState() == LLAgent::TELEPORT_NONE)
 	{
 		if (gTeleportArrivalTimer.getElapsedTimeF32() >=
-			(F32)gSavedSettings.getU32("SpeedRezInterval"))
+		    (F32)gSavedSettings.getU32("SpeedRezInterval"))
 		{
 			gTeleportArrivalTimer.reset();
 			F32 current = gSavedSettings.getF32("RenderFarClip");
@@ -583,81 +583,115 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	// automatically adjust draw distance
 	static LLCachedControl<bool> addaenabled("RtyAddaEnabled");
 	if(addaenabled)
+	{
+		// increase/decrease dd by this much per step
+		static LLCachedControl<F32> addadeltaup("RtyAddaUp");
+		static LLCachedControl<F32> addadeltadn("RtyAddaDown");
+
+		// do not increase/decrease dd beyond these limits
+		// FIXME: there needs to be a lower and an upper hardcoded limit
+		static LLCachedControl<F32> addamindd("RtyAddaMinDD");
+		static LLCachedControl<F32> addamaxdd("RtyAddaMaxDD");
+
+		// use average frame rate as reference for adjustment
+		static F32 addaavg = 0.0f;
+		static F32 addaavglast = addaavg;
+		static U32 addaframes = 0;
+		// how many frames to average
+		static LLCachedControl<U32> addaf2avg("RtyAddaFrames");
+		if(addaf2avg < 10) addaf2avg = 10;
+
+		addaavg += gFrameIntervalSeconds;
+		addaframes++;
+		if(addaframes > addaf2avg)
 		{
-			// increase/decrease dd by this much per step
-			static LLCachedControl<F32> addadeltaup("RtyAddaUp");
-			static LLCachedControl<F32> addadeltadn("RtyAddaDown");
+			addaavg /= (F32)addaframes;
+			addaframes = 0;
 
-			// do not increase/decrease dd beyond these limits
-			// FIXME: there needs to be a lower and an upper hardcoded limit
-			static LLCachedControl<F32> addamindd("RtyAddaMinDD");
-			static LLCachedControl<F32> addamaxdd("RtyAddaMaxDD");
+			static LLCachedControl<U32> addalevel("RtyAddaLevel");
+			// note: dd gets reset in llagent.cpp after tp when speedstepping is enabled
+			// begin with medium dd
+			static F32 addadd = (addamindd + addamaxdd) * 0.5f;
 
-			// use average frame rate as reference for adjustment
-			static F32 addaavg = 0.0f;
-			static F32 addaavglast = addaavg;
-			static U32 addaframes = 0;
-			// how many frames to average
-			static LLCachedControl<U32> addaf2avg("RtyAddaFrames");
-			if(addaf2avg < 10) addaf2avg = 10;
+			// when there's a big change in average, adjust dd rapidly
+			if(addaavg < addaavglast * 0.6f)
+			{
+				addadd *= 0.55f;
+				gSavedSettings.setF32("RenderFarClip", addadd);
+			}
+			else
+			{
+				bool changed = 0;
 
-			addaavg += gFrameIntervalSeconds;
-			addaframes++;
-			if(addaframes > addaf2avg)
+				if(addaavg > addalevel / 1000.0f)
 				{
-					addaavg /= (F32)addaframes;
-					addaframes = 0;
+					//
+					// average fps rate too low
+					//
 
-					static LLCachedControl<U32> addalevel("RtyAddaLevel");
-					// note: dd gets reset in llagent.cpp after tp when speedstepping is enabled
-					// begin with medium dd
-					static F32 addadd = (addamindd + addamaxdd) * 0.5f;
-
-					// when there's a big change in average, adjust dd rapidly
-					if(addaavg < addaavglast * 0.6f)
-						{
-							addadd *= 0.55f;
-						}
-					addaavglast = addaavg;
-
-					if(addaavg > addalevel / 1000.0f)
-						{
-							if(addadd < addamindd)
-								{
-									addadd = addamindd;
-									gSavedSettings.setF32("RenderFarClip", addadd);
-									// llinfos << "dd min: " << addadd << " (" << addaavg << ")" << llendl;
-								}
-							else
-								{
-									if(addadd != addamindd)
-										{
-											addadd -= addadeltadn;
-											gSavedSettings.setF32("RenderFarClip", addadd);
-											// llinfos << "dd dec: " << addadd << " (" << addaavg << ")" << llendl;
-										}
-								}
-						}
+					if(addadd < addamindd)
+					{
+						addadd = addamindd;
+						gSavedSettings.setF32("RenderFarClip", addadd);
+						changed = 1;
+						// llinfos << "dd min: " << addadd << " (" << addaavg << ")" << llendl;
+					}
 					else
+					{
+						if(addadd != addamindd)
 						{
-							if(addadd < addamaxdd)
-								{
-									addadd += addadeltaup;
-									gSavedSettings.setF32("RenderFarClip", addadd);
-									// llinfos << "dd inc: " << addadd << " (" << addaavg << ")" << llendl;
-								}
-							else
-								{
-									if(addadd != addamaxdd)
-										{
-											addadd = addamaxdd;
-											gSavedSettings.setF32("RenderFarClip", addadd);
-											// llinfos << "dd max: " << addadd << " (" << addaavg << ")" << llendl;
-										}
-								}
+							addadd -= addadeltadn;
+							gSavedSettings.setF32("RenderFarClip", addadd);
+							changed = 1;
+							// llinfos << "dd dec: " << addadd << " (" << addaavg << ")" << llendl;
 						}
+					}
 				}
+				else
+				{
+					//
+					// average fps rate high enough
+					//
+
+					if(addadd < addamaxdd)
+					{
+						addadd += addadeltaup;
+						gSavedSettings.setF32("RenderFarClip", addadd);
+						changed = 1;
+						// llinfos << "dd inc: " << addadd << " (" << addaavg << ")" << llendl;
+					}
+					else
+					{
+						if(addadd != addamaxdd)
+						{
+							addadd = addamaxdd;
+							gSavedSettings.setF32("RenderFarClip", addadd);
+							changed = 1;
+							// llinfos << "dd max: " << addadd << " (" << addaavg << ")" << llendl;
+						}
+					}
+				}
+
+				if(changed)
+				{
+					if(addadd < addamaxdd * 0.35)
+					{
+						// disable shadows when fps rate is too low
+						gSavedSettings.setS32("RenderShadowDetail", 0);
+					}
+					else
+					{
+						if(addadd > addamaxdd * 0.75)
+						{
+							gSavedSettings.setS32("RenderShadowDetail", 2);
+						}
+					}
+				}
+			}
+
+			addaavglast = addaavg;
 		}
+	}
 
 	//////////////////////////
 	//
@@ -766,8 +800,8 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		gFrameStats.start(LLFrameStats::UPDATE_CULL);
 		S32 water_clip = 0;
 		if ((LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_ENVIRONMENT) > 1) &&
-			 (gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_WATER) ||
-			  gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_VOIDWATER)))
+		    (gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_WATER) ||
+		     gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_VOIDWATER)))
 		{
 			if (LLViewerCamera::getInstance()->cameraUnderWater())
 			{
@@ -788,9 +822,9 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		LLTexUnit::sWhiteTexture = LLViewerFetchedTexture::sWhiteImagep->getTexName();
 
 		/*if (LLPipeline::sUseOcclusion && LLPipeline::sRenderDeferred)
-		{ //force occlusion on for all render types if doing deferred render
-			LLPipeline::sUseOcclusion = 3;
-		}*/
+		  { //force occlusion on for all render types if doing deferred render
+		  LLPipeline::sUseOcclusion = 3;
+		  }*/
 
 		S32 occlusion = LLPipeline::sUseOcclusion;
 		if (gDepthDirty)
@@ -814,7 +848,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		LLGLState::checkClientArrays();
 
 		BOOL to_texture = LLGLSLShader::sNoFixedFunction &&
-						LLPipeline::sRenderGlow;
+			LLPipeline::sRenderGlow;
 
 		LLAppViewer::instance()->pingMainloopTimeout("Display:Swap");
 		
@@ -904,7 +938,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			{
 				LLFastTimer t(FTM_IMAGE_UPDATE_CLASS);
 				LLViewerTexture::updateClass(LLViewerCamera::getInstance()->getVelocityStat()->getMean(),
-											LLViewerCamera::getInstance()->getAngularVelocityStat()->getMean());
+							     LLViewerCamera::getInstance()->getAngularVelocityStat()->getMean());
 			}
 
 			
@@ -924,11 +958,11 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			}
 
 			/*{
-				LLFastTimer t(FTM_IMAGE_UPDATE_DELETE);
-				//remove dead textures from GL
-				LLImageGL::deleteDeadTextures();
-				stop_glerror();
-			}*/
+			  LLFastTimer t(FTM_IMAGE_UPDATE_DELETE);
+			  //remove dead textures from GL
+			  LLImageGL::deleteDeadTextures();
+			  stop_glerror();
+			  }*/
 		}
 		LL_PUSH_CALLSTACKS();
 		LLGLState::checkStates();
@@ -1056,7 +1090,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		LLAppViewer::instance()->pingMainloopTimeout("Display:RenderGeom");
 		
 		if (!(LLAppViewer::instance()->logoutRequestSent() && LLAppViewer::instance()->hasSavedFinalSnapshot())
-				&& !gRestoreGL)
+		    && !gRestoreGL)
 		{
 			LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
 			
@@ -1082,10 +1116,10 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 					gGL.color4fv( LLColor4::white.mV );
 					gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 					gGL.begin( LLRender::QUADS );
-						gGL.vertex3f(rect.mLeft, rect.mTop,0.f);
-						gGL.vertex3f(rect.mLeft, rect.mBottom,0.f);
-						gGL.vertex3f(rect.mRight, rect.mBottom,0.f);
-						gGL.vertex3f(rect.mRight, rect.mTop,0.f);
+					gGL.vertex3f(rect.mLeft, rect.mTop,0.f);
+					gGL.vertex3f(rect.mLeft, rect.mBottom,0.f);
+					gGL.vertex3f(rect.mRight, rect.mBottom,0.f);
+					gGL.vertex3f(rect.mRight, rect.mTop,0.f);
 					gGL.end();
 
 					gGL.matrixMode(LLRender::MM_PROJECTION);
@@ -1158,10 +1192,10 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				if(gPipeline.mDeferredScreen.getFBO())
 				{
 					LLRenderTarget::copyContentsToFramebuffer(gPipeline.mDeferredScreen, 0, 0, gPipeline.mDeferredScreen.getWidth(), 
-															  gPipeline.mDeferredScreen.getHeight(), 0, 0, 
-															  gPipeline.mDeferredScreen.getWidth(), 
-															  gPipeline.mDeferredScreen.getHeight(), 
-															  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+										  gPipeline.mDeferredScreen.getHeight(), 0, 0, 
+										  gPipeline.mDeferredScreen.getWidth(), 
+										  gPipeline.mDeferredScreen.getHeight(), 
+										  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 				}
 			}
 			else
@@ -1170,10 +1204,10 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				if(gPipeline.mScreen.getFBO())
 				{				
 					LLRenderTarget::copyContentsToFramebuffer(gPipeline.mScreen, 0, 0, gPipeline.mScreen.getWidth(), 
-															  gPipeline.mScreen.getHeight(), 0, 0, 
-															  gPipeline.mScreen.getWidth(), 
-															  gPipeline.mScreen.getHeight(), 
-															  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+										  gPipeline.mScreen.getHeight(), 0, 0, 
+										  gPipeline.mScreen.getWidth(), 
+										  gPipeline.mScreen.getHeight(), 
+										  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 				}
 			}
 		}
