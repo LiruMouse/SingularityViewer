@@ -483,6 +483,24 @@ void LLInventoryView::cleanup()
 }
 
 
+// static
+void LLInventoryView::hideAllViews()
+{
+	S32 count = sActiveViews.count();
+	while(count > 1)
+	{
+		--count;
+		LLInventoryView* iv = sActiveViews.get(count);
+
+		// destroy all but one for otherwise they might "leak"
+		// since the user cannot make them visible again
+		iv->destroy();
+	}
+
+	sActiveViews.get(0)->setVisible(false);
+}
+
+
 void LLInventoryView::updateSortControls()
 {
 	U32 order = mActivePanel ? mActivePanel->getSortOrder() : gSavedSettings.getU32("InventorySortOrder");

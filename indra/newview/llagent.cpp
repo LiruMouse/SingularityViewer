@@ -47,6 +47,7 @@
 #include "llgroupmgr.h"
 #include "llhomelocationresponder.h"
 #include "llhudmanager.h"
+#include "llpanelmaininventory.h"
 #include "lljoystickbutton.h"
 #include "llmorphview.h"
 #include "llmoveview.h"
@@ -3972,6 +3973,13 @@ bool LLAgent::teleportCore(bool is_local)
 
 	// take keyboard focus away (particularly from inventory panel)
 	gFocusMgr.setKeyboardFocus(NULL);
+
+	// make all inventory views invisible after teleport
+	static const LLCachedControl<bool> rtyhideinventoryontp("RtyHideInventoryOnTP");
+	if(rtyhideinventoryontp)
+	{
+		LLInventoryView::hideAllViews();
+	}
 
 	// local logic
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_TELEPORT_COUNT);
