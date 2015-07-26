@@ -132,13 +132,16 @@ if (LINUX)
       -DAPPID=secondlife
       -D_REENTRANT
       -fexceptions
+
+      -fdelete-dead-exceptions
+
       -fno-math-errno
       -fno-strict-aliasing
       -fsigned-char
       -fvisibility=hidden
 #      -g
       -pthread
-#      -march=native
+      -march=native
 #
       -maes
       -mmmx
@@ -150,7 +153,7 @@ if (LINUX)
       -msse4.2
       -mssse3
 #
-      -O2
+      -O3
       -fno-stack-protector
       -fomit-frame-pointer
 
@@ -162,16 +165,13 @@ if (LINUX)
       -fcx-limited-range
       -funroll-loops
       -frename-registers
-      -ftracer
+#      -ftracer
       -fvariable-expansion-in-unroller
       -freorder-blocks-and-partition
-#      -flto=24
        -fuse-linker-plugin
-       -flto
+       -flto=24
 #      -I/usr/lib/gcc/x86_64-redhat-linux/4.8.1/
-#      -lgcov
-#       -fprofile-dir=/home/lee/tmp
-#       -fprofile-generate
+
 	-Wno-strict-aliasing
 #	-ftree-loop-linear // don't
 	-ftree-loop-im
