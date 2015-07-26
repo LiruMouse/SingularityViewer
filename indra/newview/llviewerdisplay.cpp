@@ -522,9 +522,11 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	stop_glerror();
 
 	LLImageGL::updateStats(gFrameTimeSeconds);
-	
-	LLVOAvatar::sRenderName = gSavedSettings.getS32("RenderName");
-	LLVOAvatar::sRenderGroupTitles = !gSavedSettings.getBOOL("RenderHideGroupTitleAll");
+
+	static LLCachedControl<S32> rname("RenderName");
+	static LLCachedControl<bool> rhgta("RenderHideGroupTitleAll");
+	LLVOAvatar::sRenderName = rname;
+	LLVOAvatar::sRenderGroupTitles = !rhgta;
 	
 	gPipeline.mBackfaceCull = TRUE;
 	gFrameCount++;
