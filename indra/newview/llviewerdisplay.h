@@ -38,6 +38,8 @@ class LLPostProcess;
 void display_startup();
 void display_cleanup();
 
+bool rty_adda();
+
 void display(BOOL rebuild = TRUE, F32 zoom_factor = 1.f, int subfield = 0, BOOL for_snapshot = FALSE, bool tiling = false);
 
 extern BOOL gDisplaySwapBuffers;

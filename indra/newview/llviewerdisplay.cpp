@@ -246,6 +246,142 @@ void display_stats()
 	}
 }
 
+
+//
+// automatic draw distance adjustment
+//
+// This does a much better job than speed stepping, and it does it all
+// the time.
+//
+bool rty_adda()
+{
+	static LLCachedControl<bool> addaenabled("RtyAddaEnabled");
+	if(addaenabled)
+	{
+		// increase/decrease dd by this much per step
+		static LLCachedControl<F32> addadeltaup("RtyAddaUp");
+		static LLCachedControl<F32> addadeltadn("RtyAddaDown");
+
+		// do not increase/decrease dd beyond these limits
+		// FIXME: there needs to be a lower and an upper hardcoded limit
+		static LLCachedControl<F32> addamindd("RtyAddaMinDD");
+		static LLCachedControl<F32> addamaxdd("RtyAddaMaxDD");
+
+		// use average frame rate as reference for adjustment
+		static F32 addaavg = 0.0f;
+		static F32 addaavglast = addaavg;
+		static U32 addaframes = 0;
+		// how many frames to average
+		static LLCachedControl<U32> addaf2avg("RtyAddaFrames");
+		if(addaf2avg < 10)
+		{
+			addaf2avg = 10;
+			gSavedSettings.setU32("RtyAddaFrames", 10);
+		}
+
+		addaavg += gFrameIntervalSeconds;
+		addaframes++;
+		if(addaframes > addaf2avg)
+		{
+			addaavg /= (F32)addaframes;
+			addaframes = 0;
+
+			static LLCachedControl<U32> addalevel("RtyAddaLevel");
+			// note: dd gets reset in llagent.cpp after tp when speedstepping is enabled
+			// begin with medium dd
+			static F32 addadd = (addamindd + addamaxdd) * 0.5f;
+
+			// when there's a big change in average, adjust dd rapidly
+			if(addaavg < addaavglast * 0.6f)
+			{
+				addadd *= 0.55f;
+				if(addadd < addamindd)
+				{
+					addadd = addamindd;
+				}
+				gSavedSettings.setF32("RenderFarClip", addadd);
+			}
+			else
+			{
+				bool changed = 0;
+
+				if(addaavg > addalevel / 1000.0f)
+				{
+					//
+					// average fps rate too low
+					//
+
+					if(addadd < addamindd)
+					{
+						addadd = addamindd;
+						gSavedSettings.setF32("RenderFarClip", addadd);
+						changed = 1;
+						// llinfos << "dd min: " << addadd << " (" << addaavg << ")" << llendl;
+					}
+					else
+					{
+						if(addadd != addamindd)
+						{
+							addadd -= addadeltadn;
+							gSavedSettings.setF32("RenderFarClip", addadd);
+							changed = 1;
+							// llinfos << "dd dec: " << addadd << " (" << addaavg << ")" << llendl;
+						}
+					}
+				}
+				else
+				{
+					//
+					// average fps rate high enough
+					//
+
+					if(addadd < addamaxdd)
+					{
+						addadd += addadeltaup;
+						gSavedSettings.setF32("RenderFarClip", addadd);
+						changed = 1;
+						// llinfos << "dd inc: " << addadd << " (" << addaavg << ")" << llendl;
+					}
+					else
+					{
+						if(addadd != addamaxdd)
+						{
+							addadd = addamaxdd;
+							gSavedSettings.setF32("RenderFarClip", addadd);
+							changed = 1;
+							// llinfos << "dd max: " << addadd << " (" << addaavg << ")" << llendl;
+						}
+					}
+				}
+
+				if(changed)
+				{
+					if(addadd < addamaxdd * 0.25)
+					{
+						// disable shadows when dd is forced rather low
+						gSavedSettings.setS32("RenderShadowDetail", 0);
+					}
+					else
+					{
+						if(addadd > addamaxdd * 0.85)
+						{
+							// enable shadows when dd has come up again
+							gSavedSettings.setS32("RenderShadowDetail", 2);
+						}
+					}
+				}
+			}
+
+			addaavglast = addaavg;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+
 static LLFastTimer::DeclareTimer FTM_PICK("Picking");
 static LLFastTimer::DeclareTimer FTM_RENDER("Render", true);
 static LLFastTimer::DeclareTimer FTM_UPDATE_SKY("Update Sky");
@@ -554,142 +690,34 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			}
 		}
 
-	// Progressively increase draw distance after TP when required.
-	if (gSavedDrawDistance > 0.0f && gAgent.getTeleportState() == LLAgent::TELEPORT_NONE)
+	// speed rezzing is pretty pointless when adda is enabled, so
+	// don't do it in that case
+	if(!rty_adda())
 	{
-		if (gTeleportArrivalTimer.getElapsedTimeF32() >=
-		    (F32)gSavedSettings.getU32("SpeedRezInterval"))
+		// Progressively increase draw distance after TP when required.
+		if (gSavedDrawDistance > 0.0f && gAgent.getTeleportState() == LLAgent::TELEPORT_NONE)
 		{
-			gTeleportArrivalTimer.reset();
-			F32 current = gSavedSettings.getF32("RenderFarClip");
-			if (gSavedDrawDistance > current)
+			if (gTeleportArrivalTimer.getElapsedTimeF32() >=
+			    (F32)gSavedSettings.getU32("SpeedRezInterval"))
 			{
-				// current *= 2.0;
-				current += current;
-				if (current > gSavedDrawDistance)
+				gTeleportArrivalTimer.reset();
+				F32 current = gSavedSettings.getF32("RenderFarClip");
+				if (gSavedDrawDistance > current)
 				{
-					current = gSavedDrawDistance;
+					// current *= 2.0;
+					current += current;
+					if (current > gSavedDrawDistance)
+					{
+						current = gSavedDrawDistance;
+					}
+					gSavedSettings.setF32("RenderFarClip", current);
 				}
-				gSavedSettings.setF32("RenderFarClip", current);
-			}
-			if (current >= gSavedDrawDistance)
-			{
-				gSavedDrawDistance = 0.0f;
-				gSavedSettings.setF32("SavedRenderFarClip", 0.0f);
-			}
-		}
-	}
-
-	// automatically adjust draw distance
-	static LLCachedControl<bool> addaenabled("RtyAddaEnabled");
-	if(addaenabled)
-	{
-		// increase/decrease dd by this much per step
-		static LLCachedControl<F32> addadeltaup("RtyAddaUp");
-		static LLCachedControl<F32> addadeltadn("RtyAddaDown");
-
-		// do not increase/decrease dd beyond these limits
-		// FIXME: there needs to be a lower and an upper hardcoded limit
-		static LLCachedControl<F32> addamindd("RtyAddaMinDD");
-		static LLCachedControl<F32> addamaxdd("RtyAddaMaxDD");
-
-		// use average frame rate as reference for adjustment
-		static F32 addaavg = 0.0f;
-		static F32 addaavglast = addaavg;
-		static U32 addaframes = 0;
-		// how many frames to average
-		static LLCachedControl<U32> addaf2avg("RtyAddaFrames");
-		if(addaf2avg < 10) addaf2avg = 10;
-
-		addaavg += gFrameIntervalSeconds;
-		addaframes++;
-		if(addaframes > addaf2avg)
-		{
-			addaavg /= (F32)addaframes;
-			addaframes = 0;
-
-			static LLCachedControl<U32> addalevel("RtyAddaLevel");
-			// note: dd gets reset in llagent.cpp after tp when speedstepping is enabled
-			// begin with medium dd
-			static F32 addadd = (addamindd + addamaxdd) * 0.5f;
-
-			// when there's a big change in average, adjust dd rapidly
-			if(addaavg < addaavglast * 0.6f)
-			{
-				addadd *= 0.55f;
-				gSavedSettings.setF32("RenderFarClip", addadd);
-			}
-			else
-			{
-				bool changed = 0;
-
-				if(addaavg > addalevel / 1000.0f)
+				if (current >= gSavedDrawDistance)
 				{
-					//
-					// average fps rate too low
-					//
-
-					if(addadd < addamindd)
-					{
-						addadd = addamindd;
-						gSavedSettings.setF32("RenderFarClip", addadd);
-						changed = 1;
-						// llinfos << "dd min: " << addadd << " (" << addaavg << ")" << llendl;
-					}
-					else
-					{
-						if(addadd != addamindd)
-						{
-							addadd -= addadeltadn;
-							gSavedSettings.setF32("RenderFarClip", addadd);
-							changed = 1;
-							// llinfos << "dd dec: " << addadd << " (" << addaavg << ")" << llendl;
-						}
-					}
-				}
-				else
-				{
-					//
-					// average fps rate high enough
-					//
-
-					if(addadd < addamaxdd)
-					{
-						addadd += addadeltaup;
-						gSavedSettings.setF32("RenderFarClip", addadd);
-						changed = 1;
-						// llinfos << "dd inc: " << addadd << " (" << addaavg << ")" << llendl;
-					}
-					else
-					{
-						if(addadd != addamaxdd)
-						{
-							addadd = addamaxdd;
-							gSavedSettings.setF32("RenderFarClip", addadd);
-							changed = 1;
-							// llinfos << "dd max: " << addadd << " (" << addaavg << ")" << llendl;
-						}
-					}
-				}
-
-				if(changed)
-				{
-					if(addadd < addamaxdd * 0.25)
-					{
-						// disable shadows when fps rate is too low
-						gSavedSettings.setS32("RenderShadowDetail", 0);
-					}
-					else
-					{
-						if(addadd > addamaxdd * 0.85)
-						{
-							gSavedSettings.setS32("RenderShadowDetail", 2);
-						}
-					}
+					gSavedDrawDistance = 0.0f;
+					gSavedSettings.setF32("SavedRenderFarClip", 0.0f);
 				}
 			}
-
-			addaavglast = addaavg;
 		}
 	}
 
