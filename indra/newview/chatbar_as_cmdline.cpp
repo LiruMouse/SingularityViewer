@@ -559,12 +559,9 @@ LLUUID cmdline_partial_name2key(std::string partial_name)
 	std::string av_name;
 	LLStringUtil::toLower(partial_name);
 	LLWorld::getInstance()->getAvatars(&avatars);
-	bool has_avatarlist = LLFloaterAvatarList::instanceExists();
-	if (has_avatarlist)
-		LLFloaterAvatarList::getInstance()->updateAvatarList();
 	for(std::vector<LLUUID>::const_iterator i = avatars.begin(); i != avatars.end(); ++i)
 	{
-		if (LLAvatarListEntry* entry = has_avatarlist ? LLFloaterAvatarList::instance().getAvatarEntry(*i) : NULL)
+		if (LLAvatarListEntry* entry = LLFloaterAvatarList::instanceExists() ? LLFloaterAvatarList::instance().getAvatarEntry(*i) : NULL)
 			av_name = entry->getName();
 		else if (gCacheName->getFullName(*i, av_name));
 		else if (LLVOAvatar* avatarp = gObjectList.findAvatar(*i))

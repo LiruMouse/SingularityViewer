@@ -952,6 +952,8 @@ static void formatDateString(std::string &date_string)
 	using namespace boost;
 	cmatch result;
 	const regex expression("([0-9]{1,2})/([0-9]{1,2})/([0-9]{4})");
+	try
+	{
 	if (regex_match(date_string.c_str(), result, expression))
 	{
 		// convert matches to integers so that we can pad them with zeroes on Linux
@@ -961,6 +963,11 @@ static void formatDateString(std::string &date_string)
 
 		// ISO 8601 date format
 		date_string = llformat("%04d-%02d-%02dT00:00:00Z", year, month, day);
+	}
+	}
+	catch(...)
+	{
+		LL_ERRS() << "Decode of non-compliant DateTime format from [GroupMembersReply.GroupData.MemberData.OnlineStatus]. Please notify grid operators of this defect." << LL_ENDL;
 	}
 }
 

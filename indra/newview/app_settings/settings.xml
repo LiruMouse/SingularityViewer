@@ -8023,17 +8023,6 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>1</integer>
     </map>
-    <key>RadarUpdateRate</key>
-    <map>
-      <key>Comment</key>
-      <string>Radar update rate (0 = high, 1 = medium, 2 = low)</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>U32</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
     <key>RadarAlertShowDist</key>
     <map>
       <key>Comment</key>

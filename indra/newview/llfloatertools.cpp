@@ -112,7 +112,6 @@ const std::string PANEL_NAMES[LLFloaterTools::PANEL_COUNT] =
 
 // Local prototypes
 void commit_grid_mode(LLUICtrl *ctrl);
-void commit_select_component(void *data);
 void click_show_more(void*);
 void click_popup_info(void*);
 void click_popup_done(void*);
@@ -444,7 +443,7 @@ LLFloaterTools::LLFloaterTools()
 	mCommitCallbackRegistrar.add("BuildTool.commitRadioEdit",	boost::bind(&commit_radio_group_edit,_1));
 
 	mCommitCallbackRegistrar.add("BuildTool.gridMode",			boost::bind(&commit_grid_mode,_1));
-	mCommitCallbackRegistrar.add("BuildTool.selectComponent",	boost::bind(&commit_select_component, this));
+	mCommitCallbackRegistrar.add("BuildTool.selectComponent",	boost::bind(&LLFloaterTools::commitSelectComponent, this, _2));
 	mCommitCallbackRegistrar.add("BuildTool.gridOptions",		boost::bind(&LLFloaterTools::onClickGridOptions,this));
 	mCommitCallbackRegistrar.add("BuildTool.applyToSelection",	boost::bind(&click_apply_to_selection, this));
 	mCommitCallbackRegistrar.add("BuildTool.commitRadioLand",	boost::bind(&commit_radio_group_land,_1));
@@ -1155,19 +1154,14 @@ void commit_radio_group_land(LLUICtrl* ctrl)
 	}
 }
 
-void commit_select_component(void *data)
+void LLFloaterTools::commitSelectComponent(bool select_individuals)
 {
-	LLFloaterTools* floaterp = (LLFloaterTools*)data;
-
 	//forfeit focus
-	if (gFocusMgr.childHasKeyboardFocus(floaterp))
+	if (gFocusMgr.childHasKeyboardFocus(this))
 	{
 		gFocusMgr.setKeyboardFocus(NULL);
 	}
-
-	BOOL select_individuals = floaterp->mCheckSelectIndividual->get();
-	gSavedSettings.setBOOL("EditLinkedParts", select_individuals);
-	floaterp->dirty();
+	dirty();
 
 	if (select_individuals)
 	{

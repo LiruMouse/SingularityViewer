@@ -65,12 +65,6 @@
 
 		<panel label="Optionen" name="options_tab">
 			<check_box label="Aktualisieren" name="update_enabled_cb" tool_tip="Einstellen ob die Avatarliste sich aktualisieren soll"/>
-			<text name="rate">Intervall:</text>
-			<radio_group name="update_rate" tool_tip="Intervall für Radar-Aktualisierung (verbraucht mehr FPS wenn höher)">
-				<radio_item name="high">Hoch</radio_item>
-				<radio_item name="medium">Mittel</radio_item>
-				<radio_item name="low">Niedrig</radio_item>
-			</radio_group>
 			<check_box label="Ansagen auch wenn geschlossen" name="keep_open" tool_tip="Fenster verbergen aber Ansagen in Chat weiterführen"/>
 			<check_box label="IDs an HUD senden" name="radar_chat_keys" tool_tip="Avatar IDs an LSL scripte senden"/>
 			<button name="send_keys_btn" label="Jetzt anzeigen" tool_tip="Alle IDs jetzt an HUD senden"/>

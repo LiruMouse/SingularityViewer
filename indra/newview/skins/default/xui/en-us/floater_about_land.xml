@@ -66,7 +66,7 @@
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-140" drop_shadow_visible="true" enabled="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="96"
-			     mouse_opaque="true" name="OwnerText" v_pad="0" width="250">
+			     mouse_opaque="true" name="OwnerText" v_pad="0">
 				Leyla Linden
 			</text>
 			<button bottom="-140" enabled="true" follows="left|top" font="SansSerifSmall"
@@ -290,7 +290,7 @@ Go to World menu > About Land or select another parcel to show its details.
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-60" drop_shadow_visible="true" enabled="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="20" left="120"
-			     mouse_opaque="false" name="estate_owner_text" v_pad="0" width="150">
+			     mouse_opaque="false" name="estate_owner_text" v_pad="0">
 				(none)
 			</text>
 			<text_editor type="string" length="1" bottom="-175" embedded_items="false" enabled="false"

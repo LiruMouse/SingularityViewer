@@ -53,7 +53,6 @@ public:
 	virtual ~LLPanelVolume();
 
 	virtual void	draw();
-	virtual void 	clearCtrls();
 
 	virtual BOOL	postBuild();
 

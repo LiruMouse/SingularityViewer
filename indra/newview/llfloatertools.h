@@ -122,6 +122,7 @@ private:
 	void updateMediaSettings();
 	static bool deleteMediaConfirm(const LLSD& notification, const LLSD& response);
 	static bool multipleFacesSelectedConfirm(const LLSD& notification, const LLSD& response);
+	void commitSelectComponent(bool select_individuals);
 	static void setObjectType( LLPCode pcode );
 	void onClickGridOptions();
 

@@ -222,6 +222,10 @@ BOOL wlfPanel_AdvSettings::postBuild()
 		// Set up based on initial region.
 		onRegionChanged();
 	}
+	else
+	{
+		mHoverHeight = NULL;
+	}
 	return TRUE;
 }
 
@@ -513,7 +517,7 @@ void wlfPanel_AdvSettings::updateEditHoverEnabled()
 {
 	const LLViewerRegion* region = gAgent.getRegion();
 	bool enabled = region && region->avatarHoverHeightEnabled();
-	mHoverHeight->setEnabled(enabled);
+	if (mHoverHeight) mHoverHeight->setEnabled(enabled);
 	if (enabled)
 	{
 		syncFromPreferenceSetting(mHoverHeight);

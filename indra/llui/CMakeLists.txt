@@ -91,6 +91,7 @@ set(llui_SOURCE_FILES
     llviewborder.cpp
     llviewmodel.cpp
     llviewquery.cpp
+    llxuiparser.cpp
     )
     
 set(llui_HEADER_FILES
@@ -172,6 +173,7 @@ set(llui_HEADER_FILES
     llviewborder.h
     llviewmodel.h
     llviewquery.h
+    llxuiparser.h
     )
 
 set_source_files_properties(${llui_HEADER_FILES}

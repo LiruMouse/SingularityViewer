@@ -389,9 +389,11 @@ BOOL LLToolBrushLand::handleMouseDown(S32 x, S32 y, MASK mask)
 			return TRUE;
 		}
 
-		if (!canTerraformParcel(regionp))
+		static bool alerted(false); // Don't spam this
+		if (!alerted && !canTerraformParcel(regionp))
 		{
 			alertNoTerraformParcel();
+			alerted = true;
 		}
 
 		LLVector3 pos_region = region_position.getPositionRegion();

@@ -3503,13 +3503,14 @@ void build_context_menu_folder_options(LLInventoryModel* model, const LLUUID& mU
 		// Only enable add/replace outfit for non-system folders.
 		if (!is_system_folder)
 		{
-			if (InventoryLinksEnabled() &&
+			if (InventoryLinksEnabled() /*&&
 			// Adding an outfit onto another (versus replacing) doesn't make sense.
-				type != LLFolderType::FT_OUTFIT)
+			// <singu/> Actually, it does make a bit of sense, in some cases.
+				type != LLFolderType::FT_OUTFIT*/)
 			{
 				mItems.push_back(std::string("Add To Outfit"));
 			}
-			else if(!InventoryLinksEnabled())
+			else //if(!InventoryLinksEnabled())
 				mItems.push_back(std::string("Wearable And Object Wear"));
 
 			mItems.push_back(std::string("Replace Outfit"));

@@ -1530,7 +1530,7 @@ void send_agent_resume()
 	LLAppViewer::instance()->resumeMainloopTimeout();
 }
 
-static LLVector3d unpackLocalToGlobalPosition(U32 compact_local, const LLVector3d& region_origin)
+LLVector3d unpackLocalToGlobalPosition(U32 compact_local, const LLVector3d& region_origin)
 {
 	LLVector3d pos_local;
 

@@ -5083,14 +5083,14 @@ void LLViewerWindow::drawMouselookInstructions()
 			LLFontGL::HCENTER, LLFontGL::TOP,
 			LLFontGL::BOLD, LLFontGL::DROP_SHADOW_SOFT);
 		font->renderUTF8(
-			llformat("Y: %.2f", vec.mV[VX]), 0,
+			llformat("Y: %.2f", vec.mV[VY]), 0,
 			text_pos_start + 100,
 			INSTRUCTIONS_PAD,
 			LLColor4(0.5f, 1.0f, 0.5f, 0.5),
 			LLFontGL::HCENTER, LLFontGL::TOP,
 			LLFontGL::BOLD, LLFontGL::DROP_SHADOW_SOFT);
 		font->renderUTF8(
-			llformat("Z: %.2f", vec.mV[VX]), 0,
+			llformat("Z: %.2f", vec.mV[VZ]), 0,
 			text_pos_start + 200,
 			INSTRUCTIONS_PAD,
 			LLColor4(0.5f, 0.5f, 1.0f, 0.5),

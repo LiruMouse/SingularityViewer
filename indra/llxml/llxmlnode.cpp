@@ -43,8 +43,6 @@
 #include "lluuid.h"
 //#include "lldir.h" // Do not need.
 
-const S32 MAX_COLUMN_WIDTH = 80;
-
 // static
 BOOL LLXMLNode::sStripEscapedStrings = TRUE;
 BOOL LLXMLNode::sStripWhitespaceValues = FALSE;
@@ -147,13 +145,15 @@ LLXMLNodePtr LLXMLNode::deepCopy()
 		for (LLXMLChildList::iterator iter = mChildren->map.begin();
 			 iter != mChildren->map.end(); ++iter)	
 		{
-			newnode->addChild(iter->second->deepCopy());
+			LLXMLNodePtr temp_ptr_for_gcc(iter->second->deepCopy());
+			newnode->addChild(temp_ptr_for_gcc);
 		}
 	}
 	for (LLXMLAttribList::iterator iter = mAttributes.begin();
 		 iter != mAttributes.end(); ++iter)
 	{
-		newnode->addChild(iter->second->deepCopy());
+		LLXMLNodePtr temp_ptr_for_gcc(iter->second->deepCopy());
+		newnode->addChild(temp_ptr_for_gcc);
 	}
 
 	return newnode;
@@ -259,7 +259,7 @@ BOOL LLXMLNode::removeChild(LLXMLNode *target_child)
 	return FALSE;
 }
 
-void LLXMLNode::addChild(LLXMLNodePtr new_child, LLXMLNodePtr after_child)
+void LLXMLNode::addChild(LLXMLNodePtr& new_child, LLXMLNodePtr after_child)
 {
 	if (new_child->mParent != NULL)
 	{
@@ -343,8 +343,9 @@ LLXMLNodePtr LLXMLNode::createChild(const char* name, BOOL is_attribute)
 // virtual 
 LLXMLNodePtr LLXMLNode::createChild(LLStringTableEntry* name, BOOL is_attribute)
 {
-	LLXMLNode* ret = new LLXMLNode(name, is_attribute);
+	LLXMLNodePtr ret(new LLXMLNode(name, is_attribute));
 	ret->mID.clear();
+
 	addChild(ret);
 	return ret;
 }
@@ -358,11 +359,12 @@ BOOL LLXMLNode::deleteChild(LLXMLNode *child)
 	return FALSE;
 }
 
-void LLXMLNode::setParent(LLXMLNodePtr new_parent)
+void LLXMLNode::setParent(LLXMLNodePtr& new_parent)
 {
 	if (new_parent.notNull())
 	{
-		new_parent->addChild(this);
+		LLXMLNodePtr this_ptr(this);
+		new_parent->addChild(this_ptr);
 	}
 	else
 	{
@@ -968,6 +970,12 @@ bool LLXMLNode::getLayeredXMLNode(LLXMLNodePtr& root,
 	return true;
 }
 
+// static
+void LLXMLNode::writeHeaderToFile(LLFILE *out_file)
+{
+	fprintf(out_file, "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\" ?>\n");
+}
+
 void LLXMLNode::writeToFile(LLFILE *out_file, const std::string& indent, bool use_type_decorations)
 {
 	if (isFullyDefault())
@@ -1233,7 +1241,8 @@ void LLXMLNode::scrubToTree(LLXMLNode *tree)
 		std::vector<LLXMLNodePtr>::iterator itor3;
 		for (itor3=to_delete_list.begin(); itor3!=to_delete_list.end(); ++itor3)
 		{
-			(*itor3)->setParent(NULL);
+			LLXMLNodePtr ptr;
+			(*itor3)->setParent(ptr);
 		}
 	}
 }
@@ -1384,7 +1393,7 @@ BOOL LLXMLNode::getAttributeU8(const char* name, U8& value )
 BOOL LLXMLNode::getAttributeS8(const char* name, S8& value )
 {
 	LLXMLNodePtr node;
-	S32 val;
+	S32 val = 0;
 	if (!(getAttribute(name, node) && node->getIntValue(1, &val)))
 	{
 		return false;
@@ -1396,7 +1405,7 @@ BOOL LLXMLNode::getAttributeS8(const char* name, S8& value )
 BOOL LLXMLNode::getAttributeU16(const char* name, U16& value )
 {
 	LLXMLNodePtr node;
-	U32 val;
+	U32 val = 0;
 	if (!(getAttribute(name, node) && node->getUnsignedValue(1, &val)))
 	{
 		return false;
@@ -1408,7 +1417,7 @@ BOOL LLXMLNode::getAttributeU16(const char* name, U16& value )
 BOOL LLXMLNode::getAttributeS16(const char* name, S16& value )
 {
 	LLXMLNodePtr node;
-	S32 val;
+	S32 val = 0;
 	if (!(getAttribute(name, node) && node->getIntValue(1, &val)))
 	{
 		return false;
@@ -2781,7 +2790,8 @@ void LLXMLNode::setName(LLStringTableEntry* name)
 	mName = name;
 	if (old_parent)
 	{
-		old_parent->addChild(this);
+		LLXMLNodePtr this_ptr(this);
+		old_parent->addChild(this_ptr);
 	}
 }
 

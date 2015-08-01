@@ -21,7 +21,6 @@
 #include "llinventorymodel.h"
 #include "llviewerinventory.h"
 #include "llwearabletype.h"
-#include "llwlparamset.h"
 
 #include "rlvdefines.h"
 #include "rlvcommon.h"
@@ -151,6 +150,15 @@ struct RlvCommandOptionGetPath : public RlvCommandOption
 protected:
 	bool       m_fCallback; // TRUE if a callback is schedueled
 	uuid_vec_t m_idItems;
+};
+
+struct RlvCommandOptionAdjustHeight : public RlvCommandOption
+{
+	RlvCommandOptionAdjustHeight(const RlvCommand& rlvCmd);
+
+	F32 m_nPelvisToFoot;
+	F32 m_nPelvisToFootDeltaMult;
+	F32 m_nPelvisToFootOffset;
 };
 
 struct RlvCommandOptionTpTo : public RlvCommandOption

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="radar" title="Radar"
+<floater name="radar" title="Radar" control_name="ShowRadar"
 	can_resize="true" can_minimize="true" can_close="true" can_drag_on_left="false"
 	rect_control="FloaterRadarRect" min_width="300"	min_height="300">
 	<string name="Title">Radar</string>
@@ -296,29 +296,8 @@
 				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
 				   initial_value="true" enabled="true" radio_style="false" 
 				   tool_tip="Set whether the avatar list should update" />
-			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-				   bottom_delta="-24" drop_shadow_visible="true" enabled="true" font="SansSerifSmall" height="18" left="24"
-				   mouse_opaque="false" name="rate" width="30">
-					Rate:
-			</text>
-			<radio_group draw_border="true" bottom_delta="2" left_delta="44" follows="bottom|left" width="196" height="20"
-				   mouse_opaque="true" name="update_rate" control_name="RadarUpdateRate" enabled="true"
-				   tool_tip="Rate of the radar updates (eats up more FPS when higher)">
-				<radio_item type="string" length="1" bottom_delta="0" height="16" left_delta="4" mouse_opaque="true"
-		     		 	name="high" width="20" follows="bottom|left">
-					High
-				</radio_item>
-				<radio_item type="string" length="1" bottom_delta="0" height="16" left_delta="30" mouse_opaque="true"
-		     		 	name="medium" width="25" follows="bottom|left">
-					Medium
-				</radio_item>
-				<radio_item type="string" length="1" bottom_delta="0" height="16" left_delta="35" mouse_opaque="true"
-		     		 	name="low" width="20" follows="bottom|left">
-					Low
-				</radio_item>
-			</radio_group>
 			<check_box height="16" label="Announce even when closed"
-				   left="10" bottom_delta="-24" name="keep_open"
+				   left="10" bottom_delta="-20" name="keep_open"
 				   width="200" follows="bottom|left"
 				   hidden="false" mouse_opaque="true" font="SansSerifSmall"
 				   initial_value="true" enabled="true" radio_style="false"

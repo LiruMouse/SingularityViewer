@@ -592,14 +592,35 @@ public:
 void load_default_bindings(bool zqsd)
 {
 	gViewerKeyboard.unloadBindings();
-	const std::string keys(zqsd ? "keysZQSD.ini" : "keys.ini");
-	if (!gViewerKeyboard.loadBindings(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, keys)))
+	const std::string key_bindings_file(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, zqsd ? "keysZQSD.xml" : "keys.xml"));
+	if (!gDirUtilp->fileExists(key_bindings_file) || !gViewerKeyboard.loadBindingsXML(key_bindings_file))
 	{
-		LL_ERRS("InitInfo") << "Unable to open " << keys << LL_ENDL;
+		const std::string key_bindings_file(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, zqsd ? "keysZQSD.ini" : "keys.ini"));
+		if (!gViewerKeyboard.loadBindings(key_bindings_file))
+		{
+			LL_ERRS("InitInfo") << "Unable to open " << key_bindings_file << LL_ENDL;
+		}
 	}
 	// Load Custom bindings (override defaults)
-	gViewerKeyboard.loadBindings(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS,"custom_keys.ini"));
+	std::string custom_keys(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "custom_keys.xml"));
+	if (!gDirUtilp->fileExists(custom_keys) || !gViewerKeyboard.loadBindingsXML(custom_keys))
+	{
+		custom_keys = gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "custom_keys.ini");
+		if (gDirUtilp->fileExists(custom_keys))
+			gViewerKeyboard.loadBindings(custom_keys);
+	}
 }
+
+/* Singu unused
+namespace {
+// With Xcode 6, _exit() is too magical to use with boost::bind(), so provide
+// this little helper function.
+void fast_exit(int rc)
+{
+	_exit(rc);
+}
+}
+*/
 
 bool LLAppViewer::init()
 {	
@@ -645,7 +666,6 @@ bool LLAppViewer::init()
 	//
 	// OK to write stuff to logs now, we've now crash reported if necessary
 	//
-	
 	init_default_trans_args();
 	
 	if (!initConfiguration())
@@ -1235,9 +1255,7 @@ bool LLAppViewer::mainLoop()
 					joystick->scanJoystick();
 					gKeyboard->scanKeyboard();
 					if (gAgent.isCrouching())
-					{
 						gAgent.moveUp(-1);
-					}
 
 				}
 

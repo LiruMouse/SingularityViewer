@@ -62,7 +62,6 @@ enum ACTIVITY_TYPE
 	ACTIVITY_TYPING,         /** Typing */
 	ACTIVITY_NEW,            /** Avatar just appeared */
 	ACTIVITY_SOUND,          /** Playing a sound */
-	ACTIVITY_DEAD            /** Avatar isn't around anymore, and will be removed soon from the list */
 };
 	/**
 	 * @brief Initializes a list entry
@@ -83,19 +82,6 @@ enum ACTIVITY_TYPE
 	void setPosition(const LLVector3d& position, const F32& dist, bool drawn);
 
 	const LLVector3d& getPosition() const { return mPosition; }
-
-	/**
-	 * @brief Returns the age of this entry in frames
-	 *
-	 * This is only used for determining whether the avatar is still around.
-	 * @see getEntryAgeSeconds
-	 */
-	bool getAlive() const;
-
-	/**
-	 * @brief Returns the age of this entry in seconds
-	 */
-	F32 getEntryAgeSeconds() const;
 
 	/*
 	 * @brief resets the name accordance with RLVa
@@ -137,11 +123,6 @@ enum ACTIVITY_TYPE
 	void setInList()	{ mIsInList = true; }
 
 	bool isInList() const { return mIsInList; }
-	/**
-	 * @brief Returns whether the item is dead and shouldn't appear in the list
-	 * @returns true if dead
-	 */
-	bool isDead() const;
 
 	void toggleMark() { mMarked = !mMarked; }
 
@@ -169,20 +150,9 @@ private:
 	 */
 	std::bitset<STAT_TYPE_SIZE> mStats;
 
-	/**
-	 * @brief Timer to keep track of whether avatars are still there
-	 */
-
-	LLTimer mUpdateTimer;
-
 	ACTIVITY_TYPE mActivityType;
 
 	LLTimer mActivityTimer;
-
-	/**
-	 * @brief Last frame when this avatar was updated
-	 */
-	U32 mFrame;
 };
 
 
@@ -232,7 +202,7 @@ public:
 	/**
 	 * @brief Updates the internal avatar list with the currently present avatars.
 	 */
-	void updateAvatarList();
+	void updateAvatarList(const class LLViewerRegion* region);
 
 	/**
 	 * @brief Refresh avatar list (display)
@@ -327,7 +297,6 @@ public:
 	void onClickGetKey();
 
 	void onSelectName();
-	void onCommitUpdateRate();
 
 	/**
 	 * @brief These callbacks fire off notifications, which THEN fire the related callback* functions.
@@ -359,7 +328,7 @@ public:
 	 * to keep people passing by in the list long enough that it's possible
 	 * to do something to them.
 	 */
-	void expireAvatarList();
+	void expireAvatarList(const std::list<LLUUID>& ids);
 	void updateAvatarSorting();
 
 private:
@@ -374,11 +343,6 @@ private:
 	 * @brief true when Updating
 	 */
 	const LLCachedControl<bool> mUpdate;
-
-	/**
-	 * @brief Update rate (if min frames per update)
-	 */
-	U32 mUpdateRate;
 
 	// tracking data
 	bool mTracking;			// Tracking ?

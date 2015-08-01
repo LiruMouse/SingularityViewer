@@ -57,6 +57,7 @@
 #include "llcommandhandler.h"
 #include "lldir.h"
 #include "lleventpoll.h"
+#include "llfloateravatarlist.h"
 #include "llfloatergodtools.h"
 #include "llfloaterperms.h"
 #include "llfloaterreporter.h"
@@ -1250,6 +1251,7 @@ LLHTTPRegistration<CoarseLocationUpdate>
 void LLViewerRegion::updateCoarseLocations(LLMessageSystem* msg)
 {
 	//LL_INFOS() << "CoarseLocationUpdate" << LL_ENDL;
+	std::list<LLUUID> map_avids(mMapAvatarIDs.begin(), mMapAvatarIDs.end());
 	mMapAvatars.reset();
 	mMapAvatarIDs.reset(); // only matters in a rare case but it's good to be safe.
 
@@ -1304,8 +1306,15 @@ void LLViewerRegion::updateCoarseLocations(LLMessageSystem* msg)
 			if(has_agent_data)
 			{
 				mMapAvatarIDs.put(agent_id);
+				map_avids.remove(agent_id);
 			}
 		}
+	}
+	if (LLFloaterAvatarList::instanceExists())
+	{
+		LLFloaterAvatarList& inst(LLFloaterAvatarList::instance());
+		inst.updateAvatarList(this);
+		inst.expireAvatarList(map_avids);
 	}
 }
 

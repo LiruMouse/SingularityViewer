@@ -2257,47 +2257,6 @@ void LLPanelObject::draw()
 	LLPanel::draw();
 }
 
-// virtual
-void LLPanelObject::clearCtrls()
-{
-	LLPanel::clearCtrls();
-
-	mCheckLock		->set(FALSE);
-	mCheckLock		->setEnabled( FALSE );
-	mCheckPhysics	->set(FALSE);
-	mCheckPhysics	->setEnabled( FALSE );
-	mCheckTemporary	->set(FALSE);
-	mCheckTemporary	->setEnabled( FALSE );
-	mCheckPhantom	->set(FALSE);
-	mCheckPhantom	->setEnabled( FALSE );
-	mComboMaterial	->setEnabled( FALSE );
-	mLabelMaterial	->setEnabled( FALSE );
-	// Disable text labels
-	mLabelPosition	->setEnabled( FALSE );
-	mLabelSize		->setEnabled( FALSE );
-	mLabelRotation	->setEnabled( FALSE );
-	mLabelBaseType	->setEnabled( FALSE );
-	mLabelCut		->setEnabled( FALSE );
-	mLabelHollow	->setEnabled( FALSE );
-	mLabelHoleType	->setEnabled( FALSE );
-	mLabelTwist		->setEnabled( FALSE );
-	mLabelSkew		->setEnabled( FALSE );
-	mLabelShear		->setEnabled( FALSE );
-	mLabelTaper		->setEnabled( FALSE );
-	mLabelRadiusOffset->setEnabled( FALSE );
-	mLabelRevolutions->setEnabled( FALSE );
-
-	childSetVisible("select_single", FALSE);
-	childSetVisible("edit_object", TRUE);	
-	childSetEnabled("edit_object", FALSE);
-	
-	childSetEnabled("scale_hole", FALSE);
-	childSetEnabled("scale_taper", FALSE);
-	childSetEnabled("advanced_cut", FALSE);
-	childSetEnabled("advanced_dimple", FALSE);
-	childSetVisible("advanced_slice", FALSE);
-}
-
 //
 // Static functions
 //

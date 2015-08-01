@@ -63,7 +63,6 @@ public:
 
 	virtual BOOL	postBuild();
 	virtual void	draw();
-	virtual void 	clearCtrls();
 
 	void			refresh();
 

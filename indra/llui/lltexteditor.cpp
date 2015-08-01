@@ -2063,10 +2063,10 @@ void LLTextEditor::removeChar()
 // Remove a word (set of characters up to next space/punctuation) from the text
 void LLTextEditor::removeWord(bool prev)
 {
-	const U32 pos(mCursorPos);
-	if (prev ? pos > 0 : static_cast<S32>(pos) < getLength())
+	const S32& pos(mCursorPos);
+	if (prev ? pos > 0 : pos < getLength())
 	{
-		U32 new_pos(prev ? prevWordPos(pos) : nextWordPos(pos));
+		S32 new_pos(prev ? prevWordPos(pos) : nextWordPos(pos));
 		if (new_pos == pos) // Other character we don't jump over
 			new_pos = prev ? prevWordPos(new_pos-1) : nextWordPos(new_pos+1);
 
@@ -2614,6 +2614,13 @@ BOOL LLTextEditor::handleControlKey(const KEY key, const MASK mask)
 			}
 			break;
 
+		case KEY_DELETE:
+			if (getEnabled())
+				removeWord(false);
+			else
+				handled = false;
+			break;
+
 		default:
 			handled = FALSE;
 			break;
@@ -2728,17 +2735,6 @@ BOOL LLTextEditor::handleSpecialKey(const KEY key, const MASK mask, BOOL* return
 		else
 		{
 			reportBadKeystroke();
-		}
-		break;
-
-	case KEY_DELETE:
-		if (getEnabled() && mask == MASK_CONTROL)
-		{
-			removeWord(false);
-		}
-		else
-		{
-			handled = false;
 		}
 		break;
 

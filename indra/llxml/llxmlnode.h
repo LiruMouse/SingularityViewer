@@ -50,7 +50,6 @@
 #include "llstringtable.h"
 #include "llfile.h"
 
-
 class LLVector3;
 class LLVector3d;
 class LLQuaternion;
@@ -133,8 +132,8 @@ public:
 	BOOL isNull();
 
 	BOOL deleteChild(LLXMLNode* child);
-    void addChild(LLXMLNodePtr new_child, LLXMLNodePtr after_child = LLXMLNodePtr(NULL)); 
-    void setParent(LLXMLNodePtr new_parent); // reparent if necessary
+    void addChild(LLXMLNodePtr& new_child, LLXMLNodePtr after_child = LLXMLNodePtr(NULL)); 
+    void setParent(LLXMLNodePtr& new_parent); // reparent if necessary
 
     // Serialization
 	static bool parseFile(
@@ -157,6 +156,11 @@ public:
 	
 	static bool getLayeredXMLNode(LLXMLNodePtr& root, const std::vector<std::string>& paths);
 	
+
+	// Write standard XML file header:
+	// <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	static void writeHeaderToFile(LLFILE *out_file);
+
 	// Write XML to file with one attribute per line.
 	// XML escapes values as they are written.
     void writeToFile(LLFILE *out_file, const std::string& indent = std::string(), bool use_type_decorations=true);
@@ -325,7 +329,11 @@ public:
 	
 protected:
 	LLStringTableEntry *mName;		// The name of this node
-	std::string mValue;			// The value of this node (use getters/setters only)
+
+	// The value of this node (use getters/setters only)
+	// Values are not XML-escaped in memory
+	// They may contain " (quot) ' (apos) & (amp) < (lt) > (gt)
+	std::string mValue;
 
 	LLXMLNodePtr mDefault;		// Mirror node in the default tree
 

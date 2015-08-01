@@ -58,20 +58,6 @@
 		<!-- =============================== -->
 		<panel label="Opciones" name="options_tab">
 			<check_box label="Actualizar" name="update_enabled_cb" tool_tip="Definir cuando debe ser actualizada la lista de avatares"/>
-			<text name="rate">
-					Frec.:
-			</text>
-			<radio_group name="update_rate" tool_tip="Frecuencia de actualización del radar (consume mas FPS cuando es alta)">
-				<radio_item name="high">
-					Alta
-				</radio_item>
-				<radio_item name="medium">
-					Media
-				</radio_item>
-				<radio_item name="low">
-					Baja
-				</radio_item>
-			</radio_group>
 			<check_box label="Anunciar aún estando cerrado" name="keep_open" tool_tip="Oculta el radar en vez de cerrarlo para seguir enviando los avisos al chat" />
 			<check_box label="Anunciar keys al HUD" name="radar_chat_keys" tool_tip="Definir cuando enviar las keys de los avarares a los scritps LSL" />
 			<button name="send_keys_btn" label="Anunciar Ahora" tool_tip="Envia todas las keys al HUD ahora"/>

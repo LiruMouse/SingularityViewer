@@ -2,31 +2,25 @@
  * @file llviewerkeyboard.h
  * @brief LLViewerKeyboard class header file
  *
- * $LicenseInfo:firstyear=2005&license=viewergpl$
- * 
- * Copyright (c) 2005-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2005&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -34,6 +28,7 @@
 #define LL_LLVIEWERKEYBOARD_H
 
 #include "llkeyboard.h" // For EKeystate
+#include "llinitparam.h"
 
 const S32 MAX_NAMED_FUNCTIONS = 100;
 const S32 MAX_KEY_BINDINGS = 128; // was 60
@@ -64,18 +59,48 @@ void bind_keyboard_functions();
 class LLViewerKeyboard
 {
 public:
+	struct KeyBinding : public LLInitParam::Block<KeyBinding>
+	{
+		Mandatory<std::string>	key,
+								mask,
+								command;
+
+		KeyBinding();
+	};
+
+	struct KeyMode : public LLInitParam::Block<KeyMode>
+	{
+		Multiple<KeyBinding>		bindings;
+		EKeyboardMode				mode;
+		KeyMode(EKeyboardMode mode);
+	};
+
+	struct Keys : public LLInitParam::Block<Keys>
+	{
+		Optional<KeyMode>	first_person,
+							third_person,
+							edit,
+							sitting,
+							edit_avatar;
+
+		Keys();
+	};
+
 	LLViewerKeyboard();
 
 	BOOL			handleKey(KEY key, MASK mask, BOOL repeated);
 
 	S32				loadBindings(const std::string& filename);										// returns number bound, 0 on error
+	S32				loadBindingsXML(const std::string& filename);										// returns number bound, 0 on error
 	void			unloadBindings();
 	EKeyboardMode	getMode();
 
 	BOOL			modeFromString(const std::string& string, S32 *mode);			// False on failure
 
 	void			scanKey(KEY key, BOOL key_down, BOOL key_up, BOOL key_level);
-protected:
+
+private:
+	S32				loadBindingMode(const LLViewerKeyboard::KeyMode& keymode);
 	BOOL			bindKey(const S32 mode, const KEY key, const MASK mask, const std::string& function_name);
 
 	// Hold all the ugly stuff torn out to make LLKeyboard non-viewer-specific here
