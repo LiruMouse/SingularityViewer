@@ -21,6 +21,8 @@
 #include "llavatarconstants.h"
 #include "llavatarnamecache.h"
 
+#include "llpanelmaininventory.h"
+
 #include "llnotificationsutil.h"
 #include "llradiogroup.h"
 #include "llscrolllistcolumn.h"
@@ -1203,6 +1205,8 @@ bool LLFloaterAvatarList::lookAtAvatar(const LLUUID& uuid)
 
 void LLFloaterAvatarList::onClickGetKey()
 {
+	LLInventoryView::toggleVisibility();
+
 	if (LLScrollListItem* item = mAvatarList->getFirstSelected())
 	{
 		gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(item->getUUID().asString()));
