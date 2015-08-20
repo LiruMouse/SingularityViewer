@@ -467,7 +467,9 @@ void LLIMMgr::addMessage(
 			return;
 
 		// if this is a group session, append the floater at the right
-		floater = createFloater(new_session_id, other_participant_id, name, dialog, hasgroup);
+		std::vector<LLUUID> ids;
+		ids.push_back(other_participant_id);
+		floater = createFloater(new_session_id, other_participant_id, name, dialog, ids, hasgroup);
 
 		// When we get a new IM, and if you are a god, display a bit
 		// of information about the source. This is to help liaisons
