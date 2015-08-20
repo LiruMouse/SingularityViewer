@@ -235,7 +235,7 @@ void LLPanelAvatarSecondLife::processProperties(void* data, EAvatarProcessorType
 
 				std::string font_style("NORMAL"); // Set normal color if not found or if group is visible in profile
 				if (pAvatarGroups->avatar_id == pAvatarGroups->agent_id) // own avatar
-					for (LLDynamicArray<LLGroupData>::iterator i = gAgent.mGroups.begin(); i != gAgent.mGroups.end(); ++i) // Search for this group in the agent's groups list
+					for (std::vector<LLGroupData>::iterator i = gAgent.mGroups.begin(); i != gAgent.mGroups.end(); ++i) // Search for this group in the agent's groups list
 						if (i->mID == it->group_id)
 						{
 							if (i->mListInProfile)

@@ -741,7 +741,7 @@ void LLFloaterCustomize::saveCurrentWearables()
 					LLAppearanceMgr::instance().findCOFItemLinks(wearable->getItemID());
 				if (links.size()>0)
 				{
-					link_item = links.get(0).get();
+					link_item = links.at(0).get();
 					if (link_item && link_item->getIsLinkType())
 					{
 						description = link_item->getActualDescription();
@@ -753,15 +753,11 @@ void LLFloaterCustomize::saveCurrentWearables()
 				if (link_item)
 				{
 					// Create new link
-					link_inventory_item( gAgent.getID(),
-										 link_item->getLinkedUUID(),
+					link_inventory_object(
 										 LLAppearanceMgr::instance().getCOF(),
-										 link_item->getName(),
-										 description,
-										 LLAssetType::AT_LINK,
-										 NULL);
+										 link_item, NULL);
 					// Remove old link
-					gInventory.purgeObject(link_item->getUUID());
+					remove_inventory_object(link_item->getUUID(), NULL);
 				}
 			}
 			gAgentWearables.saveWearable( cur, i );

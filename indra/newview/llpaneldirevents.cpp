@@ -37,7 +37,6 @@
 #include <sstream>
 
 // linden library includes
-#include "llenum.h"
 #include "message.h"
 #include "llqueryflags.h"
 

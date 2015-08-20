@@ -260,7 +260,7 @@
 	<menu_item_separator name="Sound Separator" />
 	<menu_item_call bottom_delta="-18" height="18" label="Play" left="0" mouse_opaque="true"
 	     name="Sound Play" width="128">
-		<on_click filter="" function="Inventory.DoToSelected" userdata="open" />
+		<on_click filter="" function="Inventory.DoToSelected" userdata="sound_play" />
 	</menu_item_call>
 	<menu_item_separator name="Landmark Separator" />
 	<menu_item_call bottom_delta="-18" height="18" label="About Landmark" left="0"

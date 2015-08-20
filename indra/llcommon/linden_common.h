@@ -38,7 +38,9 @@
 // Files included here are included in every library .cpp file and
 // are not precompiled.
 
+#ifndef NO_CWDEBUG
 #include "cwdebug.h"
+#endif
 
 #if defined(LL_WINDOWS) && defined(_DEBUG)
 # if _MSC_VER >= 1400 // Visual C++ 2005 or later

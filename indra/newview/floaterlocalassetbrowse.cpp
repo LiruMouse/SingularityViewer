@@ -369,7 +369,7 @@ std::vector<affected_object> LocalBitmap::getUsingObjects(bool seek_by_type, boo
 {
 	std::vector<affected_object> affected_vector;
 	
-	for( LLDynamicArrayPtr< LLPointer<LLViewerObject>, 256 >::iterator  iter = gObjectList.mObjects.begin();
+	for (std::vector< LLPointer<LLViewerObject> >::iterator  iter = gObjectList.mObjects.begin();
 		 iter != gObjectList.mObjects.end(); iter++ )
 	{
 		LLViewerObject* obj = *iter;

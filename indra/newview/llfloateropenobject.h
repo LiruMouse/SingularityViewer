@@ -64,6 +64,7 @@ public:
 		LLUUID mCatID;
 		bool mWear;
 		bool mFolderResponded;
+		bool mReplace;
 	};
 
 protected:
@@ -73,11 +74,11 @@ protected:
 	void refresh();
 	void draw();
 
-	void moveToInventory(bool wear);
+	void moveToInventory(bool wear, bool replace = false);
 
 	static void onClickMoveToInventory(void* data);
 	static void onClickMoveAndWear(void* data);
-	static void callbackCreateInventoryCategory(const LLSD& result, void* data);
+	static void callbackCreateInventoryCategory(const LLUUID& category_id, LLUUID object_id, bool wear, bool replace = false);
 	static void callbackMoveInventory(S32 result, void* data);
 	static void* createPanelInventory(void* data);
 

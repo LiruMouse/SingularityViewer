@@ -252,7 +252,7 @@ namespace
 							asset_id_matches);
 
 			// See if any of the inventory items matching this sculpt id are exportable
-			for (S32 i = 0; i < items.count(); i++)
+			for (U32 i = 0; i < items.size(); i++)
 			{
 				const LLPermissions item_permissions = items[i]->getPermissions();
 				if (item_permissions.allowExportBy(gAgentID, LFSimFeatureHandler::instance().exportPolicy()))
@@ -365,9 +365,9 @@ void WavefrontSaver::Add(const LLVOAvatar* av_vo) //adds attachments, too!
 			LLViewerObject* o = *itero;
 			if (!o) continue;
 
-			LLDynamicArray<LLViewerObject*> prims = LLDynamicArray<LLViewerObject*>();
+			std::vector<LLViewerObject*> prims;
 			o->addThisAndAllChildren(prims);
-			for (LLDynamicArray<LLViewerObject*>::iterator iterc = prims.begin(); iterc != prims.end(); ++iterc)
+			for (std::vector<LLViewerObject* >::iterator iterc = prims.begin(); iterc != prims.end(); ++iterc)
 			{
 				const LLViewerObject* c = *iterc;
 				if (!c) continue;

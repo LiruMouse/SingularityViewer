@@ -135,9 +135,9 @@ void AIFetchInventoryFolder::multiplex_impl(state_type run_state)
 		// Look up UUID by name.
 		LLInventoryModel::cat_array_t* categories;
 		gInventory.getDirectDescendentsOf(mParentFolder, categories);
-		for (S32 i = 0; i < categories->getLength(); ++i)
+		for (U32 i = 0; i < categories->size(); ++i)
 		{
-		  LLPointer<LLViewerInventoryCategory> const& category(categories->get(i));
+		  LLPointer<LLViewerInventoryCategory> const& category(categories->at(i));
 		  if (category->getName() == mFolderName)
 		  {
 			mFolderUUID = category->getUUID();

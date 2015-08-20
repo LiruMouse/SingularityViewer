@@ -110,7 +110,7 @@ public:
 	virtual void done();
 protected:
 	void doneIdle();
-	static void onCategoryCreate(const LLSD& sdData, void* pParam);
+	void onCategoryCreate(const LLUUID& folder_id, const LLUUID& item_id);
 };
 
 // ============================================================================
@@ -127,7 +127,7 @@ protected:
 	virtual void onDestinationCreated(const LLUUID& idFolder, const std::string& strName) = 0;
 	void	moveAndRename(const LLUUID& idFolder, const LLUUID& idDestination, const std::string& strName);
 private:
-	static void onCategoryCreateCallback(const LLSD& sdData, void* pInstance);
+	void onCategoryCreate(const LLUUID& folder_id);
 
 private:
 	std::list<std::string> m_DestPath;

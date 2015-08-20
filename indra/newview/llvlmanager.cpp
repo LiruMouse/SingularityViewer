@@ -46,12 +46,12 @@ LLVLManager gVLManager;
 
 LLVLManager::~LLVLManager()
 {
-	S32 i;
-	for (i = 0; i < mPacketData.count(); i++)
+	U32 i;
+	for (i = 0; i < mPacketData.size(); i++)
 	{
 		delete mPacketData[i];
 	}
-	mPacketData.reset();
+	mPacketData.clear();
 }
 
 void LLVLManager::addLayerData(LLVLData *vl_datap, const S32 mesg_size)
@@ -88,15 +88,15 @@ void LLVLManager::addLayerData(LLVLData *vl_datap, const S32 mesg_size)
 		LL_ERRS() << "Unknown layer type!" << (S32)vl_datap->mType << LL_ENDL;
 	}
 
-	mPacketData.put(vl_datap);
+	mPacketData.push_back(vl_datap);
 }
 
 void LLVLManager::unpackData(const S32 num_packets)
 {
 	static LLFrameTimer decode_timer;
 	
-	S32 i;
-	for (i = 0; i < mPacketData.count(); i++)
+	U32 i;
+	for (i = 0; i < mPacketData.size(); i++)
 	{
 		LLVLData *datap = mPacketData[i];
 
@@ -128,11 +128,11 @@ void LLVLManager::unpackData(const S32 num_packets)
 		}
 	}
 
-	for (i = 0; i < mPacketData.count(); i++)
+	for (i = 0; i < mPacketData.size(); i++)
 	{
 		delete mPacketData[i];
 	}
-	mPacketData.reset();
+	mPacketData.clear();
 
 }
 
@@ -163,13 +163,13 @@ S32 LLVLManager::getTotalBytes() const
 
 void LLVLManager::cleanupData(LLViewerRegion *regionp)
 {
-	S32 cur = 0;
-	while (cur < mPacketData.count())
+	U32 cur = 0;
+	while (cur < mPacketData.size())
 	{
 		if (mPacketData[cur]->mRegionp == regionp)
 		{
 			delete mPacketData[cur];
-			mPacketData.remove(cur);
+			mPacketData.erase(mPacketData.begin() + cur);
 		}
 		else
 		{

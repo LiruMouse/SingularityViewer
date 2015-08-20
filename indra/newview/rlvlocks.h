@@ -457,7 +457,7 @@ inline bool RlvAttachmentLocks::canDetach(const LLInventoryItem* pItem) const
 {
 	const LLViewerObject* pAttachObj = 
 		((pItem) && (isAgentAvatarValid())) ? gAgentAvatarp->getWornAttachment(pItem->getLinkedUUID()) : NULL;
-	return (pAttachObj) && (!isLockedAttachment(pAttachObj));
+	return (!pAttachObj) || (!isLockedAttachment(pAttachObj));
 }
 
 // Checked: 2010-11-30 (RLVa-1.3.0b) | Modified: RLVa-1.3.0b
@@ -480,7 +480,7 @@ inline bool RlvAttachmentLocks::isLockedAttachment(const LLViewerObject* pAttach
 	//   - it's attached to an attachment point that is RLV_LOCK_REMOVE locked (ie @remattach:<attachpt>=n)
 	//   - it's part of a locked folder
 	return 
-		(pAttachObj) && (pAttachObj->isAttachment()) &&
+		(pAttachObj) && (pAttachObj->isAttachment()) && (!pAttachObj->isTempAttachment()) &&
 		( (m_AttachObjRem.find(pAttachObj->getID()) != m_AttachObjRem.end()) || 
 		  (isLockedAttachmentPoint(RlvAttachPtLookup::getAttachPointIndex(pAttachObj), RLV_LOCK_REMOVE)) ||
 		  (RlvFolderLocks::instance().isLockedAttachment(pAttachObj->getAttachmentItemID())) );
@@ -533,7 +533,7 @@ inline ERlvWearMask RlvWearableLocks::canWear(LLWearableType::EType eType) const
 	return (!isLockedWearableType(eType, RLV_LOCK_ADD))
 	  ? ((!hasLockedWearable(eType)) 
 			? RLV_WEAR 
-			: (gAgentWearables.getWearableCount(eType) < LLAgentWearables::MAX_CLOTHING_PER_TYPE) ? RLV_WEAR_ADD : RLV_WEAR_LOCKED)
+			: (gAgentWearables.canAddWearable(eType)) ? RLV_WEAR_ADD : RLV_WEAR_LOCKED)
 	  : RLV_WEAR_LOCKED;
 }
 

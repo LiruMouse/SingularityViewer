@@ -183,7 +183,7 @@ void LLFloaterScriptQueue::onCloseBtn(void* user_data)
 
 void LLFloaterScriptQueue::addObject(const LLUUID& id)
 {
-	mObjectIDs.put(id);
+	mObjectIDs.push_back(id);
 }
 
 BOOL LLFloaterScriptQueue::start()
@@ -193,7 +193,7 @@ BOOL LLFloaterScriptQueue::start()
 
 	LLStringUtil::format_map_t args;
 	args["[START]"] = mStartString;
-	args["[COUNT]"] = llformat ("%d", mObjectIDs.count());
+	args["[COUNT]"] = llformat ("%d", mObjectIDs.size());
 	buffer = getString ("Starting", args);
 
 	getChild<LLScrollListCtrl>("queue output")->addSimpleElement(buffer, ADD_BOTTOM);
@@ -416,8 +416,8 @@ void LLFloaterCompileQueue::scriptArrived(LLVFS *vfs, const LLUUID& asset_id,
 			{
 				// Read script source in to buffer.
 				U32 script_size = file.getSize();
-				char* script_data = new char[script_size];
-				file.read((U8*)script_data, script_size);
+				U8* script_data = new U8[script_size];
+				file.read(script_data, script_size);
 
 				queue->mUploadQueue->queue(filename, data->mTaskId, 
 				data->mItemId, is_running, queue->mMono, queue->getID(),
@@ -648,7 +648,7 @@ void LLFloaterResetQueue::handleInventory(LLViewerObject* viewer_obj,
 {
 	// find all of the lsl, leaving off duplicates. We'll remove
 	// all matching asset uuids on compilation success.
-	LLDynamicArray<const char*> names;
+	std::vector<const char*> names;
 
 	LLInventoryObject::object_list_t::const_iterator it = inv->begin();
 	LLInventoryObject::object_list_t::const_iterator end = inv->end();
@@ -709,7 +709,7 @@ void LLFloaterRunQueue::handleInventory(LLViewerObject* viewer_obj,
 {
 	// find all of the lsl, leaving off duplicates. We'll remove
 	// all matching asset uuids on compilation success.
-	LLDynamicArray<const char*> names;
+	std::vector<const char*> names;
 
 	LLInventoryObject::object_list_t::const_iterator it = inv->begin();
 	LLInventoryObject::object_list_t::const_iterator end = inv->end();
@@ -793,7 +793,7 @@ void LLFloaterNotRunQueue::handleInventory(LLViewerObject* viewer_obj,
 {
 	// find all of the lsl, leaving off duplicates. We'll remove
 	// all matching asset uuids on compilation success.
-	LLDynamicArray<const char*> names;
+	std::vector<const char*> names;
 
 	LLInventoryObject::object_list_t::const_iterator it = inv->begin();
 	LLInventoryObject::object_list_t::const_iterator end = inv->end();

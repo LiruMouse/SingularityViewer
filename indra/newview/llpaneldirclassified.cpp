@@ -32,8 +32,6 @@
 
 #include "llviewerprecompiledheaders.h"
 
-#include "llenum.h"
-
 #include "llpaneldirclassified.h"
 
 #include "llclassifiedflags.h"

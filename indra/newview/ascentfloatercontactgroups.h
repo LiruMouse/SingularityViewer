@@ -16,7 +16,6 @@
 #define ASCENT_CONTACT_GROUPS
 
 #include "llfloater.h"
-#include "lldarray.h"
 #include "llsdserialize.h"
 
 class LLScrollListCtrl;

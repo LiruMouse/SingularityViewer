@@ -2512,7 +2512,7 @@ void LLFace::renderSetColor() const
 	}
 }
 
-S32 LLFace::pushVertices(const U16* index_array) const
+S32 LLFace::pushVertices() const
 {
 	if (mIndicesCount)
 	{
@@ -2533,19 +2533,19 @@ const LLMatrix4a& LLFace::getRenderMatrix() const
 	return mDrawablep->getRenderMatrix();
 }
 
-S32 LLFace::renderElements(const U16 *index_array) const
+S32 LLFace::renderElements() const
 {
 	S32 ret = 0;
 	
 	if (isState(GLOBAL))
 	{	
-		ret = pushVertices(index_array);
+		ret = pushVertices();
 	}
 	else
 	{
 		gGL.pushMatrix();
 		gGL.multMatrix(getRenderMatrix());
-		ret = pushVertices(index_array);
+		ret = pushVertices();
 		gGL.popMatrix();
 	}
 	
@@ -2570,8 +2570,7 @@ S32 LLFace::renderIndexed(U32 mask)
 	}
 
 	mVertexBuffer->setBuffer(mask);
-	U16* index_array = (U16*) mVertexBuffer->getIndicesPointer();
-	return renderElements(index_array);
+	return renderElements();
 }
 
 //============================================================================

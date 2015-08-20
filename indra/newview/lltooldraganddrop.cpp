@@ -282,13 +282,13 @@ void LLCategoryDropDescendentsObserver::done()
 			LLInventoryModel::EXCLUDE_TRASH);
 	}
 
-	S32 count = items.count();
+	S32 count = items.size();
 	if(count)
 	{
 		std::set<LLUUID> unique_ids;
 		for(S32 i = 0; i < count; ++i)
 		{
-			unique_ids.insert(items.get(i)->getUUID());
+			unique_ids.insert(items.at(i)->getUUID());
 		}
 		uuid_vec_t ids;
 		std::back_insert_iterator<uuid_vec_t> copier(ids);
@@ -433,16 +433,16 @@ void LLToolDragAndDrop::beginDrag(EDragAndDropType type,
 				items,
 				LLInventoryModel::EXCLUDE_TRASH,
 				is_not_preferred);
-			S32 count = cats.count();
+			S32 count = cats.size();
 			S32 i;
 			for(i = 0; i < count; ++i)
 			{
-				folder_ids.push_back(cats.get(i)->getUUID());
+				folder_ids.push_back(cats.at(i)->getUUID());
 			}
-			count = items.count();
+			count = items.size();
 			for(i = 0; i < count; ++i)
 			{
-				item_ids.push_back(items.get(i)->getUUID());
+				item_ids.push_back(items.at(i)->getUUID());
 			}
 			if(!folder_ids.empty() || !item_ids.empty())
 			{
@@ -504,7 +504,7 @@ void LLToolDragAndDrop::beginMultiDrag(
 					items,
 					LLInventoryModel::EXCLUDE_TRASH,
 					is_not_preferred);
-				S32 cat_count = cats.count();
+				S32 cat_count = cats.size();
 				for(S32 i = 0; i < cat_count; ++i)
 				{
 					cat_ids.insert(cat->getUUID());
@@ -803,7 +803,7 @@ void LLToolDragAndDrop::dragOrDrop( S32 x, S32 y, MASK mask, BOOL drop,
 	if ( !handled )
 	{
 		// Disallow drag and drop to 3D from the outbox
-		const LLUUID outbox_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_OUTBOX, false, false);
+		const LLUUID outbox_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_OUTBOX, false);
 		if (outbox_id.notNull())
 		{
 			for (S32 item_index = 0; item_index < (S32)mCargoIDs.size(); item_index++)
@@ -1778,7 +1778,7 @@ EAcceptance LLToolDragAndDrop::dad3dRezAttachmentFromInv(
 //			LLPointer<LLInventoryCallback> cb = new RezAttachmentCallback(0);
 // [SL:KB] - Patch: Appearance-DnDWear | Checked: 2010-09-28 (Catznip-3.0.0a) | Added: Catznip-2.2.0a
 			// Make this behave consistent with dad3dWearItem
-			LLPointer<LLInventoryCallback> cb = new LLBoostFuncInventoryCallback(boost::bind(&rez_attachment_cb, _1, (LLViewerJointAttachment*)0, !(mask & MASK_CONTROL)));
+			LLPointer<LLInventoryCallback> cb = new LLBoostFuncInventoryCallback(boost::bind(&rez_attachment_cb, _1, (LLViewerJointAttachment*)0, fReplace));
 // [/SL:KB]
 			copy_inventory_item(
 				gAgent.getID(),
@@ -2341,7 +2341,7 @@ EAcceptance LLToolDragAndDrop::dad3dUpdateInventoryCategory(
 					items,
 					LLInventoryModel::EXCLUDE_TRASH,
 					droppable);
-	cats.put(cat);
+	cats.push_back(cat);
  	if(droppable.countNoCopy() > 0)
  	{
  		LL_WARNS() << "*** Need to confirm this step" << LL_ENDL;
@@ -2583,7 +2583,7 @@ EAcceptance LLToolDragAndDrop::dad3dCategoryOnLand(
 									items,
 									LLInventoryModel::EXCLUDE_TRASH,
 									droppable);
-	if(items.count() > 0)
+	if(items.size() > 0)
 	{
 		rv = ACCEPT_YES_SINGLE;
 	}
@@ -2610,14 +2610,14 @@ EAcceptance LLToolDragAndDrop::dad3dAssetOnLand(
 	LLViewerInventoryItem::item_array_t items;
 	LLViewerInventoryItem::item_array_t copyable_items;
 	locateMultipleInventory(items, cats);
-	if(!items.count()) return ACCEPT_NO;
+	if(!items.size()) return ACCEPT_NO;
 	EAcceptance rv = ACCEPT_NO;
-	for (S32 i = 0; i < items.count(); i++)
+	for (S32 i = 0; i < items.size(); i++)
 	{
 		LLInventoryItem* item = items[i];
 		if(item->getPermissions().allowCopyBy(gAgent.getID()))
 		{
-			copyable_items.put(item);
+			copyable_items.push_back(item);
 			rv = ACCEPT_YES_SINGLE;
 		}
 	}
@@ -2692,12 +2692,12 @@ LLInventoryObject* LLToolDragAndDrop::locateMultipleInventory(LLViewerInventoryC
 			LLInventoryItem* item = gInventory.getItem(mCargoIDs[i]);
 			if (item)
 			{
-				items.put(item);
+				items.push_back(item);
 			}
 			LLInventoryCategory* category = gInventory.getCategory(mCargoIDs[i]);
 			if (category)
 			{
-				cats.put(category);
+				cats.push_back(category);
 			}
 		}
 	}
@@ -2716,7 +2716,7 @@ LLInventoryObject* LLToolDragAndDrop::locateMultipleInventory(LLViewerInventoryC
 					LLInventoryCategory* category = (LLInventoryCategory*)obj->getInventoryObject(mCargoIDs[i]);
 					if (category)
 					{
-						cats.put(category);
+						cats.push_back(category);
 					}
 				}
 			}
@@ -2727,7 +2727,7 @@ LLInventoryObject* LLToolDragAndDrop::locateMultipleInventory(LLViewerInventoryC
 					LLInventoryItem* item = (LLInventoryItem*)obj->getInventoryObject(mCargoIDs[i]);
 					if (item)
 					{
-						items.put(item);
+						items.push_back(item);
 					}
 				}
 			}
@@ -2739,11 +2739,11 @@ LLInventoryObject* LLToolDragAndDrop::locateMultipleInventory(LLViewerInventoryC
 		card = (LLPreviewNotecard*)LLPreview::find(mSourceID);
 		if(card)
 		{
-			items.put((LLInventoryItem*)card->getDragItem());
+			items.push_back((LLInventoryItem*)card->getDragItem());
 		}
 	}
-	if(items.count()) return items[0];
-	if(cats.count()) return cats[0];
+	if(items.size()) return items[0];
+	if(cats.size()) return cats[0];
 	return NULL;
 }
 */

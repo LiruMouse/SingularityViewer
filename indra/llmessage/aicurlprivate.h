@@ -222,6 +222,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	void setPost_raw(U32 size, char const* data, bool keepalive);
   public:
 	void setPut(U32 size, bool keepalive = true);
+	void setPatch(U32 size, bool keepalive = true);
 	void setPost(U32 size, bool keepalive = true) { setPost_raw(size, NULL, keepalive); }
 	void setPost(AIPostFieldPtr const& postdata, U32 size, bool keepalive = true);
 	void setPost(char const* data, U32 size, bool keepalive = true) { setPost(new AIPostField(data), size, keepalive); }

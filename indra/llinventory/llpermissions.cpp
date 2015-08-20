@@ -535,7 +535,7 @@ void LLPermissions::packMessage(LLMessageSystem* msg) const
 	msg->addBOOLFast(_PREHASH_GroupOwned, (BOOL)mIsGroupOwned);
 }
 
-void LLPermissions::unpackMessage(LLSD perms)
+void LLPermissions::unpackMessage(const LLSD& perms)
 {
 	mCreator	=	perms["creator-id"];
 	mOwner	=	perms["owner-id"];

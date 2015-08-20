@@ -92,7 +92,7 @@ void LLAgentPilot::load(const std::string& filename)
 		file >> new_action.mTime >> action_type;
 		file >> new_action.mTarget.mdV[VX] >> new_action.mTarget.mdV[VY] >> new_action.mTarget.mdV[VZ];
 		new_action.mType = (EActionType)action_type;
-		mActions.put(new_action);
+		mActions.push_back(new_action);
 	}
 
 	file.close();
@@ -108,13 +108,14 @@ void LLAgentPilot::save(const std::string& filename)
 		LL_INFOS() << "Couldn't open " << filename << ", aborting agentpilot save!" << LL_ENDL;
 	}
 
-	file << mActions.count() << '\n';
+	file << mActions.size() << '\n';
 
-	S32 i;
-	for (i = 0; i < mActions.count(); i++)
+	U32 i;
+	for (i = 0; i < mActions.size(); i++)
 	{
 		file << mActions[i].mTime << "\t" << mActions[i].mType << "\t";
-		file << std::setprecision(32) << mActions[i].mTarget.mdV[VX] << "\t" << mActions[i].mTarget.mdV[VY] << "\t" << mActions[i].mTarget.mdV[VZ] << '\n';
+		file << std::setprecision(32) << mActions[i].mTarget.mdV[VX] << "\t" << mActions[i].mTarget.mdV[VY] << "\t" << mActions[i].mTarget.mdV[VZ];
+		file << '\n';
 	}
 
 	file.close();
@@ -122,7 +123,7 @@ void LLAgentPilot::save(const std::string& filename)
 
 void LLAgentPilot::startRecord()
 {
-	mActions.reset();
+	mActions.clear();
 	mTimer.reset();
 	addAction(STRAIGHT);
 	mRecording = TRUE;
@@ -143,7 +144,7 @@ void LLAgentPilot::addAction(enum EActionType action_type)
 	action.mTarget = gAgent.getPositionGlobal();
 	action.mTime = mTimer.getElapsedTimeF32();
 	mLastRecordTime = (F32)action.mTime;
-	mActions.put(action);
+	mActions.push_back(action);
 }
 
 void LLAgentPilot::startPlayback()
@@ -154,7 +155,7 @@ void LLAgentPilot::startPlayback()
 		mCurrentAction = 0;
 		mTimer.reset();
 
-		if (mActions.count())
+		if (mActions.size())
 		{
 			LL_INFOS() << "Starting playback, moving to waypoint 0" << LL_ENDL;
 			gAgent.startAutoPilotGlobal(mActions[0].mTarget);
@@ -183,7 +184,7 @@ void LLAgentPilot::updateTarget()
 {
 	if (mPlaying)
 	{
-		if (mCurrentAction < mActions.count())
+		if (mCurrentAction < (S32)mActions.size())
 		{
 			if (0 == mCurrentAction)
 			{
@@ -208,7 +209,7 @@ void LLAgentPilot::updateTarget()
 				//gAgent.stopAutoPilot();
 				mCurrentAction++;
 
-				if (mCurrentAction < mActions.count())
+				if (mCurrentAction < (S32)mActions.size())
 				{
 					gAgent.startAutoPilotGlobal(mActions[mCurrentAction].mTarget);
 				}

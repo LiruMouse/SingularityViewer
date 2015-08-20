@@ -254,7 +254,7 @@ BOOL LLInventoryFilter::checkAgainstFilterType(const LLFolderViewItem* item) con
 				S32 descendents_actual = 0;
 				if (cat_array && item_array)
 				{
-					descendents_actual = cat_array->count() + item_array->count();
+					descendents_actual = cat_array->size() + item_array->size();
 				}
 				if (descendents_actual == 0)
 				{

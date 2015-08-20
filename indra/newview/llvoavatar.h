@@ -654,7 +654,7 @@ private:
 public:
 	void			debugColorizeSubMeshes(U32 i, const LLColor4& color);
 	virtual void 	updateMeshTextures();
-	void 			updateSexDependentLayerSets(BOOL upload_bake);
+	void 			updateSexDependentLayerSets(bool upload_bake = false);
 	virtual void	dirtyMesh(); // Dirty the avatar mesh
 	void 			updateMeshData();
 protected:
@@ -747,6 +747,8 @@ public:
 	void				cleanupAttachedMesh( LLViewerObject* pVO );
 	static LLVOAvatar*  findAvatarFromAttachment(LLViewerObject* obj);
 	/*virtual*/ BOOL	isWearingWearableType(LLWearableType::EType type ) const;
+	LLViewerObject *	findAttachmentByID( const LLUUID & target_id ) const;
+
 protected:
 	LLViewerJointAttachment* getTargetAttachmentPoint(LLViewerObject* viewer_object);
 	void 				lazyAttach();
@@ -782,7 +784,6 @@ public:
 	BOOL 			isWearingAttachment( const LLUUID& inv_item_id );
 	LLViewerObject* getWornAttachment( const LLUUID& inv_item_id );
 
-	const std::string getAttachedPointName(const LLUUID& inv_item_id);
 
 /**                    Wearables
  **                                                                            **
@@ -1034,6 +1035,18 @@ public:
 protected:
 	LLFrameTimer	mRuthDebugTimer; // For tracking how long it takes for av to rez
 	LLFrameTimer	mDebugExistenceTimer; // Debugging for how long the avatar has been in memory.
+	LLFrameTimer	mLastAppearanceMessageTimer; // Time since last appearance message received.
+
+	//--------------------------------------------------------------------
+	// COF monitoring
+	//--------------------------------------------------------------------
+
+public:
+	// COF version of last viewer-initiated appearance update request. For non-self avs, this will remain at default.
+	S32 mLastUpdateRequestCOFVersion;
+
+	// COF version of last appearance message received for this av.
+	S32 mLastUpdateReceivedCOFVersion;
 
 /**                    Diagnostics
  **                                                                            **

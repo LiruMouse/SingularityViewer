@@ -1239,9 +1239,9 @@ void LLFloaterAvatarList::sendKeys() const
 	std::ostringstream ids;
 	U32 num_ids = 0;
 
-	for (S32 i = 0; i < regionp->mMapAvatarIDs.count(); ++i)
+	for (U32 i = 0; i < regionp->mMapAvatarIDs.size(); ++i)
 	{
-		ids << "," << regionp->mMapAvatarIDs.get(i);
+		ids << "," << regionp->mMapAvatarIDs.at(i);
 		++num_ids;
 		if (ids.tellp() > 200)
 		{

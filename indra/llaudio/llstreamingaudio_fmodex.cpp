@@ -150,7 +150,7 @@ enum utf_endian_type_t
 	UTF16
 };
 
-std::string utf16input_to_utf8(char* input, U32 len, utf_endian_type_t type)
+std::string utf16input_to_utf8(unsigned char* input, U32 len, utf_endian_type_t type)
 {
 	if (type == UTF16)
 	{
@@ -298,7 +298,7 @@ void LLStreamingAudio_FMODEX::update()
 						case(FMOD_TAGDATATYPE_STRING_UTF8) :
 						{
 							U8 offs = 0;
-							if (tag.datalen > 3 && ((char*)tag.data)[0] == 0xEF && ((char*)tag.data)[1] == 0xBB && ((char*)tag.data)[2] == 0xBF)
+							if (tag.datalen > 3 && ((unsigned char*)tag.data)[0] == 0xEF && ((char*)tag.data)[1] == 0xBB && ((char*)tag.data)[2] == 0xBF)
 								offs = 3;
 							std::string out((char*)tag.data + offs, tag.datalen - offs);
 							if (out.length() && out[out.size() - 1] == 0)
@@ -309,7 +309,7 @@ void LLStreamingAudio_FMODEX::update()
 							break;
 						case(FMOD_TAGDATATYPE_STRING_UTF16):
 						{
-							std::string out = utf16input_to_utf8((char*)tag.data, tag.datalen, UTF16);
+							std::string out = utf16input_to_utf8((unsigned char*)tag.data, tag.datalen, UTF16);
 							if (out.length() && out[out.size() - 1] == 0)
 								out.erase(out.size() - 1);
 							(*mMetaData)[name] = out;
@@ -318,7 +318,7 @@ void LLStreamingAudio_FMODEX::update()
 							break;
 						case(FMOD_TAGDATATYPE_STRING_UTF16BE):
 						{
-							std::string out = utf16input_to_utf8((char*)tag.data, tag.datalen, UTF16BE);
+							std::string out = utf16input_to_utf8((unsigned char*)tag.data, tag.datalen, UTF16BE);
 							if (out.length() && out[out.size() - 1] == 0)
 								out.erase(out.size() - 1);
 							(*mMetaData)[name] = out;

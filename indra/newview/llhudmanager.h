@@ -36,7 +36,6 @@
 // Responsible for managing all HUD elements.
 
 #include "llhudobject.h"
-#include "lldarray.h"
 
 class LLViewerObject;
 class LLHUDEffect;
@@ -65,7 +64,7 @@ public:
 	static LLColor4 sChildColor;
 
 protected:
-	LLDynamicArrayPtr<LLPointer<LLHUDEffect>				> mHUDEffects;
+	std::vector<LLPointer<LLHUDEffect> > mHUDEffects;
 };
 
 #endif // LL_LLHUDMANAGER_H

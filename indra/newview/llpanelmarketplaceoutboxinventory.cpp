@@ -68,7 +68,7 @@ void LLOutboxInventoryPanel::buildFolderView(/*const LLInventoryPanel::Params& p
 	// Determine the root folder in case specified, and
 	// build the views starting with that folder.
 
-	LLUUID root_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_OUTBOX, false, false);
+	LLUUID root_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_OUTBOX, false);
 
 	if (root_id == LLUUID::null)
 	{

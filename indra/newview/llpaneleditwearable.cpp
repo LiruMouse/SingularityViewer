@@ -771,7 +771,8 @@ BOOL LLPanelEditWearable::postBuild()
 
 	if (mTab = findChild<LLTabContainer>("layer_tabs"))
 	{
-		for(U32 i = 1; i <= LLAgentWearables::MAX_CLOTHING_PER_TYPE; ++i)
+		LL_COMPILE_TIME_MESSAGE("layer_tabs needs re-implemented");
+		for(U32 i = 1; i <= 6/*LLAgentWearables::MAX_CLOTHING_PER_TYPE*/; ++i)
 		{
 			LLPanel* new_panel = new LLPanel(llformat("%i",i));
 			mTab->addTabPanel(new_panel, llformat("Layer %i",i));
@@ -1008,15 +1009,13 @@ void LLPanelEditWearable::refreshWearables(bool force_immediate)
 	U32 index;
 	if (mPendingWearable)
 	{
-		index = gAgentWearables.getWearableIndex(mPendingWearable);
-		if (index == LLAgentWearables::MAX_CLOTHING_PER_TYPE)
+		if (!gAgentWearables.getWearableIndex(mPendingWearable, index))
 			return;
 		mPendingWearable = NULL;
 	}
 	else
 	{
-		index = gAgentWearables.getWearableIndex(getWearable());
-		if (index == LLAgentWearables::MAX_CLOTHING_PER_TYPE)
+		if (!gAgentWearables.getWearableIndex(mPendingWearable, index))
 		{
 			index = gAgentWearables.getWearableCount(mType);
 			if (index)
@@ -1026,7 +1025,8 @@ void LLPanelEditWearable::refreshWearables(bool force_immediate)
 
 	if (mTab)
 	{
-		for(U32 i = 0; i < LLAgentWearables::MAX_CLOTHING_PER_TYPE; ++i)
+		LL_COMPILE_TIME_MESSAGE("layer_tabs needs re-implemented");
+		for(U32 i = 0; i < 6/*LLAgentWearables::MAX_CLOTHING_PER_TYPE*/; ++i)
 		{
 			mTab->enableTabButton(i, i < gAgentWearables.getWearableCount(mType));
 		}
@@ -1168,10 +1168,13 @@ void LLPanelEditWearable::setNewImageID(ETextureIndex te_index, LLUUID const& uu
 	}
 	if (getWearable())
 	{
-		U32 index = gAgentWearables.getWearableIndex(getWearable());
-		gAgentAvatarp->setLocalTexture(te_index, image, FALSE, index);
-		LLVisualParamHint::requestHintUpdates();
-		gAgentAvatarp->wearableUpdated(mType, FALSE);
+		U32 index;
+		if (gAgentWearables.getWearableIndex(getWearable(), index))
+		{
+			gAgentAvatarp->setLocalTexture(te_index, image, FALSE, index);
+			LLVisualParamHint::requestHintUpdates();
+			gAgentAvatarp->wearableUpdated(mType, FALSE);
+		}
 	}
 	if (mType == LLWearableType::WT_ALPHA && image->getID() != IMG_INVISIBLE)
 	{
@@ -1230,7 +1233,8 @@ void LLPanelEditWearable::saveChanges(bool force_save_as, std::string new_name)
 		return;
 	}
 	
-	U32 index = gAgentWearables.getWearableIndex(getWearable());
+	U32 index;
+	gAgentWearables.getWearableIndex(getWearable(), index);
 
 	// Find an existing link to this wearable's inventory item, if any, and its description field.
 	LLInventoryItem *link_item = NULL;
@@ -1242,7 +1246,7 @@ void LLPanelEditWearable::saveChanges(bool force_save_as, std::string new_name)
 			LLAppearanceMgr::instance().findCOFItemLinks(getWearable()->getItemID());
 		if (links.size()>0)
 		{
-			link_item = links.get(0).get();
+			link_item = links.at(0).get();
 			if (link_item && link_item->getIsLinkType())
 			{
 				description = link_item->getActualDescription();
@@ -1271,15 +1275,11 @@ void LLPanelEditWearable::saveChanges(bool force_save_as, std::string new_name)
 		if (link_item)
 		{
 			// Create new link
-			link_inventory_item( gAgent.getID(),
-								 link_item->getLinkedUUID(),
-								 LLAppearanceMgr::instance().getCOF(),
-								 link_item->getName(),
-								 description,
-								 LLAssetType::AT_LINK,
+			link_inventory_object( LLAppearanceMgr::instance().getCOF(),
+								 link_item,
 								 NULL);
-			// Remove old link
-			gInventory.purgeObject(link_item->getUUID());
+
+			remove_inventory_item(link_item, NULL);
 		}
 		gAgentWearables.saveWearable(mType, index, TRUE, new_name);
 	}
@@ -1543,9 +1543,12 @@ void LLPanelEditWearable::onInvisibilityCommit(LLUICtrl* ctrl, LLAvatarAppearanc
 		mPreviousAlphaTexture[te] = lto->getID();
 		
 		LLViewerFetchedTexture* image = LLViewerTextureManager::getFetchedTexture( IMG_INVISIBLE );
-		U32 index = gAgentWearables.getWearableIndex(getWearable());
-		gAgentAvatarp->setLocalTexture(te, image, FALSE, index);
-		gAgentAvatarp->wearableUpdated(getWearable()->getType(), FALSE);
+		U32 index;
+		if (gAgentWearables.getWearableIndex(getWearable(), index))
+		{
+			gAgentAvatarp->setLocalTexture(te, image, FALSE, index);
+			gAgentAvatarp->wearableUpdated(getWearable()->getType(), FALSE);
+		}
 	}
 	else
 	{
@@ -1563,9 +1566,12 @@ void LLPanelEditWearable::onInvisibilityCommit(LLUICtrl* ctrl, LLAvatarAppearanc
 		if (!image)
 			return;
 		
-		U32 index = gAgentWearables.getWearableIndex(getWearable());
-		gAgentAvatarp->setLocalTexture(te, image, FALSE, index);
-		gAgentAvatarp->wearableUpdated(getWearable()->getType(), FALSE);
+		U32 index;
+		if (gAgentWearables.getWearableIndex(getWearable(), index))
+		{
+			gAgentAvatarp->setLocalTexture(te, image, FALSE, index);
+			gAgentAvatarp->wearableUpdated(getWearable()->getType(), FALSE);
+		}
 	}
 }
 

@@ -136,7 +136,9 @@ LLViewerFolderDictionary::LLViewerFolderDictionary()
 	addEntry(LLFolderType::FT_OUTBOX, 				new ViewerFolderEntry("Merchant Outbox",		"inv_folder_outbox.tga",			"inv_folder_outbox.tga",		FALSE,		false));
 
 	addEntry(LLFolderType::FT_BASIC_ROOT, 			new ViewerFolderEntry("Basic Root",				"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
-		 
+
+	addEntry(LLFolderType::FT_SUITCASE,				new ViewerFolderEntry("My Suitcase",			"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
+
 	addEntry(LLFolderType::FT_NONE, 				new ViewerFolderEntry("New Folder",				"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	FALSE,		false,	"default"));
 
 #if SUPPORT_ENSEMBLES

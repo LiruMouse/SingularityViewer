@@ -236,7 +236,7 @@ void LLSaleInfo::packMessage(LLMessageSystem* msg) const
 	//msg->addU32Fast(_PREHASH_NextOwnerMask, mNextOwnerPermMask);
 }
 
-void LLSaleInfo::unpackMessage(LLSD sales)
+void LLSaleInfo::unpackMessage(const LLSD& sales)
 {
 	U8 sale_type = (U8)sales["sale-type"].asInteger();
 	mSaleType = static_cast<EForSale>(sale_type);

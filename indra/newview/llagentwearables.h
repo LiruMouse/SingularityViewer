@@ -80,6 +80,7 @@ public:
 	bool			areInitalWearablesLoaded() const { return mInitialWearablesLoaded; }
 // [/SL:KB]
 	bool			isCOFChangeInProgress() const { return mCOFChangeInProgress; }
+	F32				getCOFChangeTime() const { return mCOFChangeTimer.getElapsedTimeF32(); }
 	void			updateWearablesLoaded();
 	void			checkWearablesLoaded() const;
 	bool			canMoveWearable(const LLUUID& item_id, bool closer_to_body) const;
@@ -87,7 +88,7 @@ public:
 	// Note: False for shape, skin, eyes, and hair, unless you have MORE than 1.
 	bool			canWearableBeRemoved(const LLViewerWearable* wearable) const;
 
-	void			animateAllWearableParams(F32 delta, BOOL upload_bake);
+	void			animateAllWearableParams(F32 delta, bool upload_bake = false);
 
 	//--------------------------------------------------------------------
 	// Accessors
@@ -114,7 +115,7 @@ private:
 	/*virtual*/void	wearableUpdated(LLWearable *wearable, BOOL removed);
 public:
 //	void			setWearableItem(LLInventoryItem* new_item, LLViewerWearable* wearable, bool do_append = false);
-	void			setWearableOutfit(const LLInventoryItem::item_array_t& items, const LLDynamicArray< LLViewerWearable* >& wearables, BOOL remove);
+	void			setWearableOutfit(const LLInventoryItem::item_array_t& items, const std::vector< LLViewerWearable* >& wearables);
 	void			setWearableName(const LLUUID& item_id, const std::string& new_name);
 	void			nameOrDescriptionChanged(LLUUID const& item_id);
 	// *TODO: Move this into llappearance/LLWearableData ?
@@ -198,6 +199,11 @@ public:
 	void			saveAllWearables();
 	void			revertWearable(const LLWearableType::EType type, const U32 index);
 
+	// We no longer need this message in the current viewer, but send
+	// it for now to maintain compatibility with release viewers. Can
+	// remove this function once the SH-3455 changesets are universally deployed.
+	void			sendDummyAgentWearablesUpdate();
+
 	//--------------------------------------------------------------------
 	// Static UI hooks
 	//--------------------------------------------------------------------
@@ -207,11 +213,10 @@ public:
 	
 	typedef std::vector<LLViewerObject*> llvo_vec_t;
 
-//	static void 	userUpdateAttachments(LLInventoryModel::item_array_t& obj_item_array);
-// [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-22 (Catznip-3.0.0a) | Added: Catznip-2.2.0a
-	// Not the best way to go about this but other attempts changed far too much LL code to be a viable solution
-	static void 	userUpdateAttachments(LLInventoryModel::item_array_t& obj_item_array, bool fAttachOnly = false);
-// [/SL:KB]
+	static void     findAttachmentsAddRemoveInfo(LLInventoryModel::item_array_t& obj_item_array,
+												 llvo_vec_t& objects_to_remove,
+												 llvo_vec_t& objects_to_retain,
+												 LLInventoryModel::item_array_t& items_to_add);
 	static void		userRemoveMultipleAttachments(llvo_vec_t& llvo_array);
 	static void		userAttachMultipleAttachments(LLInventoryModel::item_array_t& obj_item_array);
 
@@ -229,9 +234,6 @@ public:
 	typedef boost::function<void()>			loaded_callback_t;
 	typedef boost::signals2::signal<void()>	loaded_signal_t;
 	boost::signals2::connection				addLoadedCallback(loaded_callback_t cb);
-// [SL:KB] - Patch: Appearance-InitialWearablesLoadedCallback | Checked: 2010-08-14 (Catznip-3.0.0a) | Added: Catznip-2.1.1d
-	boost::signals2::connection				addInitialWearablesLoadedCallback(loaded_callback_t cb);
-// [/SL:KB]
 
 	bool									changeInProgress() const;
 	void									notifyLoadingStarted();
@@ -240,9 +242,6 @@ public:
 private:
 	loading_started_signal_t				mLoadingStartedSignal; // should be called before wearables are changed
 	loaded_signal_t							mLoadedSignal; // emitted when all agent wearables get loaded
-// [SL:KB] - Patch: Appearance-InitialWearablesLoadedCallback | Checked: 2010-08-14 (Catznip-3.0.0a) | Added: Catznip-2.1.1d
-	loaded_signal_t							mInitialWearablesLoadedSignal; // emitted once when the initial wearables are loaded
-// [/SL:KB]
 
 	//--------------------------------------------------------------------
 	// Member variables
@@ -259,23 +258,13 @@ private:
 	 * True if agent's outfit is being changed now.
 	 */
 	BOOL			mCOFChangeInProgress;
+	LLTimer			mCOFChangeTimer;
 	
 	//--------------------------------------------------------------------------------
 	// Support classes
 	//--------------------------------------------------------------------------------
 private:
-	class createStandardWearablesAllDoneCallback : public LLRefCount
-	{
-	protected:
-		~createStandardWearablesAllDoneCallback();
-	};
-	class sendAgentWearablesUpdateCallback : public LLRefCount
-	{
-	protected:
-		~sendAgentWearablesUpdateCallback();
-	};
-
-	class addWearableToAgentInventoryCallback : public LLInventoryCallback
+	class AddWearableToAgentInventoryCallback : public LLInventoryCallback
 	{
 	public:
 		enum ETodo
@@ -288,7 +277,7 @@ private:
 			CALL_WEARITEM = 16
 		};
 
-		addWearableToAgentInventoryCallback(LLPointer<LLRefCount> cb,
+		AddWearableToAgentInventoryCallback(LLPointer<LLRefCount> cb,
 											LLWearableType::EType type,
 											U32 index,
 											LLViewerWearable* wearable,

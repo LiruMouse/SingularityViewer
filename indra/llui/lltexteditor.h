@@ -39,10 +39,8 @@
 #include "llkeywords.h"
 #include "lluictrl.h"
 #include "llframetimer.h"
-#include "lldarray.h"
 #include "llstyle.h"
 #include "lleditmenuhandler.h"
-#include "lldarray.h"
 
 #include "llpreeditor.h"
 #include "llmenugl.h"

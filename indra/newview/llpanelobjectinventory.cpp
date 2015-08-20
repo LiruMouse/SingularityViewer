@@ -126,7 +126,7 @@ public:
 	virtual BOOL isItemMovable() const;
 	virtual BOOL isItemRemovable() const;
 	virtual BOOL removeItem();
-	virtual void removeBatch(LLDynamicArray<LLFolderViewEventListener*>& batch);
+	virtual void removeBatch(std::vector<LLFolderViewEventListener*>& batch);
 	virtual void move(LLFolderViewEventListener* parent_listener);
 	virtual BOOL isItemCopyable() const;
 	virtual BOOL copyToClipboard() const;
@@ -539,7 +539,7 @@ BOOL LLTaskInvFVBridge::removeItem()
 	return FALSE;
 }
 
-void LLTaskInvFVBridge::removeBatch(LLDynamicArray<LLFolderViewEventListener*>& batch)
+void LLTaskInvFVBridge::removeBatch(std::vector<LLFolderViewEventListener*>& batch)
 {
 	if (!mPanel)
 	{
@@ -1713,7 +1713,7 @@ void LLPanelObjectInventory::inventoryChanged(LLViewerObject* object,
 		// temporary object because we cannot iterate through the
 		// object inventory twice... A pox on stateful iteration!
 		LLFloaterProperties* floater = NULL;
-		LLDynamicArray<LLFloaterProperties*> refresh;
+		std::vector<LLFloaterProperties*> refresh;
 
 		LLInventoryObject::object_list_t::const_iterator it = inventory->begin();
 		LLInventoryObject::object_list_t::const_iterator end = inventory->end();
@@ -1723,13 +1723,13 @@ void LLPanelObjectInventory::inventoryChanged(LLViewerObject* object,
 												object->getID());
 			if(floater)
 			{
-				refresh.put(floater);
+				refresh.push_back(floater);
 			}
 		}
-		S32 count = refresh.count();
+		S32 count = refresh.size();
 		for(S32 i = 0; i < count; ++i)
 		{
-			refresh.get(i)->refresh();
+			refresh.at(i)->refresh();
 		}
 	}
 }
@@ -1839,7 +1839,7 @@ void LLPanelObjectInventory::createViewsForCategory(LLInventoryObject::object_li
 											  LLFolderViewFolder* folder)
 {
 	// Find all in the first pass
-	LLDynamicArray<obj_folder_pair*> child_categories;
+	std::vector<obj_folder_pair*> child_categories;
 	LLTaskInvFVBridge* bridge;
 	LLFolderViewItem* view;
 
@@ -1864,7 +1864,7 @@ void LLPanelObjectInventory::createViewsForCategory(LLInventoryObject::object_li
 											  NULL,
 											  mFolders,
 											  bridge);
-				child_categories.put(new obj_folder_pair(obj,
+				child_categories.push_back(new obj_folder_pair(obj,
 														 (LLFolderViewFolder*)view));
 			}
 			else
@@ -1882,7 +1882,7 @@ void LLPanelObjectInventory::createViewsForCategory(LLInventoryObject::object_li
 	}
 
 	// now, for each category, do the second pass
-	for(S32 i = 0; i < child_categories.count(); i++)
+	for(U32 i = 0; i < child_categories.size(); i++)
 	{
 		createViewsForCategory(inventory, child_categories[i]->first,
 							   child_categories[i]->second );

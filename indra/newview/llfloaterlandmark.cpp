@@ -244,10 +244,10 @@ const LLUUID& LLFloaterLandmark::findItemID(const LLUUID& asset_id, BOOL copyabl
 							LLInventoryModel::INCLUDE_TRASH,
 							asset_id_matches);
 
-	if (items.count())
+	if (items.size())
 	{
 		// search for copyable version first
-		for (S32 i = 0; i < items.count(); i++)
+		for (U32 i = 0; i < items.size(); i++)
 		{
 			LLInventoryItem* itemp = items[i];
 			LLPermissions item_permissions = itemp->getPermissions();
@@ -352,15 +352,6 @@ void LLFloaterLandmark::onBtnDelete()
 			gInventory.notifyObservers();
 		}
 	}
-
-	// Delete the item entirely
-	/*
-	item->removeFromServer();
-	gInventory.deleteObject(item->getUUID());
-	gInventory.notifyObservers();
-	*/
-
-
 }
 
 void LLFloaterLandmark::onBtnRename()

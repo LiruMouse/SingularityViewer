@@ -917,13 +917,13 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& tool_tip, LLRect* stick
 
 		tool_tip.assign("");
 
-		if (region->mMapAvatarIDs.count())
+		if (region->mMapAvatarIDs.size())
 		{
 			if (mClosestAgentsToCursor.size())
 			{
 				bool single_agent(mClosestAgentsToCursor.size() == 1); // Singu note: For old look, only add the count if we have more than one
 				if (!single_agent)
-					tool_tip.append(llformat("Agents under cursor (%d/%d)\n", mClosestAgentsToCursor.size(), region->mMapAvatarIDs.count() + 1));
+					tool_tip.append(llformat("Agents under cursor (%d/%d)\n", mClosestAgentsToCursor.size(), region->mMapAvatarIDs.size() + 1));
 
 				LLVector3d myPosition = gAgent.getPositionGlobal();
 

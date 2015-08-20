@@ -54,7 +54,7 @@ public:
 			   BOOL is_running, 
 			   BOOL is_target_mono, 
 			   const LLUUID& queue_id,
-			   char* data,
+			   U8* data,
 			   U32 data_size,
 			   std::string script_name);
 
@@ -72,7 +72,7 @@ private:
 		BOOL mIsRunning;
 		BOOL mIsTargetMono;
 		LLUUID mQueueId;
-		char* mData;
+		U8* mData;
 		U32 mDataSize;
 		std::string mScriptName;
 	};

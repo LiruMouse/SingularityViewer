@@ -90,6 +90,7 @@ public:
 	LLInventoryPanel* getPanel() { return mActivePanel; }
 	LLInventoryPanel* getActivePanel() { return mActivePanel; }
 	const LLInventoryPanel* getActivePanel() const { return mActivePanel; }
+	LLFolderView* getRootFolder() const;
 
 	const std::string& getFilterText() const { return mFilterText; }
 
@@ -146,9 +147,9 @@ public:
 		// Workaround: "fix" onClose() to count only views that aren't marked as "dead"
 
 		LLInventoryView* pView; U8 flagsSound;
-		for (S32 idx = sActiveViews.count() - 1; idx >= 0; idx--)
+		for (S32 idx = sActiveViews.size() - 1; idx >= 0; idx--)
 		{
-			pView = sActiveViews.get(idx);
+			pView = sActiveViews.at(idx);
 			flagsSound = pView->getSoundFlags();
 			pView->setSoundFlags(LLView::SILENT);	// Suppress the window close sound
 			pView->close();							// onClose() protects against closing the last inventory floater
@@ -177,7 +178,7 @@ protected:
 
 	// This container is used to hold all active inventory views. This
 	// is here to support the inventory toggle show button.
-	static LLDynamicArray<LLInventoryView*> sActiveViews;
+	static std::vector<LLInventoryView*> sActiveViews;
 };
 
 

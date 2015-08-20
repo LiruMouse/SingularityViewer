@@ -1320,7 +1320,7 @@ const LLUUID& LLFloaterAO::getAssetIDByName(const std::string& name)
 	ObjectNameMatches objectnamematches(name);
 	gInventory.collectDescendentsIf(LLUUID::null,cats,items,FALSE,objectnamematches);
 
-	if (items.count())
+	if (items.size())
 	{
 		return items[0]->getAssetUUID();
 	}

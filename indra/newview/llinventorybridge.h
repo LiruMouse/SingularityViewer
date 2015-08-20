@@ -29,6 +29,7 @@
 
 #include "llcallingcard.h"
 #include "llfloaterproperties.h"
+#include "llfolderview.h"
 #include "llfoldervieweventlistener.h"
 #include "llinventorymodel.h"
 #include "llinventoryobserver.h"
@@ -77,7 +78,7 @@ public:
 	// LLInvFVBridge functionality
 	//--------------------------------------------------------------------
 	virtual const LLUUID& getUUID() const { return mUUID; }
-	virtual void clearDisplayName() {}
+	virtual void clearDisplayName() { mDisplayName.clear(); }
 	virtual const std::string& getPrefix() { return LLStringUtil::null; }
 	virtual void restoreItem() {}
 	virtual void restoreToWorld() {}
@@ -87,9 +88,11 @@ public:
 	//--------------------------------------------------------------------
 	virtual const std::string& getName() const;
 	virtual const std::string& getDisplayName() const;
+
 	virtual PermissionMask getPermissionMask() const;
 	virtual LLFolderType::EType getPreferredType() const;
 	virtual time_t getCreationDate() const;
+        virtual void setCreationDate(time_t creation_date_utc);
 	virtual LLFontGL::StyleFlags getLabelStyle() const { return LLFontGL::NORMAL; }
 	virtual std::string getLabelSuffix() const { return LLStringUtil::null; }
 	virtual void openItem() {}
@@ -102,8 +105,9 @@ public:
 	virtual BOOL isItemMovable() const;
 	virtual BOOL isItemInTrash() const;
 	virtual BOOL isLink() const;
+	virtual BOOL isLibraryItem() const;
 	//virtual BOOL removeItem() = 0;
-	virtual void removeBatch(LLDynamicArray<LLFolderViewEventListener*>& batch);
+	virtual void removeBatch(std::vector<LLFolderViewEventListener*>& batch);
 	virtual void move(LLFolderViewEventListener* new_parent_bridge) {}
 	virtual BOOL isItemCopyable() const { return FALSE; }
 	virtual BOOL copyToClipboard() const;
@@ -148,7 +152,6 @@ protected:
 	BOOL isAgentInventory() const; // false if lost or in the inventory library
 	BOOL isCOFFolder() const;       // true if COF or descendant of
 	BOOL isInboxFolder() const;     // true if COF or descendant of   marketplace inbox
-	BOOL isOutboxFolder() const;    // true if COF or descendant of   marketplace outbox
 	BOOL isOutboxFolderDirectParent() const;
 	const LLUUID getOutboxFolder() const;
 
@@ -161,14 +164,19 @@ protected:
 									 LLViewerInventoryCategory* item,
 									 const LLUUID& new_parent,
 									 BOOL restamp);
-	void removeBatchNoCheck(LLDynamicArray<LLFolderViewEventListener*>& batch);
+	void removeBatchNoCheck(std::vector<LLFolderViewEventListener*>& batch);
+public:
+	BOOL isOutboxFolder() const;    // true if COF or descendant of   marketplace outbox
 protected:
 	LLHandle<LLInventoryPanel> mInventoryPanel;
 	LLFolderView* mRoot;
 	const LLUUID mUUID;	// item id
 	LLInventoryType::EType mInvType;
 	bool mIsLink;
+	mutable std::string			mDisplayName;
+
 	void purgeItem(LLInventoryModel *model, const LLUUID &uuid);
+	virtual void buildDisplayName() const {}
 };
 
 class AIFilePicker;
@@ -206,7 +214,6 @@ public:
 	virtual void restoreToWorld();
 	virtual void gotoItem();
 	virtual LLUIImagePtr getIcon() const;
-	virtual const std::string& getDisplayName() const;
 	virtual std::string getLabelSuffix() const;
 	virtual LLFontGL::StyleFlags getLabelStyle() const;
 	virtual PermissionMask getPermissionMask() const;
@@ -217,19 +224,15 @@ public:
 	virtual BOOL isItemCopyable() const;
 	virtual bool hasChildren() const { return FALSE; }
 	virtual BOOL isUpToDate() const { return TRUE; }
-
+	virtual LLUIImagePtr getIconOverlay() const;
 	static void showFloaterImagePreview(LLInventoryItem* item, AIFilePicker* filepicker);
-
-	/*virtual*/ void clearDisplayName() { mDisplayName.clear(); }
 
 	LLViewerInventoryItem* getItem() const;
 
 protected:
 	BOOL confirmRemoveItem(const LLSD& notification, const LLSD& response);
 	virtual BOOL isItemPermissive() const;
-	static void buildDisplayName(LLInventoryItem* item, std::string& name);
-
-	mutable std::string mDisplayName;
+	virtual void buildDisplayName() const;	
 };
 
 class LLFolderBridge : public LLInvFVBridge
@@ -246,6 +249,8 @@ public:
 	BOOL dragItemIntoFolder(LLInventoryItem* inv_item, BOOL drop);
 	BOOL dragCategoryIntoFolder(LLInventoryCategory* inv_category, BOOL drop);
 
+    virtual void buildDisplayName() const;
+
 	virtual void performAction(LLInventoryModel* model, std::string action);
 	virtual void openItem();
 	virtual void closeItem();
@@ -256,6 +261,8 @@ public:
 	virtual LLFolderType::EType getPreferredType() const;
 	virtual LLUIImagePtr getIcon() const;
 	virtual LLUIImagePtr getIconOpen() const;
+	virtual LLUIImagePtr getIconOverlay() const;
+
 	static LLUIImagePtr getIcon(LLFolderType::EType preferred_type);
 
 	virtual BOOL renameItem(const std::string& new_name);
@@ -285,8 +292,8 @@ public:
 	LLHandle<LLFolderBridge> getHandle() { mHandle.bind(this); return mHandle; }
 
 protected:
-	void buildContextMenuBaseOptions(U32 flags);
-	void buildContextMenuFolderOptions(U32 flags);
+	void buildContextMenuOptions(U32 flags, menuentry_vec_t& items,   menuentry_vec_t& disabled_items);
+	void buildContextMenuFolderOptions(U32 flags, menuentry_vec_t& items,   menuentry_vec_t& disabled_items);
 
 	//--------------------------------------------------------------------
 	// Menu callbacks
@@ -315,8 +322,6 @@ protected:
 	void modifyOutfit(BOOL append);
 	void determineFolderType();
 
-	menuentry_vec_t getMenuItems() { return mItems; } // returns a copy of current menu items
-
 	void dropToFavorites(LLInventoryItem* inv_item);
 	void dropToOutfit(LLInventoryItem* inv_item, BOOL move_is_into_current_outfit);
 
@@ -331,8 +336,6 @@ private:
 
 	bool				mCallingCards;
 	bool				mWearables;
-	menuentry_vec_t		mItems;
-	menuentry_vec_t		mDisabledItems;
 	LLRootHandle<LLFolderBridge> mHandle;
 };
 
@@ -365,6 +368,7 @@ public:
 	virtual void openItem();
 	virtual void previewItem();
 	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
+	virtual void performAction(LLInventoryModel* model, std::string action);
 	static void openSoundPreview(void*);
 };
 
@@ -659,5 +663,12 @@ BOOL move_inv_category_world_to_agent(const LLUUID& object_id,
 void hide_context_entries(LLMenuGL& menu, 
 						  const menuentry_vec_t &entries_to_show, 
 						  const menuentry_vec_t &disabled_entries);
+
+class LLFolderViewGroupedItemBridge: public LLFolderViewGroupedItemModel
+{
+public:
+    LLFolderViewGroupedItemBridge();
+    virtual void groupFilterContextMenu(folder_view_item_deque& selected_items, LLMenuGL& menu);
+};
 
 #endif // LL_LLINVENTORYBRIDGE_H

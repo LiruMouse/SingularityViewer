@@ -94,11 +94,6 @@ std::string getProfileURL(const std::string& agent_name);
 /*static*/ const char* LLViewerMedia::SHOW_MEDIA_OUTSIDE_PARCEL_SETTING = "MediaShowOutsideParcel";
 
 
-class AIHTTPTimeoutPolicy;
-extern AIHTTPTimeoutPolicy mimeDiscoveryResponder_timeout;
-extern AIHTTPTimeoutPolicy viewerMediaOpenIDResponder_timeout;
-extern AIHTTPTimeoutPolicy viewerMediaWebProfileResponder_timeout;
-
 // Move this to its own file.
 
 LLViewerMediaEventEmitter::~LLViewerMediaEventEmitter()
@@ -177,9 +172,8 @@ class LLMimeDiscoveryResponder : public LLHTTPClient::ResponderHeadersOnly
 {
 LOG_CLASS(LLMimeDiscoveryResponder);
 public:
-	LLMimeDiscoveryResponder(viewer_media_t media_impl, std::string const& default_mime_type)
+	LLMimeDiscoveryResponder( viewer_media_t media_impl)
 		: mMediaImpl(media_impl),
-		  mDefaultMimeType(default_mime_type),
 		  mInitialized(false)
 	{
 		if(mMediaImpl->mMimeTypeProbe != NULL)
@@ -195,29 +189,56 @@ public:
 		disconnectOwner();
 	}
 
-	/*virtual*/ void completedHeaders(void)
+private:
+	/* virtual */ void httpCompleted()
 	{
-		if ((200 <= mStatus && mStatus < 300) || mStatus == 405)		// Using HEAD may result in a 405 METHOD NOT ALLOWED, but still have the right Content-Type header.
+		if (!isGoodStatus(mStatus))
 		{
-			std::string media_type;
-			if (mReceivedHeaders.getFirstValue("content-type", media_type))
+			LL_WARNS() << dumpResponse()
+					<< " [headers:" << getResponseHeaders() << "]" << LL_ENDL;
+		}
+		std::string media_type;
+		std::string::size_type idx1 = media_type.find_first_of(";");
+		std::string mime_type = media_type.substr(0, idx1);
+
+		LL_DEBUGS() << "status is " << getStatus() << ", media type \"" << media_type << "\"" << LL_ENDL;
+
+		// 2xx status codes indicate success.
+		// Most 4xx status codes are successful enough for our purposes.
+		// 499 is the error code for host not found, timeout, etc.
+		// 500 means "Internal Server error" but we decided it's okay to
+		//     accept this and go past it in the MIME type probe
+		// 302 means the resource can be found temporarily in a different place - added this for join.secondlife.com
+		// 499 is a code specifc to join.secondlife.com apparently safe to ignore
+//		if(	((status >= 200) && (status < 300))	||
+//			((status >= 400) && (status < 499))	||
+//			(status == 500) ||
+//			(status == 302) ||
+//			(status == 499)
+//			)
+		// We now no longer check the error code returned from the probe.
+		// If we have a mime type, use it.  If not, default to the web plugin and let it handle error reporting.
+		//if(1)
+		{
+			// The probe was successful.
+			if(mime_type.empty())
 			{
-				std::string::size_type idx1 = media_type.find_first_of(";");
-				std::string mime_type = media_type.substr(0, idx1);
-				completeAny(mStatus, mime_type);
-				return;
-			}
-			if (200 <= mStatus && mStatus < 300)
-			{
-				LL_WARNS() << "LLMimeDiscoveryResponder::completedHeaders: OK HTTP status (" << mStatus << ") but no Content-Type! Received headers: " << mReceivedHeaders << LL_ENDL;
+				// Some sites don't return any content-type header at all.
+				// Treat an empty mime type as text/html.
+				mime_type = "text/html";
 			}
 		}
-		LL_WARNS() << "LLMimeDiscoveryResponder::completedHeaders: Got status " << mStatus << ". Using default mime-type: " << mDefaultMimeType << LL_ENDL;
-		completeAny(mStatus, mDefaultMimeType);
-	}
+		//else
+		//{
+		//	LL_WARNS() << "responder failed with status " << dumpResponse() << LL_ENDL;
+		//
+		//	if(mMediaImpl)
+		//	{
+		//		mMediaImpl->mMediaSourceFailed = true;
+		//	}
+		//	return;
+		//}
 
-	void completeAny(U32 status, const std::string& mime_type)
-	{
 		// the call to initializeMedia may disconnect the responder, which will clear mMediaImpl.
 		// Make a local copy so we can call loadURI() afterwards.
 		LLViewerMediaImpl *impl = mMediaImpl;
@@ -233,8 +254,7 @@ public:
 		}
 	}
 
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return mimeDiscoveryResponder_timeout; }
-
+public:
 	/*virtual*/ char const* getName(void) const { return "LLMimeDiscoveryResponder"; }
 	void cancelRequest()
 	{
@@ -258,8 +278,7 @@ private:
 
 
 	public:
-		viewer_media_t mMediaImpl;
-		std::string mDefaultMimeType;
+		LLViewerMediaImpl *mMediaImpl;
 		bool mInitialized;
 };
 
@@ -275,75 +294,70 @@ public:
 	{
 	}
 
-	/*virtual*/ bool needsHeaders(void) const { return true; }
-
-	/*virtual*/ void completedHeaders(void)
+	/* virtual */ void completedRaw(
+		const LLChannelDescriptors& channels,
+		const LLIOPipe::buffer_ptr_t& buffer)
 	{
-		LL_DEBUGS("MediaAuth") << "status = " << mStatus << ", reason = " << mReason << LL_ENDL;
-		LL_DEBUGS("MediaAuth") << mReceivedHeaders << LL_ENDL;
-		LLViewerMedia::openIDCookieResponse(get_cookie("agni_sl_session_id"));
+		// We don't care about the content of the response, only the Set-Cookie header.
+		LL_DEBUGS("MediaAuth") << dumpResponse()
+				<< " [headers:" << getResponseHeaders() << "]" << LL_ENDL;
+		std::string cookie;
+		getResponseHeaders().getFirstValue("set-cookie", cookie);
+
+		// *TODO: What about bad status codes?  Does this destroy previous cookies?
+		LLViewerMedia::openIDCookieResponse(cookie);
 	}
 
-	/*virtual*/ void completedRaw(LLChannelDescriptors const& channels, LLIOPipe::buffer_ptr_t const& buffer)
-	{
-		// This is just here to disable the default behavior (attempting to parse the response as llsd).
-		// We don't care about the content of the response, only the set-cookie header.
-	}
-
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerMediaOpenIDResponder_timeout; }
 	/*virtual*/ char const* getName(void) const { return "LLViewerMediaOpenIDResponder"; }
+	/*virtual*/ bool needsHeaders(void) const { return true; }
 };
 
 class LLViewerMediaWebProfileResponder : public LLHTTPClient::ResponderWithCompleted
 {
 LOG_CLASS(LLViewerMediaWebProfileResponder);
 public:
-	LLViewerMediaWebProfileResponder(std::string host) : mHost(host) { }
-	~LLViewerMediaWebProfileResponder() { }
-
-	/*virtual*/ bool needsHeaders(void) const { return true; }
-
-	/*virtual*/ void completedHeaders(void)
+	LLViewerMediaWebProfileResponder(std::string host)
 	{
-		LL_INFOS("MediaAuth") << "status = " << mStatus << ", reason = " << mReason << LL_ENDL;
-		LL_INFOS("MediaAuth") << mReceivedHeaders << LL_ENDL;
+		mHost = host;
+	}
 
-		bool found = false;
+	~LLViewerMediaWebProfileResponder()
+	{
+	}
+
+	void completedRaw(
+		const LLChannelDescriptors& channels,
+		const LLIOPipe::buffer_ptr_t& buffer)
+	{
+		// We don't care about the content of the response, only the set-cookie header.
+		LL_WARNS("MediaAuth") << dumpResponse()
+				<< " [headers:" << getResponseHeaders() << "]" << LL_ENDL;
+
+		AIHTTPReceivedHeaders stripped_content = getResponseHeaders();
+		LL_WARNS("MediaAuth") << stripped_content << LL_ENDL;
+
 		AIHTTPReceivedHeaders::range_type cookies;
 		if (mReceivedHeaders.getValues("set-cookie", cookies))
 		{
 			for (AIHTTPReceivedHeaders::iterator_type cookie = cookies.first; cookie != cookies.second; ++cookie)
 			{
-			  LLViewerMedia::getCookieStore()->setCookiesFromHost(cookie->second, mHost);
+				// *TODO: What about bad status codes?  Does this destroy previous cookies?
+				LLViewerMedia::getCookieStore()->setCookiesFromHost(cookie->second, mHost);
 
-			  std::string key = cookie->second.substr(0, cookie->second.find('='));
-			  if (key == "_my_secondlife_session")
-			  {
-				// Set cookie for snapshot publishing.
-				std::string auth_cookie = cookie->second.substr(0, cookie->second.find(";")); // strip path
-				LL_INFOS("MediaAuth") << "Setting openID auth cookie \"" << auth_cookie << "\"." << LL_ENDL;
-				LLWebProfile::setAuthCookie(auth_cookie);
-				found = true;
-				break;
-			  }
+				if (cookie->second.substr(0, cookie->second.find('=')) == "_my_secondlife_session")
+				{
+					// Set cookie for snapshot publishing.
+					std::string auth_cookie = cookie->second.substr(0, cookie->second.find(";")); // strip path
+					LLWebProfile::setAuthCookie(auth_cookie);
+					break;
+				}
 			}
 		}
-		if (!found)
-		{
-			LL_WARNS() << "LLViewerMediaWebProfileResponder did not receive a session ID cookie \"_my_secondlife_session\"! OpenID authentications will fail!" << LL_ENDL;
-		}
 	}
 
-	/*virtual*/ void completedRaw(LLChannelDescriptors const& channels, LLIOPipe::buffer_ptr_t const& buffer)
-	{
-		// This is just here to disable the default behavior (attempting to parse the response as llsd).
-		// We don't care about the content of the response, only the set-cookie header.
-	}
+	/*virtual*/ char const* getName() const { return "LLViewerMediaWebProfileResponder"; }
+	/*virtual*/ bool needsHeaders() const { return true; }
 
-	/*virtual*/ AIHTTPTimeoutPolicy const& getHTTPTimeoutPolicy(void) const { return viewerMediaWebProfileResponder_timeout; }
-	/*virtual*/ char const* getName(void) const { return "LLViewerMediaWebProfileResponder"; }
-
-private:
 	std::string mHost;
 };
 
@@ -799,7 +813,8 @@ void LLViewerMedia::updateMedia(void *dummy_arg)
 	LLFastTimer t1(FTM_MEDIA_UPDATE);
 	
 	// Enable/disable the plugin read thread
-	LLPluginProcessParent::setUseReadThread(gSavedSettings.getBOOL("PluginUseReadThread"));
+	static LLCachedControl<bool> pluginUseReadThread(gSavedSettings, "PluginUseReadThread");
+	LLPluginProcessParent::setUseReadThread(pluginUseReadThread);
 	
 	// HACK: we always try to keep a spare running webkit plugin around to improve launch times.
 	createSpareBrowserMediaSource();
@@ -849,12 +864,12 @@ void LLViewerMedia::updateMedia(void *dummy_arg)
 	
 	std::vector<LLViewerMediaImpl*> proximity_order;
 	
-	bool inworld_media_enabled = gSavedSettings.getBOOL("AudioStreamingMedia");
-	bool inworld_audio_enabled = gSavedSettings.getBOOL("AudioStreamingMusic");
-	U32 max_instances = gSavedSettings.getU32("PluginInstancesTotal");
-	U32 max_normal = gSavedSettings.getU32("PluginInstancesNormal");
-	U32 max_low = gSavedSettings.getU32("PluginInstancesLow");
-	F32 max_cpu = gSavedSettings.getF32("PluginInstancesCPULimit");
+	static LLCachedControl<bool> inworld_media_enabled(gSavedSettings, "AudioStreamingMedia");
+	static LLCachedControl<bool> inworld_audio_enabled(gSavedSettings, "AudioStreamingMusic");
+	static LLCachedControl<U32> max_instances(gSavedSettings, "PluginInstancesTotal");
+	static LLCachedControl<U32> max_normal(gSavedSettings, "PluginInstancesNormal");
+	static LLCachedControl<U32> max_low(gSavedSettings, "PluginInstancesLow");
+	static LLCachedControl<F32> max_cpu(gSavedSettings, "PluginInstancesCPULimit");
 	// Setting max_cpu to 0.0 disables CPU usage checking.
 	bool check_cpu_usage = (max_cpu != 0.0f);
 	
@@ -1026,7 +1041,8 @@ void LLViewerMedia::updateMedia(void *dummy_arg)
 		}
 	}
 	
-	if(gSavedSettings.getBOOL("MediaPerformanceManagerDebug"))
+	static LLCachedControl<bool> mediaPerformanceManager(gSavedSettings, "MediaPerformanceManagerDebug");
+	if(mediaPerformanceManager)
 	{
 		// Give impls the same ordering as the priority list
 		// they're already in the right order for this.
@@ -1124,7 +1140,7 @@ bool LLViewerMedia::isParcelAudioPlaying()
 	return (LLViewerMedia::hasParcelAudio() && gAudiop && LLAudioEngine::AUDIO_PLAYING == gAudiop->isInternetStreamPlaying());
 }
 
-bool LLViewerMedia::onAuthSubmit(const LLSD& notification, const LLSD& response)
+void LLViewerMedia::onAuthSubmit(const LLSD& notification, const LLSD& response)
 {
 	LLViewerMediaImpl *impl = LLViewerMedia::getMediaImplFromTextureID(notification["payload"]["media_id"]);
 	if(impl)
@@ -1142,7 +1158,6 @@ bool LLViewerMedia::onAuthSubmit(const LLSD& notification, const LLSD& response)
 			}
 		}
 	}
-	return false;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -1401,6 +1416,8 @@ AIHTTPHeaders LLViewerMedia::getHeaders()
 {
 	AIHTTPHeaders headers;
 	headers.addHeader("Accept", "*/*");
+	// *TODO: Should this be 'application/llsd+xml' ?
+	// *TODO: Should this even be set at all?   This header is only not overridden in 'GET' methods.
 	headers.addHeader("Content-Type", "application/xml");
 	headers.addHeader("Cookie", sOpenIDCookie);
 	headers.addHeader("User-Agent", getCurrentUserAgent());
@@ -1439,24 +1456,21 @@ void LLViewerMedia::setOpenIDCookie()
 		
 		getCookieStore()->setCookiesFromHost(sOpenIDCookie, authority.substr(host_start, host_end - host_start));
 
-		// Does grid supports web profiles at all?
-		if (!gSavedSettings.getString("WebProfileURL").empty())
-		{
-			// Do a web profile get so we can store the cookie 
-			AIHTTPHeaders headers;
-			headers.addHeader("Accept", "*/*");
-			headers.addHeader("Cookie", sOpenIDCookie);
-			headers.addHeader("User-Agent", getCurrentUserAgent());
+		if (gSavedSettings.getString("WebProfileURL").empty()) return;
+		// Do a web profile get so we can store the cookie
+		AIHTTPHeaders headers;
+		headers.addHeader("Accept", "*/*");
+		headers.addHeader("Cookie", sOpenIDCookie);
+		headers.addHeader("User-Agent", getCurrentUserAgent());
 
-			std::string profile_url = getProfileURL("");
-			LLURL raw_profile_url( profile_url.c_str() );
+		std::string profile_url = getProfileURL("");
+		LLURL raw_profile_url( profile_url.c_str() );
 
-			LL_DEBUGS("MediaAuth") << "Requesting " << profile_url << LL_ENDL;
-			LL_DEBUGS("MediaAuth") << "sOpenIDCookie = [" << sOpenIDCookie << "]" << LL_ENDL;
-			LLHTTPClient::get(profile_url,  
-				new LLViewerMediaWebProfileResponder(raw_profile_url.getAuthority()),
-				headers);
-		}
+		LL_DEBUGS("MediaAuth") << "Requesting " << profile_url << LL_ENDL;
+		LL_DEBUGS("MediaAuth") << "sOpenIDCookie = [" << sOpenIDCookie << "]" << LL_ENDL;
+		LLHTTPClient::get(profile_url,
+			new LLViewerMediaWebProfileResponder(raw_profile_url.getAuthority()),
+			headers);
 	}
 }
 
@@ -1483,7 +1497,7 @@ void LLViewerMedia::openIDSetup(const std::string &openid_url, const std::string
 
 	// postRaw() takes ownership of the buffer and releases it later, so we need to allocate a new buffer here.
 	size_t size = openid_token.size();
-	char* data = new char[size];
+	U8* data = new U8[size];
 	memcpy(data, openid_token.data(), size);
 
 	LLHTTPClient::postRaw(
@@ -1545,21 +1559,19 @@ void LLViewerMedia::proxyWindowClosed(const std::string &uuid)
 void LLViewerMedia::createSpareBrowserMediaSource()
 {
 	static bool failedLoading = false;
+	if (failedLoading) return;
 
 	// If we don't have a spare browser media source, create one.
 	// However, if PluginAttachDebuggerToPlugins is set then don't spawn a spare
 	// SLPlugin process in order to not be confused by an unrelated gdb terminal
 	// popping up at the moment we start a media plugin.
-	if (!failedLoading && !sSpareBrowserMediaSource && !gSavedSettings.getBOOL("PluginAttachDebuggerToPlugins"))
+	if (!sSpareBrowserMediaSource && !gSavedSettings.getBOOL("PluginAttachDebuggerToPlugins"))
 	{
 		// The null owner will keep the browser plugin from fully initializing 
 		// (specifically, it keeps LLPluginClassMedia from negotiating a size change, 
 		// which keeps MediaPluginWebkit::initBrowserWindow from doing anything until we have some necessary data, like the background color)
 		sSpareBrowserMediaSource = LLViewerMediaImpl::newSourceFromMediaType("text/html", NULL, 0, 0);
-		if (!sSpareBrowserMediaSource)
-		{
-			failedLoading = true;
-		}
+		if (!sSpareBrowserMediaSource) failedLoading = true;
 	}
 }
 
@@ -1746,17 +1758,11 @@ bool LLViewerMediaImpl::initializeMedia(const std::string& mime_type)
 {
 	bool mimeTypeChanged = (mMimeType != mime_type);
 	bool pluginChanged = (LLMIMETypes::implType(mCurrentMimeType) != LLMIMETypes::implType(mime_type));
+
 	if(!mPluginBase || pluginChanged)
 	{
-		if(! initializePlugin(mime_type))
-		{
-			/*LL_WARNS("Plugin") << "plugin intialization failed for mime type: " << mime_type << LL_ENDL;
-			LLSD args;
-			args["MIME_TYPE"] = mime_type;
-			LLNotificationsUtil::add("NoPlugin", args);
-
-			return false;*/
-		}
+		// We don't have a plugin at all, or the new mime type is handled by a different plugin than the old mime type.
+		(void)initializePlugin(mime_type);
 	}
 	else if(mimeTypeChanged)
 	{
@@ -1764,7 +1770,6 @@ bool LLViewerMediaImpl::initializeMedia(const std::string& mime_type)
 		mMimeType = mime_type;
 	}	
 
-	// play();
 	return (mPluginBase != NULL);
 }
 
@@ -1810,7 +1815,6 @@ void LLViewerMediaImpl::destroyMediaSource()
 		mPluginBase->setDeleteOK(true) ;
 		destroyPlugin();
 	}
-	
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -1828,7 +1832,8 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 	
 	// HACK: we always try to keep a spare running webkit plugin around to improve launch times.
 	// If a spare was already created before PluginAttachDebuggerToPlugins was set, don't use it.
-	if(plugin_basename == "media_plugin_webkit" && !gSavedSettings.getBOOL("PluginAttachDebuggerToPlugins"))
+	if((plugin_basename == "media_plugin_webkit") &&
+		!gSavedSettings.getBOOL("PluginAttachDebuggerToPlugins"))
 	{
 		media_source = LLViewerMedia::getSpareBrowserMediaSource();
 		if(media_source)
@@ -1840,7 +1845,6 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 			return media_source;
 		}
 	}
-	
 	if(plugin_basename.empty())
 	{
 		LL_WARNS_ONCE("Media") << "Couldn't find plugin for media type " << media_type << LL_ENDL;
@@ -1870,12 +1874,10 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 		if(LLFile::stat(launcher_name, &s))
 		{
 			LL_WARNS_ONCE("Media") << "Couldn't find launcher at " << launcher_name << LL_ENDL;
-			llassert(false);	// Fail in debugging mode.
 		}
 		else if(LLFile::stat(plugin_name, &s))
 		{
 			LL_WARNS_ONCE("Media") << "Couldn't find plugin at " << plugin_name << LL_ENDL;
-			llassert(false);	// Fail in debugging mode.
 		}
 		else
 		{
@@ -1926,12 +1928,12 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 //////////////////////////////////////////////////////////////////////////////////////////
 bool LLViewerMediaImpl::initializePlugin(const std::string& media_type)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
 		// Save the previous media source's last set size before destroying it.
-		mMediaWidth = plugin->getSetWidth();
-		mMediaHeight = plugin->getSetHeight();
+		mMediaWidth = mMediaSource->getSetWidth();
+		mMediaHeight = mMediaSource->getSetHeight();
 	}
 	
 	// Always delete the old media impl first.
@@ -2012,8 +2014,8 @@ bool LLViewerMediaImpl::initializePlugin(const std::string& media_type)
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::loadURI()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if(plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
 		// trim whitespace from front and back of URL - fixes EXT-5363
 		LLStringUtil::trim( mMediaURL );
@@ -2033,10 +2035,14 @@ void LLViewerMediaImpl::loadURI()
 										"<>#%"
 										";/?:@&=",
 										false);
-		LL_INFOS() << "Asking media source to load URI: " << uri << LL_ENDL;
-		
-		
-		plugin->loadURI( uri );
+		{
+			// Do not log the query parts
+			LLURI u(uri);
+			std::string sanitized_uri = (u.query().empty() ? uri : u.scheme() + "://" + u.authority() + u.path());
+			LL_INFOS() << "Asking media source to load URI: " << sanitized_uri << LL_ENDL;
+		}
+
+		mMediaSource->loadURI( uri );
 		
 		// A non-zero mPreviousMediaTime means that either this media was previously unloaded by the priority code while playing/paused, 
 		// or a seek happened before the media loaded.  In either case, seek to the saved time.
@@ -2062,14 +2068,16 @@ void LLViewerMediaImpl::loadURI()
 		}
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::setSize(int width, int height)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	mMediaWidth = width;
 	mMediaHeight = height;
-	if (plugin)
+	if (mMediaSource)
 	{
-		plugin->setSize(width, height);
+		mMediaSource->setSize(width, height);
 	}
 }
 
@@ -2088,10 +2096,10 @@ void LLViewerMediaImpl::hideNotification()
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::play()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 
 	// If the media source isn't there, try to initialize it and load an URL.
-	if (!plugin)
+	if(mMediaSource == NULL)
 	{
 	 	if(!initializeMedia(mMimeType))
 		{
@@ -2110,10 +2118,10 @@ void LLViewerMediaImpl::play()
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::stop()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
-		plugin->stop();
+		mMediaSource->stop();
 		// destroyMediaSource();
 	}
 }
@@ -2121,10 +2129,10 @@ void LLViewerMediaImpl::stop()
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::pause()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
-		plugin->pause();
+		mMediaSource->pause();
 	}
 	else
 	{
@@ -2135,10 +2143,10 @@ void LLViewerMediaImpl::pause()
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::start()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
-		plugin->start();
+		mMediaSource->start();
 	}
 	else
 	{
@@ -2149,10 +2157,10 @@ void LLViewerMediaImpl::start()
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::seek(F32 time)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
-		plugin->seek(time);
+		mMediaSource->seek(time);
 	}
 	else
 	{
@@ -2164,17 +2172,17 @@ void LLViewerMediaImpl::seek(F32 time)
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::skipBack(F32 step_scale)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if(plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
-		if(plugin->pluginSupportsMediaTime())
+		if(mMediaSource->pluginSupportsMediaTime())
 		{
-			F64 back_step = plugin->getCurrentTime() - (plugin->getDuration()*step_scale);
+			F64 back_step = mMediaSource->getCurrentTime() - (mMediaSource->getDuration()*step_scale);
 			if(back_step < 0.0)
 			{
 				back_step = 0.0;
 			}
-			plugin->seek(back_step);
+			mMediaSource->seek(back_step);
 		}
 	}
 }
@@ -2182,17 +2190,17 @@ void LLViewerMediaImpl::skipBack(F32 step_scale)
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::skipForward(F32 step_scale)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if(plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
-		if(plugin->pluginSupportsMediaTime())
+		if(mMediaSource->pluginSupportsMediaTime())
 		{
-			F64 forward_step = plugin->getCurrentTime() + (plugin->getDuration()*step_scale);
-			if(forward_step > plugin->getDuration())
+			F64 forward_step = mMediaSource->getCurrentTime() + (mMediaSource->getDuration()*step_scale);
+			if(forward_step > mMediaSource->getDuration())
 			{
-				forward_step = plugin->getDuration();
+				forward_step = mMediaSource->getDuration();
 			}
-			plugin->seek(forward_step);
+			mMediaSource->seek(forward_step);
 		}
 	}
 }
@@ -2207,24 +2215,27 @@ void LLViewerMediaImpl::setVolume(F32 volume)
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::updateVolume()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if(plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
 		// always scale the volume by the global media volume 
 		F32 volume = mRequestedVolume * LLViewerMedia::getVolume();
 
 		if (mProximityCamera > 0) 
 		{
-			if (mProximityCamera > gSavedSettings.getF32("MediaRollOffMax"))
+			static LLCachedControl<F32> sMediaRollOffMax(gSavedSettings, "MediaRollOffMax", 30.f);
+			static LLCachedControl<F32> sMediaRollOffMin(gSavedSettings, "MediaRollOffMin", 5.f);
+			static LLCachedControl<F32> sMediaRollOffRate(gSavedSettings, "MediaRollOffRate", 0.125f);
+			if (mProximityCamera > sMediaRollOffMax)
 			{
 				volume = 0;
 			}
-			else if (mProximityCamera > gSavedSettings.getF32("MediaRollOffMin"))
+			else if (mProximityCamera > sMediaRollOffMin)
 			{
 				// attenuated_volume = 1 / (roll_off_rate * (d - min))^2
 				// the +1 is there so that for distance 0 the volume stays the same
-				F64 adjusted_distance = mProximityCamera - gSavedSettings.getF32("MediaRollOffMin");
-				F64 attenuation = 1.0 + (gSavedSettings.getF32("MediaRollOffRate") * adjusted_distance);
+				F64 adjusted_distance = mProximityCamera - sMediaRollOffMin;
+				F64 attenuation = 1.0 + (sMediaRollOffRate * adjusted_distance);
 				attenuation = 1.0 / (attenuation * attenuation);
 				// the attenuation multiplier should never be more than one since that would increase volume
 				volume = volume * llmin(1.0, attenuation);
@@ -2233,11 +2244,11 @@ void LLViewerMediaImpl::updateVolume()
 
 		if (sOnlyAudibleTextureID == LLUUID::null || sOnlyAudibleTextureID == mTextureId)
 		{
-			plugin->setVolume(volume);
+			mMediaSource->setVolume(volume);
 		}
 		else
 		{
-			plugin->setVolume(0.0f);
+			mMediaSource->setVolume(0.0f);
 		}
 	}
 }
@@ -2247,21 +2258,23 @@ F32 LLViewerMediaImpl::getVolume()
 {
 	return mRequestedVolume;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::focus(bool focus)
 {
 	mHasFocus = focus;
 
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if (mMediaSource)
 	{
 		// call focus just for the hell of it, even though this apopears to be a nop
-		plugin->focus(focus);
+		mMediaSource->focus(focus);
 		if (focus)
 		{
 			// spoof a mouse click to *actually* pass focus
 			// Don't do this anymore -- it actually clicks through now.
-//			plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_DOWN, 1, 1, 0);
-//			plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_UP, 1, 1, 0);
+//			mMediaSource->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_DOWN, 1, 1, 0);
+//			mMediaSource->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_UP, 1, 1, 0);
 		}
 	}
 }
@@ -2286,10 +2299,10 @@ std::string LLViewerMediaImpl::getCurrentMediaURL()
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::clearCache()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if(plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
-		plugin->clear_cache();
+		mMediaSource->clear_cache();
 	}
 	else
 	{
@@ -2301,59 +2314,61 @@ void LLViewerMediaImpl::clearCache()
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::setPageZoomFactor( double factor )
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if(plugin && factor != mZoomFactor)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource && factor != mZoomFactor)
 	{
 		mZoomFactor = factor;
-		plugin->set_page_zoom_factor( factor );
+		mMediaSource->set_page_zoom_factor( factor );
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::mouseDown(S32 x, S32 y, MASK mask, S32 button)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	scaleMouse(&x, &y);
 	mLastMouseX = x;
 	mLastMouseY = y;
-	if (plugin)
+//	LL_INFOS() << "mouse down (" << x << ", " << y << ")" << LL_ENDL;
+	if (mMediaSource)
 	{
-		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_DOWN, button, x, y, mask);
+		mMediaSource->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_DOWN, button, x, y, mask);
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::mouseUp(S32 x, S32 y, MASK mask, S32 button)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	scaleMouse(&x, &y);
 	mLastMouseX = x;
 	mLastMouseY = y;
-	if (plugin)
+//	LL_INFOS() << "mouse up (" << x << ", " << y << ")" << LL_ENDL;
+	if (mMediaSource)
 	{
-		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_UP, button, x, y, mask);
+		mMediaSource->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_UP, button, x, y, mask);
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::mouseMove(S32 x, S32 y, MASK mask)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	scaleMouse(&x, &y);
 	mLastMouseX = x;
 	mLastMouseY = y;
-	if (plugin)
+//	LL_INFOS() << "mouse move (" << x << ", " << y << ")" << LL_ENDL;
+	if (mMediaSource)
 	{
-		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_MOVE, 0, x, y, mask);
+		mMediaSource->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_MOVE, 0, x, y, mask);
 	}
 }
-
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //static 
 void LLViewerMediaImpl::scaleTextureCoords(const LLVector2& texture_coords, S32 *x, S32 *y)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	F32 texture_x = texture_coords.mV[VX];
 	F32 texture_y = texture_coords.mV[VY];
 	
@@ -2367,18 +2382,18 @@ void LLViewerMediaImpl::scaleTextureCoords(const LLVector2& texture_coords, S32 
 		texture_y = 1.0 + texture_y;
 
 	// scale x and y to texel units.
-	*x = ll_round(texture_x * plugin->getTextureWidth());
-	*y = ll_round((1.0f - texture_y) * plugin->getTextureHeight());
+	*x = ll_round(texture_x * mMediaSource->getTextureWidth());
+	*y = ll_round((1.0f - texture_y) * mMediaSource->getTextureHeight());
 
 	// Adjust for the difference between the actual texture height and the amount of the texture in use.
-	*y -= (plugin->getTextureHeight() - plugin->getHeight());
+	*y -= (mMediaSource->getTextureHeight() - mMediaSource->getHeight());
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::mouseDown(const LLVector2& texture_coords, MASK mask, S32 button)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if(plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
 		S32 x, y;
 		scaleTextureCoords(texture_coords, &x, &y);
@@ -2389,8 +2404,8 @@ void LLViewerMediaImpl::mouseDown(const LLVector2& texture_coords, MASK mask, S3
 
 void LLViewerMediaImpl::mouseUp(const LLVector2& texture_coords, MASK mask, S32 button)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if(plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{		
 		S32 x, y;
 		scaleTextureCoords(texture_coords, &x, &y);
@@ -2401,8 +2416,8 @@ void LLViewerMediaImpl::mouseUp(const LLVector2& texture_coords, MASK mask, S32 
 
 void LLViewerMediaImpl::mouseMove(const LLVector2& texture_coords, MASK mask)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if(plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{		
 		S32 x, y;
 		scaleTextureCoords(texture_coords, &x, &y);
@@ -2414,36 +2429,36 @@ void LLViewerMediaImpl::mouseMove(const LLVector2& texture_coords, MASK mask)
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::mouseDoubleClick(S32 x, S32 y, MASK mask, S32 button)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	scaleMouse(&x, &y);
 	mLastMouseX = x;
 	mLastMouseY = y;
-	if (plugin)
+	if (mMediaSource)
 	{
-		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_DOUBLE_CLICK, button, x, y, mask);
+		mMediaSource->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_DOUBLE_CLICK, button, x, y, mask);
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::scrollWheel(S32 x, S32 y, MASK mask)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	scaleMouse(&x, &y);
 	mLastMouseX = x;
 	mLastMouseY = y;
-	if (plugin)
+	if (mMediaSource)
 	{
-		plugin->scrollEvent(x, y, mask);
+		mMediaSource->scrollEvent(x, y, mask);
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::onMouseCaptureLost()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if (mMediaSource)
 	{
-		plugin->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_UP, 0, mLastMouseX, mLastMouseY, 0);
+		mMediaSource->mouseEvent(LLPluginClassMedia::MOUSE_EVENT_UP, 0, mLastMouseX, mLastMouseY, 0);
 	}
 }
 
@@ -2467,11 +2482,11 @@ void LLViewerMediaImpl::updateJavascriptObject()
 {
 	static LLFrameTimer timer ;
 
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if ( plugin )
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if ( mMediaSource )
 	{
 		// flag to expose this information to internal browser or not.
-		bool enable = gSavedSettings.getBOOL("BrowserEnableJSObject");
+		static LLCachedControl<bool> enable(gSavedSettings, "BrowserEnableJSObject", false);
 
 		if(!enable)
 		{
@@ -2484,7 +2499,7 @@ void LLViewerMediaImpl::updateJavascriptObject()
 		}
 		timer.reset() ;
 
-		plugin->jsEnableObject( enable );
+		mMediaSource->jsEnableObject( enable );
 
 		// these values are only menaingful after login so don't set them before
 		//bool logged_in = LLLoginInstance::getInstance()->authSuccess();
@@ -2496,20 +2511,20 @@ void LLViewerMediaImpl::updateJavascriptObject()
 			double x = agent_pos.mV[ VX ];
 			double y = agent_pos.mV[ VY ];
 			double z = agent_pos.mV[ VZ ];
-			plugin->jsAgentLocationEvent( x, y, z );
+			mMediaSource->jsAgentLocationEvent( x, y, z );
 
 			// current location within the grid
 			LLVector3d agent_pos_global = gAgent.getLastPositionGlobal();
 			double global_x = agent_pos_global.mdV[ VX ];
 			double global_y = agent_pos_global.mdV[ VY ];
 			double global_z = agent_pos_global.mdV[ VZ ];
-			plugin->jsAgentGlobalLocationEvent( global_x, global_y, global_z );
+			mMediaSource->jsAgentGlobalLocationEvent( global_x, global_y, global_z );
 
 			// current agent orientation
 			double rotation = atan2( gAgent.getAtAxis().mV[VX], gAgent.getAtAxis().mV[VY] );
 			double angle = rotation * RAD_TO_DEG;
 			if ( angle < 0.0f ) angle = 360.0f + angle;	// TODO: has to be a better way to get orientation!
-			plugin->jsAgentOrientationEvent( angle );
+			mMediaSource->jsAgentOrientationEvent( angle );
 
 			// current region agent is in
 			std::string region_name("");
@@ -2518,29 +2533,31 @@ void LLViewerMediaImpl::updateJavascriptObject()
 			{
 				region_name = region->getName();
 			};
-			plugin->jsAgentRegionEvent( region_name );
+			mMediaSource->jsAgentRegionEvent( region_name );
 		}
 
 		// language code the viewer is set to
-		plugin->jsAgentLanguageEvent( LLUI::getLanguage() );
+		mMediaSource->jsAgentLanguageEvent( LLUI::getLanguage() );
 
 		// maturity setting the agent has selected
 		if ( gAgent.prefersAdult() )
-			plugin->jsAgentMaturityEvent( "GMA" );	// Adult means see adult, mature and general content
+			mMediaSource->jsAgentMaturityEvent( "GMA" );	// Adult means see adult, mature and general content
 		else
 		if ( gAgent.prefersMature() )
-			plugin->jsAgentMaturityEvent( "GM" );	// Mature means see mature and general content
+			mMediaSource->jsAgentMaturityEvent( "GM" );	// Mature means see mature and general content
 		else
 		if ( gAgent.prefersPG() )
-			plugin->jsAgentMaturityEvent( "G" );	// PG means only see General content
+			mMediaSource->jsAgentMaturityEvent( "G" );	// PG means only see General content
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
 const std::string& LLViewerMediaImpl::getName() const 
 { 
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if (mMediaSource)
 	{
-		return plugin->getMediaName();
+		return mMediaSource->getMediaName();
 	}
 	
 	return LLStringUtil::null; 
@@ -2549,20 +2566,20 @@ const std::string& LLViewerMediaImpl::getName() const
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::navigateBack()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if (mMediaSource)
 	{
-		plugin->browse_back();
+		mMediaSource->browse_back();
 	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::navigateForward()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if (mMediaSource)
 	{
-		plugin->browse_forward();
+		mMediaSource->browse_forward();
 	}
 }
 
@@ -2627,7 +2644,12 @@ void LLViewerMediaImpl::navigateTo(const std::string& url, const std::string& mi
 	if(mPriority == PRIORITY_UNLOADED)
 	{
 		// Helpful to have media urls in log file. Shouldn't be spammy.
-		LL_INFOS() << "NOT LOADING media id= " << mTextureId << " url=" << url << " mime_type=" << mime_type << LL_ENDL;
+		{
+			// Do not log the query parts
+			LLURI u(url);
+			std::string sanitized_url = (u.query().empty() ? url : u.scheme() + "://" + u.authority() + u.path());
+			LL_INFOS() << "NOT LOADING media id= " << mTextureId << " url=" << sanitized_url << ", mime_type=" << mime_type << LL_ENDL;
+		}
 
 		// This impl should not be loaded at this time.
 		LL_DEBUGS("PluginPriority") << this << "Not loading (PRIORITY_UNLOADED)" << LL_ENDL;
@@ -2642,7 +2664,12 @@ void LLViewerMediaImpl::navigateTo(const std::string& url, const std::string& mi
 void LLViewerMediaImpl::navigateInternal()
 {
 	// Helpful to have media urls in log file. Shouldn't be spammy.
-	LL_INFOS() << "media id= " << mTextureId << " url=" << mMediaURL << " mime_type=" << mMimeType << LL_ENDL;
+	{
+		// Do not log the query parts
+		LLURI u(mMediaURL);
+		std::string sanitized_url = (u.query().empty() ? mMediaURL : u.scheme() + "://" + u.authority() + u.path());
+		LL_INFOS() << "media id= " << mTextureId << " url=" << sanitized_url << ", mime_type=" << mMimeType << LL_ENDL;
+	}
 
 	if (mMediaURL.empty())
 	{
@@ -2700,8 +2727,9 @@ void LLViewerMediaImpl::navigateInternal()
 			// which is really not what we want.
 			AIHTTPHeaders headers;
 			headers.addHeader("Accept", "*/*");
+			// Allow cookies in the response, to prevent a redirect loop when accessing join.secondlife.com
 			headers.addHeader("Cookie", "");
-			LLHTTPClient::getHeaderOnly( mMediaURL, new LLMimeDiscoveryResponder(this, "text/html"), headers);
+			LLHTTPClient::getHeaderOnly( mMediaURL, new LLMimeDiscoveryResponder(this), headers);
 		}
 		else if("data" == scheme || "file" == scheme || "about" == scheme)
 		{
@@ -2734,39 +2762,43 @@ void LLViewerMediaImpl::navigateInternal()
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::navigateStop()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
-		plugin->browse_stop();
+		mMediaSource->browse_stop();
 	}
-
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 bool LLViewerMediaImpl::handleKeyHere(KEY key, MASK mask)
 {
 	bool result = false;
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	
-	if (plugin)
+	if (mMediaSource)
 	{
 		// FIXME: THIS IS SO WRONG.
 		// Menu keys should be handled by the menu system and not passed to UI elements, but this is how LLTextEditor and LLLineEditor do it...
+		if( MASK_CONTROL & mask && key != KEY_LEFT && key != KEY_RIGHT && key != KEY_HOME && key != KEY_END)
+		{
+			result = true;
+		}
+
 		if( MASK_CONTROL & mask )
 		{
 			if('C' == key)
 			{
-				plugin->copy();
+				mMediaSource->copy();
 				result = true;
 			}
 			else if('V' == key)
 			{
-				plugin->paste();
+				mMediaSource->paste();
 				result = true;
 			}
 			else if('X' == key)
 			{
-				plugin->cut();
+				mMediaSource->cut();
 				result = true;
 			}
 		}
@@ -2781,9 +2813,9 @@ bool LLViewerMediaImpl::handleKeyHere(KEY key, MASK mask)
 			
 			LLSD native_key_data = gViewerWindow->getWindow()->getNativeKeyData();
 			
-			result = plugin->keyEvent(LLPluginClassMedia::KEY_EVENT_DOWN ,key, mask, native_key_data);
+			result = mMediaSource->keyEvent(LLPluginClassMedia::KEY_EVENT_DOWN ,key, mask, native_key_data);
 			// Since the viewer internal event dispatching doesn't give us key-up events, simulate one here.
-			(void)plugin->keyEvent(LLPluginClassMedia::KEY_EVENT_UP ,key, mask, native_key_data);
+			(void)mMediaSource->keyEvent(LLPluginClassMedia::KEY_EVENT_UP ,key, mask, native_key_data);
 		}
 	}
 	
@@ -2794,9 +2826,9 @@ bool LLViewerMediaImpl::handleKeyHere(KEY key, MASK mask)
 bool LLViewerMediaImpl::handleUnicodeCharHere(llwchar uni_char)
 {
 	bool result = false;
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	
-	if (plugin)
+	if (mMediaSource)
 	{
 		// only accept 'printable' characters, sigh...
 		if (uni_char >= 32 // discard 'control' characters
@@ -2804,7 +2836,7 @@ bool LLViewerMediaImpl::handleUnicodeCharHere(llwchar uni_char)
 		{
 			LLSD native_key_data = gViewerWindow->getWindow()->getNativeKeyData();
 			
-			plugin->textInput(wstring_to_utf8str(LLWString(1, uni_char)), gKeyboard->currentMask(FALSE), native_key_data);
+			mMediaSource->textInput(wstring_to_utf8str(LLWString(1, uni_char)), gKeyboard->currentMask(FALSE), native_key_data);
 		}
 	}
 	
@@ -2814,11 +2846,11 @@ bool LLViewerMediaImpl::handleUnicodeCharHere(llwchar uni_char)
 //////////////////////////////////////////////////////////////////////////////////////////
 bool LLViewerMediaImpl::canNavigateForward()
 {
-	bool result = false;
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
+	BOOL result = FALSE;
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if (mMediaSource)
 	{
-		result = plugin->getHistoryForwardAvailable();
+		result = mMediaSource->getHistoryForwardAvailable();
 	}
 	return result;
 }
@@ -2826,11 +2858,11 @@ bool LLViewerMediaImpl::canNavigateForward()
 //////////////////////////////////////////////////////////////////////////////////////////
 bool LLViewerMediaImpl::canNavigateBack()
 {
-	bool result = false;
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
+	BOOL result = FALSE;
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if (mMediaSource)
 	{
-		result = plugin->getHistoryBackAvailable();
+		result = mMediaSource->getHistoryBackAvailable();
 	}
 	return result;
 }
@@ -2844,10 +2876,8 @@ static LLFastTimer::DeclareTimer FTM_MEDIA_SET_SUBIMAGE("Set Subimage");
 void LLViewerMediaImpl::update()
 {
 	LLFastTimer t(FTM_MEDIA_DO_UPDATE);
-
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	
-	if(plugin == NULL)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource == NULL)
 	{
 		if(mPriority == PRIORITY_UNLOADED)
 		{
@@ -2887,12 +2917,12 @@ void LLViewerMediaImpl::update()
 		if(!sUpdatedCookies.empty())
 		{
 			// TODO: Only send cookies to plugins that need them
-			plugin->set_cookies(sUpdatedCookies);
+			mMediaSource->set_cookies(sUpdatedCookies);
 		}
 	}
 
 
-	if(plugin == NULL)
+	if(mMediaSource == NULL)
 	{
 		return;
 	}
@@ -2900,24 +2930,24 @@ void LLViewerMediaImpl::update()
 	// Make sure a navigate doesn't happen during the idle -- it can cause mMediaSource to get destroyed, which can cause a crash.
 	setNavigateSuspended(true);
 	
-	plugin->idle();
+	mMediaSource->idle();
 
 	setNavigateSuspended(false);
 
-	plugin = getMediaPlugin();
-	if(plugin == NULL)
+	mMediaSource = getMediaPlugin();
+	if(mMediaSource == NULL)
 	{
 		return;
 	}
 	
-	if (plugin->isPluginExited())
+	if(mMediaSource->isPluginExited())
 	{
 		resetPreviousMediaState();
 		destroyMediaSource();
 		return;
 	}
 
-	if (!plugin->textureValid())
+	if(!mMediaSource->textureValid())
 	{
 		return;
 	}
@@ -2936,7 +2966,7 @@ void LLViewerMediaImpl::update()
 		// Since we're updating this texture, we know it's playing.  Tell the texture to do its replacement magic so it gets rendered.
 		placeholder_image->setPlaying(TRUE);
 
-		if (plugin->getDirty(&dirty_rect))
+		if(mMediaSource->getDirty(&dirty_rect))
 		{
 			// Constrain the dirty rect to be inside the texture
 			S32 x_pos = llmax(dirty_rect.mLeft, 0);
@@ -2950,29 +2980,29 @@ void LLViewerMediaImpl::update()
 				U8* data = NULL;
 				{
 					LLFastTimer t(FTM_MEDIA_GET_DATA);
-					data = plugin->getBitsData();
+					data = mMediaSource->getBitsData();
 				}
 
 				// Offset the pixels pointer to match x_pos and y_pos
-				data += ( x_pos * plugin->getTextureDepth() * plugin->getBitsWidth() );
-				data += ( y_pos * plugin->getTextureDepth() );
+				data += ( x_pos * mMediaSource->getTextureDepth() * mMediaSource->getBitsWidth() );
+				data += ( y_pos * mMediaSource->getTextureDepth() );
 				
 				{
 					LLFastTimer t(FTM_MEDIA_SET_SUBIMAGE);
 					placeholder_image->setSubImage(
 							data, 
-							plugin->getBitsWidth(), 
-							plugin->getBitsHeight(),
+							mMediaSource->getBitsWidth(),
+							mMediaSource->getBitsHeight(),
 							x_pos, 
 							y_pos, 
 							width, 
 							height,
-							TRUE);		// force a fast update (i.e. don't call analyzeAlpha, etc.)
+							TRUE); // <alchemy/>
 				}
 
 			}
 			
-			plugin->resetDirty();
+			mMediaSource->resetDirty();
 		}
 	}
 }
@@ -2995,22 +3025,22 @@ LLViewerMediaTexture* LLViewerMediaImpl::updatePlaceholderImage()
 	
 	LLViewerMediaTexture* placeholder_image = LLViewerTextureManager::getMediaTexture( mTextureId );
 	
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 
 	if (mNeedsNewTexture 
 		|| placeholder_image->getUseMipMaps()
-		|| (placeholder_image->getWidth() != plugin->getTextureWidth())
-		|| (placeholder_image->getHeight() != plugin->getTextureHeight())
-		|| (mTextureUsedWidth != plugin->getWidth())
-		|| (mTextureUsedHeight != plugin->getHeight())
+		|| (placeholder_image->getWidth() != mMediaSource->getTextureWidth())
+		|| (placeholder_image->getHeight() != mMediaSource->getTextureHeight())
+		|| (mTextureUsedWidth != mMediaSource->getWidth())
+		|| (mTextureUsedHeight != mMediaSource->getHeight())
 		)
 	{
 		LL_DEBUGS("Media") << "initializing media placeholder" << LL_ENDL;
 		LL_DEBUGS("Media") << "movie image id " << mTextureId << LL_ENDL;
 
-		int texture_width = plugin->getTextureWidth();
-		int texture_height = plugin->getTextureHeight();
-		int texture_depth = plugin->getTextureDepth();
+		int texture_width = mMediaSource->getTextureWidth();
+		int texture_height = mMediaSource->getTextureHeight();
+		int texture_depth = mMediaSource->getTextureDepth();
 		
 		// MEDIAOPT: check to see if size actually changed before doing work
 		placeholder_image->destroyGLTexture();
@@ -3026,15 +3056,12 @@ LLViewerMediaTexture* LLViewerMediaImpl::updatePlaceholderImage()
 		int discard_level = 0;
 
 		// ask media source for correct GL image format constants
-		placeholder_image->setExplicitFormat(plugin->getTextureFormatInternal(),
-											 plugin->getTextureFormatPrimary(),
-											 plugin->getTextureFormatType(),
-											 plugin->getTextureFormatSwapBytes());
+		placeholder_image->setExplicitFormat(mMediaSource->getTextureFormatInternal(),
+											 mMediaSource->getTextureFormatPrimary(),
+											 mMediaSource->getTextureFormatType(),
+											 mMediaSource->getTextureFormatSwapBytes());
 
 		placeholder_image->createGLTexture(discard_level, raw);
-
-		// placeholder_image->setExplicitFormat()
-		//placeholder_image->setUseMipMaps(FALSE);
 
 		// MEDIAOPT: set this dynamically on play/stop
 		// FIXME
@@ -3043,8 +3070,8 @@ LLViewerMediaTexture* LLViewerMediaImpl::updatePlaceholderImage()
 				
 		// If the amount of the texture being drawn by the media goes down in either width or height, 
 		// recreate the texture to avoid leaving parts of the old image behind.
-		mTextureUsedWidth = plugin->getWidth();
-		mTextureUsedHeight = plugin->getHeight();
+		mTextureUsedWidth = mMediaSource->getWidth();
+		mTextureUsedHeight = mMediaSource->getHeight();
 	}
 	
 	return placeholder_image;
@@ -3060,17 +3087,18 @@ LLUUID LLViewerMediaImpl::getMediaTextureID() const
 //////////////////////////////////////////////////////////////////////////////////////////
 void LLViewerMediaImpl::setVisible(bool visible)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	mVisible = visible;
 	
 	if(mVisible)
 	{
-		if(plugin && plugin->isPluginExited())
+		if(mMediaSource && mMediaSource->isPluginExited())
 		{
 			destroyMediaSource();
-			plugin = NULL;
+			mMediaSource = NULL;
 		}
-		if(!plugin)
+
+		if(!mMediaSource)
 		{
 			createMediaSource();
 		}
@@ -3097,15 +3125,17 @@ void LLViewerMediaImpl::scaleMouse(S32 *mouse_x, S32 *mouse_y)
 #endif
 }
 
+
+
 //////////////////////////////////////////////////////////////////////////////////////////
 bool LLViewerMediaImpl::isMediaTimeBased()
 {
 	bool result = false;
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	
-	if(plugin)
+	if(mMediaSource)
 	{
-		result = plugin->pluginSupportsMediaTime();
+		result = mMediaSource->pluginSupportsMediaTime();
 	}
 	
 	return result;
@@ -3115,11 +3145,11 @@ bool LLViewerMediaImpl::isMediaTimeBased()
 bool LLViewerMediaImpl::isMediaPlaying()
 {
 	bool result = false;
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	
-	if(plugin)
+	if(mMediaSource)
 	{
-		EMediaStatus status = plugin->getStatus();
+		EMediaStatus status = mMediaSource->getStatus();
 		if(status == MEDIA_PLAYING || status == MEDIA_LOADING)
 			result = true;
 	}
@@ -3130,11 +3160,11 @@ bool LLViewerMediaImpl::isMediaPlaying()
 bool LLViewerMediaImpl::isMediaPaused()
 {
 	bool result = false;
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 
-	if(plugin)
+	if(mMediaSource)
 	{
-		if(plugin->getStatus() == MEDIA_PAUSED)
+		if(mMediaSource->getStatus() == MEDIA_PAUSED)
 			result = true;
 	}
 	
@@ -3228,14 +3258,7 @@ bool LLViewerMediaImpl::isPlayable() const
 
 static void handle_pick_file_request_continued(LLPluginClassMedia* plugin, AIFilePicker* filepicker)
 {
-	std::string response;
-
-	if(filepicker->hasFilename())
-	{
-		response = filepicker->getFilename();
-	}
-
-	plugin->sendPickFileResponse(response);
+	plugin->sendPickFileResponse(filepicker->hasFilename() ? filepicker->getFilename() : LLStringUtil::null);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -3486,9 +3509,9 @@ void LLViewerMediaImpl::handleCookieSet(LLPluginClassMedia* self, const std::str
 void
 LLViewerMediaImpl::cut()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
-		plugin->cut();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if (mMediaSource)
+		mMediaSource->cut();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3496,9 +3519,9 @@ LLViewerMediaImpl::cut()
 BOOL
 LLViewerMediaImpl::canCut() const
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
-		return plugin->canCut();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if (mMediaSource)
+		return mMediaSource->canCut();
 	else
 		return FALSE;
 }
@@ -3508,9 +3531,9 @@ LLViewerMediaImpl::canCut() const
 void
 LLViewerMediaImpl::copy()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
-		plugin->copy();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if (mMediaSource)
+		mMediaSource->copy();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3518,9 +3541,9 @@ LLViewerMediaImpl::copy()
 BOOL
 LLViewerMediaImpl::canCopy() const
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
-		return plugin->canCopy();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if (mMediaSource)
+		return mMediaSource->canCopy();
 	else
 		return FALSE;
 }
@@ -3530,9 +3553,9 @@ LLViewerMediaImpl::canCopy() const
 void
 LLViewerMediaImpl::paste()
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
-		plugin->paste();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if (mMediaSource)
+		mMediaSource->paste();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3540,9 +3563,9 @@ LLViewerMediaImpl::paste()
 BOOL
 LLViewerMediaImpl::canPaste() const
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if (plugin)
-		return plugin->canPaste();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if (mMediaSource)
+		return mMediaSource->canPaste();
 	else
 		return FALSE;
 }
@@ -3637,11 +3660,11 @@ F64 LLViewerMediaImpl::getApproximateTextureInterest()
 {
 	F64 result = 0.0f;
 	
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if(plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
-		result = plugin->getFullWidth();
-		result *= plugin->getFullHeight();
+		result = mMediaSource->getFullWidth();
+		result *= mMediaSource->getFullHeight();
 	}
 	else
 	{
@@ -3678,21 +3701,21 @@ void LLViewerMediaImpl::setBackgroundColor(LLColor4 color)
 {
 	mBackgroundColor = color; 
 
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if(plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
-		plugin->setBackgroundColor(mBackgroundColor);
+		mMediaSource->setBackgroundColor(mBackgroundColor);
 	}
 };
 
 F64 LLViewerMediaImpl::getCPUUsage() const
 {
 	F64 result = 0.0f;
-	LLPluginClassMedia* plugin = getMediaPlugin();
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	
-	if(plugin)
+	if(mMediaSource)
 	{
-		result = plugin->getCPUUsage();
+		result = mMediaSource->getCPUUsage();
 	}
 	
 	return result;
@@ -3725,29 +3748,28 @@ void LLViewerMediaImpl::setPriority(EPriority priority)
 	
 	mPriority = priority;
 	
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
 	if(priority == PRIORITY_UNLOADED)
 	{
-		if(plugin)
+		if(mMediaSource)
 		{
 			// Need to unload the media source
 			
 			// First, save off previous media state
-			mPreviousMediaState = plugin->getStatus();
-			mPreviousMediaTime = plugin->getCurrentTime();
+			mPreviousMediaState = mMediaSource->getStatus();
+			mPreviousMediaTime = mMediaSource->getCurrentTime();
 			
 			destroyMediaSource();
-			plugin = NULL;
+			mMediaSource = NULL;
 		}
 	}
 
-	if(plugin)
+	if(mMediaSource)
 	{
 		if(mPriority >= PRIORITY_LOW)
-			plugin->setPriority((LLPluginClassBasic::EPriority)((U32)mPriority-((U32)PRIORITY_LOW-1)));
+			mMediaSource->setPriority((LLPluginClassBasic::EPriority)((U32)mPriority-((U32)PRIORITY_LOW-1)));
 		else
-			plugin->setPriority(LLPluginClassBasic::PRIORITY_SLEEP);
+			mMediaSource->setPriority(LLPluginClassBasic::PRIORITY_SLEEP);
 	}
 	
 	// NOTE: loading (or reloading) media sources whose priority has risen above PRIORITY_UNLOADED is done in update().
@@ -3755,10 +3777,10 @@ void LLViewerMediaImpl::setPriority(EPriority priority)
 
 void LLViewerMediaImpl::setLowPrioritySizeLimit(int size)
 {
-	LLPluginClassMedia* plugin = getMediaPlugin();
-	if(plugin)
+	LLPluginClassMedia* mMediaSource = getMediaPlugin();
+	if(mMediaSource)
 	{
-		plugin->setLowPrioritySizeLimit(size);
+		mMediaSource->setLowPrioritySizeLimit(size);
 	}
 }
 
@@ -3879,16 +3901,10 @@ bool LLViewerMediaImpl::isAutoPlayable() const
 	static const LLCachedControl<bool> media_tentative_auto_play("MediaTentativeAutoPlay",false);
 	static const LLCachedControl<bool> auto_play_parcel_media(LLViewerMedia::AUTO_PLAY_MEDIA_SETTING,false);
 	static const LLCachedControl<bool> auto_play_prim_media(LLViewerMedia::AUTO_PLAY_PRIM_MEDIA_SETTING,false);
-	if(mMediaAutoPlay && media_tentative_auto_play)
-	{
-		if(getUsedInUI())
-			return true;
-		else if(isParcelMedia() && auto_play_parcel_media)
-			return true;
-		else if(auto_play_prim_media)
-			return true;
-	}
-	return false;
+	return mMediaAutoPlay && media_tentative_auto_play &&
+		(getUsedInUI()
+		|| (isParcelMedia() && auto_play_parcel_media)
+		|| auto_play_prim_media);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -3914,18 +3930,18 @@ bool LLViewerMediaImpl::shouldShowBasedOnClass() const
 	// If it is attached to an avatar and the pref is off, we shouldn't show it
 	if (attached_to_another_avatar)
 	{
-		static LLCachedControl<bool> show_media_on_others(gSavedSettings, LLViewerMedia::SHOW_MEDIA_ON_OTHERS_SETTING);
+		static LLCachedControl<bool> show_media_on_others(gSavedSettings, LLViewerMedia::SHOW_MEDIA_ON_OTHERS_SETTING, false);
 		return show_media_on_others;
 	}
 	if (inside_parcel)
 	{
-		static LLCachedControl<bool> show_media_within_parcel(gSavedSettings, LLViewerMedia::SHOW_MEDIA_WITHIN_PARCEL_SETTING);
+		static LLCachedControl<bool> show_media_within_parcel(gSavedSettings, LLViewerMedia::SHOW_MEDIA_WITHIN_PARCEL_SETTING, true);
 
 		return show_media_within_parcel;
 	}
 	else 
 	{
-		static LLCachedControl<bool> show_media_outside_parcel(gSavedSettings, LLViewerMedia::SHOW_MEDIA_OUTSIDE_PARCEL_SETTING);
+		static LLCachedControl<bool> show_media_outside_parcel(gSavedSettings, LLViewerMedia::SHOW_MEDIA_OUTSIDE_PARCEL_SETTING, true);
 
 		return show_media_outside_parcel;
 	}

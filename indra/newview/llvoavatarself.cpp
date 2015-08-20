@@ -221,7 +221,7 @@ bool check_for_unsupported_baked_appearance()
 		return true;
 
 	gAgentAvatarp->checkForUnsupportedServerBakeAppearance();
-	return false;
+	return LLApp::isExiting();
 }
 
 void force_bake_all_textures()
@@ -273,6 +273,7 @@ void LLVOAvatarSelf::initInstance()
 	//doPeriodically(output_self_av_texture_diagnostics, 30.0);
 	doPeriodically(update_avatar_rez_metrics, 5.0);
 	doPeriodically(check_for_unsupported_baked_appearance, 120.0);
+	doPeriodically(boost::bind(&LLVOAvatarSelf::checkStuckAppearance, this), 30.0);
 }
 
 void LLVOAvatarSelf::setHoverIfRegionEnabled()
@@ -283,7 +284,7 @@ void LLVOAvatarSelf::setHoverIfRegionEnabled()
 		if (region->avatarHoverHeightEnabled())
 		{
 			F32 hover_z = gSavedPerAccountSettings.getF32("AvatarHoverOffsetZ");
-			setHoverOffset(LLVector3(0.0, 0.0, llclamp(hover_z,MIN_HOVER_Z,MAX_HOVER_Z)));
+			setHoverOffset(LLVector3(0.0, 0.0, llclamp(hover_z, MIN_HOVER_Z, MAX_HOVER_Z)));
 			LL_INFOS("Avatar") << avString() << " set hover height from debug setting " << hover_z << LL_ENDL;
 		}
 		else
@@ -297,9 +298,37 @@ void LLVOAvatarSelf::setHoverIfRegionEnabled()
 		LL_INFOS("Avatar") << avString() << " region or simulator features not known, no change on hover" << LL_ENDL;
 		if (region)
 		{
-			region->setSimulatorFeaturesReceivedCallback(boost::bind(&LLVOAvatarSelf::onSimulatorFeaturesReceived,this,_1));
+			region->setSimulatorFeaturesReceivedCallback(boost::bind(&LLVOAvatarSelf::onSimulatorFeaturesReceived, this, _1));
 		}
 	}
+}
+
+bool LLVOAvatarSelf::checkStuckAppearance()
+{
+	if (!gAgentAvatarp->isUsingServerBakes())
+		return false;
+	const F32 CONDITIONAL_UNSTICK_INTERVAL = 300.0;
+	const F32 UNCONDITIONAL_UNSTICK_INTERVAL = 600.0;
+	
+	if (gAgentWearables.isCOFChangeInProgress())
+	{
+		LL_DEBUGS("Avatar") << "checking for stuck appearance" << LL_ENDL;
+		F32 change_time = gAgentWearables.getCOFChangeTime();
+		LL_DEBUGS("Avatar") << "change in progress for " << change_time << " seconds" << LL_ENDL;
+		S32 active_hp = LLAppearanceMgr::instance().countActiveHoldingPatterns();
+		LL_DEBUGS("Avatar") << "active holding patterns " << active_hp << " seconds" << LL_ENDL;
+		S32 active_copies = LLAppearanceMgr::instance().getActiveCopyOperations();
+		LL_DEBUGS("Avatar") << "active copy operations " << active_copies << LL_ENDL;
+
+		if ((change_time > CONDITIONAL_UNSTICK_INTERVAL && active_copies == 0) ||
+			(change_time > UNCONDITIONAL_UNSTICK_INTERVAL))
+		{
+			gAgentWearables.notifyLoadingFinished();
+		}
+	}
+
+	// Return false to continue running check periodically.
+	return LLApp::isExiting();
 }
 
 // virtual
@@ -614,6 +643,9 @@ void LLVOAvatarSelf::cleanup()
 LLVOAvatarSelf::~LLVOAvatarSelf()
 {
 	cleanup();
+// [RLVa:KB] - Checked: 2012-07-28 (RLVa-1.4.7)
+	delete mAttachmentSignal;
+// [/RLVa:KB]
 }
 
 /**
@@ -733,14 +765,9 @@ void LLVOAvatarSelf::updateVisualParams()
 	LLVOAvatar::updateVisualParams();
 }
 
-/*virtual*/
-void LLVOAvatarSelf::idleUpdateAppearanceAnimation()
+void LLVOAvatarSelf::writeWearablesToAvatar()
 {
-	// Animate all top-level wearable visual parameters
-	gAgentWearables.animateAllWearableParams(calcMorphAmount(), FALSE);
-
-	// apply wearable visual params to avatar
-	for (U32 type = 0; type < LLWearableType::WT_COUNT; type++)
+for (U32 type = 0; type < LLWearableType::WT_COUNT; type++)
 	{
 		LLWearable *wearable = gAgentWearables.getTopWearable((LLWearableType::EType)type);
 		if (wearable)
@@ -748,6 +775,17 @@ void LLVOAvatarSelf::idleUpdateAppearanceAnimation()
 			wearable->writeToAvatar(this);
 		}
 	}
+
+}
+
+/*virtual*/
+void LLVOAvatarSelf::idleUpdateAppearanceAnimation()
+{
+	// Animate all top-level wearable visual parameters
+	gAgentWearables.animateAllWearableParams(calcMorphAmount(), FALSE);
+
+	// Apply wearable visual params to avatar
+	writeWearablesToAvatar();
 
 	//allow avatar to process updates
 	LLVOAvatar::idleUpdateAppearanceAnimation();
@@ -777,12 +815,6 @@ void LLVOAvatarSelf::stopMotionFromSource(const LLUUID& source_id)
 	{
 		object->setFlagsWithoutUpdate(FLAGS_ANIM_SOURCE, FALSE);
 	}
-}
-
-//virtual
-U32  LLVOAvatarSelf::processUpdateMessage(LLMessageSystem *mesgsys, void **user_data, U32 block_num, const EObjectUpdateType update_type, LLDataPacker *dp)
-{
-	return LLVOAvatar::processUpdateMessage(mesgsys, user_data, block_num, update_type, dp);
 }
 
 void LLVOAvatarSelf::setLocalTextureTE(U8 te, LLViewerTexture* image, U32 index)
@@ -1190,9 +1222,19 @@ LLViewerJointAttachment* LLVOAvatarSelf::getWornAttachmentPoint(const LLUUID& id
 }
 // [/RLVa:KB]
 
-const std::string LLVOAvatarSelf::getAttachedPointName(const LLUUID& inv_item_id) const
+bool LLVOAvatarSelf::getAttachedPointName(const LLUUID& inv_item_id, std::string& name) const
 {
+	if (!gInventory.getItem(inv_item_id))
+	{
+		name = "ATTACHMENT_MISSING_ITEM";
+		return false;
+	}
 	const LLUUID& base_inv_item_id = gInventory.getLinkedItemID(inv_item_id);
+	if (!gInventory.getItem(base_inv_item_id))
+	{
+		name = "ATTACHMENT_MISSING_BASE_ITEM";
+		return false;
+	}
 	for (attachment_map_t::const_iterator iter = mAttachmentPoints.begin(); 
 		 iter != mAttachmentPoints.end(); 
 		 ++iter)
@@ -1200,11 +1242,13 @@ const std::string LLVOAvatarSelf::getAttachedPointName(const LLUUID& inv_item_id
 		const LLViewerJointAttachment* attachment = iter->second;
 		if (attachment->getAttachedObject(base_inv_item_id))
 		{
-			return attachment->getName();
+			name = attachment->getName();
+			return true;
 		}
 	}
 
-	return LLStringUtil::null;
+	name = "ATTACHMENT_NOT_ATTACHED";
+	return false;
 }
 
 //virtual
@@ -1630,8 +1674,8 @@ BOOL LLVOAvatarSelf::isTextureVisible(LLAvatarAppearanceDefines::ETextureIndex t
 		return LLVOAvatar::isTextureVisible(type);
 	}
 
-	U32 index = gAgentWearables.getWearableIndex(wearable);
-	return isTextureVisible(type,index);
+	U32 index;
+	return gAgentWearables.getWearableIndex(wearable, index) && isTextureVisible(type, index);
 }
 
 
@@ -2600,11 +2644,11 @@ BOOL LLVOAvatarSelf::canGrabBakedTexture(EBakedTextureIndex baked_index) const
 													asset_id_matches);
 
 					BOOL can_grab = FALSE;
-					LL_DEBUGS() << "item count for asset " << texture_id << ": " << items.count() << LL_ENDL;
-					if (items.count())
+					LL_DEBUGS() << "item count for asset " << texture_id << ": " << items.size() << LL_ENDL;
+					if (items.size())
 					{
 						// search for full permissions version
-						for (S32 i = 0; i < items.count(); i++)
+						for (U32 i = 0; i < items.size(); i++)
 						{
 							LLViewerInventoryItem* itemp = items[i];
 												if (itemp->getIsFullPerm())
@@ -3014,6 +3058,11 @@ void LLVOAvatarSelf::onCustomizeStart(bool disable_camera_switch)
 {
 	if (isAgentAvatarValid())
 	{
+		if (!gAgentAvatarp->mEndCustomizeCallback.get())
+		{
+			gAgentAvatarp->mEndCustomizeCallback = new LLUpdateAppearanceOnDestroy;
+		}
+		
 		gAgentAvatarp->mIsEditingAppearance = true;
 		gAgentAvatarp->mUseLocalAppearance = true;
 
@@ -3054,10 +3103,10 @@ void LLVOAvatarSelf::onCustomizeEnd(bool disable_camera_switch)
 			gAgentCamera.resetView();
 		}
 
-		if (gAgent.getRegion() && gAgent.getRegion()->getCentralBakeVersion())
-		{
-			LLAppearanceMgr::instance().requestServerAppearanceUpdate();
-		}
+		// Dereferencing the previous callback will cause
+		// updateAppearanceFromCOF to be called, whenever all refs
+		// have resolved.
+		gAgentAvatarp->mEndCustomizeCallback = NULL;
 	}
 }
 

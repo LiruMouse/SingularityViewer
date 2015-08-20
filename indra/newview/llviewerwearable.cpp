@@ -385,7 +385,7 @@ void LLViewerWearable::writeToAvatar(LLAvatarAppearance *avatarp)
 
 // Updates the user's avatar's appearance, replacing this wearables' parameters and textures with default values.
 // static 
-void LLViewerWearable::removeFromAvatar( LLWearableType::EType type, BOOL upload_bake )
+void LLViewerWearable::removeFromAvatar( LLWearableType::EType type, bool upload_bake )
 {
 	if (!isAgentAvatarValid()) return;
 
@@ -507,7 +507,7 @@ void LLViewerWearable::revertValues()
 	{
 		panel->updateScrollingPanelList();
 	}*/
-	if( LLFloaterCustomize::instanceExists() && gAgentWearables.getWearableIndex(this)==0 )
+	if (LLFloaterCustomize::instanceExists() && LLFloaterCustomize::getInstance()->getCurrentWearablePanel()->getWearable() == this)
 		LLFloaterCustomize::getInstance()->updateScrollingPanelList();
 	
 }
@@ -522,7 +522,7 @@ void LLViewerWearable::saveValues()
 		panel->updateScrollingPanelList();
 	}*/
 
-	if( LLFloaterCustomize::instanceExists() && gAgentWearables.getWearableIndex(this)==0)
+	if (LLFloaterCustomize::instanceExists() && LLFloaterCustomize::getInstance()->getCurrentWearablePanel()->getWearable() == this)
 		LLFloaterCustomize::getInstance()->updateScrollingPanelList();
 }
 

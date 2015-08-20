@@ -510,7 +510,7 @@ namespace tut
 
 	template<> template<>
 	void LLTemplateMessageBuilderTestObject::test<22>()
-		// repeated penultimate block (crashes when data in LLDynamicArrayIndexed)
+		// repeated penultimate block (crashes when data in LLIndexedVector)
 	{
 		U32 inTest00 = 0, inTest01 = 1, inTest1 = 2;
 		U32 outTest00, outTest01, outTest1;

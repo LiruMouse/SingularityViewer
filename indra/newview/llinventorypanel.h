@@ -35,7 +35,6 @@
 #define LL_LLINVENTORYPANEL_H
 
 #include "llassetstorage.h"
-#include "lldarray.h"
 #include "llfloater.h"
 #include "llinventory.h"
 #include "llfolderview.h"
@@ -62,6 +61,7 @@ class LLTextBox;
 class LLIconCtrl;
 class LLSaveFolderState;
 class LLInvPanelComplObserver;
+class LLFolderViewGroupedItemBridge;
 
 class LLInventoryPanel : public LLPanel
 {
@@ -170,6 +170,7 @@ protected:
 	LLHandle<LLFolderView>				mFolderRoot;
 	LLScrollContainer*	mScroller;
 
+    LLPointer<LLFolderViewGroupedItemBridge> mGroupedItemBridge;
 	/**
 	 * Pointer to LLInventoryFVBridgeBuilder.
 	 *

@@ -1087,6 +1087,215 @@ void LLImageGL::deleteTextures(S32 numTextures, U32 *textures)
 	}
 }
 
+//#include "crnlib.h"
+struct DDS_PIXELFORMAT {
+	U32 dwSize;
+	U32 dwFlags;
+	U32 dwFourCC;
+	U32 dwRGBBitCount;
+	U32 dwRBitMask;
+	U32 dwGBitMask;
+	U32 dwBBitMask;
+	U32 dwABitMask;
+};
+
+typedef struct {
+	U32           dwSize;
+	U32           dwFlags;
+	U32           dwHeight;
+	U32           dwWidth;
+	U32           dwPitchOrLinearSize;
+	U32           dwDepth;
+	U32           dwMipMapCount;
+	U32           dwReserved1[11];
+	DDS_PIXELFORMAT ddspf;
+	U32           dwCaps;
+	U32           dwCaps2;
+	U32           dwCaps3;
+	U32           dwCaps4;
+	U32           dwReserved2;
+} DDS_HEADER;
+
+typedef enum DXGI_FORMAT {
+	DXGI_FORMAT_UNKNOWN = 0,
+	DXGI_FORMAT_R32G32B32A32_TYPELESS = 1,
+	DXGI_FORMAT_R32G32B32A32_FLOAT = 2,
+	DXGI_FORMAT_R32G32B32A32_UINT = 3,
+	DXGI_FORMAT_R32G32B32A32_SINT = 4,
+	DXGI_FORMAT_R32G32B32_TYPELESS = 5,
+	DXGI_FORMAT_R32G32B32_FLOAT = 6,
+	DXGI_FORMAT_R32G32B32_UINT = 7,
+	DXGI_FORMAT_R32G32B32_SINT = 8,
+	DXGI_FORMAT_R16G16B16A16_TYPELESS = 9,
+	DXGI_FORMAT_R16G16B16A16_FLOAT = 10,
+	DXGI_FORMAT_R16G16B16A16_UNORM = 11,
+	DXGI_FORMAT_R16G16B16A16_UINT = 12,
+	DXGI_FORMAT_R16G16B16A16_SNORM = 13,
+	DXGI_FORMAT_R16G16B16A16_SINT = 14,
+	DXGI_FORMAT_R32G32_TYPELESS = 15,
+	DXGI_FORMAT_R32G32_FLOAT = 16,
+	DXGI_FORMAT_R32G32_UINT = 17,
+	DXGI_FORMAT_R32G32_SINT = 18,
+	DXGI_FORMAT_R32G8X24_TYPELESS = 19,
+	DXGI_FORMAT_D32_FLOAT_S8X24_UINT = 20,
+	DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS = 21,
+	DXGI_FORMAT_X32_TYPELESS_G8X24_UINT = 22,
+	DXGI_FORMAT_R10G10B10A2_TYPELESS = 23,
+	DXGI_FORMAT_R10G10B10A2_UNORM = 24,
+	DXGI_FORMAT_R10G10B10A2_UINT = 25,
+	DXGI_FORMAT_R11G11B10_FLOAT = 26,
+	DXGI_FORMAT_R8G8B8A8_TYPELESS = 27,
+	DXGI_FORMAT_R8G8B8A8_UNORM = 28,
+	DXGI_FORMAT_R8G8B8A8_UNORM_SRGB = 29,
+	DXGI_FORMAT_R8G8B8A8_UINT = 30,
+	DXGI_FORMAT_R8G8B8A8_SNORM = 31,
+	DXGI_FORMAT_R8G8B8A8_SINT = 32,
+	DXGI_FORMAT_R16G16_TYPELESS = 33,
+	DXGI_FORMAT_R16G16_FLOAT = 34,
+	DXGI_FORMAT_R16G16_UNORM = 35,
+	DXGI_FORMAT_R16G16_UINT = 36,
+	DXGI_FORMAT_R16G16_SNORM = 37,
+	DXGI_FORMAT_R16G16_SINT = 38,
+	DXGI_FORMAT_R32_TYPELESS = 39,
+	DXGI_FORMAT_D32_FLOAT = 40,
+	DXGI_FORMAT_R32_FLOAT = 41,
+	DXGI_FORMAT_R32_UINT = 42,
+	DXGI_FORMAT_R32_SINT = 43,
+	DXGI_FORMAT_R24G8_TYPELESS = 44,
+	DXGI_FORMAT_D24_UNORM_S8_UINT = 45,
+	DXGI_FORMAT_R24_UNORM_X8_TYPELESS = 46,
+	DXGI_FORMAT_X24_TYPELESS_G8_UINT = 47,
+	DXGI_FORMAT_R8G8_TYPELESS = 48,
+	DXGI_FORMAT_R8G8_UNORM = 49,
+	DXGI_FORMAT_R8G8_UINT = 50,
+	DXGI_FORMAT_R8G8_SNORM = 51,
+	DXGI_FORMAT_R8G8_SINT = 52,
+	DXGI_FORMAT_R16_TYPELESS = 53,
+	DXGI_FORMAT_R16_FLOAT = 54,
+	DXGI_FORMAT_D16_UNORM = 55,
+	DXGI_FORMAT_R16_UNORM = 56,
+	DXGI_FORMAT_R16_UINT = 57,
+	DXGI_FORMAT_R16_SNORM = 58,
+	DXGI_FORMAT_R16_SINT = 59,
+	DXGI_FORMAT_R8_TYPELESS = 60,
+	DXGI_FORMAT_R8_UNORM = 61,
+	DXGI_FORMAT_R8_UINT = 62,
+	DXGI_FORMAT_R8_SNORM = 63,
+	DXGI_FORMAT_R8_SINT = 64,
+	DXGI_FORMAT_A8_UNORM = 65,
+	DXGI_FORMAT_R1_UNORM = 66,
+	DXGI_FORMAT_R9G9B9E5_SHAREDEXP = 67,
+	DXGI_FORMAT_R8G8_B8G8_UNORM = 68,
+	DXGI_FORMAT_G8R8_G8B8_UNORM = 69,
+	DXGI_FORMAT_BC1_TYPELESS = 70,
+	DXGI_FORMAT_BC1_UNORM = 71,
+	DXGI_FORMAT_BC1_UNORM_SRGB = 72,
+	DXGI_FORMAT_BC2_TYPELESS = 73,
+	DXGI_FORMAT_BC2_UNORM = 74,
+	DXGI_FORMAT_BC2_UNORM_SRGB = 75,
+	DXGI_FORMAT_BC3_TYPELESS = 76,
+	DXGI_FORMAT_BC3_UNORM = 77,
+	DXGI_FORMAT_BC3_UNORM_SRGB = 78,
+	DXGI_FORMAT_BC4_TYPELESS = 79,
+	DXGI_FORMAT_BC4_UNORM = 80,
+	DXGI_FORMAT_BC4_SNORM = 81,
+	DXGI_FORMAT_BC5_TYPELESS = 82,
+	DXGI_FORMAT_BC5_UNORM = 83,
+	DXGI_FORMAT_BC5_SNORM = 84,
+	DXGI_FORMAT_B5G6R5_UNORM = 85,
+	DXGI_FORMAT_B5G5R5A1_UNORM = 86,
+	DXGI_FORMAT_B8G8R8A8_UNORM = 87,
+	DXGI_FORMAT_B8G8R8X8_UNORM = 88,
+	DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM = 89,
+	DXGI_FORMAT_B8G8R8A8_TYPELESS = 90,
+	DXGI_FORMAT_B8G8R8A8_UNORM_SRGB = 91,
+	DXGI_FORMAT_B8G8R8X8_TYPELESS = 92,
+	DXGI_FORMAT_B8G8R8X8_UNORM_SRGB = 93,
+	DXGI_FORMAT_BC6H_TYPELESS = 94,
+	DXGI_FORMAT_BC6H_UF16 = 95,
+	DXGI_FORMAT_BC6H_SF16 = 96,
+	DXGI_FORMAT_BC7_TYPELESS = 97,
+	DXGI_FORMAT_BC7_UNORM = 98,
+	DXGI_FORMAT_BC7_UNORM_SRGB = 99,
+	DXGI_FORMAT_AYUV = 100,
+	DXGI_FORMAT_Y410 = 101,
+	DXGI_FORMAT_Y416 = 102,
+	DXGI_FORMAT_NV12 = 103,
+	DXGI_FORMAT_P010 = 104,
+	DXGI_FORMAT_P016 = 105,
+	DXGI_FORMAT_420_OPAQUE = 106,
+	DXGI_FORMAT_YUY2 = 107,
+	DXGI_FORMAT_Y210 = 108,
+	DXGI_FORMAT_Y216 = 109,
+	DXGI_FORMAT_NV11 = 110,
+	DXGI_FORMAT_AI44 = 111,
+	DXGI_FORMAT_IA44 = 112,
+	DXGI_FORMAT_P8 = 113,
+	DXGI_FORMAT_A8P8 = 114,
+	DXGI_FORMAT_B4G4R4A4_UNORM = 115,
+	DXGI_FORMAT_P208 = 130,
+	DXGI_FORMAT_V208 = 131,
+	DXGI_FORMAT_V408 = 132,
+	DXGI_FORMAT_ASTC_4X4_UNORM = 134,
+	DXGI_FORMAT_ASTC_4X4_UNORM_SRGB = 135,
+	DXGI_FORMAT_ASTC_5X4_TYPELESS = 137,
+	DXGI_FORMAT_ASTC_5X4_UNORM = 138,
+	DXGI_FORMAT_ASTC_5X4_UNORM_SRGB = 139,
+	DXGI_FORMAT_ASTC_5X5_TYPELESS = 141,
+	DXGI_FORMAT_ASTC_5X5_UNORM = 142,
+	DXGI_FORMAT_ASTC_5X5_UNORM_SRGB = 143,
+	DXGI_FORMAT_ASTC_6X5_TYPELESS = 145,
+	DXGI_FORMAT_ASTC_6X5_UNORM = 146,
+	DXGI_FORMAT_ASTC_6X5_UNORM_SRGB = 147,
+	DXGI_FORMAT_ASTC_6X6_TYPELESS = 149,
+	DXGI_FORMAT_ASTC_6X6_UNORM = 150,
+	DXGI_FORMAT_ASTC_6X6_UNORM_SRGB = 151,
+	DXGI_FORMAT_ASTC_8X5_TYPELESS = 153,
+	DXGI_FORMAT_ASTC_8X5_UNORM = 154,
+	DXGI_FORMAT_ASTC_8X5_UNORM_SRGB = 155,
+	DXGI_FORMAT_ASTC_8X6_TYPELESS = 157,
+	DXGI_FORMAT_ASTC_8X6_UNORM = 158,
+	DXGI_FORMAT_ASTC_8X6_UNORM_SRGB = 159,
+	DXGI_FORMAT_ASTC_8X8_TYPELESS = 161,
+	DXGI_FORMAT_ASTC_8X8_UNORM = 162,
+	DXGI_FORMAT_ASTC_8X8_UNORM_SRGB = 163,
+	DXGI_FORMAT_ASTC_10X5_TYPELESS = 165,
+	DXGI_FORMAT_ASTC_10X5_UNORM = 166,
+	DXGI_FORMAT_ASTC_10X5_UNORM_SRGB = 167,
+	DXGI_FORMAT_ASTC_10X6_TYPELESS = 169,
+	DXGI_FORMAT_ASTC_10X6_UNORM = 170,
+	DXGI_FORMAT_ASTC_10X6_UNORM_SRGB = 171,
+	DXGI_FORMAT_ASTC_10X8_TYPELESS = 173,
+	DXGI_FORMAT_ASTC_10X8_UNORM = 174,
+	DXGI_FORMAT_ASTC_10X8_UNORM_SRGB = 175,
+	DXGI_FORMAT_ASTC_10X10_TYPELESS = 177,
+	DXGI_FORMAT_ASTC_10X10_UNORM = 178,
+	DXGI_FORMAT_ASTC_10X10_UNORM_SRGB = 179,
+	DXGI_FORMAT_ASTC_12X10_TYPELESS = 181,
+	DXGI_FORMAT_ASTC_12X10_UNORM = 182,
+	DXGI_FORMAT_ASTC_12X10_UNORM_SRGB = 183,
+	DXGI_FORMAT_ASTC_12X12_TYPELESS = 185,
+	DXGI_FORMAT_ASTC_12X12_UNORM = 186,
+	DXGI_FORMAT_ASTC_12X12_UNORM_SRGB = 187,
+	DXGI_FORMAT_FORCE_UINT = 0xffffffff
+} DXGI_FORMAT;
+
+typedef enum D3D10_RESOURCE_DIMENSION {
+	D3D10_RESOURCE_DIMENSION_UNKNOWN = 0,
+	D3D10_RESOURCE_DIMENSION_BUFFER = 1,
+	D3D10_RESOURCE_DIMENSION_TEXTURE1D = 2,
+	D3D10_RESOURCE_DIMENSION_TEXTURE2D = 3,
+	D3D10_RESOURCE_DIMENSION_TEXTURE3D = 4
+} D3D10_RESOURCE_DIMENSION;
+
+typedef struct {
+	DXGI_FORMAT              dxgiFormat;
+	D3D10_RESOURCE_DIMENSION resourceDimension;
+	U32                      miscFlag;
+	U32                      arraySize;
+	U32                      miscFlags2;
+} DDS_HEADER_DXT10;
+
 // static
 static LLFastTimer::DeclareTimer FTM_SET_MANUAL_IMAGE("setManualImage");
 void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 width, S32 height, U32 pixformat, U32 pixtype, const void *pixels, bool allow_compression)
@@ -1128,7 +1337,6 @@ void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 widt
 			if (pixformat == GL_ALPHA && pixtype == GL_UNSIGNED_BYTE)
 			{ //GL_ALPHA is deprecated, convert to RGBA
 				scratch.resize(width*height);
-				pixels = &scratch[0];
 
 				U32 pixel_count = (U32) (width*height);
 				for (U32 i = 0; i < pixel_count; i++)
@@ -1138,6 +1346,8 @@ void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 widt
 					pix[3] = ((U8*) pixels)[i];
 				}
 
+				pixels = &scratch[0];
+
 				pixformat = GL_RGBA;
 				intformat = GL_RGBA8;
 			}
@@ -1145,7 +1355,6 @@ void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 widt
 			if (pixformat == GL_LUMINANCE_ALPHA && pixtype == GL_UNSIGNED_BYTE)
 			{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGBA
 				scratch.resize(width*height);
-				pixels = &scratch[0];
 
 				U32 pixel_count = (U32) (width*height);
 				for (U32 i = 0; i < pixel_count; i++)
@@ -1158,6 +1367,8 @@ void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 widt
 					pix[3] = alpha;
 				}
 
+				pixels = &scratch[0];
+
 				pixformat = GL_RGBA;
 				intformat = GL_RGBA8;
 			}
@@ -1165,7 +1376,6 @@ void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 widt
 			if (pixformat == GL_LUMINANCE && pixtype == GL_UNSIGNED_BYTE)
 			{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGB
 				scratch.resize(width*height);
-				pixels = &scratch[0];
 
 				U32 pixel_count = (U32) (width*height);
 				for (U32 i = 0; i < pixel_count; i++)
@@ -1176,6 +1386,8 @@ void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 widt
 					pix[0] = pix[1] = pix[2] = lum;
 					pix[3] = 255;
 				}
+
+				pixels = &scratch[0];
 
 				pixformat = GL_RGBA;
 				intformat = GL_RGB8;
@@ -1196,11 +1408,68 @@ void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 widt
 				break;
 			case GL_RGB: 
 			case GL_RGB8:
-				intformat = GL_COMPRESSED_RGB; 
+			{
+				/*std::vector<U32> tex;
+				tex.resize(height*width);
+				for (U32 i = 0; i < tex.size(); ++i)
+				{
+					((U8*)&tex[i])[0] = ((U8*)pixels)[i * 3];
+					((U8*)&tex[i])[1] = ((U8*)pixels)[i * 3 + 1];
+					((U8*)&tex[i])[2] = ((U8*)pixels)[i * 3 + 2];
+					((U8*)&tex[i])[3] = 255;
+				}
+				crn_comp_params comp_params;
+				comp_params.m_width = width;
+				comp_params.m_height = height;
+				comp_params.set_flag(cCRNCompFlagPerceptual, true);
+				comp_params.set_flag(cCRNCompFlagHierarchical, false);
+				comp_params.m_file_type = cCRNFileTypeDDS;
+				comp_params.m_format = cCRNFmtDXT5;
+				comp_params.m_pImages[0][0] = &tex[0];
+				comp_params.m_quality_level = cCRNDXTQualityUber;
+				SYSTEM_INFO g_system_info;
+				GetSystemInfo(&g_system_info);
+				comp_params.m_num_helper_threads = std::max<S32>(0, (S32)g_system_info.dwNumberOfProcessors - 1);
+				crn_mipmap_params mip_params;
+				mip_params.m_gamma_filtering = true;
+				mip_params.m_mode = cCRNMipModeGenerateMips;
+
+				crn_uint32 output_file_size;
+				void *compressed_data = crn_compress(comp_params, mip_params, output_file_size);
+				if (compressed_data)
+				{
+					glTexParameteri(target, GL_GENERATE_MIPMAP, GL_FALSE);
+
+					U32 pos = sizeof(U32);
+					const DDS_HEADER& header = *(DDS_HEADER*)(((U8*)compressed_data) + pos);
+					pos += sizeof(DDS_HEADER);
+					if (header.ddspf.dwFlags & 0x4 && header.ddspf.dwFourCC == '01XD')
+					{
+						pos += sizeof(DDS_HEADER_DXT10);
+					}
+
+					U32 num_mips = (header.dwFlags & 0x20000) ? header.dwMipMapCount : 1;
+
+					U32 x = width;
+					U32 y = height;
+					for (U32 i = 0; i < num_mips; ++i)
+					{
+						size_t size = llmax(4u, x) / 4 * llmax(4u, y) / 4 * 16;
+						glCompressedTexImage2DARB(GL_TEXTURE_2D, i, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, x, y, 0, size, (const void*)(((U8*)compressed_data) + pos));
+						x = (x + 1) >> 1;
+						y = (y + 1) >> 1;
+						pos += size;
+					}
+					crn_free_block(compressed_data);
+					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, num_mips - 1);
+					return;
+				}*/
+			}
+
 				break;
 			case GL_RGBA:
 			case GL_RGBA8:
-				intformat = GL_COMPRESSED_RGBA; 
+				//intformat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
 				break;
 			case GL_LUMINANCE:
 			case GL_LUMINANCE8:

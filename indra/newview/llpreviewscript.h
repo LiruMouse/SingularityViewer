@@ -33,7 +33,6 @@
 #ifndef LL_LLPREVIEWSCRIPT_H
 #define LL_LLPREVIEWSCRIPT_H
 
-#include "lldarray.h"
 #include "llpreview.h"
 #include "lltabcontainer.h"
 #include "llinventory.h"
@@ -162,7 +161,7 @@ private:
 	BOOL			mForceClose;
 	LLPanel*		mCodePanel;
 	LLScrollListCtrl* mErrorList;
-	LLDynamicArray<LLEntryAndEdCore*> mBridges;
+	std::vector<LLEntryAndEdCore*> mBridges;
 	LLHandle<LLFloater>	mLiveHelpHandle;
 	LLKeywordToken* mLastHelpToken;
 	LLFrameTimer	mLiveHelpTimer;

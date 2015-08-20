@@ -18,7 +18,6 @@
       <key>register</key><string>http://secondlife.com/registration/</string>
       <key>password</key><string>http://secondlife.com/account/request.php</string>
       <key>render_compat</key><boolean>1</boolean>
-      <key>inventory_links</key><boolean>1</boolean>
       <key>auto_update</key><boolean>0</boolean>
       <key>locked</key><boolean>1</boolean>
     </map>
@@ -35,7 +34,6 @@
       <key>support</key><string>http://secondlife.com/support/</string>
       <key>register</key><string>http://secondlife.com/registration/</string>
       <key>render_compat</key><boolean>0</boolean>
-      <key>inventory_links</key><boolean>1</boolean>
       <key>auto_update</key><boolean>0</boolean>
     </map>
 
@@ -45,7 +43,6 @@
       <key>gridname</key> <string>OSGrid</string>
       <key>gridnick</key> <string>osgrid</string>
       <key>helperuri</key> <string>http://helper.osgrid.org/</string>
-      <key>inventory_links</key> <boolean>0</boolean>
       <key>loginpage</key> <string>http://www.osgrid.org/splash/</string>
       <key>loginuri</key> <string>http://login.osgrid.org/</string>
       <key>password</key> <string>http://www.osgrid.org/</string>

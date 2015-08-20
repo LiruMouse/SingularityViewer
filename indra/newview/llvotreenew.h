@@ -34,7 +34,6 @@
 #define LL_LLVOTREENEW_H
 
 #include "llviewerobject.h"
-#include "lldarray.h"
 #include "xform.h"
 
 #include "lltreeparams.h"
@@ -140,7 +139,7 @@ public:
 		U32 mOffsets[MAX_VARS][MAX_RES];		// offsets for the partial branch pieces
 		// local section frames for this branch
 		LLMatrix4 mFrames[MAX_VARS][(MAX_RES*(MAX_RES + 1))/2];	// (0...n) + (1...n) + ... + (n-1..n)
-		LLDynamicArray<LLVector3> mFaceNormals;
+		std::vector<LLVector3> mFaceNormals;
 
 	};
 

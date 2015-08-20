@@ -290,7 +290,7 @@ void LLWebProfile::post(LLPointer<LLImageFormatted> image, const LLSD& config, c
 
 	size_t size = body_size + image->getDataSize() + footer_size;
 	// postRaw() takes ownership of the buffer and releases it later.
-	char* data = new char [size];
+	U8* data = new U8 [size];
 	memcpy(data, body.str().data(), body_size);
 	// Insert the image data.
 	memcpy(data + body_size, image->getData(), image->getDataSize());

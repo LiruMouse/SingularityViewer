@@ -633,13 +633,13 @@ void LLViewerParcelMgr::deselectLand()
 
 void LLViewerParcelMgr::addObserver(LLParcelObserver* observer)
 {
-	mObservers.put(observer);
+	mObservers.push_back(observer);
 }
 
 
 void LLViewerParcelMgr::removeObserver(LLParcelObserver* observer)
 {
-	mObservers.removeObj(observer);
+	vector_replace_with_last(mObservers, observer);
 }
 
 
@@ -648,16 +648,16 @@ void LLViewerParcelMgr::removeObserver(LLParcelObserver* observer)
 // from the list.
 void LLViewerParcelMgr::notifyObservers()
 {
-	LLDynamicArray<LLParcelObserver*> observers;
-	S32 count = mObservers.count();
+	std::vector<LLParcelObserver*> observers;
+	S32 count = mObservers.size();
 	S32 i;
 	for(i = 0; i < count; ++i)
 	{
-		observers.put(mObservers.get(i));
+		observers.push_back(mObservers.at(i));
 	}
 	for(i = 0; i < count; ++i)
 	{
-		observers.get(i)->changed();
+		observers.at(i)->changed();
 	}
 }
 

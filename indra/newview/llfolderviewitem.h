@@ -27,7 +27,6 @@
 #define LLFOLDERVIEWITEM_H
 
 #include "llview.h"
-#include "lldarray.h"  // *TODO: Eliminate, forward declare
 #include "lluiimage.h"
 #include "lluictrl.h"
 
@@ -356,7 +355,7 @@ protected:
 						LLUIImagePtr icon_open,
 						LLUIImagePtr icon_link,
 						LLFolderView* root,
-						LLFolderViewEventListener* listener );
+						LLFolderViewEventListener* listener);
 
 	friend class LLBuildNewViewsScheduler;
 	friend class LLPanelObjectInventory;
@@ -571,6 +570,14 @@ class LLFolderViewListenerFunctor
 public:
 	virtual ~LLFolderViewListenerFunctor() {}
 	virtual void operator()(LLFolderViewEventListener* listener) = 0;
+};
+
+typedef std::deque<LLFolderViewItem*> folder_view_item_deque;
+
+class LLFolderViewGroupedItemModel : public LLRefCount
+{
+public:
+	virtual void groupFilterContextMenu(folder_view_item_deque& selected_items, LLMenuGL& menu) = 0;
 };
 
 #endif  // LLFOLDERVIEWITEM_H

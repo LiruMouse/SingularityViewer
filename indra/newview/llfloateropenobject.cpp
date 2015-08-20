@@ -129,7 +129,7 @@ void LLFloaterOpenObject::dirty()
 
 
 
-void LLFloaterOpenObject::moveToInventory(bool wear)
+void LLFloaterOpenObject::moveToInventory(bool wear, bool replace)
 {
 	if (mObjectSelection->getRootObjectCount() != 1)
 	{
@@ -157,40 +157,34 @@ void LLFloaterOpenObject::moveToInventory(bool wear)
 		parent_category_id = gInventory.getRootFolderID();
 	}
 
-	LLCategoryCreate* cat_data = new LLCategoryCreate(object_id, wear);
-
+	inventory_func_type func = boost::bind(LLFloaterOpenObject::callbackCreateInventoryCategory,_1,object_id,wear,replace);
 	LLUUID category_id = gInventory.createNewCategory(parent_category_id, 
-		LLFolderType::FT_NONE,
-		name,
-		callbackCreateInventoryCategory,
-		(void*)cat_data);
+													  LLFolderType::FT_NONE, 
+													  name,
+													  func);
 
 	//If we get a null category ID, we are using a capability in createNewCategory and we will
 	//handle the following in the callbackCreateInventoryCategory routine.
 	if ( category_id.notNull() )
 	{
-		LLSD result;
-		result["folder_id"] = category_id;
 		//Reduce redundant code by just calling the callback. Dur.
-		callbackCreateInventoryCategory(result,cat_data);
+		callbackCreateInventoryCategory(category_id, object_id, wear);
 	}
 }
 
 // static
-void LLFloaterOpenObject::callbackCreateInventoryCategory(const LLSD& result, void* data)
+void LLFloaterOpenObject::callbackCreateInventoryCategory(const LLUUID& category_id, LLUUID object_id, bool wear, bool replace)
 {
-	LLCategoryCreate* cat_data = (LLCategoryCreate*)data;
-		
-	LLUUID category_id = result["folder_id"].asUUID();
 	LLCatAndWear* wear_data = new LLCatAndWear;
 
 	wear_data->mCatID = category_id;
-	wear_data->mWear = cat_data->mWear;
+	wear_data->mWear = wear;
 	wear_data->mFolderResponded = true;
-
+	wear_data->mReplace = replace;
+	
 	// Copy and/or move the items into the newly created folder.
 	// Ignore any "you're going to break this item" messages.
-	BOOL success = move_inv_category_world_to_agent(cat_data->mObjectID, category_id, TRUE,
+	BOOL success = move_inv_category_world_to_agent(object_id, category_id, TRUE,
 													callbackMoveInventory, 
 													(void*)wear_data);
 	if (!success)
@@ -200,7 +194,6 @@ void LLFloaterOpenObject::callbackCreateInventoryCategory(const LLSD& result, vo
 		
 		LLNotificationsUtil::add("OpenObjectCannotCopy");
 	}
-	delete cat_data;	
 }
 
 // static

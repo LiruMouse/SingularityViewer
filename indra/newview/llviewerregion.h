@@ -38,7 +38,6 @@
 #include <string>
 #include <boost/signals2.hpp>
 
-#include "lldarray.h"
 #include "llwind.h"
 #include "llcloud.h"
 #include "llstat.h"
@@ -75,11 +74,13 @@ class LLDataPacker;
 class LLDataPackerBinaryBuffer;
 class LLHost;
 class LLBBox;
+class LLSpatialGroup;
 // [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-07-26 (Catznip-3.3)
 class LLViewerTexture;
 // [/SL:KB]
 
 class LLViewerRegionImpl;
+class LLViewerOctreeGroup;
 
 class LLViewerRegion: public LLCapabilityProvider // implements this interface
 {
@@ -273,6 +274,8 @@ public:
 	void failedSeedCapability();
 	S32 getNumSeedCapRetries();
 	void setCapability(const std::string& name, const std::string& url);
+	void setCapabilityDebug(const std::string& name, const std::string& url);
+	bool isCapabilityAvailable(const std::string& name) const;
 	// implements LLCapabilityProvider
     virtual std::string getCapability(const std::string& name) const;
 
@@ -378,7 +381,9 @@ public:
 
 	void getNeighboringRegions( std::vector<LLViewerRegion*>& uniqueRegions );
 	void getNeighboringRegionsStatus( std::vector<S32>& regions );
-	
+	const LLViewerRegionImpl * getRegionImpl() const { return mImpl; }
+	LLViewerRegionImpl * getRegionImplNC() { return mImpl; }
+
 	void setGamingData(const LLSD& info);
 	const U32 getGamingFlags() const { return mGamingFlags; }
 	
@@ -422,8 +427,8 @@ public:
 	// messaging system in which the previous message only sends and parses the 
 	// positions stored in the first array so they're maintained separately until 
 	// we stop supporting the old CoarseLocationUpdate message.
-	LLDynamicArray<U32> mMapAvatars;
-	LLDynamicArray<LLUUID> mMapAvatarIDs;
+	std::vector<U32> mMapAvatars;
+	std::vector<LLUUID> mMapAvatarIDs;
 
 private:
 	LLViewerRegionImpl * mImpl;
@@ -475,8 +480,8 @@ private:
 	BOOL									mCacheLoaded;
 	BOOL                                    mCacheDirty;
 
-	LLDynamicArray<U32>						mCacheMissFull;
-	LLDynamicArray<U32>						mCacheMissCRC;
+	std::vector<U32>						mCacheMissFull;
+	std::vector<U32>						mCacheMissCRC;
 
 // [SL:KB] - Patch: World-MinimapOverlay | Checked: 2012-07-26 (Catznip-3.3)
 	mutable tex_matrix_t mWorldMapTiles;

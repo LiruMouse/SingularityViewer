@@ -110,7 +110,7 @@ class LLSDInjector : public Injector
 class RawInjector : public Injector
 {
   public:
-	RawInjector(char const* data, U32 size) : mData(data), mSize(size) { }
+	RawInjector(U8 const* data, U32 size) : mData(data), mSize(size) { }
 	/*virtual*/ ~RawInjector() { delete [] mData; }
 
 	/*virtual*/ char const* contentType(void) const { return "application/octet-stream"; }
@@ -118,12 +118,12 @@ class RawInjector : public Injector
 	/*virtual*/ U32 get_body(LLChannelDescriptors const& channels, buffer_ptr_t& buffer)
 	{
 		LLBufferStream ostream(channels, buffer.get());
-		ostream.write(mData, mSize);
+		ostream.write((const char*)mData, mSize);
 		ostream << std::flush;			// Always flush a LLBufferStream when done writing to it.
 		return mSize;
 	}
 
-	char const* mData;
+	U8 const* mData;
 	U32 mSize;
 };
 
@@ -722,9 +722,14 @@ void LLHTTPClient::put(std::string const& url, LLSD const& body, ResponderPtr re
 	request(url, HTTP_PUT, new LLSDInjector(body), responder, headers, NULL/*,*/ DEBUG_CURLIO_PARAM(debug), no_keep_alive, no_does_authentication, no_allow_compressed_reply);
 }
 
-void LLHTTPClient::putRaw(const std::string& url, const char* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug))
+void LLHTTPClient::putRaw(const std::string& url, const U8* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug))
 {
 	request(url, HTTP_PUT, new RawInjector(data, size), responder, headers, NULL/*,*/ DEBUG_CURLIO_PARAM(debug), no_keep_alive, no_does_authentication, no_allow_compressed_reply);
+}
+
+void LLHTTPClient::patch(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive, AIStateMachine* parent, AIStateMachine::state_type new_parent_state)
+{
+	request(url, HTTP_PATCH, new LLSDInjector(body), responder, headers, NULL/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive, no_does_authentication, allow_compressed_reply, parent, new_parent_state);
 }
 
 void LLHTTPClient::post(std::string const& url, LLSD const& body, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive, AIStateMachine* parent, AIStateMachine::state_type new_parent_state)
@@ -753,7 +758,7 @@ void LLHTTPClient::postXMLRPC(std::string const& url, char const* method, XMLRPC
   	request(url, HTTP_POST, new XMLRPCInjector(xmlrpc_request), responder, headers, NULL/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive, does_authentication, no_allow_compressed_reply);
 }
 
-void LLHTTPClient::postRaw(std::string const& url, char const* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive)
+void LLHTTPClient::postRaw(std::string const& url, U8 const* data, S32 size, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug), EKeepAlive keepalive)
 {
 	request(url, HTTP_POST, new RawInjector(data, size), responder, headers, NULL/*,*/ DEBUG_CURLIO_PARAM(debug), keepalive);
 }
@@ -779,4 +784,11 @@ void LLHTTPClient::move(std::string const& url, std::string const& destination, 
 {
 	headers.addHeader("Destination", destination);
 	request(url, HTTP_MOVE, NULL, responder, headers, NULL/*,*/ DEBUG_CURLIO_PARAM(debug));
+}
+
+// static
+void LLHTTPClient::copy(std::string const& url, std::string const& destination, ResponderPtr responder, AIHTTPHeaders& headers/*,*/ DEBUG_CURLIO_PARAM(EDebugCurl debug))
+{
+	headers.addHeader("Destination", destination);
+	request(url, HTTP_COPY, NULL, responder, headers, NULL/*,*/ DEBUG_CURLIO_PARAM(debug));
 }

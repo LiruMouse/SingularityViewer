@@ -39,7 +39,6 @@
 #ifndef LL_LLTRACKER_H
 #define LL_LLTRACKER_H
 
-#include "lldarray.h"
 #include "llmemory.h"
 #include "llstring.h"
 #include "lluuid.h"
@@ -144,8 +143,8 @@ protected:
 	std::string				mTrackedLandmarkName;
 	LLUUID					mTrackedLandmarkAssetID;
 	LLUUID					mTrackedLandmarkItemID;
-	LLDynamicArray<LLUUID>	mLandmarkAssetIDList;
-	LLDynamicArray<LLUUID>	mLandmarkItemIDList;
+	std::vector<LLUUID>	mLandmarkAssetIDList;
+	std::vector<LLUUID>	mLandmarkItemIDList;
 	BOOL					mHasReachedLandmark;
 	BOOL 					mHasLandmarkPosition;
 	BOOL					mLandmarkHasBeenVisited;

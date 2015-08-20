@@ -41,7 +41,6 @@
 #include "llcoord.h"
 #include "v3dmath.h"
 
-#include "lldarray.h"
 #include "llviewerwindow.h"
 #include "llviewerobject.h"
 

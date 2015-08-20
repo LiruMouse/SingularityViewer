@@ -92,7 +92,7 @@ public:
 	LLUUID addSession(const std::string& name,
 					  EInstantMessage dialog,
 					  const LLUUID& other_participant_id,
-					  const LLDynamicArray<LLUUID>& ids);
+					  const std::vector<LLUUID>& ids);
 
 	// Creates a P2P session with the requisite handle for responding to voice calls
 	LLUUID addP2PSession(const std::string& name,
@@ -197,15 +197,15 @@ private:
 									const LLUUID& target_id,
 									const std::string& name,
 									const EInstantMessage& dialog,
-									const LLDynamicArray<LLUUID>& ids = LLDynamicArray<LLUUID>(),
+									const std::vector<LLUUID>& ids = std::vector<LLUUID>(),
 									bool user_initiated = false);
 
 	// This simple method just iterates through all of the ids, and
 	// prints a simple message if they are not online. Used to help
 	// reduce 'hello' messages to the linden employees unlucky enough
 	// to have their calling card in the default inventory.
-	void noteOfflineUsers(LLFloaterIMPanel* panel, const LLDynamicArray<LLUUID>& ids);
-	void noteMutedUsers(LLFloaterIMPanel* panel, const LLDynamicArray<LLUUID>& ids);
+	void noteOfflineUsers(LLFloaterIMPanel* panel, const std::vector<LLUUID>& ids);
+	void noteMutedUsers(LLFloaterIMPanel* panel, const std::vector<LLUUID>& ids);
 
 	void processIMTypingCore(const LLIMInfo* im_info, BOOL typing);
 

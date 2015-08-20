@@ -34,7 +34,6 @@
 #include "llsd.h"
 #include "message.h"
 #include <boost/tokenizer.hpp>
-#include "../newview/hippogridmanager.h"
 
 #include "llsdutil.h"
 
@@ -52,6 +51,7 @@ static const std::string INV_DESC_LABEL("desc");
 static const std::string INV_PERMISSIONS_LABEL("permissions");
 static const std::string INV_SHADOW_ID_LABEL("shadow_id");
 static const std::string INV_ASSET_ID_LABEL("asset_id");
+static const std::string INV_LINKED_ID_LABEL("linked_id");
 static const std::string INV_SALE_INFO_LABEL("sale_info");
 static const std::string INV_FLAGS_LABEL("flags");
 static const std::string INV_CREATION_DATE_LABEL("created_at");
@@ -77,13 +77,15 @@ LLInventoryObject::LLInventoryObject(const LLUUID& uuid,
 	mUUID(uuid),
 	mParentUUID(parent_uuid),
 	mType(type),
-	mName(name)
+	mName(name),
+	mCreationDate(0)
 {
 	correctInventoryName(mName);
 }
 
 LLInventoryObject::LLInventoryObject() :
-	mType(LLAssetType::AT_NONE)
+	mType(LLAssetType::AT_NONE),
+	mCreationDate(0)
 {
 }
 
@@ -249,13 +251,6 @@ BOOL LLInventoryObject::exportLegacyStream(std::ostream& output_stream, BOOL) co
 	return TRUE;
 }
 
-
-void LLInventoryObject::removeFromServer()
-{
-	// don't do nothin'
-	LL_WARNS() << "LLInventoryObject::removeFromServer() called.  Doesn't do anything." << LL_ENDL;
-}
-
 void LLInventoryObject::updateParentOnServer(BOOL) const
 {
 	// don't do nothin'
@@ -277,6 +272,25 @@ void LLInventoryObject::correctInventoryName(std::string& name)
 	LLStringUtil::truncate(name, DB_INV_ITEM_NAME_STR_LEN);
 }
 
+time_t LLInventoryObject::getCreationDate() const
+{
+	return mCreationDate;
+}
+
+void LLInventoryObject::setCreationDate(time_t creation_date_utc)
+{
+	mCreationDate = creation_date_utc;
+}
+
+const std::string& LLInventoryItem::getDescription() const
+{
+	return mDescription;
+}
+
+const std::string& LLInventoryItem::getActualDescription() const
+{
+	return mDescription;
+}
 
 ///----------------------------------------------------------------------------
 /// Class LLInventoryItem
@@ -299,9 +313,9 @@ LLInventoryItem::LLInventoryItem(const LLUUID& uuid,
 	mDescription(desc),
 	mSaleInfo(sale_info),
 	mInventoryType(inv_type),
-	mFlags(flags),
-	mCreationDate(creation_date_utc)
+	mFlags(flags)
 {
+	mCreationDate = creation_date_utc;
 	LLStringUtil::replaceNonstandardASCII(mDescription, ' ');
 	LLStringUtil::replaceChar(mDescription, '|', ' ');
 	mPermissions.initMasks(inv_type);
@@ -314,9 +328,9 @@ LLInventoryItem::LLInventoryItem() :
 	mDescription(),
 	mSaleInfo(),
 	mInventoryType(LLInventoryType::IT_NONE),
-	mFlags(0),
-	mCreationDate(0)
+	mFlags(0)
 {
+	mCreationDate = (time_t)0;
 }
 
 LLInventoryItem::LLInventoryItem(const LLInventoryItem* other) :
@@ -376,21 +390,6 @@ void LLInventoryItem::setAssetUUID(const LLUUID& asset_id)
 }
 
 
-const std::string& LLInventoryItem::getDescription() const
-{
-	return mDescription;
-}
-
-const std::string& LLInventoryItem::getActualDescription() const
-{
-	return mDescription;
-}
-
-time_t LLInventoryItem::getCreationDate() const
-{
-	return mCreationDate;
-}
-
 U32 LLInventoryItem::getCRC32() const
 {
 	// *FIX: Not a real crc - more of a checksum.
@@ -445,11 +444,6 @@ void LLInventoryItem::setInventoryType(LLInventoryType::EType inv_type)
 void LLInventoryItem::setFlags(U32 flags)
 {
 	mFlags = flags;
-}
-
-void LLInventoryItem::setCreationDate(time_t creation_date_utc)
-{
-	mCreationDate = creation_date_utc;
 }
 
 // Currently only used in the Viewer to handle calling cards
@@ -513,6 +507,12 @@ U32 LLInventoryItem::getFlags() const
 	return mFlags;
 }
 
+time_t LLInventoryItem::getCreationDate() const
+{
+	return mCreationDate;
+}
+
+
 // virtual
 void LLInventoryItem::packMessage(LLMessageSystem* msg) const
 {
@@ -544,10 +544,6 @@ BOOL LLInventoryItem::unpackMessage(LLMessageSystem* msg, const char* block, S32
 	S8 type;
 	msg->getS8Fast(block, _PREHASH_Type, type, block_num);
 	mType = static_cast<LLAssetType::EType>(type);
-	if (mType == LLAssetType::AT_LINK || mType == LLAssetType::AT_LINK_FOLDER)
-	{
-		gHippoGridManager->getConnectedGrid()->setSupportsInvLinks(true);
-	}
 	msg->getS8(block, "InvType", type, block_num);
 	mInventoryType = static_cast<LLInventoryType::EType>(type);
 	mPermissions.initMasks(mInventoryType);
@@ -1047,11 +1043,17 @@ void LLInventoryItem::asLLSD( LLSD& sd ) const
 
 LLFastTimer::DeclareTimer FTM_INVENTORY_SD_DESERIALIZE("Inventory SD Deserialize");
 
-bool LLInventoryItem::fromLLSD(const LLSD& sd)
+bool LLInventoryItem::fromLLSD(const LLSD& sd, bool is_new)
 {
+
 	LLFastTimer _(FTM_INVENTORY_SD_DESERIALIZE);
-	mInventoryType = LLInventoryType::IT_NONE;
-	mAssetUUID.setNull();
+	if (is_new)
+	{
+		// If we're adding LLSD to an existing object, need avoid
+		// clobbering these fields.
+		mInventoryType = LLInventoryType::IT_NONE;
+		mAssetUUID.setNull();
+	}
 	std::string w;
 
 	w = INV_ITEM_ID_LABEL;
@@ -1108,6 +1110,11 @@ bool LLInventoryItem::fromLLSD(const LLSD& sd)
 	{
 		mAssetUUID = sd[w];
 	}
+	w = INV_LINKED_ID_LABEL;
+	if (sd.has(w))
+	{
+		mAssetUUID = sd[w];
+	}
 	w = INV_ASSET_TYPE_LABEL;
 	if (sd.has(w))
 	{
@@ -1119,11 +1126,6 @@ bool LLInventoryItem::fromLLSD(const LLSD& sd)
 		{
 			S8 type = (U8)sd[w].asInteger();
 			mType = static_cast<LLAssetType::EType>(type);
-		}
-		
-		if (mType == LLAssetType::AT_LINK || mType == LLAssetType::AT_LINK_FOLDER)
-		{
-			gHippoGridManager->getConnectedGrid()->setSupportsInvLinks(true);			
 		}
 	}
 	w = INV_INVENTORY_TYPE_LABEL;

@@ -380,6 +380,13 @@ void update_texture_fetch()
 	gTextureList.updateImages(0.10f);
 }
 
+void set_flags_and_update_appearance()
+{
+	LLAppearanceMgr::instance().setAttachmentInvLinkEnable(true);
+	LLAppearanceMgr::instance().updateAppearanceFromCOF(true, true, no_op);
+}
+
+
 void hooked_process_sound_trigger(LLMessageSystem *msg, void **)
 {
 	process_sound_trigger(msg,NULL);
@@ -2247,12 +2254,17 @@ bool idle_startup()
 		// This method MUST be called before gInventory.findCategoryUUIDForType because of 
 		// gInventory.mIsAgentInvUsable is set to true in the gInventory.buildParentChildMap.
 		gInventory.buildParentChildMap();
+		gInventory.createCommonSystemCategories();
+
+		// It's debatable whether this flag is a good idea - sets all
+		// bits, and in general it isn't true that inventory
+		// initialization generates all types of changes. Maybe add an
+		// INITIALIZE mask bit instead?
+		gInventory.addChangedMask(LLInventoryObserver::ALL, LLUUID::null);
+		gInventory.notifyObservers();
+		
 		display_startup();
 
-		/*llinfos << "Setting Inventory changed mask and notifying observers" << llendl;
-		gInventory.addChangedMask(LLInventoryObserver::ALL, LLUUID::null);
-		gInventory.notifyObservers();*/
-		
 		//all categories loaded. lets create "My Favorites" category
 		gInventory.findCategoryUUIDForType(LLFolderType::FT_FAVORITE,true);
 
@@ -2565,13 +2577,33 @@ bool idle_startup()
 			// Start loading the wearables, textures, gestures
 			LLStartUp::loadInitialOutfit( sInitialOutfit, sInitialOutfitGender );
 		}
+		// If not first login, we need to fetch COF contents and
+		// compute appearance from that.
+		if (isAgentAvatarValid() && !gAgent.isFirstLogin() && !gAgent.isGenderChosen())
+		{
+			gAgentWearables.notifyLoadingStarted();
+			gAgent.setGenderChosen(TRUE);
+			gAgentWearables.sendDummyAgentWearablesUpdate();
+			callAfterCategoryFetch(LLAppearanceMgr::instance().getCOF(), set_flags_and_update_appearance);
+		}
 
 		display_startup();
 
 		// wait precache-delay and for agent's avatar or a lot longer.
-		if(((timeout_frac > 1.f) && isAgentAvatarValid())
-		   || (timeout_frac > 3.f))
+		if((timeout_frac > 1.f) && isAgentAvatarValid())
 		{
+			LLStartUp::setStartupState( STATE_WEARABLES_WAIT );
+		}
+		else if (timeout_frac > 10.f) 
+		{
+			// If we exceed the wait above while isAgentAvatarValid is
+			// not true yet, we will change startup state and
+			// eventually (once avatar does get created) wind up at
+			// the gender chooser. This should occur only in very
+			// unusual circumstances, so set the timeout fairly high
+			// to minimize mistaken hits here.
+			LL_WARNS() << "Wait for valid avatar state exceeded " 
+					<< timeout.getElapsedTimeF32() << " will invoke gender chooser" << LL_ENDL; 
 			LLStartUp::setStartupState( STATE_WEARABLES_WAIT );
 		}
 		else
@@ -4096,7 +4128,10 @@ bool process_login_success_response(std::string& password, U32& first_sim_size_x
 		flag = login_flags["gendered"].asString();
 		if(flag == "Y")
 		{
-			gAgent.setGenderChosen(TRUE);
+			// We don't care about this flag anymore; now base whether
+			// outfit is chosen on COF contents, initial outfit
+			// requested and available, etc.
+			//gAgent.setGenderChosen(TRUE);
 		}
 		
 		flag = login_flags["daylight_savings"].asString();

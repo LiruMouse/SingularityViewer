@@ -85,13 +85,6 @@ LLMakeOutfitDialog::LLMakeOutfitDialog(bool modal) : LLModalDialog(LLStringUtil:
 		}
 	}
 
-	if (!gHippoGridManager->getConnectedGrid()->supportsInvLinks())
-	{
-		childSetValue("checkbox_use_links", false);
-		childSetEnabled("checkbox_use_outfits", false);
-		childSetValue("checkbox_use_outfits", false);
-	}
-
 	getChild<LLUICtrl>("Save")->setCommitCallback(boost::bind(&LLMakeOutfitDialog::onSave, this)); 
 	getChild<LLUICtrl>("Cancel")->setCommitCallback(boost::bind(&LLMakeOutfitDialog::close, this, _1)); 
 	getChild<LLUICtrl>("Check All")->setCommitCallback(boost::bind(&LLMakeOutfitDialog::onCheckAll, this, true));
@@ -140,7 +133,7 @@ void LLMakeOutfitDialog::refresh()
 		if (fUseOutfits)
 			pCheckCtrl->setValue(true);
 	}
-	getChild<LLUICtrl>("checkbox_use_links")->setEnabled(!fUseOutfits && gHippoGridManager->getConnectedGrid()->supportsInvLinks());
+	getChild<LLUICtrl>("checkbox_use_links")->setEnabled(!fUseOutfits);
 	getChild<LLUICtrl>("checkbox_legacy_copy_changes")->setEnabled(!fUseOutfits);
 }
 

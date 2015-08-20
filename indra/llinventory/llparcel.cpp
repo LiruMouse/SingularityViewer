@@ -138,7 +138,7 @@ LLParcel::LLParcel(const LLUUID &owner_id,
 // virtual
 LLParcel::~LLParcel()
 {
-    // user list cleaned up by LLDynamicArray destructor.
+    // user list cleaned up by std::vector destructor.
 }
 
 void LLParcel::init(const LLUUID &owner_id,

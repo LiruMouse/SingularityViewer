@@ -154,6 +154,10 @@ void LLWorld::destroyClass()
 	{
 		mEdgeWaterObjects[i] = NULL;
 	}
+
+	//make all visible drawbles invisible.
+	LLDrawable::incrementVisible();
+	
 }
 
 void LLWorld::setRegionSize(const U32& width, const U32& length)
@@ -700,7 +704,7 @@ void LLWorld::updateVisibilities()
 		if (part)
 		{
 			LLSpatialGroup* group = (LLSpatialGroup*) part->mOctree->getListener(0);
-			const LLVector4a* bounds = group->mBounds;
+			const LLVector4a* bounds = group->getBounds();
 			if (LLViewerCamera::getInstance()->AABBInFrustum(bounds[0], bounds[1]))
 			{
 				mCulledRegionList.erase(curiter);
@@ -724,7 +728,7 @@ void LLWorld::updateVisibilities()
 		if (part)
 		{
 			LLSpatialGroup* group = (LLSpatialGroup*) part->mOctree->getListener(0);
-			const LLVector4a* bounds = group->mBounds;
+			const LLVector4a* bounds = group->getBounds();
 			if (LLViewerCamera::getInstance()->AABBInFrustum(bounds[0], bounds[1]))
 			{
 				regionp->calculateCameraDistance();
@@ -1585,13 +1589,13 @@ void LLWorld::getAvatars(uuid_vec_t* avatar_ids, std::vector<LLVector3d>* positi
 	{
 		LLViewerRegion* regionp = *iter;
 		const LLVector3d& origin_global = regionp->getOriginGlobal();
-		S32 count = regionp->mMapAvatars.count();
+		S32 count = regionp->mMapAvatars.size();
 		for (S32 i = 0; i < count; i++)
 		{
-			LLVector3d pos_global = unpackLocalToGlobalPosition(regionp->mMapAvatars.get(i), origin_global);
+			LLVector3d pos_global = unpackLocalToGlobalPosition(regionp->mMapAvatars.at(i), origin_global);
 			if(dist_vec_squared(pos_global, relative_to) <= radius_squared)
 			{
-				LLUUID uuid = regionp->mMapAvatarIDs.get(i);
+				LLUUID uuid = regionp->mMapAvatarIDs.at(i);
 				// if this avatar doesn't already exist in the list, add it
 				if(uuid.notNull() && avatar_ids != NULL && std::find(avatar_ids->begin(), avatar_ids->end(), uuid) == avatar_ids->end())
 				{
@@ -1639,13 +1643,13 @@ void LLWorld::getAvatars(pos_map_t* umap, const LLVector3d& relative_to, F32 rad
 	{
 		LLViewerRegion* regionp = *iter;
 		const LLVector3d& origin_global = regionp->getOriginGlobal();
-		S32 count = regionp->mMapAvatars.count();
+		S32 count = regionp->mMapAvatars.size();
 		for (S32 i = 0; i < count; i++)
 		{
-			LLVector3d pos_global = unpackLocalToGlobalPosition(regionp->mMapAvatars.get(i), origin_global);
+			LLVector3d pos_global = unpackLocalToGlobalPosition(regionp->mMapAvatars.at(i), origin_global);
 			if(dist_vec_squared(pos_global, relative_to) <= radius_squared)
 			{
-				LLUUID uuid = regionp->mMapAvatarIDs.get(i);
+				LLUUID uuid = regionp->mMapAvatarIDs.at(i);
 				// if this avatar doesn't already exist in the list, add it
 				if(uuid.notNull())
 				{

@@ -303,7 +303,7 @@ void LLDrawPoolAlpha::renderAlphaHighlight(U32 mask)
 	for (LLCullResult::sg_iterator i = gPipeline.beginAlphaGroups(); i != gPipeline.endAlphaGroups(); ++i)
 	{
 		LLSpatialGroup* group = *i;
-		if (group->mSpatialPartition->mRenderByGroup &&
+		if (group->getSpatialPartition()->mRenderByGroup &&
 			!group->isDead())
 		{
 			LLSpatialGroup::drawmap_elem_t& draw_info = group->mDrawMap[LLRenderPass::PASS_ALPHA];	
@@ -343,14 +343,14 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, S32 pass)
 	{
 		LLSpatialGroup* group = *i;
 		llassert(group);
-		llassert(group->mSpatialPartition);
+		llassert(group->getSpatialPartition());
 
-		if (group->mSpatialPartition->mRenderByGroup &&
+		if (group->getSpatialPartition()->mRenderByGroup &&
 		    !group->isDead())
 		{
-			bool is_particle_or_hud_particle = group->mSpatialPartition->mPartitionType == LLViewerRegion::PARTITION_PARTICLE
-													  || group->mSpatialPartition->mPartitionType == LLViewerRegion::PARTITION_CLOUD
-													  || group->mSpatialPartition->mPartitionType == LLViewerRegion::PARTITION_HUD_PARTICLE;
+			bool is_particle_or_hud_particle = group->getSpatialPartition()->mPartitionType == LLViewerRegion::PARTITION_PARTICLE
+													  || group->getSpatialPartition()->mPartitionType == LLViewerRegion::PARTITION_CLOUD
+													  || group->getSpatialPartition()->mPartitionType == LLViewerRegion::PARTITION_HUD_PARTICLE;
 
 			bool draw_glow_for_this_partition = !depth_only && mVertexShaderLevel > 0; // no shaders = no glow.
 

@@ -34,7 +34,6 @@
 #ifndef LL_LLDEBUGMESSAGEBOX_H
 #define LL_LLDEBUGMESSAGEBOX_H
 
-#include "lldarray.h"
 #include "llfloater.h"
 #include "v3math.h"
 #include "lltextbox.h"

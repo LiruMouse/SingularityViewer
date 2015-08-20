@@ -27,7 +27,6 @@
 #ifndef LL_LLINVENTORY_H
 #define LL_LLINVENTORY_H
 
-#include "lldarray.h"
 #include "llfoldertype.h"
 #include "llinventorytype.h"
 #include "llpermissions.h"
@@ -48,6 +47,7 @@ class LLInventoryObject : public LLRefCount
 {
 public:
 	typedef std::list<LLPointer<LLInventoryObject> > object_list_t;
+	typedef std::list<LLConstPointer<LLInventoryObject> > const_object_list_t;
 
 	//--------------------------------------------------------------------
 	// Initialization
@@ -73,6 +73,7 @@ public:
 	virtual LLAssetType::EType getType() const;
 	LLAssetType::EType getActualType() const; // bypasses indirection for linked items
 	BOOL getIsLinkType() const;
+	virtual time_t getCreationDate() const;
 	
 	//--------------------------------------------------------------------
 	// Mutators
@@ -83,6 +84,7 @@ public:
 	virtual void rename(const std::string& new_name);
 	void setParent(const LLUUID& new_parent);
 	void setType(LLAssetType::EType type);
+	virtual void setCreationDate(time_t creation_date_utc); // only stored for items
 
 // [RLVa:KB] - Checked: 2014-01-07 (RLVa-1.4.10)
 	// in place correction for inventory name string
@@ -103,7 +105,6 @@ public:
 	virtual BOOL importLegacyStream(std::istream& input_stream);
 	virtual BOOL exportLegacyStream(std::ostream& output_stream, BOOL include_asset_key = TRUE) const;
 
-	virtual void removeFromServer();
 	virtual void updateParentOnServer(BOOL) const;
 	virtual void updateServer(BOOL) const;
 
@@ -115,6 +116,7 @@ protected:
 	LLUUID mParentUUID; // Parent category.  Root categories have LLUUID::NULL.
 	LLAssetType::EType mType;
 	std::string mName;
+	time_t mCreationDate; // seconds from 1/1/1970, UTC
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -125,7 +127,7 @@ protected:
 class LLInventoryItem : public LLInventoryObject
 {
 public:
-	typedef LLDynamicArray<LLPointer<LLInventoryItem> > item_array_t;
+	typedef std::vector<LLPointer<LLInventoryItem> > item_array_t;
 
 	//--------------------------------------------------------------------
 	// Initialization
@@ -180,7 +182,6 @@ public:
 	void setPermissions(const LLPermissions& perm);
 	void setInventoryType(LLInventoryType::EType inv_type);
 	void setFlags(U32 flags);
-	void setCreationDate(time_t creation_date_utc);
 	void setCreator(const LLUUID& creator); // only used for calling cards
 
 	// Check for changes in permissions masks and sale info
@@ -214,7 +215,7 @@ public:
 	void unpackBinaryBucket(U8* bin_bucket, S32 bin_bucket_size);
 	LLSD asLLSD() const;
 	void asLLSD( LLSD& sd ) const;
-	bool fromLLSD(const LLSD& sd);
+	bool fromLLSD(const LLSD& sd, bool is_new = true);
 
 	//--------------------------------------------------------------------
 	// Member Variables
@@ -226,7 +227,6 @@ protected:
 	LLSaleInfo mSaleInfo;
 	LLInventoryType::EType mInventoryType;
 	U32 mFlags;
-	time_t mCreationDate; // seconds from 1/1/1970, UTC
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -238,7 +238,7 @@ protected:
 class LLInventoryCategory : public LLInventoryObject
 {
 public:
-	typedef LLDynamicArray<LLPointer<LLInventoryCategory> > cat_array_t;
+	typedef std::vector<LLPointer<LLInventoryCategory> > cat_array_t;
 
 	//--------------------------------------------------------------------
 	// Initialization

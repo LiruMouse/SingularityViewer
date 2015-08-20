@@ -1641,6 +1641,8 @@ bool LLAppViewer::cleanup()
 
 	LLAvatarAppearance::cleanupClass();
 	
+	LLAvatarAppearance::cleanupClass();
+	
 	LLPostProcess::cleanupClass();
 
 	LLTracker::cleanupInstance();
@@ -1877,6 +1879,8 @@ bool LLAppViewer::cleanup()
 	LLPrivateMemoryPoolManager::destroyClass() ;
 
 	ll_close_fail_log();
+
+	LLError::LLCallStacks::cleanup();
 
 	MEM_TRACK_RELEASE
 

@@ -80,7 +80,7 @@ typedef boost::intrusive_ptr<AICurlPrivate::RefCountedThreadSafePerService> AIPe
 
 enum AICapabilityType {		// {Capabilities} [Responders]
   cap_texture	= 0,		// GetTexture [HTTPGetResponder]
-  cap_inventory	= 1,		// { FetchInventory2, FetchLib2 } [LLInventoryModel::fetchInventoryResponder], { FetchInventoryDescendents2, FetchLibDescendents2 } [LLInventoryModelFetchDescendentsResponder]
+  cap_inventory	= 1,		// { FetchInventory2, FetchLib2 } [LLInventoryModel::FetchItemHttpHandler], { FetchInventoryDescendents2, FetchLibDescendents2 } [GItemHttpHandler]
   cap_mesh		= 2,		// GetMesh [LLMeshSkinInfoResponder, LLMeshDecompositionResponder, LLMeshPhysicsShapeResponder, LLMeshHeaderResponder, LLMeshLODResponder]
   cap_other		= 3,		// All other capabilities
 

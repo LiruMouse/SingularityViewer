@@ -79,17 +79,17 @@ void LLFloaterBulkPermission::doApply()
 	class ModifiableGatherer : public LLSelectedNodeFunctor
 	{
 	public:
-		ModifiableGatherer(LLDynamicArray<LLUUID>& q) : mQueue(q) {}
+		ModifiableGatherer(std::vector<LLUUID>& q) : mQueue(q) {}
 		virtual bool apply(LLSelectNode* node)
 		{
 			if( node->allowOperationOnNode(PERM_MODIFY, GP_OBJECT_MANIPULATE) )
 			{
-				mQueue.put(node->getObject()->getID());
+				mQueue.push_back(node->getObject()->getID());
 			}
 			return true;
 		}
 	private:
-		LLDynamicArray<LLUUID>& mQueue;
+		std::vector<LLUUID>& mQueue;
 	};
 	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("queue output");
 	list->deleteAllItems();
@@ -190,7 +190,7 @@ BOOL LLFloaterBulkPermission::nextObject()
 	BOOL successful_start = FALSE;
 	do
 	{
-		count = mObjectIDs.count();
+		count = mObjectIDs.size();
 		//LL_INFOS() << "Objects left to process = " << count << LL_ENDL;
 		mCurrentObjectID.setNull();
 		if(count > 0)
@@ -198,7 +198,7 @@ BOOL LLFloaterBulkPermission::nextObject()
 			successful_start = popNext();
 			//LL_INFOS() << (successful_start ? "successful" : "unsuccessful") << LL_ENDL; 
 		}
-	} while((mObjectIDs.count() > 0) && !successful_start);
+	} while((mObjectIDs.size() > 0) && !successful_start);
 
 	if(isDone() && !mDone)
 	{
@@ -214,12 +214,12 @@ BOOL LLFloaterBulkPermission::popNext()
 {
 	// get the head element from the container, and attempt to get its inventory.
 	BOOL rv = FALSE;
-	S32 count = mObjectIDs.count();
+	S32 count = mObjectIDs.size();
 	if(mCurrentObjectID.isNull() && (count > 0))
 	{
-		mCurrentObjectID = mObjectIDs.get(0);
+		mCurrentObjectID = mObjectIDs.at(0);
 		//LL_INFOS() << "mCurrentID: " << mCurrentObjectID << LL_ENDL;
-		mObjectIDs.remove(0);
+		mObjectIDs.erase(mObjectIDs.begin());
 		LLViewerObject* obj = gObjectList.findObject(mCurrentObjectID);
 		if(obj)
 		{

@@ -82,5 +82,24 @@ protected:
 	std::string mRegisteredName;
 };
 
+class LLBindMemberListener : public LLOldEvents::LLSimpleListener
+{
+public:
+	typedef boost::function<void(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata)> event_callback_t;
+	template <typename T>
+	LLBindMemberListener(T *pointer, const std::string& register_name, event_callback_t cb)
+	{
+		pointer->registerEventListener(register_name, this);
+		mCallback = cb;
+	}
+
+	// This is what you have to override to handle this event
+	virtual bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata)
+	{
+		mCallback(event, userdata);
+		return true;
+	}
+	event_callback_t mCallback;
+};
 
 #endif // LL_LLMEMBERLISTENER_H

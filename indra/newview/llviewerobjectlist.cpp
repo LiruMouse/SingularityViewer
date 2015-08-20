@@ -1825,7 +1825,7 @@ void LLViewerObjectList::generatePickList(LLCamera &camera)
 				LLSpatialPartition* part = region->getSpatialPartition(i);
 				if (part)
 				{	
-					part->cull(camera, &pick_drawables, TRUE);
+					part->cull(camera, &pick_drawables);
 				}
 			}
 		}

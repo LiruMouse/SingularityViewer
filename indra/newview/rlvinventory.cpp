@@ -100,8 +100,8 @@ void RlvInventory::fetchSharedInventory()
 	// Add them to the "to fetch" list
 	uuid_vec_t idFolders;
 	idFolders.push_back(pRlvRoot->getUUID());
-	for (S32 idxFolder = 0, cntFolder = folders.count(); idxFolder < cntFolder; idxFolder++)
-		idFolders.push_back(folders.get(idxFolder)->getUUID());
+	for (S32 idxFolder = 0, cntFolder = folders.size(); idxFolder < cntFolder; idxFolder++)
+		idFolders.push_back(folders.at(idxFolder)->getUUID());
 
 	// Now fetch them all in one go
 	RlvSharedInventoryFetcher* pFetcher = new RlvSharedInventoryFetcher(idFolders);
@@ -126,13 +126,13 @@ void RlvInventory::fetchSharedLinks()
 
 	// Grab all the inventory links under the shared root
 	LLInventoryModel::cat_array_t folders; LLInventoryModel::item_array_t items; RlvIsLinkType f;
-	gInventory.collectDescendentsIf(pRlvRoot->getUUID(), folders, items, FALSE, f, FALSE);
+	gInventory.collectDescendentsIf(pRlvRoot->getUUID(), folders, items, FALSE, f, false);
 
 	// Add them to the "to fetch" list based on link type
 	uuid_vec_t idFolders, idItems;
-	for (S32 idxItem = 0, cntItem = items.count(); idxItem < cntItem; idxItem++)
+	for (S32 idxItem = 0, cntItem = items.size(); idxItem < cntItem; idxItem++)
 	{
-		const LLViewerInventoryItem* pItem = items.get(idxItem);
+		const LLViewerInventoryItem* pItem = items.at(idxItem);
 		switch (pItem->getActualType())
 		{
 			case LLAssetType::AT_LINK:
@@ -207,7 +207,7 @@ bool RlvInventory::findSharedFolders(const std::string& strCriteria, LLInventory
 	RlvCriteriaCategoryCollector f(strCriteria);
 	gInventory.collectDescendentsIf(pRlvRoot->getUUID(), folders, items, FALSE, f);
 
-	return (folders.count() != 0);
+	return (folders.size() != 0);
 }
 
 // Checked: 2010-08-30 (RLVa-1.2.1c) | Modified: RLVa-1.2.1c
@@ -232,7 +232,7 @@ bool RlvInventory::getPath(const uuid_vec_t& idItems, LLInventoryModel::cat_arra
 		}
 	}
 
-	return (folders.count() != 0);
+	return (folders.size() != 0);
 }
 
 // Checked: 2011-10-06 (RLVa-1.4.2a) | Modified: RLVa-1.4.2a
@@ -246,9 +246,9 @@ const LLUUID& RlvInventory::getSharedRootID() const
 		{
 			// NOTE: we might have multiple #RLV folders (pick the first one with sub-folders; otherwise the last one with no sub-folders)
 			const LLViewerInventoryCategory* pFolder;
-			for (S32 idxFolder = 0, cntFolder = pFolders->count(); idxFolder < cntFolder; idxFolder++)
+			for (S32 idxFolder = 0, cntFolder = pFolders->size(); idxFolder < cntFolder; idxFolder++)
 			{
-				if ( ((pFolder = pFolders->get(idxFolder)) != NULL) && (cstrSharedRoot == pFolder->getName()) )
+				if ( ((pFolder = pFolders->at(idxFolder)) != NULL) && (cstrSharedRoot == pFolder->getName()) )
 				{
 					m_idRlvRoot = pFolder->getUUID();
 					if (getDirectDescendentsFolderCount(pFolder) > 0)
@@ -275,11 +275,11 @@ LLViewerInventoryCategory* RlvInventory::getSharedFolder(const LLUUID& idParent,
 	for (LLInventoryModel::cat_array_t::const_iterator itFolder = pFolders->begin(); itFolder != pFolders->end(); ++itFolder)
 	{
 		LLViewerInventoryCategory* pFolder = *itFolder;
-		std::string strName = pFolder->getName();
+		const std::string& strName = pFolder->getName();
 
 		if (boost::iequals(strName, strFolderName))
 			return pFolder;		// Found an exact match, no need to keep on going
-		else if ( (fMatchPartial) && (!pPartial) && (RLV_FOLDER_PREFIX_HIDDEN != strName[0]) && (boost::icontains(strName, strFolderName) ) )
+		else if ( (fMatchPartial) && (!pPartial) && (RLV_FOLDER_PREFIX_HIDDEN != strName[0]) && (boost::icontains(strName, strFolderName)) )
 			pPartial = pFolder;	// Found a partial (non-hidden) match, but we might still find an exact one (first partial match wins)
 	}
 
@@ -356,8 +356,8 @@ S32 RlvInventory::getDirectDescendentsItemCount(const LLInventoryCategory* pFold
 
 		if (pItems)
 		{
-			for (S32 idxItem = 0, cntItem = pItems->count(); idxItem < cntItem; idxItem++)
-				if (pItems->get(idxItem)->getType() == filterType)
+			for (S32 idxItem = 0, cntItem = pItems->size(); idxItem < cntItem; idxItem++)
+				if (pItems->at(idxItem)->getType() == filterType)
 					cntType++;
 		}
 	}
@@ -398,8 +398,9 @@ void RlvRenameOnWearObserver::doneIdle()
 		LLInventoryModel::item_array_t items;
 		if (gInventory.isObjectDescendentOf(idAttachItem, pRlvRoot->getUUID()))
 			items.push_back(gInventory.getItem(idAttachItem));
-		else
-			items = gInventory.collectLinkedItems(idAttachItem, pRlvRoot->getUUID());
+//		// LL kind of messed up the collectLinkedItems (now collectLinksTo) function but I'm not sure if this use-case if worth fixing it for
+//		else
+//			items = gInventory.collectLinkedItems(idAttachItem, pRlvRoot->getUUID());
 		if (items.empty())
 			continue;
 
@@ -410,9 +411,9 @@ void RlvRenameOnWearObserver::doneIdle()
 			continue;
 		}
 
-		for (S32 idxItem = 0, cntItem = items.count(); idxItem < cntItem; idxItem++)
+		for (S32 idxItem = 0, cntItem = items.size(); idxItem < cntItem; idxItem++)
 		{
-			LLViewerInventoryItem* pItem = items.get(idxItem);
+			LLViewerInventoryItem* pItem = items.at(idxItem);
 			if (!pItem)
 				continue;
 
@@ -455,12 +456,12 @@ void RlvRenameOnWearObserver::doneIdle()
 					else
 					{
 						// "No modify" item with a non-renameable parent: create a new folder named and move the item into it
-						LLUUID idFolder = gInventory.createNewCategory(pFolder->getUUID(), LLFolderType::FT_NONE, strFolderName,
-						                                               &RlvRenameOnWearObserver::onCategoryCreate, new LLUUID(pItem->getUUID()));
+						inventory_func_type func = boost::bind(&RlvRenameOnWearObserver::onCategoryCreate, this, _1, pItem->getUUID());
+						LLUUID idFolder = gInventory.createNewCategory(pFolder->getUUID(), LLFolderType::FT_NONE, strFolderName, func);
 						if (idFolder.notNull())
 						{
 							// Not using the new 'CreateInventoryCategory' cap so manually invoke the callback
-							RlvRenameOnWearObserver::onCategoryCreate(LLSD().with("folder_id", idFolder), new LLUUID(pItem->getUUID()));
+							RlvRenameOnWearObserver::onCategoryCreate(idFolder, pItem->getUUID());
 						}
 					}
 				}
@@ -473,15 +474,10 @@ void RlvRenameOnWearObserver::doneIdle()
 }
 
 // Checked: 2012-03-22 (RLVa-1.4.6) | Added: RLVa-1.4.6
-void RlvRenameOnWearObserver::onCategoryCreate(const LLSD& sdData, void* pParam)
+void RlvRenameOnWearObserver::onCategoryCreate(const LLUUID& folder_id, const LLUUID& item_id)
 {
-	LLUUID idFolder = sdData["folder_id"].asUUID();
-	LLUUID* pidItem = (LLUUID*)pParam;
-
-	if ( (idFolder.notNull()) && (pidItem) && (pidItem->notNull()) )
-		move_inventory_item(gAgent.getID(), gAgent.getSessionID(), *pidItem, idFolder, std::string(), NULL);
-
-	delete pidItem;
+	if (folder_id.notNull() && item_id.notNull())
+		move_inventory_item(gAgent.getID(), gAgent.getSessionID(), item_id, folder_id, std::string(), NULL);
 }
 
 // ============================================================================
@@ -509,13 +505,14 @@ bool RlvGiveToRLVOffer::createDestinationFolder(const std::string& strPath)
 			const LLUUID& idRlvRoot = RlvInventory::instance().getSharedRootID();
 			if (idRlvRoot.notNull())
 			{
-				onCategoryCreateCallback(LLSD().with("folder_id", idRlvRoot), this);
+				onCategoryCreate(idRlvRoot);
 			}
 			else
 			{
-				const LLUUID idTemp = gInventory.createNewCategory(gInventory.getRootFolderID(), LLFolderType::FT_NONE, RLV_ROOT_FOLDER, onCategoryCreateCallback, (void*)this);
+				inventory_func_type func = boost::bind(&RlvGiveToRLVOffer::onCategoryCreate, this, _1);
+				const LLUUID idTemp = gInventory.createNewCategory(gInventory.getRootFolderID(), LLFolderType::FT_NONE, RLV_ROOT_FOLDER, func);
 				if (idTemp.notNull())
-					onCategoryCreateCallback(LLSD().with("folder_id", idTemp), this);
+					onCategoryCreate(idTemp);
 			}
 			return true;
 		}
@@ -525,40 +522,39 @@ bool RlvGiveToRLVOffer::createDestinationFolder(const std::string& strPath)
 }
 
 // Checked: 2014-01-07 (RLVa-1.4.10)
-void RlvGiveToRLVOffer::onCategoryCreateCallback(const LLSD& sdData, void* pInstance)
+void RlvGiveToRLVOffer::onCategoryCreate(const LLUUID& folder_id)
 {
-	RlvGiveToRLVOffer* pThis = (RlvGiveToRLVOffer*)pInstance;
-
-	LLUUID idFolder = sdData["folder_id"].asUUID();
-	if (idFolder.isNull())
+	if (folder_id.isNull())
 	{
 		// Problem encountered, abort move
-		pThis->onDestinationCreated(LLUUID::null, LLStringUtil::null);
+		onDestinationCreated(LLUUID::null, LLStringUtil::null);
 		return;
 	}
 
-	while (pThis->m_DestPath.size() > 1)
+	LLUUID target_folder = folder_id;
+	while (m_DestPath.size() > 1)
 	{
-		std::string strFolder = pThis->m_DestPath.front();
-		pThis->m_DestPath.pop_front();
+		std::string strFolder = m_DestPath.front();
+		m_DestPath.pop_front();
 
-		const LLViewerInventoryCategory* pFolder = RlvInventory::instance().getSharedFolder(idFolder, strFolder, false);
+		const LLViewerInventoryCategory* pFolder = RlvInventory::instance().getSharedFolder(folder_id, strFolder, false);
 		if (pFolder)
 		{
-			idFolder = pFolder->getUUID();
+			target_folder = pFolder->getUUID();
 		}
 		else
 		{
 			LLInventoryObject::correctInventoryName(strFolder);
-			const LLUUID idTemp = gInventory.createNewCategory(idFolder, LLFolderType::FT_NONE, strFolder, onCategoryCreateCallback, pInstance);
+			inventory_func_type func = boost::bind(&RlvGiveToRLVOffer::onCategoryCreate, this, _1);
+			const LLUUID idTemp = gInventory.createNewCategory(folder_id, LLFolderType::FT_NONE, strFolder, func);
 			if (idTemp.notNull())
-				onCategoryCreateCallback(LLSD().with("folder_id", idTemp), pInstance);
+				onCategoryCreate(idTemp);
 			return;
 		}
 	}
 
 	// Destination folder should exist at this point (we'll be deallocated when the function returns)
-	pThis->onDestinationCreated(idFolder, pThis->m_DestPath.front());
+	onDestinationCreated(target_folder, m_DestPath.front());
 }
 
 // Checked: 2014-01-07 (RLVa-1.4.10)

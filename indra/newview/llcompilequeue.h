@@ -33,7 +33,6 @@
 #ifndef LL_LLCOMPILEQUEUE_H
 #define LL_LLCOMPILEQUEUE_H
 
-#include "lldarray.h"
 #include "llinventory.h"
 #include "llviewerobject.h"
 #include "llvoinventorylistener.h"
@@ -103,7 +102,7 @@ protected:
 	LLButton* mCloseBtn;
 
 	// Object Queue
-	LLDynamicArray<LLUUID> mObjectIDs;
+	std::vector<LLUUID> mObjectIDs;
 	LLUUID mCurrentObjectID;
 	bool mDone;
 

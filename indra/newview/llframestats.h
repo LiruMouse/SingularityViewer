@@ -36,7 +36,6 @@
 #include "stdtypes.h"
 #include "llstat.h"
 #include "llstring.h"
-#include "lldarray.h"
 #include "v4color.h"
 #include "lltimer.h"
 
@@ -119,7 +118,7 @@ private:
 	LLStat				mStats[NUM_STATS];
 	static std::string	sStatLabels[NUM_STATS];
 	static LLColor4		sStatColors[NUM_STATS];
-	LLDynamicArray<FrameData> mFrameData;
+	std::vector<FrameData> mFrameData;
 	void stop();
 };
 

@@ -345,6 +345,25 @@ struct LLTextureMaskData
  **
  **/
 
+struct LLAppearanceMessageContents
+{
+	LLAppearanceMessageContents():
+		mAppearanceVersion(-1),
+		mParamAppearanceVersion(-1),
+		mCOFVersion(LLViewerInventoryCategory::VERSION_UNKNOWN)
+	{
+	}
+	LLTEContents mTEContents;
+	S32 mAppearanceVersion;
+	S32 mParamAppearanceVersion;
+	S32 mCOFVersion;
+	// For future use:
+	//U32 appearance_flags = 0;
+	std::vector<F32> mParamWeights;
+	std::vector<LLVisualParam*> mParams;
+	LLVector3 mHoverOffset;
+	bool mHoverOffsetWasSet;
+};
 //-----------------------------------------------------------------------------
 // class LLBodyNoiseMotion
 //-----------------------------------------------------------------------------
@@ -1078,6 +1097,8 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mIsEditingAppearance(FALSE),
 	mUseLocalAppearance(FALSE),
 	mUseServerBakes(FALSE), // FIXME DRANO consider using boost::optional, defaulting to unknown.
+	mLastUpdateRequestCOFVersion(-1),
+	mLastUpdateReceivedCOFVersion(-1),
 	// <edit>
 	mHasPhysicsParameters( false ),
 	mIdleMinute(0),
@@ -1144,6 +1165,7 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mRuthTimer.reset();
 	mRuthDebugTimer.reset();
 	mDebugExistenceTimer.reset();
+	mLastAppearanceMessageTimer.reset();
 	mPelvisOffset = LLVector3(0.0f,0.0f,0.0f);
 	mLastPelvisToFoot = 0.0f;
 	mPelvisFixup = 0.0f;
@@ -3853,10 +3875,9 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 										  mUseServerBakes, central_bake_version);
 		std::string origin_string = bakedTextureOriginInfo();
 		debug_line += " [" + origin_string + "]";
-		const LLAppearanceMgr& appmgr(LLAppearanceMgr::instance());
-		S32 curr_cof_version = appmgr.getCOFVersion();
-		S32 last_request_cof_version = appmgr.getLastUpdateRequestCOFVersion();
-		S32 last_received_cof_version = appmgr.getLastAppearanceUpdateCOFVersion();
+		S32 curr_cof_version = LLAppearanceMgr::instance().getCOFVersion();
+		S32 last_request_cof_version = mLastUpdateRequestCOFVersion;
+		S32 last_received_cof_version = mLastUpdateReceivedCOFVersion;
 		if (isSelf())
 		{
 			debug_line += llformat(" - cof: %d req: %d rcv:%d",
@@ -3875,6 +3896,13 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 			debug_line += llformat(" hov_z: %f", hover_offset[2]);
 			debug_line += llformat(" %s", (mIsSitting ? "S" : "T"));
 			debug_line += llformat("%s", (isMotionActive(ANIM_AGENT_SIT_GROUND_CONSTRAINED) ? "G" : "-"));
+		}
+		F32 elapsed = mLastAppearanceMessageTimer.getElapsedTimeF32();
+		static const char *elapsed_chars = "Xx*...";
+		U32 bucket = U32(elapsed*2);
+		if (bucket < strlen(elapsed_chars))
+		{
+			debug_line += llformat(" %c", elapsed_chars[bucket]);
 		}
 		addDebugText(debug_line);
 	}
@@ -6372,7 +6400,7 @@ BOOL LLVOAvatar::updateGeometry(LLDrawable *drawable)
 //-----------------------------------------------------------------------------
 // updateSexDependentLayerSets()
 //-----------------------------------------------------------------------------
-void LLVOAvatar::updateSexDependentLayerSets( BOOL upload_bake )
+void LLVOAvatar::updateSexDependentLayerSets( bool upload_bake )
 {
 	invalidateComposite( mBakedTextureDatas[BAKED_HEAD].mTexLayerSet, upload_bake );
 	invalidateComposite( mBakedTextureDatas[BAKED_UPPER].mTexLayerSet, upload_bake );
@@ -6963,21 +6991,27 @@ LLViewerObject* LLVOAvatar::getWornAttachment( const LLUUID& inv_item_id )
 	return NULL;
 }
 
-const std::string LLVOAvatar::getAttachedPointName(const LLUUID& inv_item_id)
+LLViewerObject *	LLVOAvatar::findAttachmentByID( const LLUUID & target_id ) const
 {
-	const LLUUID& base_inv_item_id = gInventory.getLinkedItemID(inv_item_id);
-	for (attachment_map_t::iterator iter = mAttachmentPoints.begin();
-		 iter != mAttachmentPoints.end(); )
+	for(attachment_map_t::const_iterator attachment_points_iter = mAttachmentPoints.begin();
+		attachment_points_iter != gAgentAvatarp->mAttachmentPoints.end();
+		++attachment_points_iter)
 	{
-		attachment_map_t::iterator curiter = iter++;
-		LLViewerJointAttachment* attachment = curiter->second;
-		if (attachment->getAttachedObject(base_inv_item_id))
+		LLViewerJointAttachment* attachment = attachment_points_iter->second;
+		for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachment->mAttachedObjects.begin();
+			 attachment_iter != attachment->mAttachedObjects.end();
+			 ++attachment_iter)
 		{
-			return attachment->getName();
+			LLViewerObject *attached_object = (*attachment_iter);
+			if (attached_object &&
+				attached_object->getID() == target_id)
+			{
+				return attached_object;
+			}
 		}
 	}
 
-	return LLStringUtil::null;
+	return NULL;
 }
 
 // virtual
@@ -7309,11 +7343,9 @@ BOOL LLVOAvatar::isFullyLoaded() const
 
 // [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-22 (Catznip-2.2.0a) | Added: Catznip-2.2.0a
 	// Changes to LLAppearanceMgr::updateAppearanceFromCOF() expect this function to actually return mFullyLoaded for gAgentAvatarp
-	if ( (!isSelf()) && render_unloaded_avatar )
-		return TRUE;
-	else
-		return mFullyLoaded;
+	return (render_unloaded_avatar && !isSelf()) ||(mFullyLoaded);
 // [/SL:KB]
+//	return (render_unloaded_avatar || mFullyLoaded);
 }
 
 bool LLVOAvatar::isTooComplex() const
@@ -7958,7 +7990,8 @@ void LLVOAvatar::dumpAppearanceMsgParams( const std::string& dump_prefix,
 	LLVisualParam* param = getFirstVisualParam();
 	for (S32 i = 0; i < (S32)params_for_dump.size(); i++)
 	{
-		while( param && (param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) ) // should not be any of group VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
+		while( param && ((param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) && 
+						 (param->getGroup() != VISUAL_PARAM_GROUP_TRANSMIT_NOT_TWEAKABLE)) ) // should not be any of group VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
 		{
 			param = getNextVisualParam();
 		}
@@ -7974,26 +8007,6 @@ void LLVOAvatar::dumpAppearanceMsgParams( const std::string& dump_prefix,
 		apr_file_printf( file, "\t\t<texture te=\"%i\" uuid=\"%s\"/>\n", i, uuid_str.c_str());
 	}
 }
-
-struct LLAppearanceMessageContents
-{
-	LLAppearanceMessageContents():
-		mAppearanceVersion(-1),
-		mParamAppearanceVersion(-1),
-		mCOFVersion(LLViewerInventoryCategory::VERSION_UNKNOWN)
-	{
-	}
-	LLTEContents mTEContents;
-	S32 mAppearanceVersion;
-	S32 mParamAppearanceVersion;
-	S32 mCOFVersion;
-	// For future use:
-	//U32 appearance_flags = 0;
-	std::vector<F32> mParamWeights;
-	std::vector<LLVisualParam*> mParams;
-	LLVector3 mHoverOffset;
-	bool mHoverOffsetWasSet;
-};
 
 void LLVOAvatar::parseAppearanceMessage(LLMessageSystem* mesgsys, LLAppearanceMessageContents& contents)
 {
@@ -8039,7 +8052,8 @@ void LLVOAvatar::parseAppearanceMessage(LLMessageSystem* mesgsys, LLAppearanceMe
 		{
 			for( S32 i = 0; i < num_blocks; i++ )
 			{
-				while( param && (param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) ) // should not be any of group VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
+				while( param && ((param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) && 
+								 (param->getGroup() != VISUAL_PARAM_GROUP_TRANSMIT_NOT_TWEAKABLE)) ) // should not be any of group VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
 				{
 					param = getNextVisualParam();
 				}
@@ -8060,7 +8074,8 @@ void LLVOAvatar::parseAppearanceMessage(LLMessageSystem* mesgsys, LLAppearanceMe
 			}
 		}
 
-		const S32 expected_tweakable_count = getVisualParamCountInGroup(VISUAL_PARAM_GROUP_TWEAKABLE); // don't worry about VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
+		const S32 expected_tweakable_count = getVisualParamCountInGroup(VISUAL_PARAM_GROUP_TWEAKABLE) +
+											 getVisualParamCountInGroup(VISUAL_PARAM_GROUP_TRANSMIT_NOT_TWEAKABLE); // don't worry about VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
 		if (num_blocks != expected_tweakable_count)
 		{
 			LL_DEBUGS("Avatar") << "Number of params in AvatarAppearance msg (" << num_blocks << ") does not match number of tweakable params in avatar xml file (" << expected_tweakable_count << ").  Processing what we can.  object: " << getID() << LL_ENDL;
@@ -8136,6 +8151,8 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		return;
 	}
 
+	mLastAppearanceMessageTimer.reset();
+
 	ESex old_sex = getSex();
 
 	LLAppearanceMessageContents contents;
@@ -8152,8 +8169,14 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		return;
 	}
 
+	if (appearance_version > 1)
+	{
+		LL_WARNS() << "unsupported appearance version " << appearance_version << ", discarding appearance message" << LL_ENDL;
+		return;
+	}
+
 	S32 this_update_cof_version = contents.mCOFVersion;
-	S32 last_update_request_cof_version = LLAppearanceMgr::instance().mLastUpdateRequestCOFVersion;
+	S32 last_update_request_cof_version = mLastUpdateRequestCOFVersion;
 
 	// Only now that we have result of appearance_version can we decide whether to bail out.
 	if( isSelf() )
@@ -8161,8 +8184,6 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		LL_DEBUGS("Avatar") << "this_update_cof_version " << this_update_cof_version
 				<< " last_update_request_cof_version " << last_update_request_cof_version
 				<<  " my_cof_version " << LLAppearanceMgr::instance().getCOFVersion() << LL_ENDL;
-
-		LLAppearanceMgr::instance().setLastAppearanceUpdateCOFVersion(this_update_cof_version);
 
 		if (getRegion() && (getRegion()->getCentralBakeVersion()==0))
 		{
@@ -8211,8 +8232,16 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		return;
 	}
 
-	setIsUsingServerBakes(appearance_version > 0);
+	// No backsies zone - if we get here, the message should be valid and usable, will be processed.
 
+	setIsUsingServerBakes(appearance_version > 0);
+	
+	// Note:
+	// RequestAgentUpdateAppearanceResponder::onRequestRequested()
+	// assumes that cof version is only updated with server-bake
+	// appearance messages.
+	mLastUpdateReceivedCOFVersion = this_update_cof_version;
+		
 	applyParsedTEMessage(contents.mTEContents);
 
 	SHClientTagMgr::instance().updateAvatarTag(this);
@@ -8289,7 +8318,8 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 				}
 			}
 		}
-		const S32 expected_tweakable_count = getVisualParamCountInGroup(VISUAL_PARAM_GROUP_TWEAKABLE); // don't worry about VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
+		const S32 expected_tweakable_count = getVisualParamCountInGroup(VISUAL_PARAM_GROUP_TWEAKABLE) +
+											 getVisualParamCountInGroup(VISUAL_PARAM_GROUP_TRANSMIT_NOT_TWEAKABLE); // don't worry about VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
 		if (num_params != expected_tweakable_count)
 		{
 			LL_DEBUGS("Avatar") << "Number of params in AvatarAppearance msg (" << num_params << ") does not match number of tweakable params in avatar xml file (" << expected_tweakable_count << ").  Processing what we can.  object: " << getID() << LL_ENDL;

@@ -102,7 +102,7 @@ public:
 	BOOL importStream(std::istream& input_stream, BOOL& has_perm_mask, U32& perm_mask);
 
 	LLSD packMessage() const;
-	void unpackMessage(LLSD sales);
+	void unpackMessage(const LLSD& sales);
 
 	// message serialization
 	void packMessage(LLMessageSystem* msg) const;

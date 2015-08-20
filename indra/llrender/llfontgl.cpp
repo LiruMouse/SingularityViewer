@@ -547,7 +547,7 @@ F32 LLFontGL::getWidthF32(const LLWString& utf32text, const S32 begin_offset, co
 			// Handle crappy embedded hack
 			cur_x += getEmbeddedCharAdvance(ext_data);
 
-			if( ((i+1) < max_index) && (i+1 < max_index))
+			if(i+1 < max_index)
 			{
 				cur_x += EXT_KERNING * sScaleX;
 			}

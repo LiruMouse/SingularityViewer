@@ -34,7 +34,6 @@
 #define LL_LLVOTREE_H
 
 #include "llviewerobject.h"
-#include "lldarray.h"
 #include "xform.h"
 
 class LLFace;

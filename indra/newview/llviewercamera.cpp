@@ -53,7 +53,7 @@
 // System includes
 #include <iomanip> // for setprecision
 
-U32 LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
+LLViewerCamera::eCameraID LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
 
 LLViewerCamera::LLViewerCamera() : LLCamera()
 {

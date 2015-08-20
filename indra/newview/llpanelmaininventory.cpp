@@ -51,7 +51,7 @@
 
 const std::string FILTERS_FILENAME("filters.xml");
 
-LLDynamicArray<LLInventoryView*> LLInventoryView::sActiveViews;
+std::vector<LLInventoryView*> LLInventoryView::sActiveViews;
 const S32 INV_MIN_WIDTH = 240;
 const S32 INV_MIN_HEIGHT = 150;
 const S32 INV_FINDER_WIDTH = 160;
@@ -214,7 +214,7 @@ BOOL LLInventoryView::postBuild()
 	}
 
 
-	sActiveViews.put(this);
+	sActiveViews.push_back(this);
 
 	getChild<LLTabContainer>("inventory filter tabs")->setCommitCallback(boost::bind(&LLInventoryView::onFilterSelected,this));
 
@@ -275,7 +275,7 @@ LLInventoryView::~LLInventoryView( void )
 	else
 		filtersFile.close();
 
-	sActiveViews.removeObj(this);
+	vector_replace_with_last(sActiveViews, this);
 	gInventory.removeObserver(this);
 	delete mSavedFolderState;
 }
@@ -303,9 +303,9 @@ void LLInventoryView::onClose(bool app_quitting)
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
 	// See LLInventoryView::closeAll() on why we're doing it this way
 	S32 count = 0;
-	for (S32 idx = 0, cnt = sActiveViews.count(); idx < cnt; idx++)
+	for (S32 idx = 0, cnt = sActiveViews.size(); idx < cnt; idx++)
 	{
-		if (!sActiveViews.get(idx)->isDead())
+		if (!sActiveViews.at(idx)->isDead())
 			count++;
 	}
 // [/RLVa:KB]
@@ -418,16 +418,16 @@ LLInventoryView* LLInventoryView::showAgentInventory(BOOL take_keyboard_focus)
 LLInventoryView* LLInventoryView::getActiveInventory()
 {
 	LLInventoryView* iv = NULL;
-	S32 count = sActiveViews.count();
+	S32 count = sActiveViews.size();
 	if(count > 0)
 	{
-		iv = sActiveViews.get(0);
+		iv = sActiveViews.at(0);
 		S32 z_order = gFloaterView->getZOrder(iv);
 		S32 z_next = 0;
 		LLInventoryView* next_iv = NULL;
 		for(S32 i = 1; i < count; ++i)
 		{
-			next_iv = sActiveViews.get(i);
+			next_iv = sActiveViews.at(i);
 			z_next = gFloaterView->getZOrder(next_iv);
 			if(z_next < z_order)
 			{
@@ -442,7 +442,7 @@ LLInventoryView* LLInventoryView::getActiveInventory()
 // static
 void LLInventoryView::toggleVisibility()
 {
-	S32 count = sActiveViews.count();
+	S32 count = sActiveViews.size();
 	if (0 == count)
 	{
 		// We're using the inventory, possibly for the first time.
@@ -451,9 +451,9 @@ void LLInventoryView::toggleVisibility()
 	}
 	else if (1 == count)
 	{
-		if (sActiveViews.get(0)->getVisible())
+		if (sActiveViews.at(0)->getVisible())
 		{
-			sActiveViews.get(0)->close();
+			sActiveViews.at(0)->close();
 			gSavedSettings.setBOOL("ShowInventory", FALSE);
 		}
 		else
@@ -467,18 +467,18 @@ void LLInventoryView::toggleVisibility()
 		// is visible.
 
 		// Close all the last one spawned.
-		S32 last_index = sActiveViews.count() - 1;
-		sActiveViews.get(last_index)->close();
+		S32 last_index = sActiveViews.size() - 1;
+		sActiveViews.at(last_index)->close();
 	}
 }
 
 // static
 void LLInventoryView::cleanup()
 {
-	S32 count = sActiveViews.count();
+	S32 count = sActiveViews.size();
 	for (S32 i = 0; i < count; i++)
 	{
-		sActiveViews.get(i)->destroy();
+		sActiveViews.at(i)->destroy();
 	}
 }
 
@@ -919,6 +919,11 @@ void LLInventoryView::toggleFindOptions()
 
 		mFloaterControls[std::string("Inventory.ShowFilters")]->setValue(FALSE);
 	}
+}
+
+LLFolderView* LLInventoryView::getRootFolder() const
+{
+	return mActivePanel ? (mActivePanel->getRootFolder()) : NULL;
 }
 
 void LLInventoryView::setSelectCallback(const LLFolderView::signal_t::slot_type& cb)

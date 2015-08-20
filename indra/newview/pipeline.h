@@ -35,8 +35,6 @@
 
 #include "llcamera.h"
 #include "llerror.h"
-#include "lldarrayptr.h"
-#include "lldqueueptr.h"
 #include "lldrawpool.h"
 #include "llspatialpartition.h"
 #include "m4math.h"

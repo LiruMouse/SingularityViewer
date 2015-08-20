@@ -60,7 +60,7 @@ public:
 					 const LLUUID& session_id,
 					 const LLUUID& target_id,
 					 const EInstantMessage& dialog,
-					 const LLDynamicArray<LLUUID>& ids = LLDynamicArray<LLUUID>());
+					 const std::vector<LLUUID>& ids = std::vector<LLUUID>());
 	virtual ~LLFloaterIMPanel();
 
 	void onAvatarNameLookup(const LLAvatarName& avatar_name);
@@ -77,7 +77,7 @@ public:
 
 	// add target ids to the session. 
 	// Return TRUE if successful, otherwise FALSE.
-	bool inviteToSession(const LLDynamicArray<LLUUID>& agent_ids);
+	bool inviteToSession(const std::vector<LLUUID>& agent_ids);
 
 	void addHistoryLine(const std::string &utf8msg, 
 						LLColor4 incolor = LLColor4::white, 

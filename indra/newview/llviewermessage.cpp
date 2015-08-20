@@ -986,7 +986,12 @@ class LLOpenTaskOffer : public LLInventoryAddedObserver
 protected:
 	/*virtual*/ void done()
 	{
-		for (uuid_vec_t::iterator it = mAdded.begin(); it != mAdded.end();)
+		uuid_vec_t added;
+		for(uuid_set_t::const_iterator it = gInventory.getAddedIDs().begin(); it != gInventory.getAddedIDs().end(); ++it)
+		{
+			added.push_back(*it);
+		}
+		for (uuid_vec_t::iterator it = added.begin(); it != added.end();)
 		{
 			const LLUUID& item_uuid = *it;
 			bool was_moved = false;
@@ -1008,13 +1013,12 @@ protected:
 
 			if (was_moved)
 			{
-				it = mAdded.erase(it);
+				it = added.erase(it);
 			}
 			else ++it;
 		}
 
-		open_inventory_offer(mAdded, "");
-		mAdded.clear();
+		open_inventory_offer(added, "");
 	}
  };
 
@@ -1023,8 +1027,12 @@ class LLOpenTaskGroupOffer : public LLInventoryAddedObserver
 protected:
 	/*virtual*/ void done()
 	{
-		open_inventory_offer(mAdded, "group_offer");
-		mAdded.clear();
+		uuid_vec_t added;
+		for(uuid_set_t::const_iterator it = gInventory.getAddedIDs().begin(); it != gInventory.getAddedIDs().end(); ++it)
+		{
+			added.push_back(*it);
+		}
+		open_inventory_offer(added, "group_offer");
 		gInventory.removeObserver(this);
 		delete this;
 	}
@@ -1057,6 +1065,13 @@ void start_new_inventory_observer()
 		// Observer is deleted by gInventory
 		gInventoryMoveObserver = new LLViewerInventoryMoveFromWorldObserver;
 		gInventory.addObserver(gInventoryMoveObserver);
+	}
+
+	if (!gNewInventoryHintObserver)
+	{
+		// Observer is deleted by gInventory
+		gNewInventoryHintObserver = new LLNewInventoryHintObserver();
+		gInventory.addObserver(gNewInventoryHintObserver);
 	}
 }
 
@@ -6253,15 +6268,15 @@ public:
 				is_card);
 		}
 		LLSD args;
-		if ( land_items.count() > 0 )
+		if ( land_items.size() > 0 )
 		{	// Show notification that they can now teleport to landmarks.  Use a random landmark from the inventory
-			S32 random_land = ll_rand( land_items.count() - 1 );
+			S32 random_land = ll_rand(land_items.size() - 1);
 			args["NAME"] = land_items[random_land]->getName();
 			LLNotificationsUtil::add("TeleportToLandmark",args);
 		}
-		if ( card_items.count() > 0 )
+		if ( card_items.size() > 0 )
 		{	// Show notification that they can now contact people.  Use a random calling card from the inventory
-			S32 random_card = ll_rand( card_items.count() - 1 );
+			S32 random_card = ll_rand(card_items.size() - 1);
 			args["NAME"] = card_items[random_card]->getName();
 			LLNotificationsUtil::add("TeleportToPerson",args);
 		}
@@ -9706,7 +9721,7 @@ bool handle_lure_callback(const LLSD& notification, const LLSD& response)
 
 void handle_lure(const LLUUID& invitee)
 {
-	LLDynamicArray<LLUUID> ids;
+	std::vector<LLUUID> ids;
 	ids.push_back(invitee);
 	handle_lure(ids);
 }

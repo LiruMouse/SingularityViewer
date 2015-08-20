@@ -143,6 +143,7 @@ LLViewerObject *LLViewerObject::createObject(const LLUUID &id, const LLPCode pco
 			{
 				gAgentAvatarp = new LLVOAvatarSelf(id, pcode, regionp);
 				gAgentAvatarp->initInstance();
+				gAgentWearables.setAvatarObject(gAgentAvatarp);
 			}
 			else 
 			{
@@ -2548,8 +2549,8 @@ void LLViewerObject::dirtyInventory()
 		mInventory->clear(); // will deref and delete entries
 		delete mInventory;
 		mInventory = NULL;
-		mInventoryDirty = TRUE;
 	}
+	mInventoryDirty = TRUE;
 }
 
 void LLViewerObject::registerInventoryListener(LLVOInventoryListener* listener, void* user_data)
@@ -2586,12 +2587,15 @@ void LLViewerObject::clearInventoryListeners()
 
 void LLViewerObject::requestInventory()
 {
-	mInventoryDirty = FALSE;
+	if(mInventoryDirty && mInventory && !mInventoryCallbacks.empty())
+	{
+		mInventory->clear(); // will deref and delete entries
+		delete mInventory;
+		mInventory = NULL;
+		mInventoryDirty = FALSE; //since we are going to request it now
+	}
 	if(mInventory)
 	{
-		//mInventory->clear() // will deref and delete it
-		//delete mInventory;
-		//mInventory = NULL;
 		doInventoryCallback();
 	}
 	// throw away duplicate requests
@@ -5897,6 +5901,11 @@ void LLViewerObject::resetChildrenPosition(const LLVector3& offset, BOOL simplif
 	return ;
 }
 
+// virtual 
+BOOL	LLViewerObject::isTempAttachment() const
+{
+	return (mID.notNull() && (mID == mAttachmentItemID));
+}
 
 // <edit>
 std::string LLViewerObject::getAttachmentPointName()

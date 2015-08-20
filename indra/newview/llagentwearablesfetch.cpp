@@ -177,7 +177,7 @@ void LLInitialWearablesFetch::processContents()
 // [/SL:KB]
 
 	LLAppearanceMgr::instance().setAttachmentInvLinkEnable(true);
-//	if (wearable_array.count() > 0)
+//	if (wearable_array.size() > 0)
 // [SL:KB] - Patch: Appearance-MixedViewers | Checked: 2010-04-28 (Catznip-3.0.0a) | Modified: Catznip-2.0.0e
 	if (fUpdateFromCOF)
 // [/SL:KB]
@@ -239,7 +239,7 @@ public:
 	void doneIdle()
 	{
 		// NOTE: the code above makes the assumption that COF is empty which won't be the case the way it's used now
-		LLInventoryModel::item_array_t initial_items;
+		LLInventoryObject::const_object_list_t initial_items;
 		for (uuid_vec_t::iterator itItem = mIDs.begin(); itItem != mIDs.end(); ++itItem)
 		{
 			LLViewerInventoryItem* pItem = gInventory.getItem(*itItem);
@@ -408,14 +408,14 @@ void LLLibraryOutfitsFetch::folderDone()
 	
 	// Early out if we already have items in My Outfits
 	// except the case when My Outfits contains just initial outfit
-	if (cat_array.count() > 1)
+	if (cat_array.size() > 1)
 	{
 		mOutfitsPopulated = true;
 		return;
 	}
 
 	mClothingID = gInventory.findCategoryUUIDForType(LLFolderType::FT_CLOTHING);
-	mLibraryClothingID = gInventory.findCategoryUUIDForType(LLFolderType::FT_CLOTHING, false, true);
+	mLibraryClothingID = gInventory.findLibraryCategoryUUIDForType(LLFolderType::FT_CLOTHING, false);
 
 	// If Library->Clothing->Initial Outfits exists, use that.
 	LLNameCategoryCollector matchFolderFunctor("Initial Outfits");
@@ -424,9 +424,9 @@ void LLLibraryOutfitsFetch::folderDone()
 									cat_array, wearable_array, 
 									LLInventoryModel::EXCLUDE_TRASH,
 									matchFolderFunctor);
-	if (cat_array.count() > 0)
+	if (cat_array.size() > 0)
 	{
-		const LLViewerInventoryCategory *cat = cat_array.get(0);
+		const LLViewerInventoryCategory *cat = cat_array.at(0);
 		mLibraryClothingID = cat->getUUID();
 	}
 
@@ -456,7 +456,7 @@ void LLLibraryOutfitsFetch::outfitsDone()
 	gInventory.collectDescendents(mLibraryClothingID, cat_array, wearable_array, 
 								  LLInventoryModel::EXCLUDE_TRASH);
 	
-	llassert(cat_array.count() > 0);
+	llassert(cat_array.size() > 0);
 	for (LLInventoryModel::cat_array_t::const_iterator iter = cat_array.begin();
 		 iter != cat_array.end();
 		 ++iter)
@@ -483,7 +483,7 @@ void LLLibraryOutfitsFetch::outfitsDone()
 									matchFolderFunctor);
 	if (cat_array.size() > 0)
 	{
-		const LLViewerInventoryCategory *cat = cat_array.get(0);
+		const LLViewerInventoryCategory *cat = cat_array.at(0);
 		mImportedClothingID = cat->getUUID();
 	}
 	
@@ -666,13 +666,9 @@ void LLLibraryOutfitsFetch::contentsDone()
 			 wearable_iter != wearable_array.end();
 			 ++wearable_iter)
 		{
-			const LLViewerInventoryItem *item = wearable_iter->get();
-			link_inventory_item(gAgent.getID(),
-								item->getLinkedUUID(),
-								new_outfit_folder_id,
-								item->getName(),
-								item->getDescription(),
-								LLAssetType::AT_LINK,
+			LLConstPointer<LLInventoryObject> item = wearable_iter->get();
+			link_inventory_object(new_outfit_folder_id,
+								item,
 								order_myoutfits_on_destroy);
 		}
 	}

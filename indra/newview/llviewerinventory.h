@@ -53,7 +53,7 @@ class LLViewerInventoryCategory;
 class LLViewerInventoryItem : public LLInventoryItem, public boost::signals2::trackable
 {
 public:
-	typedef LLDynamicArray<LLPointer<LLViewerInventoryItem> > item_array_t;
+	typedef std::vector<LLPointer<LLViewerInventoryItem> > item_array_t;
 	
 protected:
 	~LLViewerInventoryItem( void ); // ref counted
@@ -115,14 +115,13 @@ public:
 	void cloneViewerItem(LLPointer<LLViewerInventoryItem>& newitem) const;
 
 	// virtual methods
-	virtual void removeFromServer( void );
 	virtual void updateParentOnServer(BOOL restamp) const;
 	virtual void updateServer(BOOL is_new) const;
 	void fetchFromServer(void) const;
 
-	//virtual void packMessage(LLMessageSystem* msg) const;
+	virtual void packMessage(LLMessageSystem* msg) const;
 	virtual BOOL unpackMessage(LLMessageSystem* msg, const char* block, S32 block_num = 0);
-	virtual BOOL unpackMessage(LLSD item);
+	virtual BOOL unpackMessage(const LLSD& item);
 	virtual BOOL importFile(LLFILE* fp);
 	virtual BOOL importLegacyStream(std::istream& input_stream);
 
@@ -137,7 +136,6 @@ public:
 	void setComplete(BOOL complete) { mIsComplete = complete; }
 	//void updateAssetOnServer() const;
 
-	virtual void packMessage(LLMessageSystem* msg) const;
 	virtual void setTransactionID(const LLTransactionID& transaction_id);
 	struct comparePointers
 	{
@@ -184,7 +182,7 @@ public:
 class LLViewerInventoryCategory  : public LLInventoryCategory
 {
 public:
-	typedef LLDynamicArray<LLPointer<LLViewerInventoryCategory> > cat_array_t;
+	typedef std::vector<LLPointer<LLViewerInventoryCategory> > cat_array_t;
 	
 protected:
 	~LLViewerInventoryCategory();
@@ -201,16 +199,17 @@ public:
 	LLViewerInventoryCategory(const LLViewerInventoryCategory* other);
 	void copyViewerCategory(const LLViewerInventoryCategory* other);
 
-	virtual void removeFromServer();
 	virtual void updateParentOnServer(BOOL restamp_children) const;
 	virtual void updateServer(BOOL is_new) const;
+
+	virtual void packMessage(LLMessageSystem* msg) const;
 
 	const LLUUID& getOwnerID() const { return mOwnerID; }
 
 	// Version handling
 	enum { VERSION_UNKNOWN = -1, VERSION_INITIAL = 1 };
-	S32 getVersion() const { return mVersion; }
-	void setVersion(S32 version) { mVersion = version; }
+	S32 getVersion() const;
+	void setVersion(S32 version);
 
 	// Returns true if a fetch was issued.
 	bool fetch();
@@ -221,6 +220,8 @@ public:
 	enum { DESCENDENT_COUNT_UNKNOWN = -1 };
 	S32 getDescendentCount() const { return mDescendentCount; }
 	void setDescendentCount(S32 descendents) { mDescendentCount = descendents; }
+	// How many descendents do we currently have information for in the InventoryModel?
+	S32 getViewerDescendentCount() const;
 
 	// file handling on the viewer. These are not meant for anything
 	// other than caching.
@@ -228,6 +229,8 @@ public:
 	bool importFileLocal(LLFILE* fp);
 	void determineFolderType();
 	void changeType(LLFolderType::EType new_folder_type);
+	virtual void unpackMessage(LLMessageSystem* msg, const char* block, S32 block_num = 0);
+	virtual BOOL unpackMessage(const LLSD& category);
 
 private:
 	friend class LLInventoryModel;
@@ -250,7 +253,7 @@ class LLViewerJointAttachment;
 
 //void rez_attachment_cb(const LLUUID& inv_item, LLViewerJointAttachment *attachmentp);
 // [SL:KB] - Patch: Appearance-DnDWear | Checked: 2010-09-28 (Catznip-3.0.0a) | Added: Catznip-2.2.0a
-void rez_attachment_cb(const LLUUID& inv_item, LLViewerJointAttachment *attachmentp, bool replace);
+void rez_attachment_cb(const LLUUID& inv_item, LLViewerJointAttachment *attachmentp, bool replace = false);
 // [/SL:KB]
 
 void activate_gesture_cb(const LLUUID& inv_item);
@@ -270,9 +273,11 @@ private:
 };
 
 typedef boost::function<void(const LLUUID&)> inventory_func_type;
-void no_op_inventory_func(const LLUUID&); // A do-nothing inventory_func
-
+typedef boost::function<void(const LLSD&)> llsd_func_type;
 typedef boost::function<void()> nullary_func_type;
+
+void no_op_inventory_func(const LLUUID&); // A do-nothing inventory_func
+void no_op_llsd_func(const LLSD&); // likewise for LLSD
 void no_op(); // A do-nothing nullary func.
 
 // Shim between inventory callback and boost function/callable
@@ -280,7 +285,7 @@ class LLBoostFuncInventoryCallback: public LLInventoryCallback
 {
 public:
 
-	LLBoostFuncInventoryCallback(inventory_func_type fire_func,
+	LLBoostFuncInventoryCallback(inventory_func_type fire_func = no_op_inventory_func,
 								 nullary_func_type destroy_func = no_op):
 		mFireFunc(fire_func),
 		mDestroyFunc(destroy_func)
@@ -354,14 +359,16 @@ void copy_inventory_item(
 	const std::string& new_name,
 	LLPointer<LLInventoryCallback> cb);
 
-void link_inventory_item(
-	const LLUUID& agent_id,
-	const LLUUID& item_id,
-	const LLUUID& parent_id,
-	const std::string& new_name,
-	const std::string& new_description,
-	const LLAssetType::EType asset_type,
-	LLPointer<LLInventoryCallback> cb);
+// utility functions for inventory linking.
+void link_inventory_object(const LLUUID& category,
+			 LLConstPointer<LLInventoryObject> baseobj,
+			 LLPointer<LLInventoryCallback> cb);
+void link_inventory_object(const LLUUID& category,
+			 const LLUUID& id,
+			 LLPointer<LLInventoryCallback> cb);
+void link_inventory_array(const LLUUID& category,
+						  LLInventoryObject::const_object_list_t& baseobj_array,
+						  LLPointer<LLInventoryCallback> cb);
 
 void move_inventory_item(
 	const LLUUID& agent_id,
@@ -369,6 +376,46 @@ void move_inventory_item(
 	const LLUUID& item_id,
 	const LLUUID& parent_id,
 	const std::string& new_name,
+	LLPointer<LLInventoryCallback> cb);
+
+void update_inventory_item(
+	LLViewerInventoryItem *update_item,
+	LLPointer<LLInventoryCallback> cb);
+
+void update_inventory_item(
+	const LLUUID& item_id,
+	const LLSD& updates,
+	LLPointer<LLInventoryCallback> cb);
+
+void update_inventory_category(
+	const LLUUID& cat_id,
+	const LLSD& updates,
+	LLPointer<LLInventoryCallback> cb);
+
+void remove_inventory_items(
+	LLInventoryObject::object_list_t& items,
+	LLPointer<LLInventoryCallback> cb);
+
+void remove_inventory_item(
+	LLPointer<LLInventoryObject> obj,
+	LLPointer<LLInventoryCallback> cb,
+	bool immediate_delete = false);
+
+void remove_inventory_item(
+	const LLUUID& item_id,
+	LLPointer<LLInventoryCallback> cb,
+	bool immediate_delete = false);
+	
+void remove_inventory_category(
+	const LLUUID& cat_id,
+	LLPointer<LLInventoryCallback> cb);
+	
+void remove_inventory_object(
+	const LLUUID& object_id,
+	LLPointer<LLInventoryCallback> cb);
+
+void purge_descendents_of(
+	const LLUUID& cat_id,
 	LLPointer<LLInventoryCallback> cb);
 
 const LLUUID get_folder_by_itemtype(const LLInventoryItem *src);
@@ -384,5 +431,12 @@ void menu_create_inventory_item(LLFolderView* root,
 								LLFolderBridge* bridge,
 								const LLSD& userdata,
 								const LLUUID& default_parent_uuid = LLUUID::null);
+
+void slam_inventory_folder(const LLUUID& folder_id,
+						   const LLSD& contents,
+						   LLPointer<LLInventoryCallback> cb);
+
+void remove_folder_contents(const LLUUID& folder_id, bool keep_outfit_links,
+							  LLPointer<LLInventoryCallback> cb);
 
 #endif // LL_LLVIEWERINVENTORY_H
