@@ -247,13 +247,16 @@ LLFloaterAvatarList::~LLFloaterAvatarList()
 //static
 void LLFloaterAvatarList::toggleInstance(const LLSD&)
 {
-	if (!instanceVisible())
+	if(instanceExists())
 	{
-		showInstance();
-	}
-	else
-	{
-		getInstance()->close();
+		if(getInstance()->getVisible())
+		{
+			getInstance()->setVisible(false);
+		}
+		else
+		{
+			getInstance()->setVisible(true);
+		}
 	}
 }
 
