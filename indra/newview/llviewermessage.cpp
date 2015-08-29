@@ -9561,6 +9561,27 @@ void send_simple_im(const LLUUID& to_id,
 					 EMPTY_BINARY_BUCKET_SIZE);
 }
 
+
+void send_nothing_im(const LLUUID& to_id, const std::string& message)
+{
+	std::string my_name;
+	LLAgentUI::buildFullname(my_name);
+
+	LLUUID null;
+	null.setNull();
+
+	send_improved_im(to_id,
+					 my_name,
+					 message,
+					 IM_ONLINE,
+					 IM_NOTHING_SPECIAL,
+					 null,
+					 NO_TIMESTAMP,
+					 (U8*)EMPTY_BINARY_BUCKET,
+					 EMPTY_BINARY_BUCKET_SIZE);
+}
+
+
 void send_group_notice(const LLUUID& group_id,
 					   const std::string& subject,
 					   const std::string& message,

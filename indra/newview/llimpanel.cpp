@@ -270,7 +270,8 @@ bool send_start_session_messages(
 
 
 // [Ratany:]
-bool xantispam_check(const std::string&, const std::string&, const std::string&);
+extern bool xantispam_check(const std::string&, const std::string&, const std::string&);
+// bool xantispam_check(const std::string&, const std::string&, const std::string&);
 // [/Ratany]
 
 
@@ -748,6 +749,9 @@ bool LLFloaterIMPanel::inviteToSession(const std::vector<LLUUID>& ids)
 	return TRUE;
 }
 
+// from llviewermessage.cpp
+extern void send_nothing_im(const LLUUID& to_id, const std::string& message);
+
 void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incolor, bool log_to_file, const LLUUID& source, const std::string& name)
 {
 	bool is_agent(gAgentID == source), from_user(source.notNull());
@@ -822,16 +826,6 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 		prepend_newline = false;
 	}
 
-	// Append the chat message in style
-	{
-		LLStyleSP style(new LLStyle);
-		style->setColor(incolor);
-		style->mItalic = is_irc;
-		style->mBold = from_user && gSavedSettings.getBOOL("SingularityBoldGroupModerator") && isModerator(source);
-		mHistoryEditor->appendStyledText(utf8msg, false, prepend_newline, style);
-	}
-
-
 	std::string histstr;
 	if (gSavedPerAccountSettings.getBOOL("IMLogTimestamp"))
 		histstr = LLLogChat::timestamp(gSavedPerAccountSettings.getBOOL("LogTimestampDate")) + show_name + utf8msg;
@@ -842,6 +836,7 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 	std::string label(mLogLabel);
 	boost::algorithm::trim(label);
 	std::string from = ((source == gAgentID) ? mOtherParticipantUUID.asString() : source.asString());
+	std::string thismsg = utf8msg;
 	if(!isGroupSessionType() && (source != gAgentID))
 	{
 		// could run an external notifier or whatever
@@ -850,6 +845,25 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 	else
 	{
 		xantispam_check(from, "&-ExecOnEachGS!", "GR-session: " + label + ": " + histstr);
+
+		// try to filter spammers
+		if((utf8msg.length() > 128) && (utf8msg.find("http://") != std::string::npos))
+		{
+			// still logs the original message
+			//
+			thismsg = " [blocked spam from]";
+			send_nothing_im(mOtherParticipantUUID, "[spam message blocked by recipients client]");
+			send_nothing_im(gAgentID, "'[spam message blocked by recipients client]' sent to " + mOtherParticipantUUID.asString());
+		}
+	}
+
+	// Append the chat message in style
+	{
+		LLStyleSP style(new LLStyle);
+		style->setColor(incolor);
+		style->mItalic = is_irc;
+		style->mBold = from_user && gSavedSettings.getBOOL("SingularityBoldGroupModerator") && isModerator(source);
+		mHistoryEditor->appendStyledText(thismsg, false, prepend_newline, style);
 	}
 
 	if (log_to_file
@@ -1102,7 +1116,7 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 	}
 }
 
-extern bool xantispam_check(const std::string&, const std::string&, const std::string&);
+// extern bool xantispam_check(const std::string&, const std::string&, const std::string&);
 void show_log_browser(const std::string& name, const std::string& id)
 {
 	const std::string file(LLLogChat::makeLogFileName(name));
