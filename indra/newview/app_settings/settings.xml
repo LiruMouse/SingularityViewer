@@ -2063,6 +2063,28 @@ This should be as low as possible, but too low may break functionality</string>
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>AntiSpamXtendedRxMinLength</key>
+    <map>
+      <key>Comment</key>
+      <string>Minimum length a chat message must have to undergo spam filtering by content.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>85</integer>
+    </map>
+    <key>AntiSpamXtendedRxScoreThreshold</key>
+    <map>
+      <key>Comment</key>
+      <string>Minimum score xantispam must have computed for a chat message for it to be considered as spam.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>5</integer>
+    </map>
     <key>AntiSpamXtendedMaxCallsPer10Sec</key>
     <map>
       <key>Comment</key>

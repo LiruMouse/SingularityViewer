@@ -2752,6 +2752,58 @@ static bool xantispam_lookup_selectively(std::vector<xantispam_request>& blackca
 }
 
 
+//
+// search a message for regular expressions and return a score
+//
+// The message to search through is in the 'from' part of the
+// request. The regular expression is in the 'from' part of a rule.
+// That rule gives the score to use if the regex matches the message
+// as a parameter.  All such rules in the cache are checked to compute
+// a total score from all the matches.
+//
+int xantispam_matching(const std::string haystack, std::vector<xantispam_request>& cache)
+{
+	static LLCachedControl<U32> minlength(gSavedSettings, "AntiSpamXtendedRxMinLength");
+
+	if(haystack.length() < minlength)
+	{
+		return 0;
+	}
+
+	static LLCachedControl<U32> threshold(gSavedSettings, "AntiSpamXtendedRxScoreThreshold");
+
+	int score = 0;
+	std::vector<xantispam_request>::const_iterator it = cache.end();
+	while(it != cache.begin())
+	{
+		--it;
+
+		if(it->type.length() < 10)
+		{
+			continue;
+		}
+
+		if(!it->type.find("&-RxScore!"))
+		{
+			int thisscore = boost::lexical_cast<int>(it->type.substr(10, std::string::npos));
+			boost::regex needle(it->from);
+
+			if(boost::regex_search(haystack, needle))
+			{
+				score += thisscore;
+
+				if(threshold < score)
+				{
+					return true;
+				}
+			}
+		}
+	}
+
+	return (threshold < score);
+}
+
+
 // handle the "&-" background requests
 //
 // These may generate notifications which should be limited to show
@@ -2785,8 +2837,24 @@ static bool xantispam_backgnd(const xantispam_request *request, std::vector<xant
 	// # &-StatusFriendIsOffline
 	// # &-StatusFriendIsOnline
 	//
+	//
+	// regular expression matching for filtering the content of
+	// messages (IMs/group msgs):
+	//
+	// # &-RxScore!<integer>
+	//
+	// The 'from' part of such a rule specifies a regular
+	// expression to match a message with; the <integer> is the
+	// score which will be added to a total score for the message.
+	// When the message gets a score above a threshold, the
+	// message is classified as spam.
+	//
 	// # // &-IMLogDistinct DISABLED
 
+	if(!request->type.find("&-regex"))
+	{
+		return xantispam_matching(request->from, blackcache);
+	}
 
 	if(!request->type.find("&-ExecFriendIsOnline!") || !request->type.find("&-ExecFriendIsOffline!") || !request->type.find("&-ExecOnEachIM!") || !request->type.find("&-ExecOnEachGS!") || !request->type.find("&-ExecOnNewIMSession!") || !request->type.find("&-ExecOnNewGRSession!") || !request->type.find("&-IMLogHistoryExternal!"))
 	{

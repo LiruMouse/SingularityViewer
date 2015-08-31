@@ -845,16 +845,16 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 	else
 	{
 		xantispam_check(from, "&-ExecOnEachGS!", "GR-session: " + label + ": " + histstr);
+	}
 
-		// try to filter spammers
-		if((utf8msg.length() > 128) && (utf8msg.find("http://") != std::string::npos))
-		{
-			// still logs the original message
-			//
-			thismsg = " [blocked spam from]";
-			send_nothing_im(mOtherParticipantUUID, "[spam message blocked by recipients client]");
-			send_nothing_im(gAgentID, "'[spam message blocked by recipients client]' sent to " + mOtherParticipantUUID.asString());
-		}
+	// run the message itself through spam filtering
+	if((source != gAgentID) && xantispam_check(utf8msg, "&-regex", label))
+	{
+		// still logs the original message
+		//
+		thismsg = " [blocked spam from]";
+		send_nothing_im(mOtherParticipantUUID, "[spam message blocked by recipients client]");
+		send_nothing_im(gAgentID, "'[spam message blocked by recipients client]' sent to " + label);
 	}
 
 	// Append the chat message in style
