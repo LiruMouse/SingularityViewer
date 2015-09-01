@@ -2786,7 +2786,7 @@ int xantispam_matching(const std::string haystack, std::vector<xantispam_request
 		if(!it->type.find("&-RxScore!"))
 		{
 			int thisscore = boost::lexical_cast<int>(it->type.substr(10, std::string::npos));
-			boost::regex needle(it->from);
+			boost::regex needle(it->from, boost::regex::icase);
 
 			if(boost::regex_search(haystack, needle))
 			{
