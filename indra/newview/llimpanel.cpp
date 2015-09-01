@@ -1537,8 +1537,12 @@ void LLFloaterIMPanel::setTyping(bool typing)
 
 void LLFloaterIMPanel::sendTypingState(bool typing)
 {
-	if(gSavedSettings.getBOOL("AscentHideTypingNotification"))
+	LLCachedControl<bool> hide_typing("AscentHideTypingNotification");
+	if(hide_typing)
+	{
 		return;
+	}
+
 	// Don't want to send typing indicators to multiple people, potentially too
 	// much network traffic.  Only send in person-to-person IMs.
 	if (mSessionType != P2P_SESSION) return;

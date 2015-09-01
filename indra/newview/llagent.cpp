@@ -1945,7 +1945,18 @@ BOOL LLAgent::needsRenderHead()
 //-----------------------------------------------------------------------------
 void LLAgent::startTyping()
 {
-	if (gSavedSettings.getBOOL("FakeAway")) return;
+	LLCachedControl<bool> hide_typing("AscentHideTypingNotification");
+	if(hide_typing)
+	{
+		return;
+	}
+
+	LLCachedControl<bool> fake_away("FakeAway");
+	if (fake_away)
+	{
+		return;
+	}
+
 	mTypingTimer.reset();
 
 	if (getRenderState() & AGENT_STATE_TYPING)
@@ -1964,12 +1975,13 @@ void LLAgent::startTyping()
 		}
 	}
 
-	if (gSavedSettings.getBOOL("PlayTypingAnim"))
+	LLCachedControl<bool> pta("PlayTypingAnim");
+	if (pta)
 	{
 		sendAnimationRequest(ANIM_AGENT_TYPE, ANIM_REQUEST_START);
 	}
-	gChatBar->
-			sendChatFromViewer("", CHAT_TYPE_START, FALSE);
+
+	gChatBar->sendChatFromViewer("", CHAT_TYPE_START, FALSE);
 }
 
 //-----------------------------------------------------------------------------
@@ -1977,12 +1989,17 @@ void LLAgent::startTyping()
 //-----------------------------------------------------------------------------
 void LLAgent::stopTyping()
 {
+	LLCachedControl<bool> hide_typing("AscentHideTypingNotification");
+	if(hide_typing)
+	{
+		return;
+	}
+
 	if (mRenderState & AGENT_STATE_TYPING)
 	{
 		clearRenderState(AGENT_STATE_TYPING);
 		sendAnimationRequest(ANIM_AGENT_TYPE, ANIM_REQUEST_STOP);
-		gChatBar->
-				sendChatFromViewer("", CHAT_TYPE_STOP, FALSE);
+		gChatBar->sendChatFromViewer("", CHAT_TYPE_STOP, FALSE);
 	}
 }
 

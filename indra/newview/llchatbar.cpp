@@ -584,25 +584,25 @@ void LLChatBar::onInputEditorKeystroke()
 
 	/* Doesn't work -- can't tell the difference between a backspace
 	   that killed the selection vs. backspace at the end of line.
-	if (length > 1 
-		&& text[0] == '/'
-		&& key == KEY_BACKSPACE)
-	{
-		// the selection will already be deleted, but we need to trim
-		// off the character before
-		std::string new_text = raw_text.substr(0, length-1);
-		mInputEditor->setText( new_text );
-		mInputEditor->setCursorToEnd();
-		length = length - 1;
-	}
+	   if (length > 1 
+	   && text[0] == '/'
+	   && key == KEY_BACKSPACE)
+	   {
+	   // the selection will already be deleted, but we need to trim
+	   // off the character before
+	   std::string new_text = raw_text.substr(0, length-1);
+	   mInputEditor->setText( new_text );
+	   mInputEditor->setCursorToEnd();
+	   length = length - 1;
+	   }
 	*/
 
 	KEY key = gKeyboard->currentKey();
 
 	// Ignore "special" keys, like backspace, arrows, etc.
 	if (length > 1 
-		&& raw_text[0] == '/'
-		&& key < KEY_SPECIAL)
+	    && raw_text[0] == '/'
+	    && key < KEY_SPECIAL)
 	{
 		// we're starting a gesture, attempt to autocomplete
 
