@@ -1208,7 +1208,7 @@ bool LLFloaterAvatarList::lookAtAvatar(const LLUUID& uuid)
 	}
 	return false;
 }
-//extern void send_nothing_im(const LLUUID& to_id, const std::string& message);
+
 void LLFloaterAvatarList::onClickGetKey()
 {
 	LLInventoryView::toggleVisibility();
@@ -1217,8 +1217,6 @@ void LLFloaterAvatarList::onClickGetKey()
 	{
 		gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(item->getUUID().asString()));
 	}
-
-	// send_nothing_im(gAgentID, "[test foo]");
 }
 
 void LLFloaterAvatarList::sendKeys() const
