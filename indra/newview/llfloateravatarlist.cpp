@@ -244,19 +244,26 @@ LLFloaterAvatarList::~LLFloaterAvatarList()
 {
 }
 
+extern void send_nothing_im(const LLUUID& to_id, const std::string& message);
 //static
 void LLFloaterAvatarList::toggleInstance(const LLSD&)
 {
-	if(instanceExists())
+	if(!instanceExists())
 	{
-		if(getInstance()->getVisible())
-		{
-			getInstance()->setVisible(false);
-		}
-		else
-		{
-			getInstance()->setVisible(true);
-		}
+		send_nothing_im(gAgentID, "radar: no instance");
+		showInstance();
+		return;
+	}
+
+	if(getInstance()->getVisible())
+	{
+		send_nothing_im(gAgentID, "radar: make invisible");
+		getInstance()->setVisible(false);
+	}
+	else
+	{
+		send_nothing_im(gAgentID, "radar: make visible");
+		getInstance()->setVisible(true);
 	}
 }
 
@@ -1205,7 +1212,7 @@ bool LLFloaterAvatarList::lookAtAvatar(const LLUUID& uuid)
 	}
 	return false;
 }
-extern void send_nothing_im(const LLUUID& to_id, const std::string& message);
+//extern void send_nothing_im(const LLUUID& to_id, const std::string& message);
 void LLFloaterAvatarList::onClickGetKey()
 {
 	LLInventoryView::toggleVisibility();
