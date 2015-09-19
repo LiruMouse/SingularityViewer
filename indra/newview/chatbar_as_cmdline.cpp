@@ -16,7 +16,7 @@
  *      may be used to endorse or promote products derived from this
  *      software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY MODULAR SYSTEMS AND CONTRIBUTORS “AS IS”
+ * THIS SOFTWARE IS PROVIDED BY MODULAR SYSTEMS AND CONTRIBUTORS AS IS
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL MODULAR SYSTEMS OR CONTRIBUTORS
@@ -41,6 +41,7 @@
 #include "llagentcamera.h"
 #include "llagentui.h"
 #include "llavataractions.h"
+#include "llnotificationsutil.h"
 #include "llviewerregion.h"
 #include "llworld.h"
 #include "lleventtimer.h"
@@ -55,7 +56,7 @@
 #include "llviewerobjectlist.h"
 #include "llviewertexteditor.h"
 #include "llviewermenu.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "lltooldraganddrop.h"
 #include "llinventorymodel.h"
 #include "llregioninfomodel.h"
@@ -69,7 +70,6 @@
 #include "rlvhandler.h"
 
 void cmdline_printchat(const std::string& message);
-void cmdline_rezplat(bool use_saved_value = true, F32 visual_radius = 30.0);
 void cmdline_tp2name(std::string target);
 
 LLUUID cmdline_partial_name2key(std::string name);
@@ -105,7 +105,7 @@ public:
 		LLViewerInventoryItem* subj = instack.top();
 		instack.pop();
 		LLViewerObject *objectp = gObjectList.findObject(indest);
-		if(objectp)
+		if (objectp)
 		{
 			cmdline_printchat(std::string("dropping ")+subj->getName());
 			LLToolDragAndDrop::dropInventory(objectp,subj,LLToolDragAndDrop::SOURCE_AGENT,gAgent.getID());
@@ -147,7 +147,7 @@ public:
 				LLSelectNode* node = (*itr);
 				LLViewerObject* object = node->getObject();
 				U32 localid=object->getLocalID();
-				if(done_prims.find(localid) == done_prims.end())
+				if (done_prims.find(localid) == done_prims.end())
 				{
 					done_prims.insert(localid);
 					std::string name = llformat("%fx%fx%f",object->getScale().mV[VX],object->getScale().mV[VY],object->getScale().mV[VZ]);
@@ -221,331 +221,354 @@ void spew_key_to_name(const LLUUID& targetKey, const LLAvatarName& av_name)
 {
 	cmdline_printchat(llformat("%s: %s", targetKey.asString().c_str(), av_name.getNSName().c_str()));
 }
-bool cmd_line_chat(std::string revised_text, EChatType type)
+bool cmd_line_chat(std::string data, EChatType type)
 {
-	static LLCachedControl<bool> sAscentCmdLine(gSavedSettings, "AscentCmdLine");
-	static LLCachedControl<std::string> sAscentCmdLinePos(gSavedSettings,  "AscentCmdLinePos");
-	static LLCachedControl<std::string> sAscentCmdLineDrawDistance(gSavedSettings,  "AscentCmdLineDrawDistance");
-	static LLCachedControl<std::string> sAscentCmdTeleportToCam(gSavedSettings,  "AscentCmdTeleportToCam");
-	static LLCachedControl<std::string> sAscentCmdLineKeyToName(gSavedSettings,  "AscentCmdLineKeyToName");
-	static LLCachedControl<std::string> sAscentCmdLineOfferTp(gSavedSettings,  "AscentCmdLineOfferTp");
-	static LLCachedControl<std::string> sAscentCmdLineGround(gSavedSettings,  "AscentCmdLineGround");
-	static LLCachedControl<std::string> sAscentCmdLineHeight(gSavedSettings,  "AscentCmdLineHeight");
-	static LLCachedControl<std::string> sAscentCmdLineTeleportHome(gSavedSettings,  "AscentCmdLineTeleportHome");
-	static LLCachedControl<std::string> sAscentCmdLineRezPlatform(gSavedSettings,  "AscentCmdLineRezPlatform");
-	static LLCachedControl<std::string> sAscentCmdLineMapTo(gSavedSettings,  "AscentCmdLineMapTo");
-	static LLCachedControl<bool> sAscentCmdLineMapToKeepPos(gSavedSettings, "AscentMapToKeepPos");
-	static LLCachedControl<std::string> sAscentCmdLineCalc(gSavedSettings,  "AscentCmdLineCalc");
-	static LLCachedControl<std::string> sAscentCmdLineTP2(gSavedSettings,  "AscentCmdLineTP2");
-	static LLCachedControl<std::string> sAscentCmdLineClearChat(gSavedSettings,  "AscentCmdLineClearChat");
-	static LLCachedControl<std::string> sSinguCmdLineAway(gSavedSettings,  "SinguCmdLineAway");
-	static LLCachedControl<std::string> sSinguCmdLineRegionSay(gSavedSettings,  "SinguCmdLineRegionSay");
-	static LLCachedControl<std::string> sSinguCmdLineURL(gSavedSettings,  "SinguCmdLineURL");
-	static LLCachedControl<std::string> sResyncAnimCommand(gSavedSettings, "AlchemyChatCommandResyncAnim", "/resync");
-	static LLCachedControl<std::string> sHoverHeight(gSavedSettings, "AlchemyChatCommandHoverHeight", "/hover");
-
-	if(sAscentCmdLine)
+	static LLCachedControl<bool> enableChatCmd(gSavedSettings, "AscentCmdLine", true);
+	if (enableChatCmd)
 	{
-		std::istringstream i(revised_text);
-		std::string command;
-		i >> command;
-		command = utf8str_tolower(command);
-		if(command != "")
-		{
-			if(command == utf8str_tolower(sAscentCmdLinePos))
-			{
-				F32 x,y,z;
-				if (i >> x)
-				{
-					if (i >> y)
-					{
-						if (!(i >> z))
-							z = gAgent.getPositionAgent().mV[VZ];
+		data = utf8str_tolower(data);
+		std::istringstream input(data);
+		std::string cmd;
 
-						if (LLViewerRegion* agentRegionp = gAgent.getRegion())
-						{
-							LLVector3 targetPos(x,y,z);
-							LLVector3d pos_global = from_region_handle(agentRegionp->getHandle());
-							pos_global += LLVector3d((F64)targetPos.mV[0],(F64)targetPos.mV[1],(F64)targetPos.mV[2]);
-							gAgent.teleportViaLocation(pos_global);
-							return false;
-						}
+		if (!(input >> cmd))	return true;
+
+		static LLCachedControl<std::string> sDrawDistanceCommand(gSavedSettings,  "AscentCmdLineDrawDistance");
+		static LLCachedControl<std::string> sHeightCommand(gSavedSettings,  "AscentCmdLineHeight");
+		static LLCachedControl<std::string> sGroundCommand(gSavedSettings,  "AscentCmdLineGround");
+		static LLCachedControl<std::string> sPosCommand(gSavedSettings,  "AscentCmdLinePos");
+		static LLCachedControl<std::string> sRezPlatCommand(gSavedSettings,  "AscentCmdLineRezPlatform");
+		static LLCachedControl<std::string> sHomeCommand(gSavedSettings,  "AscentCmdLineTeleportHome");
+		static LLCachedControl<std::string> sCalcCommand(gSavedSettings,  "AscentCmdLineCalc");
+		static LLCachedControl<std::string> sMapToCommand(gSavedSettings,  "AscentCmdLineMapTo");
+		static LLCachedControl<std::string> sClearCommand(gSavedSettings,  "AscentCmdLineClearChat");
+		static LLCachedControl<std::string> sRegionMsgCommand(gSavedSettings,  "SinguCmdLineRegionSay");
+		static LLCachedControl<std::string> sTeleportToCam(gSavedSettings,  "AscentCmdTeleportToCam");
+		static LLCachedControl<std::string> sHoverHeight(gSavedSettings, "AlchemyChatCommandHoverHeight", "/hover");
+		static LLCachedControl<std::string> sResyncAnimCommand(gSavedSettings, "AlchemyChatCommandResyncAnim", "/resync");
+		static LLCachedControl<std::string> sKeyToName(gSavedSettings,  "AscentCmdLineKeyToName");
+		static LLCachedControl<std::string> sOfferTp(gSavedSettings,  "AscentCmdLineOfferTp");
+		static LLCachedControl<std::string> sTP2Command(gSavedSettings,  "AscentCmdLineTP2");
+		static LLCachedControl<std::string> sAwayCommand(gSavedSettings,  "SinguCmdLineAway");
+		static LLCachedControl<std::string> sURLCommand(gSavedSettings,  "SinguCmdLineURL");
+
+		if (cmd == utf8str_tolower(sDrawDistanceCommand)) // dd
+		{
+			int drawDist;
+			if (input >> drawDist)
+			{
+				gSavedSettings.setF32("RenderFarClip", drawDist);
+				gAgentCamera.mDrawDistance=drawDist;
+				char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
+				snprintf(buffer,sizeof(buffer),"Draw distance set to: %dm",drawDist);
+				cmdline_printchat(std::string(buffer));
+				return false;
+			}
+		}
+		else if (cmd == utf8str_tolower(sHeightCommand)) // gth
+		{
+			F64 z;
+			if (input >> z)
+			{
+				LLVector3d pos_global = gAgent.getPositionGlobal();
+				pos_global.mdV[VZ] = z;
+				gAgent.teleportViaLocationLookAt(pos_global);
+				return false;
+			}
+		}
+		else if (cmd == utf8str_tolower(sGroundCommand)) // flr
+		{
+			LLVector3d pos_global = gAgent.getPositionGlobal();
+			pos_global.mdV[VZ] = 0.0;
+			gAgent.teleportViaLocationLookAt(pos_global);
+			return false;
+		}
+		else if (cmd == utf8str_tolower(sPosCommand)) // pos
+		{
+			F32 x,y,z;
+			if ((input >> x) && (input >> y))
+			{
+				if (!(input >> z))
+					z = gAgent.getPositionAgent().mV[VZ];
+
+				if (LLViewerRegion* regionp = gAgent.getRegion())
+				{
+					LLVector3d target_pos = regionp->getPosGlobalFromRegion(LLVector3((F32) x, (F32) y, (F32) z));
+					gAgent.teleportViaLocationLookAt(target_pos);
+					return false;
+				}
+			}
+		}
+		else if (cmd == utf8str_tolower(sRezPlatCommand)) // plat
+		{
+			F32 size;
+			static LLCachedControl<F32> platSize(gSavedSettings, "AscentPlatformSize");
+			if (!(input >> size))
+				size = static_cast<F32>(platSize);
+
+			const LLVector3& agent_pos = gAgent.getPositionAgent();
+			const LLVector3 rez_pos(agent_pos.mV[VX], agent_pos.mV[VY], agent_pos.mV[VZ] - ((gAgentAvatarp->getScale().mV[VZ] / 2.f) + 0.25f + (gAgent.getVelocity().magVec() * 0.333)));
+
+			LLMessageSystem* msg = gMessageSystem;
+			msg->newMessageFast(_PREHASH_ObjectAdd);
+			msg->nextBlockFast(_PREHASH_AgentData);
+			msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+			msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+			msg->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
+			msg->nextBlockFast(_PREHASH_ObjectData);
+			msg->addU8Fast(_PREHASH_PCode, LL_PCODE_VOLUME);
+			msg->addU8Fast(_PREHASH_Material, LL_MCODE_METAL);
+			msg->addU32Fast(_PREHASH_AddFlags, agent_pos.mV[VZ] > 4096.f ? FLAGS_CREATE_SELECTED : 0U);
+
+			LLVolumeParams volume_params;
+			volume_params.setType(LL_PCODE_PROFILE_CIRCLE, LL_PCODE_PATH_CIRCLE_33);
+			volume_params.setRatio(2, 2);
+			volume_params.setShear(0, 0);
+			volume_params.setTaper(2.0f,2.0f);
+			volume_params.setTaperX(0.f);
+			volume_params.setTaperY(0.f);
+			LLVolumeMessage::packVolumeParams(&volume_params, msg);
+
+			msg->addVector3Fast(_PREHASH_Scale, LLVector3(size, size, 0.25f));
+			msg->addQuatFast(_PREHASH_Rotation, LLQuaternion(90.f * DEG_TO_RAD, LLVector3::y_axis));
+			msg->addVector3Fast(_PREHASH_RayStart, rez_pos);
+			msg->addVector3Fast(_PREHASH_RayEnd, rez_pos);
+			msg->addUUIDFast(_PREHASH_RayTargetID, LLUUID::null);
+			msg->addU8Fast(_PREHASH_BypassRaycast, TRUE);
+			msg->addU8Fast(_PREHASH_RayEndIsIntersection, FALSE);
+			msg->addU8Fast(_PREHASH_State, FALSE);
+			msg->sendReliable(gAgent.getRegionHost());
+
+			return false;
+		}
+		else if (cmd == utf8str_tolower(sHomeCommand)) // home
+		{
+			gAgent.teleportHome();
+			return false;
+		}
+		else if (cmd == utf8str_tolower(sCalcCommand))//Cryogenic Blitz
+		{
+			if (data.length() > cmd.length() + 1)
+			{
+				F32 result = 0.f;
+				std::string expr = data.substr(cmd.length() + 1);
+				LLStringUtil::toUpper(expr);
+				if (LLCalc::getInstance()->evalString(expr, result))
+				{
+					// Replace the expression with the result
+					LLSD args;
+					args["EXPRESSION"] = expr;
+					args["RESULT"] = result;
+					LLNotificationsUtil::add("ChatCommandCalc", args);
+					return false;
+				}
+				LLNotificationsUtil::add("ChatCommandCalcFailed");
+				return false;
+			}
+		}
+		else if (cmd == utf8str_tolower(sMapToCommand))
+		{
+			const std::string::size_type length = cmd.length() + 1;
+			if (data.length() > length)
+			{
+				LLSLURL slurl(LLWeb::escapeURL(data.substr(length)));
+				// The user wants to keep their position between MapTos and they have not passed a position (position is defaulted)
+				static LLCachedControl<bool> sMapToKeepPos(gSavedSettings, "AscentMapToKeepPos");
+				if (sMapToKeepPos && slurl.getPosition() == LLVector3(REGION_WIDTH_METERS/2, REGION_WIDTH_METERS/2, 0))
+				{
+					LLVector3d agentPos = gAgent.getPositionGlobal();
+					slurl = LLSLURL(slurl.getRegion(), LLVector3(fmod(agentPos.mdV[VX], (F64)REGION_WIDTH_METERS), fmod(agentPos.mdV[VY], (F64)REGION_WIDTH_METERS), agentPos.mdV[VZ]));
+				}
+
+				LLUrlAction::teleportToLocation(LLWeb::escapeURL(std::string("secondlife:///app/teleport/")+slurl.getLocationString()));
+			}
+			return false;
+		}
+		else if (cmd == utf8str_tolower(sClearCommand))
+		{
+			LLFloaterChat* nearby_chat = LLFloaterChat::getInstance();
+			if (nearby_chat)
+			{
+				if (LLViewerTextEditor* editor = nearby_chat->getChild<LLViewerTextEditor>("Chat History Editor"))
+					editor->clear();
+				if (LLViewerTextEditor* editor = nearby_chat->getChild<LLViewerTextEditor>("Chat History Editor with mute"))
+					editor->clear();
+				return false;
+			}
+		}
+		else if (cmd == "/droll")
+		{
+			S32 dice_sides;
+			if (!(input >> dice_sides))
+				dice_sides = 6;
+			LLSD args;
+			args["RESULT"] = ((ll_rand() % dice_sides) + 1);
+			LLNotificationsUtil::add("ChatCommandDiceRoll", args);
+			return false;
+		}
+		else if (cmd == utf8str_tolower(sRegionMsgCommand)) // Region Message / Dialog
+		{
+			if (data.length() > cmd.length() + 1)
+			{
+				std::string notification_message = data.substr(cmd.length() + 1);
+				if (!gAgent.getRegion()->isEstateManager())
+				{
+					gChatBar->sendChatFromViewer(notification_message, CHAT_TYPE_REGION, false);
+					return false;
+				}
+				std::vector<std::string> strings(5, "-1");
+				// [0] grid_x, unused here
+				// [1] grid_y, unused here
+				strings[2] = gAgentID.asString(); // [2] agent_id of sender
+				// [3] sender name
+				std::string name;
+				LLAgentUI::buildFullname(name);
+				strings[3] = name;
+				strings[4] = notification_message; // [4] message
+				LLRegionInfoModel::sendEstateOwnerMessage(gMessageSystem, "simulatormessage", LLFloaterRegionInfo::getLastInvoice(), strings);
+			}
+			return false;
+		}
+		else if (cmd == utf8str_tolower(sTeleportToCam))
+		{
+			gAgent.teleportViaLocation(gAgentCamera.getCameraPositionGlobal());
+			return false;
+		}
+		else if (cmd == utf8str_tolower(sHoverHeight)) // Hover height
+		{
+			F32 height;
+			if (input >> height)
+			{
+				gSavedPerAccountSettings.set("AvatarHoverOffsetZ",
+											llclamp<F32>(height, MIN_HOVER_Z, MAX_HOVER_Z));
+				return false;
+			}
+		}
+		else if (cmd == utf8str_tolower(sResyncAnimCommand)) // Resync Animations
+		{
+			for (S32 i = 0; i < gObjectList.getNumObjects(); i++)
+			{
+				LLViewerObject* object = gObjectList.getObject(i);
+				if (object && object->isAvatar())
+				{
+					LLVOAvatar& avatarp = *(LLVOAvatar*)object;
+					for (LLVOAvatar::AnimIterator it = avatarp.mPlayingAnimations.begin(), end = avatarp.mPlayingAnimations.end(); it != end; ++it)
+					{
+						const std::pair<LLUUID, S32>& playpair = *it;
+						avatarp.stopMotion(playpair.first, TRUE);
+						avatarp.startMotion(playpair.first);
 					}
 				}
 			}
-			else if(command == utf8str_tolower(sAscentCmdLineDrawDistance))
+			return false;
+		}
+		else if (cmd == utf8str_tolower(sKeyToName))
+		{
+			LLUUID targetKey;
+			if (input >> targetKey)
 			{
-				int drawDist;
-				if(i >> drawDist)
+				LLAvatarName av_name;
+				if (!LLAvatarNameCache::get(targetKey, &av_name))
 				{
-					gSavedSettings.setF32("RenderFarClip", drawDist);
-					gAgentCamera.mDrawDistance=drawDist;
+					LLAvatarNameCache::get(targetKey, boost::bind(spew_key_to_name, _1, _2));
+					return false;
+				}
+				spew_key_to_name(targetKey, av_name);
+			}
+			return false;
+		}
+		else if (cmd == utf8str_tolower(sOfferTp))
+		{
+			std::string avatarKey;
+//			LL_INFOS() << "CMD DEBUG 0 " << cmd << " " << avatarName << LL_ENDL;
+			if (input >> avatarKey)
+			{
+//			LL_INFOS() << "CMD DEBUG 0 afterif " << cmd << " " << avatarName << LL_ENDL;
+				LLUUID tempUUID;
+				if (LLUUID::parseUUID(avatarKey, &tempUUID))
+				{
 					char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
-					snprintf(buffer,sizeof(buffer),"Draw distance set to: %dm",drawDist);
+					std::string tpMsg="Join me!";
+					LLMessageSystem* msg = gMessageSystem;
+					msg->newMessageFast(_PREHASH_StartLure);
+					msg->nextBlockFast(_PREHASH_AgentData);
+					msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+					msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+					msg->nextBlockFast(_PREHASH_Info);
+					msg->addU8Fast(_PREHASH_LureType, (U8)0); 
+
+					msg->addStringFast(_PREHASH_Message, tpMsg);
+					msg->nextBlockFast(_PREHASH_TargetData);
+					msg->addUUIDFast(_PREHASH_TargetID, tempUUID);
+					gAgent.sendReliableMessage();
+					snprintf(buffer,sizeof(buffer),"Offered TP to key %s",tempUUID.asString().c_str());
 					cmdline_printchat(std::string(buffer));
 					return false;
 				}
 			}
-			else if(command == utf8str_tolower(sAscentCmdTeleportToCam))
-			{
-				gAgent.teleportViaLocation(gAgentCamera.getCameraPositionGlobal());
-				return false;
-			}
-			else if(command == utf8str_tolower(sAscentCmdLineKeyToName))
-			{
-				LLUUID targetKey;
-				if(i >> targetKey)
-				{
-					LLAvatarName av_name;
-					if (!LLAvatarNameCache::get(targetKey, &av_name))
-					{
-						LLAvatarNameCache::get(targetKey, boost::bind(spew_key_to_name, _1, _2));
-						return false;
-					}
-					spew_key_to_name(targetKey, av_name);
-				}
-				return false;
-			}
-			else if(command == utf8str_tolower(sAscentCmdLineOfferTp))
-			{
-				std::string avatarKey;
-//				LL_INFOS() << "CMD DEBUG 0 " << command << " " << avatarName << LL_ENDL;
-				if(i >> avatarKey)
-				{
-//				LL_INFOS() << "CMD DEBUG 0 afterif " << command << " " << avatarName << LL_ENDL;
-					LLUUID tempUUID;
-					if(LLUUID::parseUUID(avatarKey, &tempUUID))
-					{
-						char buffer[DB_IM_MSG_BUF_SIZE * 2];  /* Flawfinder: ignore */
-						std::string tpMsg="Join me!";
-						LLMessageSystem* msg = gMessageSystem;
-						msg->newMessageFast(_PREHASH_StartLure);
-						msg->nextBlockFast(_PREHASH_AgentData);
-						msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-						msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-						msg->nextBlockFast(_PREHASH_Info);
-						msg->addU8Fast(_PREHASH_LureType, (U8)0); 
-
-						msg->addStringFast(_PREHASH_Message, tpMsg);
-						msg->nextBlockFast(_PREHASH_TargetData);
-						msg->addUUIDFast(_PREHASH_TargetID, tempUUID);
-						gAgent.sendReliableMessage();
-						snprintf(buffer,sizeof(buffer),"Offered TP to key %s",tempUUID.asString().c_str());
-						cmdline_printchat(std::string(buffer));
-						return false;
-					}
-				}
-			}
-			else if(command == utf8str_tolower(sAscentCmdLineGround))
-			{
-				LLVector3 agentPos = gAgent.getPositionAgent();
-				U64 agentRegion = gAgent.getRegion()->getHandle();
-				LLVector3 targetPos(agentPos.mV[0],agentPos.mV[1],LLWorld::getInstance()->resolveLandHeightAgent(agentPos));
-				LLVector3d pos_global = from_region_handle(agentRegion);
-				pos_global += LLVector3d((F64)targetPos.mV[0],(F64)targetPos.mV[1],(F64)targetPos.mV[2]);
-				gAgent.teleportViaLocation(pos_global);
-				return false;
-			}
-			else if(command == utf8str_tolower(sAscentCmdLineHeight))
-			{
-				F32 z;
-				if(i >> z)
-				{
-					LLVector3 agentPos = gAgent.getPositionAgent();
-					U64 agentRegion = gAgent.getRegion()->getHandle();
-					LLVector3 targetPos(agentPos.mV[0],agentPos.mV[1],z);
-					LLVector3d pos_global = from_region_handle(agentRegion);
-					pos_global += LLVector3d((F64)targetPos.mV[0],(F64)targetPos.mV[1],(F64)targetPos.mV[2]);
-					gAgent.teleportViaLocation(pos_global);
-					return false;
-				}
-			}
-			else if(command == utf8str_tolower(sAscentCmdLineTeleportHome))
-			{
-				gAgent.teleportHome();
-				return false;
-			}
-			else if(command == utf8str_tolower(sAscentCmdLineRezPlatform))
-			{
-				F32 width;
-				if (i >> width) cmdline_rezplat(false, width);
-				else cmdline_rezplat();
-				return false;
-			}
-			else if(command == utf8str_tolower(sAscentCmdLineMapTo))
-			{
-				if (revised_text.length() > command.length() + 1) //Typing this command with no argument was causing a crash. -Madgeek
-				{
-					LLSLURL slurl(LLWeb::escapeURL(revised_text.substr(command.length()+1)));
-
-					// The user wants to keep their position between MapTos and they have not passed a position (position is defaulted)
-					if (sAscentCmdLineMapToKeepPos && slurl.getPosition() == LLVector3(REGION_WIDTH_METERS/2, REGION_WIDTH_METERS/2, 0))
-					{
-						LLVector3d agentPos = gAgent.getPositionGlobal();
-						slurl = LLSLURL(slurl.getRegion(), LLVector3(fmod(agentPos.mdV[VX], (F64)REGION_WIDTH_METERS), fmod(agentPos.mdV[VY], (F64)REGION_WIDTH_METERS), agentPos.mdV[VZ]));
-					}
-
-					LLUrlAction::teleportToLocation(LLWeb::escapeURL(std::string("secondlife:///app/teleport/")+slurl.getLocationString()));
-				}
-				return false;
-			}
-			else if(command == utf8str_tolower(sAscentCmdLineCalc))//Cryogenic Blitz
-			{
-				bool success;
-				F32 result = 0.f;
-				if(revised_text.length() > command.length() + 1)
-				{
-
-					std::string expr = revised_text.substr(command.length()+1);
-					LLStringUtil::toUpper(expr);
-					success = LLCalc::getInstance()->evalString(expr, result);
-
-					std::string out;
-
-					if (!success)
-					{
-						out =  "Calculation Failed";
-					}
-					else
-					{
-						// Replace the expression with the result
-						std::ostringstream result_str;
-						result_str << expr;
-						result_str << " = ";
-						result_str << result;
-						out = result_str.str();
-					}
-					cmdline_printchat(out);
-					return false;
-				}
-			}
-			else if(command == utf8str_tolower(sAscentCmdLineTP2))
-			{
-				if (revised_text.length() > command.length() + 1) //Typing this command with no argument was causing a crash. -Madgeek
-				{
-					std::string name = revised_text.substr(command.length()+1);
-					cmdline_tp2name(name);
-				}
-				return false;
-			}
-			else if(command == utf8str_tolower(sSinguCmdLineAway))
-			{
-				handle_fake_away_status(NULL);
-				return false;
-			}
-			else if(command == utf8str_tolower(sSinguCmdLineURL))
-			{
-				if (revised_text.length() > command.length() + 1)
-				{
-					const std::string sub(revised_text.substr(command.length()+1));
-					LLUUID id;
-					if (id.parseUUID(sub, &id))
-					{
-						LLAvatarActions::showProfile(id);
-						return false;
-					}
-					LLUrlAction::clickAction(sub);
-				}
-				return false;
-			}
-			else if(command == utf8str_tolower(sSinguCmdLineRegionSay))
-			{
-				if (revised_text.length() > command.length() + 1)
-				{
-					const std::string& message = revised_text.substr(command.length()+1);
-					if (!gAgent.getRegion()->isEstateManager())
-					{
-						gChatBar->sendChatFromViewer(message, CHAT_TYPE_REGION, false);
-						return false;
-					}
-					std::vector<std::string> strings(5, "-1");
-					// [0] grid_x, unused here
-					// [1] grid_y, unused here
-					strings[2] = gAgentID.asString(); // [2] agent_id of sender
-					// [3] sender name
-					std::string name;
-					LLAgentUI::buildFullname(name);
-					strings[3] = name;
-					strings[4] = message; // [4] message
-					LLRegionInfoModel::sendEstateOwnerMessage(gMessageSystem, "simulatormessage", LLFloaterRegionInfo::getLastInvoice(), strings);
-				}
-				return false;
-			}
-			else if (command == utf8str_tolower(sHoverHeight)) // Hover height
-			{
-				F32 height;
-				if (i >> height)
-				{
-					gSavedPerAccountSettings.set("AvatarHoverOffsetZ",
-												 llclamp<F32>(height, MIN_HOVER_Z, MAX_HOVER_Z));
-					return false;
-				}
-			}
-			else if (command == utf8str_tolower(sResyncAnimCommand)) // Resync Animations
-			{
-				for (S32 i = 0; i < gObjectList.getNumObjects(); i++)
-				{
-					LLViewerObject* object = gObjectList.getObject(i);
-					if (object && object->isAvatar())
-					{
-						LLVOAvatar& avatarp = *(LLVOAvatar*)object;
-						for (LLVOAvatar::AnimIterator it = avatarp.mPlayingAnimations.begin(), end = avatarp.mPlayingAnimations.end(); it != end; ++it)
-						{
-							const std::pair<LLUUID, S32>& playpair = *it;
-							avatarp.stopMotion(playpair.first, TRUE);
-							avatarp.startMotion(playpair.first);
-						}
-					}
-				}
-				return false;
-			}
-			else if(command == "typingstop")
-			{
-				std::string text;
-				if(i >> text)
-				{
-					gChatBar->sendChatFromViewer(text, CHAT_TYPE_STOP, FALSE);
-				}
-				return false;
-			}
-			else if(command == utf8str_tolower(sAscentCmdLineClearChat))
-			{
-				LLFloaterChat* chat = LLFloaterChat::getInstance(LLSD());
-				if(chat)
-				{
-					LLViewerTextEditor*	history_editor = chat->getChild<LLViewerTextEditor>("Chat History Editor");
-					LLViewerTextEditor*	history_editor_with_mute = chat->getChild<LLViewerTextEditor>("Chat History Editor with mute");
-					history_editor->clear();
-					history_editor_with_mute->clear();
-					return false;
-				}
-			}
-			else if(command == "invrepair")
-			{
-				invrepair();
-				return false;
-			}
-#ifdef PROF_CTRL_CALLS
-			else if(command == "dumpcalls")
-			{
-				LLControlGroup::key_iter it = LLControlGroup::beginKeys();
-				LLControlGroup::key_iter end = LLControlGroup::endKeys();
-				for(;it!=end;++it)
-				{
-					ProfCtrlListAccum list;
-					LLControlGroup::getInstance(*it)->applyToAll(&list);
-					std::sort(list.mVariableList.begin(),list.mVariableList.end(),sort_calls);
-					LL_INFOS("") << *it << ": lookup count (" << gFrameCount << "frames)" << LL_ENDL;
-					for(U32 i = 0;i<list.mVariableList.size();i++)
-					{
-						if(list.mVariableList[i].second)
-							LL_INFOS("") << "  " << list.mVariableList[i].first << ":  " << list.mVariableList[i].second << " lookups, " << ((float)list.mVariableList[i].second / (float)gFrameCount) << "l/f\n" << LL_ENDL;
-					}
-				}
-				return false;
-			}
-#endif //PROF_CTRL_CALLS
 		}
+		else if (cmd == utf8str_tolower(sTP2Command))
+		{
+			if (data.length() > cmd.length() + 1) //Typing this cmd with no argument was causing a crash. -Madgeek
+			{
+				std::string name = data.substr(cmd.length()+1);
+				cmdline_tp2name(name);
+			}
+			return false;
+		}
+		else if (cmd == utf8str_tolower(sAwayCommand))
+		{
+			handle_fake_away_status(NULL);
+			return false;
+		}
+		else if (cmd == utf8str_tolower(sURLCommand))
+		{
+			if (data.length() > cmd.length() + 1)
+			{
+				const std::string sub(data.substr(cmd.length()+1));
+				LLUUID id;
+				if (id.parseUUID(sub, &id))
+				{
+					LLAvatarActions::showProfile(id);
+					return false;
+				}
+				LLUrlAction::clickAction(sub);
+			}
+			return false;
+		}
+		else if (cmd == "typingstop")
+		{
+			std::string text;
+			if (input >> text)
+			{
+				gChatBar->sendChatFromViewer(text, CHAT_TYPE_STOP, FALSE);
+			}
+			return false;
+		}
+		else if (cmd == "invrepair")
+		{
+			invrepair();
+			return false;
+		}
+#ifdef PROF_CTRL_CALLS
+		else if (cmd == "dumpcalls")
+		{
+			LLControlGroup::key_iter it = LLControlGroup::beginKeys();
+			LLControlGroup::key_iter end = LLControlGroup::endKeys();
+			for(;it!=end;++it)
+			{
+				ProfCtrlListAccum list;
+				LLControlGroup::getInstance(*it)->applyToAll(&list);
+				std::sort(list.mVariableList.begin(),list.mVariableList.end(),sort_calls);
+				LL_INFOS() << *it << ": lookup count (" << gFrameCount << "frames)" << LL_ENDL;
+				for(U32 i = 0;i<list.mVariableList.size();i++)
+				{
+					if (list.mVariableList[i].second)
+						LL_INFOS() << "  " << list.mVariableList[i].first << ":  " << list.mVariableList[i].second << " lookups, " << ((float)list.mVariableList[i].second / (float)gFrameCount) << "l/f\n" << LL_ENDL;
+				}
+			}
+			return false;
+		}
+#endif //PROF_CTRL_CALLS
 	}
 	return true;
 }
@@ -579,81 +602,29 @@ LLUUID cmdline_partial_name2key(std::string partial_name)
 void cmdline_tp2name(std::string target)
 {
 	LLUUID avkey = cmdline_partial_name2key(target);
-	if(avkey.isNull())
+	if (avkey.isNull())
 	{
 		cmdline_printchat("Avatar not found.");
 		return;
 	}
 	LLFloaterAvatarList* avlist = LLFloaterAvatarList::instanceExists() ? LLFloaterAvatarList::getInstance() : NULL;
 	LLVOAvatar* avatarp = gObjectList.findAvatar(avkey);
-	if(avatarp)
+	if (avatarp)
 	{
 		LLVector3d pos = avatarp->getPositionGlobal();
 		pos.mdV[VZ] += 2.0;
 		gAgent.teleportViaLocation(pos);
 	}
-	else if(avlist)
+	else if (avlist)
 	{
 		LLAvatarListEntry* entry = avlist->getAvatarEntry(avkey);
-		if(entry)
+		if (entry)
 		{
 			LLVector3d pos = entry->getPosition();
 			pos.mdV[VZ] += 2.0;
 			gAgent.teleportViaLocation(pos);
 		}
 	}
-}
-
-void cmdline_rezplat(bool use_saved_value, F32 visual_radius) //cmdline_rezplat() will still work... just will use the saved value
-{
-	LLVector3 agentPos = gAgent.getPositionAgent()+(gAgent.getVelocity()*(F32)0.333);
-	LLMessageSystem* msg = gMessageSystem;
-	msg->newMessageFast(_PREHASH_ObjectAdd);
-	msg->nextBlockFast(_PREHASH_AgentData);
-	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-	msg->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
-	msg->nextBlockFast(_PREHASH_ObjectData);
-	msg->addU8Fast(_PREHASH_PCode, LL_PCODE_VOLUME);
-	msg->addU8Fast(_PREHASH_Material, LL_MCODE_METAL);
-
-	if(agentPos.mV[2] > 4096.0)
-		msg->addU32Fast(_PREHASH_AddFlags, FLAGS_CREATE_SELECTED);
-	else
-		msg->addU32Fast(_PREHASH_AddFlags, 0);
-
-	LLVolumeParams volume_params;
-
-	volume_params.setType( LL_PCODE_PROFILE_CIRCLE, LL_PCODE_PATH_CIRCLE_33 );
-	volume_params.setRatio( 2, 2 );
-	volume_params.setShear( 0, 0 );
-	volume_params.setTaper(2.0f,2.0f);
-	volume_params.setTaperX(0.f);
-	volume_params.setTaperY(0.f);
-
-	LLVolumeMessage::packVolumeParams(&volume_params, msg);
-	LLVector3 rezpos = agentPos - LLVector3(0.0f,0.0f,2.5f);
-	LLQuaternion rotation;
-	rotation.setQuat(90.f * DEG_TO_RAD, LLVector3::y_axis);
-
-	if (use_saved_value)
-	{
-		visual_radius = gSavedSettings.getF32("AscentPlatformSize");
-	}
-
-	F32 realsize = visual_radius / 3.0f;
-	if (realsize < 0.01f) realsize = 0.01f;
-	else if (realsize > 10.0f) realsize = 10.0f;
-
-	msg->addVector3Fast(_PREHASH_Scale, LLVector3(0.01f,realsize,realsize) );
-	msg->addQuatFast(_PREHASH_Rotation, rotation );
-	msg->addVector3Fast(_PREHASH_RayStart, rezpos );
-	msg->addVector3Fast(_PREHASH_RayEnd, rezpos );
-	msg->addU8Fast(_PREHASH_BypassRaycast, (U8)1 );
-	msg->addU8Fast(_PREHASH_RayEndIsIntersection, (U8)FALSE );
-	msg->addU8Fast(_PREHASH_State, 0);
-	msg->addUUIDFast(_PREHASH_RayTargetID, LLUUID::null );
-	msg->sendReliable(gAgent.getRegionHost());
 }
 
 void cmdline_printchat(const std::string& message)

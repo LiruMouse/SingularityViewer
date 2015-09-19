@@ -91,14 +91,4 @@
 	<string name="Creating particles">Erzeuge Partikel</string>
 	<string name="Just arrived">Soeben angekommen</string>
 	<string name="Typing">Tippen</string>
-	<string name="has_triggered_your_avatar_age_alert">hat Avatar-Alters-Alarm ausgelöst</string>
-	<string name="template">[NAME] [ACTION] [RANGE].</string>
-	<!-- [ACTION] -->
-	<string name="has_entered">ist eingetroffen</string>
-	<string name="has_left">hat verlassen</string>
-	<!-- [RANGE] -->
-	<string name="the_sim">die Sim</string>
-	<string name="draw_distance">Anzeigeentfernung</string>
-	<string name="shout_range">Rufweite</string>
-	<string name="chat_range">Sprechweite</string>
 </floater>

@@ -3103,6 +3103,18 @@ Where tag = tag string to match.  Removes bot's matching the tag.
     <string name="ScriptDeleteObject">Deleted [SCRIPTS] scripts in [OBJECTS] objects.</string>
     <string name="took_a_snapshot">took a snapshot</string>
 
+    <!-- Radar Alert Strings -->
+    <string name="radar_alert_template">[NAME] [ACTION] [RANGE].</string>
+    <!-- [ACTION] -->
+    <string name="has_triggered_your_avatar_age_alert">has triggered your avatar age alert</string>
+    <string name="has_entered">has entered</string>
+    <string name="has_left">has left</string>
+    <!-- [RANGE] -->
+    <string name="the_sim">the sim</string>
+    <string name="draw_distance">draw distance</string>
+    <string name="shout_range">shout range</string>
+    <string name="chat_range">chat range</string>
+
   <!-- Avatar busy/away mode -->
 	<string name="AvatarSetNotAway">Not Away</string>
 	<string name="AvatarSetAway">Away</string>

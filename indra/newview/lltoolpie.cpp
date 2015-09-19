@@ -583,7 +583,7 @@ BOOL LLToolPie::handleHover(S32 x, S32 y, MASK mask)
 	mHoverPick = gViewerWindow->pickImmediate(x, y, FALSE);
 	LLViewerObject *parent = NULL;
 	LLViewerObject *object = mHoverPick.getObject();
-	LLSelectMgr::getInstance()->setHoverObject(object, mHoverPick.mObjectFace);
+	//LLSelectMgr::getInstance()->setHoverObject(object, mHoverPick.mObjectFace); // Singu TODO: remove llhoverview.cpp
 // [RLVa:KB] - Checked: 2010-03-11 (RLVa-1.2.0e) | Modified: RLVa-1.1.0l
 	// Block all special click action cursors when:
 	//   - @fartouch=n restricted and the object is out of range
@@ -717,26 +717,7 @@ BOOL LLToolPie::handleMouseUp(S32 x, S32 y, MASK mask)
 
 		return TRUE;
 	}
-	else
-	{
-		switch(click_action)
-		{
-		case CLICK_ACTION_BUY:
-		case CLICK_ACTION_PAY:
-		case CLICK_ACTION_OPEN:
-			// Because these actions open UI dialogs, we won't change
-			// the cursor again until the next hover and GL pick over
-			// the world.  Keep the cursor an arrow, assuming that 
-			// after the user moves off the UI, they won't be on the
-			// same object anymore.
-			gViewerWindow->setCursor(UI_CURSOR_ARROW);
-			// Make sure the hover-picked object is ignored.
-			gHoverView->resetLastHoverObject();
-			break;
-		default:
-			break;
-		}
-	}
+	gViewerWindow->setCursor(UI_CURSOR_ARROW);
 	if (hasMouseCapture())
 	{
 		setMouseCapture(FALSE);

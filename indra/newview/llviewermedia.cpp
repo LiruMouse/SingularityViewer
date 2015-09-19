@@ -190,7 +190,7 @@ public:
 	}
 
 private:
-	/* virtual */ void httpCompleted()
+	/* virtual */ void completedHeaders()
 	{
 		if (!isGoodStatus(mStatus))
 		{

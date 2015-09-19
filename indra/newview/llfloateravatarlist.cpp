@@ -29,6 +29,7 @@
 #include "llscrolllistctrl.h"
 #include "llscrolllistitem.h"
 #include "llsdutil.h"
+#include "lltrans.h"
 #include "lluictrlfactory.h"
 #include "llwindow.h"
 
@@ -90,22 +91,21 @@ namespace
 		static LLCachedControl<bool> radar_alert_chat_range(gSavedSettings, "RadarAlertChatRange");
 		static LLCachedControl<bool> radar_alert_age(gSavedSettings, "RadarAlertAge");
 
-		LLFloaterAvatarList& inst(LLFloaterAvatarList::instance());
 		LLStringUtil::format_map_t args;
 		LLChat chat;
 		switch(type)
 		{
-			case STAT_TYPE_SIM:			if (radar_alert_sim)			args["[RANGE]"] = inst.getString("the_sim");											break;
-			case STAT_TYPE_DRAW:		if (radar_alert_draw)			args["[RANGE]"] = inst.getString("draw_distance");										break;
-			case STAT_TYPE_SHOUTRANGE:	if (radar_alert_shout_range)	args["[RANGE]"] = inst.getString("shout_range");										break;
-			case STAT_TYPE_CHATRANGE:	if (radar_alert_chat_range)		args["[RANGE]"] = inst.getString("chat_range");										break;
-			case STAT_TYPE_AGE:			if (radar_alert_age)			chat.mText = name + " " + inst.getString("has_triggered_your_avatar_age_alert") + ".";	break;
+			case STAT_TYPE_SIM:			if (radar_alert_sim)			args["[RANGE]"] = LLTrans::getString("the_sim");											break;
+			case STAT_TYPE_DRAW:		if (radar_alert_draw)			args["[RANGE]"] = LLTrans::getString("draw_distance");										break;
+			case STAT_TYPE_SHOUTRANGE:	if (radar_alert_shout_range)	args["[RANGE]"] = LLTrans::getString("shout_range");										break;
+			case STAT_TYPE_CHATRANGE:	if (radar_alert_chat_range)		args["[RANGE]"] = LLTrans::getString("chat_range");										break;
+			case STAT_TYPE_AGE:			if (radar_alert_age)			chat.mText = name + " " + LLTrans::getString("has_triggered_your_avatar_age_alert") + ".";	break;
 			default:					llassert(type);																											break;
 		}
 		args["[NAME]"] = name;
-		args["[ACTION]"] = inst.getString(entering ? "has_entered" : "has_left");
+		args["[ACTION]"] = LLTrans::getString(entering ? "has_entered" : "has_left");
 		if (args.find("[RANGE]") != args.end())
-			chat.mText = inst.getString("template", args);
+			chat.mText = LLTrans::getString("radar_alert_template", args);
 		else if (chat.mText.empty()) return;
 		if (entering) // Note: If we decide to make this for leaving as well, change this check to dist != F32_MIN
 		{

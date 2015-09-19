@@ -3934,8 +3934,9 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 				{
 					F32 w = weight[j][k];
 
-					idx[k] = (S32) floorf(w);
-					wght[k] = w - floorf(w);
+					const F32 w_floor = floorf(w);
+					idx[k] = (S32) w_floor;
+					wght[k] = w - w_floor;
 					scale += wght[k];
 				}
 
@@ -3947,8 +3948,10 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 				for (U32 k = 0; k < 4; k++)
 				{
 					F32 w = wght[k];
+
 					LLMatrix4a src;
-					src.setMul(mp[idx[k]], w);
+					// clamp k to kMaxJoints to avoid reading garbage off stack in release
+					src.setMul(mp[(idx[k] < count) ? idx[k] : 0], w);
 
 					final_mat.add(src);
 				}
