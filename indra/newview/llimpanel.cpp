@@ -854,7 +854,7 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 		//
 		thismsg = " [blocked spam from]";
 		send_nothing_im(mOtherParticipantUUID, "[spam message blocked by recipients client]");
-		send_nothing_im(gAgentID, "'[spam message blocked by recipients client]' sent to " + label);
+		send_nothing_im(gAgentID, "'[spam message blocked by recipients client]' sent to " + show_name);
 	}
 
 	// Append the chat message in style
