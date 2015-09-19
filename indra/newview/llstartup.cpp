@@ -1051,6 +1051,7 @@ bool idle_startup()
 		}
 		// Avination doesn't want the viewer to do bandwidth throttling (it is done serverside, taking UDP into account too).
 		AIPerService::setNoHTTPBandwidthThrottling(gHippoGridManager->getConnectedGrid()->isAvination());
+		// AIPerService::setNoHTTPBandwidthThrottling(1);
 
 		// create necessary directories
 		// *FIX: these mkdir's should error check
