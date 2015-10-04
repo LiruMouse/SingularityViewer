@@ -146,8 +146,9 @@ void LLLogChat::saveHistory(std::string const& filename, std::string line)
 }
 
 
-// only increases the buffer
-static long const LOG_RECALL_BUFSIZ = 8192;
+static long const LOG_RECALL_BUFSIZ = 65536;
+extern LLUUID gAgentID;
+extern void send_nothing_im(const LLUUID& to_id, const std::string& message);
 
 long LLLogChat::computeFileposition(LLFILE *fptr, U32 lines)
 {
@@ -159,43 +160,56 @@ long LLLogChat::computeFileposition(LLFILE *fptr, U32 lines)
 	long pos = ftell(fptr);
 	if(pos == -1)
 	{
+		send_nothing_im(gAgentID, "INFO: ftell() indicates error when loading chat history");
 		return -1;
 	}
 
 	char buffer[LOG_RECALL_BUFSIZ];
+	if(sizeof(*buffer) * LOG_RECALL_BUFSIZ != LOG_RECALL_BUFSIZ)
+	{
+		send_nothing_im(gAgentID, "The size of a char must match the size of a char in a file.");
+		return -1;
+	}
+
+	send_nothing_im(gAgentID, "INFO: loading chat history");
 	std::size_t nlines = 0;
-	std::size_t linepos = 0;
 	while(pos > 0)
 	{
-		// reposition file pointer to before pos
+		// reposition file pointer towards SEEK_SET
 		size_t size = llmin(LOG_RECALL_BUFSIZ, pos);
-		pos -= size;
-
-		fseek(fptr, pos, SEEK_SET);
-		if(fread(buffer, 1, size, fptr) != size)
+		fseek(fptr, -size, SEEK_CUR); //  starts at SEEK_END, so step backwards
+		size_t haveread = fread(buffer, sizeof(*buffer), size, fptr) * sizeof(*buffer);
+		if(ferror(fptr))
 		{
+			send_nothing_im(gAgentID, "INFO: fread() indicates error when loading chat history");
 			return -1;
 		}
 
 		// Count the number of newlines in the buffer and set
 		// pos to the beginning of the first line to return
 		// when we found enough.
-		for(char const* p = buffer + size - 1; p >= buffer; --p)
+		size_t filepos = pos;
+		pos -= (haveread - 1);
+		char const* p = buffer + haveread;
+		while(p > buffer)
 		{
-			if (*p == '\n')
+			--p;
+
+			if(*p == 0x0a)
 			{
 				nlines++;
-				linepos = pos + p - buffer + 1;
 				if(nlines > lines)
 				{
-					return linepos;
+					return filepos;
 				}
 			}
+
+			--filepos;
 		}
 	}
 
 	// maybe there aren't so many lines in the file
-	return linepos;
+	return 0;
 }
 
 
