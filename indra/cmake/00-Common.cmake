@@ -133,12 +133,51 @@ if (LINUX)
       -DAPPID=secondlife
       -D_REENTRANT
       -fexceptions
+
+      -fdelete-dead-exceptions
+
       -fno-math-errno
       -fno-strict-aliasing
       -fsigned-char
       -fvisibility=hidden
-      -g
+#      -g
       -pthread
+      -march=native
+#
+      -maes
+      -mmmx
+      -mpopcnt
+      -msse
+      -msse2
+      -msse3
+      -msse4.1
+      -msse4.2
+      -mssse3
+#
+      -O3
+      -fno-stack-protector
+      -fomit-frame-pointer
+
+      -finline-functions
+#      -ffast-math
+      -funsafe-math-optimizations
+      -ffinite-math-only
+      -fno-signed-zeros
+      -fcx-limited-range
+      -funroll-loops
+      -frename-registers
+#      -ftracer
+      -fvariable-expansion-in-unroller
+      -freorder-blocks-and-partition
+       -fuse-linker-plugin
+       -flto=24
+#      -I/usr/lib/gcc/x86_64-redhat-linux/4.8.1/
+
+	-Wno-strict-aliasing
+#	-ftree-loop-linear // don't
+	-ftree-loop-im
+      -ftree-parallelize-loops=24
+	-funswitch-loops
       )
 
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 ")
@@ -198,10 +237,10 @@ if (LINUX)
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
-    if (NOT STANDALONE)
-      # this stops us requiring a really recent glibc at runtime
-      add_definitions(-fno-stack-protector)
-    endif (NOT STANDALONE)
+    # if (NOT STANDALONE)
+    #   # this stops us requiring a really recent glibc at runtime
+    #   add_definitions(-fno-stack-protector)
+    # endif (NOT STANDALONE)
     if (${ARCH} STREQUAL "x86_64")
       add_definitions(-DLINUX64=1 -pipe)
       set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fomit-frame-pointer -ffast-math -funroll-loops")
@@ -220,10 +259,10 @@ if (LINUX)
       set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
     endif (${ARCH} STREQUAL "x86_64")
   elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    if (NOT STANDALONE)
-      # this stops us requiring a really recent glibc at runtime
-      add_definitions(-fno-stack-protector)
-    endif (NOT STANDALONE)
+    # if (NOT STANDALONE)
+    #   # this stops us requiring a really recent glibc at runtime
+    #   add_definitions(-fno-stack-protector)
+    # endif (NOT STANDALONE)
 
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}${MARCH_FLAG} -fno-inline -msse2")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}${MARCH_FLAG} -fno-inline -msse2")
@@ -233,10 +272,10 @@ if (LINUX)
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -msse2")
   elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
 
-    if (NOT STANDALONE)
-      # this stops us requiring a really recent glibc at runtime
-      add_definitions(-fno-stack-protector)
-    endif (NOT STANDALONE)
+    # if (NOT STANDALONE)
+    #   # this stops us requiring a really recent glibc at runtime
+    #   add_definitions(-fno-stack-protector)
+    # endif (NOT STANDALONE)
 
     if (NOT STANDALONE)
       set(MARCH_FLAG " -axsse4.1 -msse2")

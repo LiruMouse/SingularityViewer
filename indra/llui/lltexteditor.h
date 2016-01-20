@@ -45,6 +45,14 @@
 #include "llpreeditor.h"
 #include "llmenugl.h"
 
+// [Ratany:] for the filepicker
+#include "../llplugin/llpluginclassmedia.h"
+#include "../llplugin/llpluginclassbasic.h"
+#include "../newview/llviewerpluginmanager.h"
+#include "../newview/statemachine/aifilepicker.h"
+// [/Ratany]
+
+
 class LLFontGL;
 class LLScrollbar;
 class LLViewBorder;
@@ -156,6 +164,26 @@ public:
 	static void context_paste(void* data);
 	static void context_delete(void* data);
 	static void context_selectall(void* data);
+
+	// [Ratany]
+	static void context_empty_buffer(void *data);
+	static void context_toggle_line_numbers(void *data);
+	static void context_toggle_scrollbar(void *data);
+	static void context_use_big_font(void *data);
+	static void context_use_bold_font(void *data);
+	static void context_use_default_font(void *data);
+	static void context_use_huge_font(void *data);
+	static void context_use_monospace_font(void *data);
+	static void context_use_small_font(void *data);
+
+	static bool run_external_editor(const std::string filename);
+	static void context_saveandedit(void *data);
+	static void context_start_external(void *data);
+	static void context_saveandedit_picked(void *data, AIFilePicker* filepicker);
+	static void context_loadfile(void *data);
+	static void context_loadfile_picked(void *data, AIFilePicker* filepicker);
+	// [/Ratany]
+
 	static void spell_correct(void* data);
 	static void spell_add(void* data);
 	static void spell_show(void* data);
@@ -213,6 +241,7 @@ public:
 								 const LLColor3& func_color);
 	LLKeywords::keyword_iterator_t keywordsBegin()	{ return mKeywords.begin(); }
 	LLKeywords::keyword_iterator_t keywordsEnd()	{ return mKeywords.end(); }
+
 
 	// Color support
 	void 			setCursorColor(const LLColor4& c)			{ mCursorColor = c; }
@@ -502,6 +531,7 @@ private:
 	//
 	// Data
 	//
+
 	LLKeywords		mKeywords;
 	static LLColor4 mLinkColor;
 

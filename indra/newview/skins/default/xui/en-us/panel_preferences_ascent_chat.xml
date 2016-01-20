@@ -138,7 +138,8 @@ The following wildcards are available to enhance your autoresponses: #n for user
   </panel>
 
     <panel border="true" left="1" bottom="-408" height="408" width="500" label="Spam" name="Spam">
-      <check_box control_name="AntiSpamEnabled" label="Enable Antispam" name="enable_as" width="256" left="3"/>
+      <check_box control_name="EnableGestureSounds" label="Enable Gesture Sounds" name="Enable Gesture Sounds" left="3"/>
+      <check_box control_name="AntiSpamEnabled" label="Enable Antispam (Queues?)" name="enable_as" width="256" left="3" bottom_delta="-20"/>
       <button height="23" label="Reset antispam queues" label_selected="Reset antispam queues" name="reset_antispam" width="230" bottom_delta="0" left="260"/>
       <check_box enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamGlobalQueue" label="No messagetype-specific spam queues" name="spammsg_checkbox" width="256" left="6" bottom_delta="-20"/>
       <spinner enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamTime" decimal_digits="0" increment="1" min_val="1" max_val="60" label="Antispam time(seconds):" label_width="330" tool_tip="Lower is less sensitive" name="antispamtime" width="390" left="10" bottom_delta="-10"/>
@@ -148,7 +149,7 @@ The following wildcards are available to enhance your autoresponses: #n for user
       <spinner enabled_control="AntiSpamEnabled" control_name="_NACL_AntiSpamNewlines" decimal_digits="0" increment="1" min_val="5" max_val="99999" label="Amount of newlines to instablock message:" label_width="330" tool_tip="Higher is less sensitive" name="antispamnewlines" width="390"/>
       <check_box enabled_control="AntiSpamEnabled" control_name="AntiSpamNotify" height="16" label="Notify when spam is blocked" name="Notify On Spam" tool_tip="When enabled, the bottom right corner may become a source of pseudo-spam whenever real spam is blocked." left="6" bottom_delta="-22"/>
 	  <check_box control_name="_NACL_Antispam" height="16" label="Disable -all- dialogs (resets on login)" name="antispam_checkbox" left="3"/>
-      <text disabled_control="_NACL_Antispam" name="Block All Dialogs From" left="10" bottom_delta="-10">Block All Dialogs From</text>
+	  <text disabled_control="_NACL_Antispam" name="Block All Dialogs From" left="10" bottom_delta="-10">Block All Dialogs From</text>
       <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamAlerts" height="16" label="Alerts" name="Alerts" left="14" bottom_delta="-23"/>
       <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamFriendshipOffers" height="16" label="Friendship Offers" name="Friendship Offers" bottom_delta="0" left_delta="120"/>
       <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamGroupInvites" height="16" label="All Group Invites" name="Group Invites" bottom_delta="0" left_delta="120"/>
@@ -162,6 +163,22 @@ The following wildcards are available to enhance your autoresponses: #n for user
       <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamNotMine" height="16" label="My objects" name="My objects" left="25" bottom_delta="-23"/>
       <check_box disabled_control="_NACL_Antispam" control_name="AntiSpamNotFriend" height="16" label="My friends" name="My friends" bottom_delta="0" left_delta="120"/>
       <check_box control_name="EnableGestureSounds" label="Enable Gesture Sounds" name="Enable Gesture Sounds" left="3" bottom_delta="-20"/>
+    </panel>
+
+    <panel border="true" left="1" bottom="-408" height="408" width="500" label="XAntiSpam" name="XAntiSpam">
+      <text name="LabelXAntiSpam" left="3" bottom="405">You must enable the blocking of particular dialog types on the Spam tab for XAntiSpam to fully work.</text>
+      <check_box control_name="AntiSpamXtendedEnabled" height="16" label="Enable XAntiSpam" name="AntiSpamXtendedEnabled" left="3" bottom_delta="-30"/>
+      <check_box control_name="AntiSpamXtendedQueries" height="16" label="Queries" tool_tip="You can 'train' the XAntiSpam filter. When disabled, enabled rules are in effect without asking." name="XAQueries" bottom_delta="-24" left="3"/>
+      <check_box control_name="AntiSpamXtendedRelaxed" height="16" label="Relaxed Mode" tool_tip="When enabled, dialogs will be accepted first unless blacklisted, rather than blocked first and impossible to accept. This is ineffective when neither persistent, nor volatile rules are enabled." name="XARelaxed" bottom_delta="-24" left="3"/>
+      <check_box control_name="AntiSpamXtendedDebug" bottom_delta="-24" left="3" height="16" label="Show debug Notifications" tool_tip="When enabled, XAntiSpam shows the requests it processes as notifications to help you debug your rules." name="AntiSpamXtendedDebug"/>
+      <check_box control_name="NotifyRecievesFocus" bottom_delta="-24" left="3" height="16" label="Queries steal keyboard focus" tool_tip="When disabled, it becomes less likely that you would do something with unexpected notifications while you are pressing keys." name="NotifyRecievesFocus"/>
+      <check_box control_name="RtyInvertIgnoreGroupChat" bottom_delta="-24" left="3" height="16" label="Inverse disabling of group-chats" tool_tip="When enabled, newly incoming group-chat sessions will be ignored if the chat for the group is enabled (inverses the meaning of the checkboxes in the group list)." name="RtyInvertIgnoreGroupChat"/>
+
+      <button height="24" label="Forget Volatile Rules" label_selected="Forget Volatile Rules" tool_tip="Forget temporary rules." name="xantispam_BtnClrCachesV" width="230" bottom="355" left="260"/>
+      <button height="24" label="Reload Persistent Rules" label_selected="Reload Persistent Rules" tool_tip="Reload rules loaded from local files --- only needed when you edit the rules files and otherwise not recommended, unless you experience performance issues due to having more rules in your files than the rule-caches can fathom, which will require file lookups that can cause the performance impact. In that case, you will be notified." name="xantispam_BtnClrCachesP" width="230" bottom_delta="-28" left="260"/>
+      <button height="23" label="Edit Blacklist" label_selected="Edit Blacklist" name="xantispam_BtnEditBlack" tool_tip="Editing rules requires the ExternalEditor debug setting to be set, and it must be listed as allowed executable in the AntiSpamXtendedAllowedExecutables debug setting." width="230" bottom_delta="-40" left="260"/>
+      <button height="23" label="Edit Whitelist" label_selected="Edit Whitelist" name="xantispam_BtnEditWhite" tool_tip="Editing rules requires the ExternalEditor debug setting to be set, and it must be listed as allowed executable in the AntiSpamXtendedAllowedExecutables debug setting.." width="230" bottom_delta="-28" left="260"/>
+      <button height="23" label="Set defaults for XAntiSpam!" label_selected="Set defaults for XAntiSpam!" name="xantispam_BtnEnable" tool_tip="Changes a few settings to fully enable XAntiSpam." width="230" bottom_delta="-40" left="260"/>
     </panel>
 
     <panel border="true" bottom="-580" height="525" label="Text Options" left="1" name="TextOptions" width="418">

@@ -567,7 +567,7 @@ void LLGLTexMemBar::draw()
 	S32 bound_mem = BYTES_TO_MEGA_BYTES(LLViewerTexture::sBoundTextureMemoryInBytes);
  	S32 max_bound_mem = LLViewerTexture::sMaxBoundTextureMemInMegaBytes;
 	S32 total_mem = BYTES_TO_MEGA_BYTES(LLViewerTexture::sTotalTextureMemoryInBytes);
-	S32 max_total_mem = LLViewerTexture::sMaxTotalTextureMemInMegaBytes;
+	S64 max_total_mem = LLViewerTexture::sMaxTotalTextureMemInMegaBytes;
 	F32 discard_bias = LLViewerTexture::sDesiredDiscardBias;
 	F32 cache_usage = (F32)BYTES_TO_MEGA_BYTES(LLAppViewer::getTextureCache()->getUsage()) ;
 	F32 cache_max_usage = (F32)BYTES_TO_MEGA_BYTES(LLAppViewer::getTextureCache()->getMaxUsage()) ;
@@ -578,16 +578,16 @@ void LLGLTexMemBar::draw()
 	U32 total_http_requests = LLAppViewer::getTextureFetch()->getTotalNumHTTPRequests() ;
 	//----------------------------------------------------------------------------
 	LLGLSUIDefault gls_ui;
-	LLColor4 text_color(1.f, 1.f, 1.f, 0.75f);
+	LLColor4 text_color(0.f, 1.f, 0.f, 1.0f);
 	LLColor4 color;
 	
 	std::string text = "";
-	
-	S32 global_raw_memory;
+
+	U64 global_raw_memory;
 	{
-		global_raw_memory = *AIAccess<S32>(LLImageRaw::sGlobalRawMemory);
+		global_raw_memory = *AIAccess<U64>(LLImageRaw::sGlobalRawMemory);
 	}
-	text = llformat("GL Tot: %d/%d MB Bound: %d/%d MB FBO: %d MB Raw Tot: %d MB Bias: %.2f Cache: %.1f/%.1f MB Net Tot Tex: %.1f MB Tot Obj: %.1f MB Tot Htp: %d",
+	text = llformat("GL Tot: %d/%lld MB Bound: %d/%d MB FBO: %d MB Raw Tot: %llu MB Bias: %.2f Cache: %.1f/%.1f MB Net Tot Tex: %.1f MB Tot Obj: %.1f MB Tot Htp: %d",
 					total_mem,
 					max_total_mem,
 					bound_mem,
@@ -597,8 +597,7 @@ void LLGLTexMemBar::draw()
 					cache_usage, cache_max_usage, total_texture_downloaded, total_object_downloaded, total_http_requests);
 	//, cache_entries, cache_max_entries
 
-	LLFontGL::getFontMonospace()->renderUTF8(text, 0, 0, v_offset + line_height*3,
-											 text_color, LLFontGL::LEFT, LLFontGL::TOP);
+	LLFontGL::getFontMonospace()->renderUTF8(text, 0, 0, v_offset + line_height*3, text_color, LLFontGL::LEFT, LLFontGL::TOP);
 
 	//----------------------------------------------------------------------------
 #if 0

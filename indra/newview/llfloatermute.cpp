@@ -240,6 +240,11 @@ void LLFloaterMute::refreshMuteList()
 		name_column.type = "text";
 		name_column.value = "";
 
+		LLScrollListCell::Params uuid_column;
+		uuid_column.column = "UUID";
+		uuid_column.type = "text";
+		uuid_column.value = it->mID.asString();
+
 		LLScrollListCell::Params icon_column;
 		icon_column.column = "icon";
 		icon_column.type = "icon";
@@ -267,6 +272,7 @@ void LLFloaterMute::refreshMuteList()
 		}
 		element.columns.add(icon_column);
 		element.columns.add(name_column);
+		element.columns.add(uuid_column);
 		mMuteList->addNameItemRow(element);
 	}
 	mMuteList->updateSort();

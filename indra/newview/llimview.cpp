@@ -412,6 +412,9 @@ LLIMMgr::~LLIMMgr()
 	// Children all cleaned up by default view destructor.
 }
 
+
+extern bool xantispam_check(const std::string&, const std::string&, const std::string&);
+
 // Add a message to a session. 
 void LLIMMgr::addMessage(
 	const LLUUID& session_id,
@@ -455,15 +458,18 @@ void LLIMMgr::addMessage(
 	if (LLVOAvatar* from_avatar = find_avatar_from_object(target_id)) from_avatar->mIdleTimer.reset(); // Not idle, message sent to somewhere
 
 	// create IM window as necessary
+	std::string name = (session_name.size() > 1) ? session_name : from;
 	if(!floater)
 	{
-               // Return now if we're blocking this group's chat or conferences
-               if (gAgent.isInGroup(session_id) ? getIgnoreGroup(session_id) : dialog != IM_NOTHING_SPECIAL && dialog != IM_SESSION_P2P_INVITE && block_conference(other_participant_id))
+		// Return now if we're blocking this group's chat or conferences
+		bool hasgroup = gAgent.isInGroup(session_id);
+		if (hasgroup ? getIgnoreGroup(session_id) : dialog != IM_NOTHING_SPECIAL && dialog != IM_SESSION_P2P_INVITE && block_conference(other_participant_id))
 			return;
 
-		std::string name = (session_name.size() > 1) ? session_name : from;
-
-		floater = createFloater(new_session_id, other_participant_id, name, dialog);
+		// if this is a group session, append the floater at the right
+		std::vector<LLUUID> ids;
+		ids.push_back(other_participant_id);
+		floater = createFloater(new_session_id, other_participant_id, name, dialog, ids, hasgroup);
 
 		// When we get a new IM, and if you are a god, display a bit
 		// of information about the source. This is to help liaisons
@@ -485,7 +491,12 @@ void LLIMMgr::addMessage(
 			floater->addHistoryLine(bonus_info.str(), gSavedSettings.getColor4("SystemChatColor"));
 		}
 
-		make_ui_sound("UISndNewIncomingIMSession");
+		// see if sound or program execution is desired on new sessions
+		if(xantispam_check(other_participant_id.asString(), (floater->isGroupSessionType() ? "&-GRNewSessionNoSnd" : "&-IMNewSessionNoSnd"), name))
+		{
+			make_ui_sound("UISndNewIncomingIMSession");
+		}
+		xantispam_check(other_participant_id.asString(), (floater->isGroupSessionType() ? "&-ExecOnNewGRSession!" : "&-ExecOnNewIMSession!"), "New chat session: " + name);
 	}
 
 	// now add message to floater
@@ -516,8 +527,12 @@ void LLIMMgr::addMessage(
 
 	if (!gIMMgr->getFloaterOpen() && floater->getParent() != gFloaterView)
 	{
-		// If the chat floater is closed and not torn off) notify of a new IM
-		mIMUnreadCount++;
+		// only show the button and count if wanted
+		if(!(xantispam_check(other_participant_id.asString(), "&-IMCountingButton", name) && !xantispam_check(other_participant_id.asString(), "&-IMNoCountingButton", name)))
+		{
+			// If the chat floater is closed and not torn off) notify of a new IM
+			mIMUnreadCount++;
+		}
 	}
 }
 
@@ -1062,7 +1077,21 @@ LLFloaterIMPanel* LLIMMgr::createFloater(
 			<< " in session " << session_id << LL_ENDL;
 	LLFloaterIMPanel* floater = new LLFloaterIMPanel(session_label, session_id, other_participant_id, dialog, ids);
 	LLTabContainer::eInsertionPoint i_pt = user_initiated ? LLTabContainer::RIGHT_OF_CURRENT : LLTabContainer::END;
-	LLFloaterChatterBox::getInstance(LLSD())->addFloater(floater, FALSE, i_pt);
+
+	// shorten the tab by shortening the name --- useful for horizantal tabs
+	// this is a merged request for xantispam_check()
+	std::string xa_name(session_label);
+	LLStringUtil::trim(xa_name);
+	if(xantispam_check(other_participant_id.asString(), "&-IMLongOrShortTab", xa_name))
+	{
+		// from ./indra/llui/lltabcontainer.cpp:const S32 TABCNTR_TAB_MAX_WIDTH = 150;
+		LLFloaterChatterBox::getInstance(LLSD())->addFloaterSmallTab(floater, FALSE, 150, i_pt);
+	}
+	else
+	{
+		LLFloaterChatterBox::getInstance(LLSD())->addFloaterSmallTab(floater, FALSE, gSavedSettings.getU32("AntiSpamXtendedMaxTabLength"), i_pt);
+	}
+
 	static LLCachedControl<bool> tear_off("OtherChatsTornOff");
 	if (tear_off)
 	{

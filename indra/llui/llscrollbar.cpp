@@ -425,7 +425,7 @@ BOOL LLScrollbar::handleHover(S32 x, S32 y, MASK mask)
 
 BOOL LLScrollbar::handleScrollWheel(S32 x, S32 y, S32 clicks)
 {
-	BOOL handled = changeLine( clicks * mStepSize, TRUE );
+	BOOL handled = changeLine( (clicks << 2) * mStepSize, TRUE );
 	return handled;
 }
 

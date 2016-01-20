@@ -32,8 +32,12 @@
 #define AIFILEPICKER_H
 
 #include "aistatemachine.h"
+#ifndef LL_LLPLUGINCLASSMEDIA_H
 #include "llpluginclassmedia.h"
+#endif
+#ifndef LLVIEWERPLUGINMANAGER_H
 #include "llviewerpluginmanager.h"
+#endif
 #include <vector>
 
 enum ELoadFilter

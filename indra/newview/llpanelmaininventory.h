@@ -67,6 +67,9 @@ public:
 	// Final cleanup, destroy all open inventory views.
 	static void cleanup();
 
+	// hide all views
+	static void hideAllViews();
+
 
 	// LLView & LLFloater functionality
 	virtual void onClose(bool app_quitting);

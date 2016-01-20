@@ -1,0 +1,14 @@
+<llsd>
+    <map>
+    <key>skin_name</key>
+        <string>rskin</string>
+    <key>author_name</key>
+        <string>Ratany --- based on Apollo skin</string>
+    <key>additional_author_names</key>
+        <string>Nomade Zhao</string>
+    <key>skin_info</key>
+        <string>rskin is Apollo with some modifications</string>
+    <key>folder_name</key>
+        <string>rskin</string>
+    </map>
+</llsd>

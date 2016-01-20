@@ -154,6 +154,8 @@ void send_simple_im(const LLUUID& to_id,
 					EInstantMessage dialog = IM_NOTHING_SPECIAL,
 					const LLUUID& id = LLUUID::null);
 
+void send_nothing_im(const LLUUID& to_id, const std::string& message);
+
 void send_group_notice(const LLUUID& group_id,
 					   const std::string& subject,
 					   const std::string& message,

@@ -658,22 +658,26 @@ void LLToolGrab::handleHoverActive(S32 x, S32 y, MASK mask)
 			// ...build mode moves camera about focus point
 			if (grab_center_gl.mX < ROTATE_H_MARGIN)
 			{
+#if 0
 				if (gAgentCamera.getFocusOnAvatar())
 				{
 					gAgent.yaw(rotate_angle);
 				}
 				else
+#endif
 				{
 					gAgentCamera.cameraOrbitAround(rotate_angle);
 				}
 			}
 			else if (grab_center_gl.mX > gViewerWindow->getWorldViewWidthScaled() - ROTATE_H_MARGIN)
 			{
+#if 0
 				if (gAgentCamera.getFocusOnAvatar())
 				{
 					gAgent.yaw(-rotate_angle);
 				}
 				else
+#endif
 				{
 					gAgentCamera.cameraOrbitAround(-rotate_angle);
 				}

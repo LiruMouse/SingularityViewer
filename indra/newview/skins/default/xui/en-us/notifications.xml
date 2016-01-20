@@ -179,8 +179,8 @@ You may choose to allow or deny the corresponding domain or in-world scripted ob
 	 text="Whitelist"/>
    </form>
   </notification>
-  
-  <notification
+
+    <notification
    icon="alertmodal.tga"
    name="AddToMediaList"
    type="alertmodal">
@@ -200,11 +200,11 @@ Enter a domain name to be added to the [LIST]:
     </form>
   </notification>
 
-  <notification
-   icon="notifytip.tga"
-   name="MediaBlocked"
-   type="notifytip">
-Media/audio URL blocked for [DOMAIN]
+    <notification
+   icon="alertmodal.tga"
+   name="MediaFiltersCleared"
+   type="alertmodal">
+The media filters have been cleared.
   </notification>
 
   <notification
@@ -9225,7 +9225,7 @@ Can't move object '[OBJECT_NAME]' to
   <notification
    icon="alertmodal.tga"
    name="CantMoveObjectParcelPerms"
-   type="notify">
+   type="notifytip">
    <tag>fail</tag>
 Can't move object '[OBJECT_NAME]' to
 [OBJ_POSITION] in region [REGION_NAME] because your objects are not allowed on this parcel.
@@ -10581,5 +10581,135 @@ Do you wish to export anyway?
    type="notifytip">
 Object successfully exported to: [FILENAME]
   </notification>
+
+
+
+<!-- xantispam notifications -->
+
+
+  <notification
+   icon="notifytip.tga"
+   name="xantispamNadvfull"
+   type="notifytip">
+XAntiSpam has detected that the [TYPE] cache reached a capacity threshold during automatic pre-filling. It is recommended to either reduce the number of persistent XAntiSpam rules or to increase the cache capacity.
+  </notification>
+
+
+  <notification
+   icon="notifytip.tga"
+   name="xantispamNblk"
+   type="notifytip">
+XAntiSpam: denied [TYPE] from [SOURCE] according to rules
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNclrcache"
+   type="notifytip">
+XAntiSpam: [TYPE] caches have been emptied.
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNdebug"
+   type="notifytip">
+XAntiSpam debug info: [[FROM]]{[TYPE]}([INFO])
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNexecIllegal"
+   type="notifytip">
+XAntiSpam: No other executables than listed in AntiSpamXtendedAllowedExecutables are allowed to be run via XAntiSpam rules, and '[EXECUTABLE]' is not listed.
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNexecRun"
+   type="notifytip">
+XAntiSpam: External-process launcher: Status of [RUNTYPE]: [EXECUTABLE] [OPTIONS]: [STATUS]
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNexecMissing"
+   type="notifytip">
+XAntiSpam: missing executable or empty command in rule [RULE]
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNfillcache"
+   type="notifytip">
+XAntiSpam: The [TYPE]-cache has been prefilled. [ENTRIES] rule(s) occupies/occupy about [PERCENTAGE] percent of its capacity.
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNtimeout"
+   type="notifytip">
+XAntiSpam: The number of calls ([CALLS]) exceeds the threshold for the maximum number of calls within ten seconds ([MAXCALLS]). Events are denyed without processing rules. This info is disabled while the flooding continues.
+  </notification>
+
+
+  <notification
+   icon="notifytip.tga"
+   name="xantispamNselfblk"
+   type="notifytip">
+XAntiSpam: Events from [UUID] are not denied because this is your own UUID.
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamVolatilePersistent"
+   type="alert">
+XAntiSpam has intercepted an event:
+
+
+Type:
+    [TYPE]
+
+From:
+    [FROM]
+
+
+You can have such events automatically allowed or denied in the future through persistent or volatile XAntiSpam rules. "Allow" and "Deny" apply only for this session. "Blacklist" and "Whitelist" apply until you change the corresponding rule in a rule file.
+
+What would you like to do?
+   <form name="form">
+     <button
+	 index="2"
+	 name="Nothing"
+	 text="Nothing"/>
+     <button
+	 index="0"
+	 name="PermBlack"
+	 text="Blacklist"/>
+     <button
+	 index="1"
+	 name="PermWhite"
+	 text="Whitelist"/>
+     <button
+	 index="3"
+	 name="TempBlack"
+	 text="Deny"/>
+     <button
+	 index="4"
+	 name="TempWhite"
+	 text="Allow"/>
+   </form>
+  </notification>
+
+
+<!-- /xantispam notifications -->
+
 
 </notifications>

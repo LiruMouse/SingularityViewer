@@ -337,13 +337,27 @@ static const char* get_profile_floater_name(const LLUUID& avatar_id)
 
 static void on_avatar_name_show_profile(const LLUUID& agent_id, const LLAvatarName& av_name, bool web)
 {
-	if (gSavedSettings.getString("WebProfileURL").empty() || !(web || gSavedSettings.getBOOL("UseWebProfiles")))
+	static LLCachedControl<std::string> web_profile_url("WebProfileURL");
+	static LLCachedControl<bool> use_web_profiles("UseWebProfiles");
+
+	std::string wpu = web_profile_url;
+	if (wpu.empty() || !(web || use_web_profiles))
 	{
 		LLFloaterAvatarInfo* floater = LLFloaterAvatarInfo::getInstance(agent_id);
 		if(!floater)
 		{
 			floater = new LLFloaterAvatarInfo(av_name.getCompleteName()+" - "+LLTrans::getString("Command_Profile_Label"), agent_id);
-			floater->center();
+
+			// I'd rather have it remember its position ...
+			static LLCachedControl<bool> floater_centers("RtyFloaterProfileCenters");
+			if(floater_centers)
+			{
+				floater->center();
+			}
+			else
+			{
+				floater->center_right();
+			}
 		}
 
 		// ...bring that window to front

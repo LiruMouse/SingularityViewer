@@ -234,7 +234,7 @@ void LLFloaterStats::buildStats()
 	stat_barp->mPrecision = 1;
 	stat_barp->mPerSec = FALSE;
 
-	stat_barp = texture_statviewp->addStat("Raw Mem", &(LLViewerStats::getInstance()->mRawMemStat), "DebugStatModeRawMem");
+	stat_barp = texture_statviewp->addStat("Raw Mem GB", &(LLViewerStats::getInstance()->mRawMemStat), "DebugStatModeRawMem");
 	stat_barp->setUnitLabel("");
 	stat_barp->mMinBar = 0.f;
 	stat_barp->mMaxBar = 400.f;

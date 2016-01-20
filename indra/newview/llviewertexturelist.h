@@ -71,7 +71,7 @@ public:
 	static BOOL verifyUploadFile(const std::string& out_filename, const U8 codec);
 	static LLPointer<LLImageJ2C> convertToUploadFile(LLPointer<LLImageRaw> raw_image);
 	static void processImageNotInDatabase( LLMessageSystem *msg, void **user_data );
-	static S32 calcMaxTextureRAM();
+
 	static void receiveImageHeader(LLMessageSystem *msg, void **user_data);
 	static void receiveImagePacket(LLMessageSystem *msg, void **user_data);
 
@@ -102,10 +102,10 @@ public:
 	void setUpdateStats(BOOL b)			{ mUpdateStats = b; }
 
 	S32	getMaxResidentTexMem() const	{ return mMaxResidentTexMemInMegaBytes; }
-	S32 getMaxTotalTextureMem() const   { return mMaxTotalTextureMemInMegaBytes;}
+	S64 getMaxTotalTextureMem() const   { return mMaxTotalTextureMemInMegaBytes;}
 	S32 getNumImages()					{ return mImageList.size(); }
 
-	void updateMaxResidentTexMem(S32 mem);
+	void updateMaxResidentTexMem(S32 unused);
 	
 	void doPreloadImages();
 	void doPrefetchImages();
@@ -195,8 +195,8 @@ private:
 
 	BOOL mInitialized ;
 	BOOL mUpdateStats;
-	S32	mMaxResidentTexMemInMegaBytes;
-	S32 mMaxTotalTextureMemInMegaBytes;
+	U64  mMaxResidentTexMemInMegaBytes;
+	U64  mMaxTotalTextureMemInMegaBytes;
 	LLFrameTimer mForceDecodeTimer;
 	
 public:

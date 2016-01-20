@@ -67,6 +67,12 @@
 #include "llmenugl.h"
 #include "../newview/lgghunspell_wrapper.h"
 
+// [Ratany]
+#include "llnotificationsutil.h"
+#include "../newview/llexternaleditor.h"
+// [/Ratany]
+
+
 // 
 // Globals
 //
@@ -80,8 +86,8 @@ const S32	UI_TEXTEDITOR_BUFFER_BLOCK_SIZE = 512;
 const S32	UI_TEXTEDITOR_BORDER = 1;
 const S32	UI_TEXTEDITOR_H_PAD = 4;
 const S32	UI_TEXTEDITOR_V_PAD_TOP = 4;
-const S32	UI_TEXTEDITOR_LINE_NUMBER_MARGIN = 32;
-const S32	UI_TEXTEDITOR_LINE_NUMBER_DIGITS = 4;
+const S32	UI_TEXTEDITOR_LINE_NUMBER_MARGIN = 48;
+const S32	UI_TEXTEDITOR_LINE_NUMBER_DIGITS = 6;
 const F32	CURSOR_FLASH_DELAY = 1.0f;  // in seconds
 const S32	CURSOR_THICKNESS = 2;
 const S32	SPACES_PER_TAB = 4;
@@ -246,7 +252,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////
 
-LLTextEditor::LLTextEditor(	
+LLTextEditor::LLTextEditor(
 	const std::string& name, 
 	const LLRect& rect, 
 	S32 max_length,						// In bytes
@@ -301,14 +307,17 @@ LLTextEditor::LLTextEditor(
 	// reset desired x cursor position
 	mDesiredXPixel = -1;
 
-	if (font)
-	{
-		mGLFont = font;
-	}
-	else
-	{
-		mGLFont = LLFontGL::getFontSansSerif();
-	}
+	// if (font)
+	// {
+	// 	mGLFont = font;
+	// }
+	// else
+	// {
+	// 	mGLFont = LLFontGL::getFontSansSerif();
+	// }
+	//
+	// mGLFont = LLFontGL::getFontSansSerifSmall();
+	mGLFont = LLFontGL::getFontSansSerif();
 
 	updateTextRect();
 
@@ -333,7 +342,7 @@ LLTextEditor::LLTextEditor(
 	mScrollbar->setFollowsTop();
 	mScrollbar->setFollowsBottom();
 	mScrollbar->setEnabled( TRUE );
-	mScrollbar->setVisible( TRUE );
+	mScrollbar->setVisible(gSavedSettings.getBOOL("EditorHasScrollbar"));
 	mScrollbar->setOnScrollEndCallback(mOnScrollEndCallback, mOnScrollEndData);
 	addChild(mScrollbar);
 
@@ -358,6 +367,24 @@ LLTextEditor::LLTextEditor(
 	menu->addChild(new LLMenuItemCallGL("Paste", context_paste, NULL, this));
 	menu->addChild(new LLMenuItemCallGL("Delete", context_delete, NULL, this));
 	menu->addChild(new LLMenuItemCallGL("Select All", context_selectall, NULL, this));
+	menu->addSeparator();
+	// [Ratany:] putting this here so it's always available
+	menu->addChild(new LLMenuItemCallGL("Save contents and Edit ...", context_saveandedit, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Replace contents from File ...", context_loadfile, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Start external Editor", context_start_external, NULL, this));
+	menu->addSeparator();
+	menu->addChild(new LLMenuItemCallGL("Use big Font", context_use_big_font, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Use bold Font", context_use_bold_font, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Use default Font", context_use_default_font, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Use huge Font", context_use_huge_font, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Use monospace Font", context_use_monospace_font, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Use small Font", context_use_small_font, NULL, this));
+	menu->addSeparator();
+	menu->addChild(new LLMenuItemCallGL("Toggle line numbers", context_toggle_line_numbers, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Toggle scroll bar", context_toggle_scrollbar, NULL, this));
+	menu->addSeparator();
+	menu->addChild(new LLMenuItemCallGL("Delete all contents from this editor!", context_empty_buffer, NULL, this));
+	// [/Ratany]
 	menu->addSeparator();
 	menu->setCanTearOff(FALSE);
 	menu->setVisible(FALSE);
@@ -384,6 +411,225 @@ void LLTextEditor::context_copy(void* data)
 	LLTextEditor* line = (LLTextEditor*)data;
 	if(line)line->copy();
 }
+
+
+// [Ratany]
+void LLTextEditor::context_empty_buffer(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->clear();
+	line->draw();
+}
+void LLTextEditor::context_toggle_line_numbers(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mShowLineNumbers = !line->mShowLineNumbers;
+	line->draw();
+}
+void LLTextEditor::context_toggle_scrollbar(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mScrollbar->setVisible(!line->mScrollbar->getVisible());
+	line->draw();
+}
+void LLTextEditor::context_use_big_font(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mGLFont = LLFontGL::getFontSansSerifBig();
+	line->reshape(line->getRect().getWidth(), line->getRect().getHeight(), true);
+}
+void LLTextEditor::context_use_bold_font(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mGLFont = LLFontGL::getFontSansSerifBold();
+	line->reshape(line->getRect().getWidth(), line->getRect().getHeight(), true);
+}
+void LLTextEditor::context_use_default_font(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mGLFont = LLFontGL::getFontSansSerif();
+	line->reshape(line->getRect().getWidth(), line->getRect().getHeight(), true);
+}
+void LLTextEditor::context_use_huge_font(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mGLFont = LLFontGL::getFontSansSerifHuge();
+	line->reshape(line->getRect().getWidth(), line->getRect().getHeight(), true);
+}
+void LLTextEditor::context_use_monospace_font(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mGLFont = LLFontGL::getFontMonospace();
+	line->reshape(line->getRect().getWidth(), line->getRect().getHeight(), true);
+}
+void LLTextEditor::context_use_small_font(void *data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	line->mGLFont = LLFontGL::getFontSansSerifSmall();
+	line->reshape(line->getRect().getWidth(), line->getRect().getHeight(), true);
+}
+
+bool LLTextEditor::run_external_editor(const std::string filename)
+{
+	LLExternalEditor e;
+	LLExternalEditor::EErrorCode ec;
+
+	ec = e.setCommand(gSavedSettings.getString("ExternalEditor"));
+	if(ec != LLExternalEditor::EC_SUCCESS)
+	{
+		LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "Error using '" + gSavedSettings.getString("ExternalEditor") + "' as command. Did you set the ExternalEditor debug setting correctly?"));
+		return true;
+	}
+
+	ec = e.run(filename);
+	if(ec != LLExternalEditor::EC_SUCCESS)
+	{
+		LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "Starting the external editor seems to have failed."));
+		return true;
+	}
+
+	return false;  // return false on success
+}
+
+
+void LLTextEditor::context_saveandedit(void *data)
+{
+	LLUUID uuid = LLUUID::generateNewID();
+	std::string filename;
+	filename = "singularity-edit-" + uuid.asString() + ".txt";
+
+	AIFilePicker *filepicker = AIFilePicker::create();
+	filepicker->open(filename, FFSAVE_ALL, "", "savefile");
+	filepicker->run(boost::bind(&LLTextEditor::context_saveandedit_picked, data, filepicker));
+}
+
+void LLTextEditor::context_saveandedit_picked(void *data, AIFilePicker* filepicker)
+{
+	LLTextEditor *line = (LLTextEditor *)data;
+
+	if(filepicker && line)
+	{
+		if (!filepicker->hasFilename())
+		{
+			return;
+		}
+	}
+	else
+	{
+		LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "A strange error occured: Null pointer."));
+		return;
+	}
+
+	std::string filename = filepicker->getFilename();
+
+	// I'm lazy here
+	if(LLFile::isfile(filename) || LLFile::isdir(filename))
+	{
+		// what about links?
+		LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", filename + " already exists, please chose a different file name."));
+		return;
+	}
+
+	LLFILE *f = LLFile::fopen(filename, "w");
+	if(!f)
+	{
+		LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "Cannot open " + filename + " for writing!"));
+		return;
+	}
+
+	std::string content = "[There has been an error!]";
+	if(line)
+	{
+		content = line->getText();
+	}
+
+	// assuming that this is text, though items may be embedded
+	if(fputs(content.c_str(), f) == EOF)
+	{
+		LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "Writing to " + filename + " failed."));
+		clearerr(f);
+	}
+	fclose(f);
+	run_external_editor(filename);
+}
+
+
+void LLTextEditor::context_loadfile(void *data)
+{
+	AIFilePicker *filepicker = AIFilePicker::create();
+	filepicker->open(FFLOAD_ALL, "", "openfile", false);
+	filepicker->run(boost::bind(&LLTextEditor::context_loadfile_picked, data, filepicker));
+}
+
+void LLTextEditor::context_loadfile_picked(void *data, AIFilePicker* filepicker)
+{
+	LLTextEditor *line = (LLTextEditor *)data;
+
+	if(filepicker && line)
+	{
+		if (!filepicker->hasFilename())
+		{
+			return;
+		}
+	}
+	else
+	{
+		LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "A strange error occured: Null pointer."));
+		return;
+	}
+
+	std::string filename = filepicker->getFilename();
+	std::string content;
+	content.reserve(line->mMaxTextByteLength);
+
+	LLFILE *f = LLFile::fopen(filename, "r");
+	if(f)
+	{
+		int c;
+		std::size_t offset = 0;
+		while(((c = fgetc(f)) != EOF) && (offset < line->mMaxTextByteLength))
+		{
+			content.push_back(c);
+			offset++;
+		}
+		if(ferror(f))
+		{
+			LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "Error reading " + filename + "."));
+			clearerr(f);
+		}
+		else
+		{
+			if(c != EOF)
+			{
+				LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "This editor does not fathom all the content from the file, hence the input will appear truncated here."));
+			}
+		}
+		fclose(f);
+	}
+
+	if(content.empty())
+	{
+		LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "Content is not replaced because the replacement does not contain content."));
+	}
+	else
+	{
+		line->clear();
+		line->setText(content);
+	}
+}
+
+
+void LLTextEditor::context_start_external(void *data)
+{
+	// there's no file name here, so provide an artificial one
+	//
+	LLUUID uuid = LLUUID::generateNewID();
+	std::string filename;
+	filename = "singularity-edit-" + uuid.asString() + ".txt";
+
+	run_external_editor(filename);
+}
+// [/Ratany]
 
 
 void LLTextEditor::spell_correct(void* data)

@@ -841,6 +841,151 @@
       <key>Value</key>
       <boolean>0</boolean>
     </map>
+    <key>RtyAddaEnabled</key>
+    <map>
+      <key>Comment</key>
+      <string>Dynamically adjust the draw distance when enabled; not intended to be used together with distance stepping.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>RtyAddaDown</key>
+    <map>
+      <key>Comment</key>
+      <string>When dynamically adjusting the draw distance, decrease it by this much per adjustment.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <F32>2.5</F32>
+    </map>
+    <key>RtyAddaFrames</key>
+    <map>
+      <key>Comment</key>
+      <string>When dynamically adjusting the draw distance, calculate the average frame rate over this many frames.  The higher this number is, the less often the draw distance is adjusted.  Keep this number as high as possible.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <U32>60</U32>
+    </map>
+    <key>RtyAddaLevel</key>
+    <map>
+      <key>Comment</key>
+      <string>Reference for dynamically adjusting the draw distance. A lower number biases towards more FPS.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <U32>50</U32>
+    </map>
+    <key>RtyAddaMaxDD</key>
+    <map>
+      <key>Comment</key>
+      <string>When dynamically adjusting the draw distance, do not set it higher than this.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <F32>368.0</F32>
+    </map>
+    <key>RtyAddaMinDD</key>
+    <map>
+      <key>Comment</key>
+      <string>When dynamically adjusting the draw distance, do not set it lower than this.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <F32>32.0</F32>
+    </map>
+    <key>RtyAddaUp</key>
+    <map>
+      <key>Comment</key>
+      <string>When dynamically adjusting the draw distance, increase it by this much per adjustment.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <F32>1.25</F32>
+    </map>
+    <key>RtyFloaterProfileCenters</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not to block your view by centering the profile floater when opening it.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>RtyHideInventoryOnTP</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not to hide all inventory windows when teleporting.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>RtyShowBanLinesFar</key>
+    <map>
+      <key>Comment</key>
+      <string>Do not fade out ban lines with distance when enabled.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>RtyShowBothTimes</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not to display both local and server time in the menu bar.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
+    <key>UISndRtyFriendOffer</key>
+    <map>
+      <key>Comment</key>
+      <string>Sound file for friendship offers (uuid for sound asset)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>00000000-0000-0000-0000-000000000116</string>
+      <key>IsCOA</key>
+      <integer>1</integer>
+    </map>
+    <key>RtyChatUsesLocalTime</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether or not to use local time for chat log time stamps.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <boolean>0</boolean>
+    </map>
     <key>LiruMapShowAvCount</key>
     <map>
       <key>Comment</key>
@@ -1068,7 +1213,7 @@ Found in Advanced->Rendering->Info Displays</string>
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <boolean>0</boolean>
+      <boolean>1</boolean>
     </map>
     <key>LiruUseZQSDKeys</key>
     <map>
@@ -1840,6 +1985,138 @@ This should be as low as possible, but too low may break functionality</string>
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
+    </map>
+    <key>AntiSpamXtendedAllowedExecutables</key>
+    <map>
+      <key>Comment</key>
+      <string>A list of programs XAntiSpam is allowed to execute when rules call for it. The list is delimited by exclamation marks, e. g.: /bin/emacs!/bin/gedit</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string />
+    </map>
+    <key>AntiSpamXtendedDebug</key>
+    <map>
+      <key>Comment</key>
+      <string>When enabled, XAntiSpam shows the requests it processes as notifications to help you debugging your rules. (resets on relog)</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamXtendedEnabled</key>
+    <map>
+      <key>Comment</key>
+      <string>When false, XAntiSpam is disabled.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamXtendedMaxTabLength</key>
+    <map>
+      <key>Comment</key>
+      <string>Specifies the maximum length of tabs in the communications floater when the [ampersand]-IMShortTab rule is applied.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>20</integer>
+    </map>
+    <key>AntiSpamXtendedPersistent</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, persistent fine-grained anti spam rules are enabled.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamXtendedQueries</key>
+    <map>
+      <key>Comment</key>
+      <string>When FALSE, enabled fine-grained anti spam rules will be active, but no questions asked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamXtendedRelaxed</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, only blacklisted dialogs will be blocked.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AntiSpamXtendedRxMinLength</key>
+    <map>
+      <key>Comment</key>
+      <string>Minimum length a chat message must have to undergo spam filtering by content.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>85</integer>
+    </map>
+    <key>AntiSpamXtendedRxScoreThreshold</key>
+    <map>
+      <key>Comment</key>
+      <string>Minimum score xantispam must have computed for a chat message for it to be considered as spam.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>5</integer>
+    </map>
+    <key>AntiSpamXtendedMaxCallsPer10Sec</key>
+    <map>
+      <key>Comment</key>
+      <string>When this timeout kicks in, requests are blocked before further processing. This is against extreme spamming situations.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>300</integer>
+    </map>
+    <key>AntiSpamXtendedVolatile</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, non-persistent fine-grained anti spam rules are enabled.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>EditorHasScrollbar</key>
+    <map>
+      <key>Comment</key>
+      <string>When true, the chat history has a scrollbar.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
     </map>
     <key>_NACL_Antispam</key>
     <map>
@@ -11073,6 +11350,17 @@ This should be as low as possible, but too low may break functionality</string>
     <map>
       <key>Comment</key>
       <string>Pop up notifications for all L$ transactions</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>NotifyRecievesFocus</key>
+    <map>
+      <key>Comment</key>
+      <string>When enabled, notifications steal keyboard focus when they are shown.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

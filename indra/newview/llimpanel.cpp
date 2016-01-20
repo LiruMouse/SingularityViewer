@@ -62,6 +62,7 @@
 #include "llvoicechannel.h"
 
 #include <boost/lambda/lambda.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 // [RLVa:KB] - Checked: 2013-05-10 (RLVa-1.4.9)
 #include "rlvactions.h"
@@ -268,6 +269,12 @@ bool send_start_session_messages(
 }
 
 
+// [Ratany:]
+extern bool xantispam_check(const std::string&, const std::string&, const std::string&);
+// bool xantispam_check(const std::string&, const std::string&, const std::string&);
+// [/Ratany]
+
+
 //
 // LLFloaterIMPanel
 //
@@ -366,7 +373,23 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 
 	if ( gSavedPerAccountSettings.getBOOL("LogShowHistory") )
 	{
-		LLLogChat::loadHistory(mLogLabel,
+		// [Ratany:] Check for distinction
+		std::string filename(mLogLabel);
+		if(!isGroupSessionType())
+		{
+			// if(!xantispam_check(mOtherParticipantUUID.asString(), "&-IMLogDistinct", label))
+			// {
+			// 	filename = (LLAvatarActions::isFriend(mOtherParticipantUUID) ? "friend_" : "resident_") + filename;
+			// }
+		}
+		else
+		{
+			if(!xantispam_check(filename, "&-GRLogDistinct", mLogLabel))
+			{
+				filename = "nonagent_" + mLogLabel;
+			}
+		}
+		LLLogChat::loadHistory(filename,
 				       &chatFromLogFile,
 				       (void *)this);
 	}
@@ -726,6 +749,9 @@ bool LLFloaterIMPanel::inviteToSession(const std::vector<LLUUID>& ids)
 	return TRUE;
 }
 
+// from llviewermessage.cpp
+extern void send_nothing_im(const LLUUID& to_id, const std::string& message);
+
 void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incolor, bool log_to_file, const LLUUID& source, const std::string& name)
 {
 	bool is_agent(gAgentID == source), from_user(source.notNull());
@@ -800,30 +826,95 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incol
 		prepend_newline = false;
 	}
 
+	std::string histstr;
+	if (gSavedPerAccountSettings.getBOOL("IMLogTimestamp"))
+		histstr = LLLogChat::timestamp(gSavedPerAccountSettings.getBOOL("LogTimestampDate")) + show_name + utf8msg;
+	else
+		histstr = show_name + utf8msg;
+
+	// [Ratany:]
+	std::string label(mLogLabel);
+	boost::algorithm::trim(label);
+	std::string from = ((source == gAgentID) ? mOtherParticipantUUID.asString() : source.asString());
+	std::string thismsg = utf8msg;
+	if(!isGroupSessionType() && (source != gAgentID))
+	{
+		// could run an external notifier or whatever
+		xantispam_check(from, "&-ExecOnEachIM!", "IM-session: " + label + ": " + histstr);
+	}
+	else
+	{
+		xantispam_check(from, "&-ExecOnEachGS!", "GR-session: " + label + ": " + histstr);
+	}
+
+	// run the message itself through spam filtering
+	if((source != gAgentID) && xantispam_check(utf8msg, "&-regex", label))
+	{
+		// still logs the original message
+		//
+		thismsg = " [blocked spam from]";
+		send_nothing_im(mOtherParticipantUUID, "[spam message blocked by recipients client]");
+		send_nothing_im(gAgentID, "'[spam message blocked by recipients client]' sent to " + show_name);
+	}
+
 	// Append the chat message in style
 	{
 		LLStyleSP style(new LLStyle);
 		style->setColor(incolor);
 		style->mItalic = is_irc;
 		style->mBold = from_user && gSavedSettings.getBOOL("SingularityBoldGroupModerator") && isModerator(source);
-		mHistoryEditor->appendStyledText(utf8msg, false, prepend_newline, style);
+		mHistoryEditor->appendStyledText(thismsg, false, prepend_newline, style);
 	}
 
 	if (log_to_file
 		&& gSavedPerAccountSettings.getBOOL("LogInstantMessages") ) 
 	{
-		std::string histstr;
-		if (gSavedPerAccountSettings.getBOOL("IMLogTimestamp"))
-			histstr = LLLogChat::timestamp(gSavedPerAccountSettings.getBOOL("LogTimestampDate")) + show_name + utf8msg;
-		else
-			histstr = show_name + utf8msg;
-
-		// [Ansariel: Display name support]
-		// Floater title contains display name -> bad idea to use that as filename
-		// mLogLabel, however, is the old legacy name
-		//LLLogChat::saveHistory(getTitle(),histstr);
-		LLLogChat::saveHistory(mLogLabel, histstr);
-		// [/Ansariel: Display name support]
+		std::string filename(mLogLabel);
+		bool dont_log = false;
+		// Optionally distinguish the log files by friends, non-friends and groups:
+		if(!isGroupSessionType())
+		{
+			// log this IM?
+			if(xantispam_check(from, "&-IMLogDontSave", label))
+			{
+				// use a distinguished name for the log file?
+				// if(!xantispam_check(from, "&-IMLogDistinct", label))
+				// {
+				// 	// hmm ...
+				// 	bool source_is_self = (source == gAgentID);
+				// 	bool source_is_friend = source_is_self ? false : LLAvatarActions::isFriend(source);
+				// 	bool log_friend = (source_is_self && source_is_friend) ? true : source_is_friend;
+				// 	filename = (log_friend ? "friend_" : "resident_") + filename;
+				// }
+			}
+			else
+			{
+				dont_log = true;
+			}
+		}
+		else // for group sessions
+		{
+			if(xantispam_check(label, "&-GRLogDontSave", label))
+			{
+				if(!xantispam_check(label, "&-GRLogDistinct", label))
+				{
+					filename = "nonagent_" + label;
+				}
+			}
+			else
+			{
+				dont_log = true;
+			}
+		}
+		if(!dont_log)
+		{
+			// [Ansariel: Display name support]
+			// Floater title contains display name -> bad idea to use that as filename
+			// mLogLabel, however, is the old legacy name
+			//LLLogChat::saveHistory(getTitle(),histstr);
+			LLLogChat::saveHistory(filename, histstr);
+			// [/Ansariel: Display name support]
+		}
 	}
 
 	if (from_user)
@@ -1025,9 +1116,17 @@ void LLFloaterIMPanel::onFlyoutCommit(LLComboBox* flyout, const LLSD& value)
 	}
 }
 
+// extern bool xantispam_check(const std::string&, const std::string&, const std::string&);
 void show_log_browser(const std::string& name, const std::string& id)
 {
 	const std::string file(LLLogChat::makeLogFileName(name));
+
+	if(!xantispam_check(file, "&-IMLogHistoryExternal", file))
+	{
+		// start the external editor with the log and return
+		return;
+	}
+
 	if (gSavedSettings.getBOOL("LiruLegacyLogLaunch"))
 	{
 #if LL_WINDOWS || LL_DARWIN
@@ -1050,6 +1149,38 @@ void LLFloaterIMPanel::onClickHistory()
 {
 	if (mOtherParticipantUUID.notNull())
 	{
+		// [Ratany:] Check for distinction friend/resident
+		std::string label = mLogLabel;
+		boost::algorithm::trim(label);
+		std::string filename = label;
+		if(!isGroupSessionType())
+		{
+			// if(!xantispam_check(mOtherParticipantUUID.asString(), "&-IMLogDistinct", label))
+			// {
+			// 	filename = (LLAvatarActions::isFriend(mOtherParticipantUUID) ? "friend_" : "resident_") + filename;
+			// }
+		}
+		else
+		{
+			// needs the group name as origin for distinction here
+			if(!xantispam_check(label, "&-GRLogDistinct", label))
+			{
+				filename = "nonagent_" + label;
+			}
+		}
+
+		filename = LLLogChat::makeLogFileName(filename);
+
+		// see if the user wants full history file in external
+		// editor, which is what I always expected to happen
+		// from a button like this ...
+		if(!xantispam_check(filename, "&-IMLogHistoryExternal", filename))
+		{
+			// ... and if so, this starts the external editor with the log, hence return
+			return;
+		}
+		// [/Ratany]
+
 		// [Ansariel: Display name support]
 		//show_log_browser(getTitle(), mOtherParticipantUUID.asString());
 		show_log_browser(mLogLabel, mOtherParticipantUUID.asString());
@@ -1406,8 +1537,12 @@ void LLFloaterIMPanel::setTyping(bool typing)
 
 void LLFloaterIMPanel::sendTypingState(bool typing)
 {
-	if(gSavedSettings.getBOOL("AscentHideTypingNotification"))
+	LLCachedControl<bool> hide_typing("AscentHideTypingNotification");
+	if(hide_typing)
+	{
 		return;
+	}
+
 	// Don't want to send typing indicators to multiple people, potentially too
 	// much network traffic.  Only send in person-to-person IMs.
 	if (mSessionType != P2P_SESSION) return;

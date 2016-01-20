@@ -443,6 +443,7 @@ public:
 	BOOL			translateIntoRect( const LLRect& constraint, BOOL allow_partial_outside );
 	BOOL			translateIntoRectWithExclusion( const LLRect& inside, const LLRect& exclude, BOOL allow_partial_outside );
 	void			centerWithin(const LLRect& bounds);
+	void			centerRight(const LLRect& bounds);
 
 	void	setShape(const LLRect& new_rect, bool by_user = false);
 	virtual LLView*	findSnapRect(LLRect& new_rect, const LLCoordGL& mouse_dir, LLView::ESnapType snap_type, S32 threshold, S32 padding = 0);

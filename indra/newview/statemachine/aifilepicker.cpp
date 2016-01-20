@@ -35,7 +35,9 @@
 #include <shlobj.h>
 #endif
 #include "lltrans.h"
+#ifndef LL_LLPLUGINCLASSMEDIA_H
 #include "llpluginclassmedia.h"
+#endif
 #include "llpluginmessageclasses.h"
 #include "llsdserialize.h"
 #include "aifilepicker.h"

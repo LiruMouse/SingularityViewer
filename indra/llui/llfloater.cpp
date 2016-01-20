@@ -705,6 +705,18 @@ void LLFloater::center()
 	centerWithin(gFloaterView->getRect());
 }
 
+
+void LLFloater::center_right()
+{
+	if(getHost())
+	{
+		// hosted floaters can't move
+		return;
+	}
+	centerRight(gFloaterView->getRect());
+}
+
+
 void LLFloater::applyRectControl()
 {
 	if (!getRectControl().empty())
@@ -864,6 +876,8 @@ void LLFloater::handleReshape(const LLRect& new_rect, bool by_user)
 				floaterp->setShape(dependent_rect, by_user);
 			}
 		}
+
+		updateButtons();
 	}
 	else
 	{
@@ -1619,11 +1633,19 @@ void LLFloater::updateButtons()
 			}
 			else
 			{
+				// btn_rect.setLeftTopAndSize(
+				// 	getRect().getWidth() - LLPANEL_BORDER_WIDTH - (LLFLOATER_CLOSE_BOX_SIZE + 1) * button_count,
+				// 	getRect().getHeight() - CLOSE_BOX_FROM_TOP,
+				// 	ll_round((F32)LLFLOATER_CLOSE_BOX_SIZE * mButtonScale),
+				// 	ll_round((F32)LLFLOATER_CLOSE_BOX_SIZE * mButtonScale));
+
+				// Rty: FIXME:
 				btn_rect.setLeftTopAndSize(
-					getRect().getWidth() - LLPANEL_BORDER_WIDTH - (LLFLOATER_CLOSE_BOX_SIZE + 1) * button_count,
+					LLPANEL_BORDER_WIDTH + (LLFLOATER_CLOSE_BOX_SIZE - 1) * button_count,
 					getRect().getHeight() - CLOSE_BOX_FROM_TOP,
 					ll_round((F32)LLFLOATER_CLOSE_BOX_SIZE * mButtonScale),
 					ll_round((F32)LLFLOATER_CLOSE_BOX_SIZE * mButtonScale));
+
 			}
 
 			mButtons[i]->setRect(btn_rect);
@@ -1637,7 +1659,7 @@ void LLFloater::updateButtons()
 		}
 	}
 	if (mDragHandle)
-		mDragHandle->setMaxTitleWidth(getRect().getWidth() - (button_count * (LLFLOATER_CLOSE_BOX_SIZE + 1)));
+		mDragHandle->setMaxTitleWidth(getRect().getWidth() - (button_count * (LLFLOATER_CLOSE_BOX_SIZE + 1)) - 8);
 }
 
 void LLFloater::buildButtons()
@@ -1655,8 +1677,15 @@ void LLFloater::buildButtons()
 		}
 		else
 		{
+			// btn_rect.setLeftTopAndSize(
+			// 	getRect().getWidth() - LLPANEL_BORDER_WIDTH - (LLFLOATER_CLOSE_BOX_SIZE + 1) * (i + 1),
+			// 	getRect().getHeight() - CLOSE_BOX_FROM_TOP,
+			// 	ll_round(LLFLOATER_CLOSE_BOX_SIZE * mButtonScale),
+			// 	ll_round(LLFLOATER_CLOSE_BOX_SIZE * mButtonScale));
+
+			// Rty: FIXME:
 			btn_rect.setLeftTopAndSize(
-				getRect().getWidth() - LLPANEL_BORDER_WIDTH - (LLFLOATER_CLOSE_BOX_SIZE + 1) * (i + 1),
+				LLPANEL_BORDER_WIDTH + (LLFLOATER_CLOSE_BOX_SIZE - 1) * (i + 1),
 				getRect().getHeight() - CLOSE_BOX_FROM_TOP,
 				ll_round(LLFLOATER_CLOSE_BOX_SIZE * mButtonScale),
 				ll_round(LLFLOATER_CLOSE_BOX_SIZE * mButtonScale));

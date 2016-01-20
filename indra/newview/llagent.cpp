@@ -47,6 +47,7 @@
 #include "llgroupmgr.h"
 #include "llhomelocationresponder.h"
 #include "llhudmanager.h"
+#include "llpanelmaininventory.h"
 #include "lljoystickbutton.h"
 #include "llmorphview.h"
 #include "llmoveview.h"
@@ -838,26 +839,36 @@ void LLAgent::standUp()
 
 void LLAgent::handleServerBakeRegionTransition(const LLUUID& region_id)
 {
-	LL_INFOS() << "called" << LL_ENDL;
+	// LL_INFOS() << "called" << LL_ENDL;
 
+	if(!isAgentAvatarValid()) {
+		return;
+	}
+
+
+	bool usb = gAgentAvatarp->isUsingServerBakes();
 
 	// Old-style appearance entering a server-bake region.
-	if (isAgentAvatarValid() &&
-		!gAgentAvatarp->isUsingServerBakes() &&
-		(mRegionp->getCentralBakeVersion()>0))
+	if (!usb && (mRegionp->getCentralBakeVersion() > 0))
 	{
 		LL_INFOS() << "update requested due to region transition" << LL_ENDL;
 		LLAppearanceMgr::instance().requestServerAppearanceUpdate();
+
+		return;
 	}
-	// new-style appearance entering a non-bake region,
-	// need to check for existence of the baking service.
-	else if (isAgentAvatarValid() &&
-			 gAgentAvatarp->isUsingServerBakes() &&
-			 mRegionp->getCentralBakeVersion()==0)
+
+	if (usb && (mRegionp->getCentralBakeVersion() == 0))
 	{
+		// new-std::yle appearance entering a non-bake region,
+		// need to check for existence of the baking service.
+
 		gAgentAvatarp->checkForUnsupportedServerBakeAppearance();
 	}
+
+	// really do nothing when new style appearance enters a
+	// server-bake region?
 }
+
 
 void LLAgent::changeParcels()
 {
@@ -1934,7 +1945,18 @@ BOOL LLAgent::needsRenderHead()
 //-----------------------------------------------------------------------------
 void LLAgent::startTyping()
 {
-	if (gSavedSettings.getBOOL("FakeAway")) return;
+	LLCachedControl<bool> hide_typing("AscentHideTypingNotification");
+	if(hide_typing)
+	{
+		return;
+	}
+
+	LLCachedControl<bool> fake_away("FakeAway");
+	if (fake_away)
+	{
+		return;
+	}
+
 	mTypingTimer.reset();
 
 	if (getRenderState() & AGENT_STATE_TYPING)
@@ -1953,12 +1975,13 @@ void LLAgent::startTyping()
 		}
 	}
 
-	if (gSavedSettings.getBOOL("PlayTypingAnim"))
+	LLCachedControl<bool> pta("PlayTypingAnim");
+	if (pta)
 	{
 		sendAnimationRequest(ANIM_AGENT_TYPE, ANIM_REQUEST_START);
 	}
-	gChatBar->
-			sendChatFromViewer("", CHAT_TYPE_START, FALSE);
+
+	gChatBar->sendChatFromViewer("", CHAT_TYPE_START, FALSE);
 }
 
 //-----------------------------------------------------------------------------
@@ -1966,12 +1989,17 @@ void LLAgent::startTyping()
 //-----------------------------------------------------------------------------
 void LLAgent::stopTyping()
 {
+	LLCachedControl<bool> hide_typing("AscentHideTypingNotification");
+	if(hide_typing)
+	{
+		return;
+	}
+
 	if (mRenderState & AGENT_STATE_TYPING)
 	{
 		clearRenderState(AGENT_STATE_TYPING);
 		sendAnimationRequest(ANIM_AGENT_TYPE, ANIM_REQUEST_STOP);
-		gChatBar->
-				sendChatFromViewer("", CHAT_TYPE_STOP, FALSE);
+		gChatBar->sendChatFromViewer("", CHAT_TYPE_STOP, FALSE);
 	}
 }
 
@@ -3960,6 +3988,16 @@ bool LLAgent::teleportCore(bool is_local)
 	if(gAgentCamera.getFocusOnAvatar())
 	// </edit>
 	gAgentCamera.resetView(FALSE);
+
+	// take keyboard focus away (particularly from inventory panel)
+	gFocusMgr.setKeyboardFocus(NULL);
+
+	// make all inventory views invisible after teleport
+	static const LLCachedControl<bool> rtyhideinventoryontp("RtyHideInventoryOnTP");
+	if(rtyhideinventoryontp)
+	{
+		LLInventoryView::hideAllViews();
+	}
 
 	// local logic
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_TELEPORT_COUNT);

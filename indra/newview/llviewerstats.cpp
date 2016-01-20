@@ -444,9 +444,9 @@ void reset_statistics()
 
 void output_statistics(void*)
 {
-	S32 global_raw_memory;
+	U64 global_raw_memory;
 	{
-		global_raw_memory = *AIAccess<S32>(LLImageRaw::sGlobalRawMemory);
+		global_raw_memory = *AIAccess<U64>(LLImageRaw::sGlobalRawMemory);
 	}
 	LL_INFOS() << "Number of orphans: " << gObjectList.getOrphanCount() << LL_ENDL;
 	LL_INFOS() << "Number of dead objects: " << gObjectList.mNumDeadObjects << LL_ENDL;

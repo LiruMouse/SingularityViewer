@@ -1,21 +1,21 @@
-/** 
+/**
  * @file llviewerparcelmgr.cpp
  * @brief Viewer-side representation of owned land
  *
  * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
  * Copyright (C) 2010, Linden Research, Inc.
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation;
  * version 2.1 of the License only.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -910,6 +910,7 @@ void LLViewerParcelMgr::renderParcelCollision()
 	if (mCollisionTimer.getElapsedTimeF32() > PARCEL_COLLISION_DRAW_SECS)
 	{
 		mRenderCollision = FALSE;
+		return;
 	}
 
 	static const LLCachedControl<bool> ShowBanLines("ShowBanLines");
@@ -936,16 +937,16 @@ void LLViewerParcelMgr::sendParcelAccessListRequest(U32 flags)
 	if (!region) return;
 
 	LLMessageSystem *msg = gMessageSystem;
-	
 
-	if (flags & AL_BAN) 
+
+	if (flags & AL_BAN)
 	{
 		mCurrentParcel->mBanList.clear();
 	}
-	if (flags & AL_ACCESS) 
+	if (flags & AL_ACCESS)
 	{
 		mCurrentParcel->mAccessList.clear();
-	}		
+	}
 
 	// Only the headers differ
 	msg->newMessageFast(_PREHASH_ParcelAccessListRequest);
@@ -1080,7 +1081,7 @@ void LLViewerParcelMgr::sendParcelRelease()
 {
 	if (!mSelected)
 	{
-        LLNotificationsUtil::add("CannotReleaseLandNothingSelected");
+	LLNotificationsUtil::add("CannotReleaseLandNothingSelected");
 		return;
 	}
 
@@ -1119,7 +1120,7 @@ public:
 	BOOL	mRemoveContribution;
 	BOOL	mIsClaim;
 	LLHost	mHost;
-	
+
 	// for parcel buys
 	S32		mParcelID;
 	S32		mPrice;
@@ -1152,7 +1153,7 @@ LLViewerParcelMgr::ParcelBuyInfo* LLViewerParcelMgr::setupParcelBuy(
 		LLNotificationsUtil::add("CannotBuyLandNoRegion");
 		return NULL;
 	}
-	
+
 	if (is_claim)
 	{
 		LL_INFOS() << "Claiming " << mWestSouth << " to " << mEastNorth << LL_ENDL;
@@ -1171,10 +1172,10 @@ LLViewerParcelMgr::ParcelBuyInfo* LLViewerParcelMgr::setupParcelBuy(
 			return NULL;
 		}
 	}
-	
-	
+
+
 	ParcelBuyInfo* info = new ParcelBuyInfo;
-	
+
 	info->mAgent = agent_id;
 	info->mSession = session_id;
 	info->mGroup = group_id;
@@ -1184,7 +1185,7 @@ LLViewerParcelMgr::ParcelBuyInfo* LLViewerParcelMgr::setupParcelBuy(
 	info->mHost = region->getHost();
 	info->mPrice = mCurrentParcel->getSalePrice();
 	info->mArea = mCurrentParcel->getArea();
-	
+
 	if (!is_claim)
 	{
 		info->mParcelID = mCurrentParcel->getLocalID();
@@ -1194,13 +1195,13 @@ LLViewerParcelMgr::ParcelBuyInfo* LLViewerParcelMgr::setupParcelBuy(
 		// BUG: Make work for cross-region selections
 		LLVector3 west_south_bottom_region = region->getPosRegionFromGlobal( mWestSouth );
 		LLVector3 east_north_top_region = region->getPosRegionFromGlobal( mEastNorth );
-		
+
 		info->mWest		= west_south_bottom_region.mV[VX];
 		info->mSouth	= west_south_bottom_region.mV[VY];
 		info->mEast		= east_north_top_region.mV[VX];
 		info->mNorth	= east_north_top_region.mV[VY];
 	}
-	
+
 	return info;
 }
 
@@ -1373,12 +1374,12 @@ void LLViewerParcelMgr::setHoverParcel(const LLVector3d& pos)
 	// last parcel grid step
 	U32 west_parcel_step = (U32) floor( pos.mdV[VX] / PARCEL_GRID_STEP_METERS );
 	U32 south_parcel_step = (U32) floor( pos.mdV[VY] / PARCEL_GRID_STEP_METERS );
-	
+
 	if ((west_parcel_step == last_west) && (south_parcel_step == last_south))
 	{
 		return;
 	}
-	else 
+	else
 	{
 		last_west = west_parcel_step;
 		last_south = south_parcel_step;
@@ -1744,7 +1745,7 @@ void LLViewerParcelMgr::processParcelProperties(LLMessageSystem *msg, void **use
 		{
 			parcel_mgr.mCollisionBanned = BA_NOT_IN_GROUP;
 		}
-		else 
+		else
 		{
 			parcel_mgr.mCollisionBanned = BA_NOT_ON_LIST;
 
@@ -1869,7 +1870,7 @@ void optionally_start_music(LLParcel* parcel)
 				return;
 			}
 		}
-		gAudiop->startInternetStream(LLStringUtil::null); 
+		gAudiop->startInternetStream(LLStringUtil::null);
 	}
 }
 
@@ -1956,7 +1957,7 @@ void LLViewerParcelMgr::sendParcelAccessListUpdate(U32 which)
 	if (!parcel) return;
 
 	if (which & AL_ACCESS)
-	{	
+	{
 		S32 count = parcel->mAccessList.size();
 		S32 num_sections = (S32) ceil(count/PARCEL_MAX_ENTRIES_PER_PACKET);
 		S32 sequence_id = 1;
@@ -1965,9 +1966,9 @@ void LLViewerParcelMgr::sendParcelAccessListUpdate(U32 which)
 
 		access_map_const_iterator cit = parcel->mAccessList.begin();
 		access_map_const_iterator end = parcel->mAccessList.end();
-		while ( (cit != end) || initial ) 
-		{	
-			if (start_message) 
+		while ( (cit != end) || initial )
+		{
+			if (start_message)
 			{
 				msg->newMessageFast(_PREHASH_ParcelAccessListUpdate);
 				msg->nextBlockFast(_PREHASH_AgentData);
@@ -1994,12 +1995,12 @@ void LLViewerParcelMgr::sendParcelAccessListUpdate(U32 which)
 				sequence_id++;
 
 			}
-			
-			while ( (cit != end) && (msg->getCurrentSendTotal() < MTUBYTES)) 
+
+			while ( (cit != end) && (msg->getCurrentSendTotal() < MTUBYTES))
 			{
 
 				const LLAccessEntry& entry = (*cit).second;
-				
+
 				msg->nextBlockFast(_PREHASH_List);
 				msg->addUUIDFast(_PREHASH_ID,  entry.mID );
 				msg->addS32Fast(_PREHASH_Time, entry.mTime );
@@ -2013,7 +2014,7 @@ void LLViewerParcelMgr::sendParcelAccessListUpdate(U32 which)
 	}
 
 	if (which & AL_BAN)
-	{	
+	{
 		S32 count = parcel->mBanList.size();
 		S32 num_sections = (S32) ceil(count/PARCEL_MAX_ENTRIES_PER_PACKET);
 		S32 sequence_id = 1;
@@ -2022,9 +2023,9 @@ void LLViewerParcelMgr::sendParcelAccessListUpdate(U32 which)
 
 		access_map_const_iterator cit = parcel->mBanList.begin();
 		access_map_const_iterator end = parcel->mBanList.end();
-		while ( (cit != end) || initial ) 
+		while ( (cit != end) || initial )
 		{
-			if (start_message) 
+			if (start_message)
 			{
 				msg->newMessageFast(_PREHASH_ParcelAccessListUpdate);
 				msg->nextBlockFast(_PREHASH_AgentData);
@@ -2051,11 +2052,11 @@ void LLViewerParcelMgr::sendParcelAccessListUpdate(U32 which)
 				sequence_id++;
 
 			}
-			
-			while ( (cit != end) && (msg->getCurrentSendTotal() < MTUBYTES)) 
+
+			while ( (cit != end) && (msg->getCurrentSendTotal() < MTUBYTES))
 			{
 				const LLAccessEntry& entry = (*cit).second;
-				
+
 				msg->nextBlockFast(_PREHASH_List);
 				msg->addUUIDFast(_PREHASH_ID,  entry.mID );
 				msg->addS32Fast(_PREHASH_Time, entry.mTime );
@@ -2170,7 +2171,7 @@ bool LLViewerParcelMgr::canAgentBuyParcel(LLParcel* parcel, bool forGroup) const
 	{
 		return false;
 	}
-	
+
 	if (mSelected  &&  parcel == mCurrentParcel)
 	{
 		if (mRequestResult == PARCEL_RESULT_NO_DATA)
@@ -2178,7 +2179,7 @@ bool LLViewerParcelMgr::canAgentBuyParcel(LLParcel* parcel, bool forGroup) const
 			return false;
 		}
 	}
-	
+
 	const LLUUID& parcelOwner = parcel->getOwnerID();
 	const LLUUID& authorizeBuyer = parcel->getAuthorizedBuyerID();
 
@@ -2186,7 +2187,7 @@ bool LLViewerParcelMgr::canAgentBuyParcel(LLParcel* parcel, bool forGroup) const
 	{
 		return true;	// change this if want to make it gods only
 	}
-	
+
 	LLViewerRegion* regionp = LLViewerParcelMgr::getInstance()->getSelectionRegion();
 	if (regionp)
 	{
@@ -2204,23 +2205,23 @@ bool LLViewerParcelMgr::canAgentBuyParcel(LLParcel* parcel, bool forGroup) const
 		{
 			return false;
 		}
-	}	
-	
+	}
+
 	bool isForSale = parcel->getForSale()
 			&& ((parcel->getSalePrice() > 0) || (authorizeBuyer.notNull()));
-			
+
 	bool isEmpowered
 		= forGroup ? gAgent.hasPowerInActiveGroup(GP_LAND_DEED) == TRUE : true;
-		
+
 	bool isOwner
 		= parcelOwner == (forGroup ? gAgent.getGroupID() : gAgent.getID());
-	
+
 	bool isAuthorized
 			= (authorizeBuyer.isNull()
 				|| (gAgent.getID() == authorizeBuyer)
 				|| (gAgent.hasPowerInGroup(authorizeBuyer,GP_LAND_DEED)
 					&& gAgent.hasPowerInGroup(authorizeBuyer,GP_LAND_SET_SALE_INFO)));
-	
+
 	return isForSale && !isOwner && isAuthorized  && isEmpowered;
 }
 
@@ -2455,11 +2456,11 @@ void LLViewerParcelMgr::buyPass()
 }
 
 //Tells whether we are allowed to buy a pass or not
-BOOL LLViewerParcelMgr::isCollisionBanned()	
-{ 
+BOOL LLViewerParcelMgr::isCollisionBanned()
+{
 	if ((mCollisionBanned == BA_ALLOWED) || (mCollisionBanned == BA_NOT_ON_LIST) || (mCollisionBanned == BA_NOT_IN_GROUP))
 		return FALSE;
-	else 
+	else
 		return TRUE;
 }
 

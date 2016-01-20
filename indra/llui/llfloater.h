@@ -155,6 +155,9 @@ public:
 
 	// moves to center of gFloaterView
 	void			center();
+	// moves to right center of gFloaterView
+	void			center_right();
+
 	// applies rectangle stored in mRectControl, if any
 	void			applyRectControl();
 

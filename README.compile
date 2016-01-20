@@ -1,0 +1,36 @@
+
+2015-09-18:
+
+failing webkit on Gentoo: apparently emerging dev-qt/qtopengl fixes it
+
+for reference:
+
+build-linux-x86_64-release/newview/packaged $ LD_LIBRARY_PATH="`pwd`/lib64:`pwd`/lib32:$LD_LIBRARY_PATH" ldd ../../plugins/webkit/libmedia_plugin_webkit.so | grep found
+
+... to see what's missing, and go from there
+
+
+OLD:
+
+compiling on a minimal centos 6.5 installation from their DVD:
+
+
+yum install cmake gcc gcc-c++ mesa-libGL-devel mesa-libGLU-devel
+yum install libidn-devel libXrender-devel libXinerama-devel
+
+optionally:
+
+yum install prelink
+
+
+edit SingularityViewer/indra/cmake/00-Common.cmake and comment out
+the line "-flto=4"
+
+install fmod according to instructions on singularity website
+
+run
+
+  sh ./mkupdate.sh
+
+... and it should compile.  If prelink is not installed, the binary
+will not be prelinked, and this is not required.

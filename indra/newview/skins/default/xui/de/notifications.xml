@@ -70,17 +70,19 @@
   </template>
 
   <notification name="MediaAlert">Der Besitzer der Parzelle m&#xF6;chte Ihren Viewer anweisen die folgende [TYPE] URL zu laden:[URL]Sie k&#xF6;nnen die korrespondierende Dom&#xE4;ne oder In-Welt Objekt-Skript-Server erlauben oder ablehnen."Erlauben" und "Verweigern" gelten nur f&#xFC;r die aktuelle Sitzung, w&#xE4;hrend "Immer sperren" bzw. "Immer erlauben" dann immer gelten.<form name="form">
-    <button name="Allow" text="erlauben"/>
-	<button name="Deny" text="verbieten"/>
-	<button name="Blacklist" text="Blacklist"/>
-	<button name="Whitelist" text="Immer erlauben"/>
-   </form></notification>
+  <button name="Allow" text="erlauben"/>
+  <button name="Deny" text="verbieten"/>
+  <button name="Blacklist" text="Blacklist"/>
+  <button name="Whitelist" text="Immer erlauben"/>
+  </form></notification>
 
   <notification name="MediaBlocked">Media/audio URL verweigern f&#xFC;r [DOMAIN]</notification>
 
+  <notification name="MediaBlocked">Media/audio URL verweigern f&#xFC;r [DOMAIN]</notification>
+  
   <notification name="MissingAlert" label="Unbekannter Warnhinweis">Ihre Version von Second Life kann den gerade empfangenen Warnhinweis nicht anzeigen.
 
-Fehlerdetails: Der Warnhinweis &#x201E;[_NAME]&#x201C; wurde in notifications.xml nicht gefunden.<usetemplate name="okbutton" yestext="OK"/></notification>
+  Fehlerdetails: Der Warnhinweis &#x201E;[_NAME]&#x201C; wurde in notifications.xml nicht gefunden.<usetemplate name="okbutton" yestext="OK"/></notification>
 
   <notification name="FloaterNotFound">Floater-Fehler: Folgende Steuerelemente wurden nicht gefunden:
 
@@ -2986,6 +2988,7 @@ Bitte versuche es mit einem kleineren St&#xFC;ck Land.<tag>fehlgeschlagen</tag><
 
 <!-- Singularity Specific notifications should go below here, alphabetically -->
 <!-- Singu TODO: Migrate our special notifications to here -->
+
   <notification name="AntiSpamBlock">AntiSpam: Blockiert [SOURCE] wegen Spams [TYPE]s [AMOUNT] Zeit in [TIME] Sekunden.</notification>
 
   <notification name="AntiSpamNewlineFlood">AntiSpam: Blockiert neue Zeile Flood Spam from [SOURCE] (mit [AMOUNT] Zeilen).</notification>
@@ -2999,5 +3002,134 @@ M&#xF6;chtest du Radarinformationen zu Objekten in der Sim aktivieren?<usetempla
 Do you wish to export anyway?<usetemplate name="okcancelbuttons" yestext="Proceed"/></notification>
 
   <notification name="WavefrontExportSuccess">Object successfully exported to: [FILENAME]</notification>
+
+
+<!-- xantispam notifications -->
+
+
+  <notification
+   icon="notifytip.tga"
+   name="xantispamNadvfull"
+   type="notifytip">
+XAntiSpam hat entdeckt, daß der [TYPE]-Zwischenspeicher während des automatischen Vorbefüllens einen Schwellwert seines Fassungsvermögens erreicht hat. Es wird empfohlen, entweder die Anzahl der dauerhaften Regeln zu verringern oder das Fassungsvermögen des Zwischenspeichers zu vergrößern.
+  </notification>
+
+
+  <notification
+   icon="notifytip.tga"
+   name="xantispamNblk"
+   type="notifytip">
+XAntiSpam: lehne [TYPE] from [SOURCE] gemäß der Regeln ab
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNclrcache"
+   type="notifytip">
+XAntiSpam: Zwischenspeicher vom Typ '[TYPE]' wurden geleert.
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNdebug"
+   type="notifytip">
+XAntiSpam Fehlerbehebungsinfo: [[FROM]]{[TYPE]}([INFO])
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNexecIllegal"
+   type="notifytip">
+XAntiSpam: Keine anderen Programme als aufgeführt in AntiSpamXtendedAllowedExecutables dürfen via XAntiSpam Regeln ausgeführt werden, und '[EXECUTABLE]' ist nicht aufgeführt.
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNexecRun"
+   type="notifytip">
+XAntiSpam: Programmstarter: Status für [RUNTYPE]: [EXECUTABLE] [OPTIONS]: [STATUS]
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNexecMissing"
+   type="notifytip">
+XAntiSpam: fehlende Programmangabe oder leerer Befehl in [RULE]
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNfillcache"
+   type="notifytip">
+XAntiSpam: Der Zwischenspeicher des Typs '[TYPE]' wurde vorbefüllt. [ENTRIES] Regel(n) belegt/belegen [PERCENTAGE] Prozent des Fassungsvermögens.
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamNtimeout"
+   type="notifytip">
+XAntiSpam: Die Anzahl der Aufrufe ([CALLS]) überschreitet den Schwellenwert für die maximale Anzahl von Aufrufen innerhalb von zehn Sekunden ([MAXCALLS]). Ereignisse werden ohne Regelbearbeitung abgelehnt. Diese Info ist abgeschaltet, solange die Überflutung andauert.
+  </notification>
+
+
+  <notification
+   icon="notifytip.tga"
+   name="xantispamNselfblk"
+   type="notifytip">
+XAntiSpam: Ereignisse von [UUID] werden nicht abgelehnt, da es Ihre eigene UUID ist.
+  </notification>
+
+
+  <notification
+   icon="notify_caution_icon.tga"
+   name="xantispamVolatilePersistent"
+   type="alert">
+XantiSpam hat ein Ereignis abgefangen:
+
+
+Typ:
+    [TYPE]
+
+Von:
+    [FROM]
+
+
+Mittels dauerhafter oder zeitweiliger XAntiSpam Regeln können Sie derartige Ereignisse zukünftig automatisch erlauben oder ablehnen. "Erlauben" und "Ablehnen" gelten nur für diese Sitzung. "Blacklist" und "Whitelist" sind dauerhaft und ändern sich nur, wenn Sie die Dateien mit den Regeln ändern.
+
+Was möchten Sie tun?
+   <form name="form">
+     <button
+	 index="2"
+	 name="Nothing"
+	 text="Nichts"/>
+     <button
+	 index="0"
+	 name="PermBlack"
+	 text="Blacklist"/>
+     <button
+	 index="1"
+	 name="PermWhite"
+	 text="Whitelist"/>
+     <button
+	 index="3"
+	 name="TempBlack"
+	 text="Ablehnen"/>
+     <button
+	 index="4"
+	 name="TempWhite"
+	 text="Erlauben"/>
+   </form>
+  </notification>
+
+
+<!-- /xantispam notifications -->
+
 
 </notifications>

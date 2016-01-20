@@ -1289,19 +1289,26 @@ std::string LLViewerTextEditor::appendTime(bool prepend_newline)
 	// There's only one internal tm buffer.
 	struct tm* timep;
 
-	// Convert to Pacific, based on server's opinion of whether
-	// it's daylight savings time there.
-	timep = utc_to_pacific_time(utc_time, gPacificDaylightTime);
+	// PDT/PDS is totally irrelevant
+	static const LLCachedControl<bool> use_local_time("RtyChatUsesLocalTime");
 
-	std::string format = "";
-	if (gSavedSettings.getBOOL("SecondsInChatAndIMs"))
+	if(use_local_time)
 	{
-		format = gSavedSettings.getString("LongTimeFormat");
+		// use local time
+		timep = std::localtime(&utc_time);
 	}
 	else
 	{
-		format = gSavedSettings.getString("ShortTimeFormat");
+		// Convert to Pacific, based on server's opinion of whether
+		// it's daylight savings time there.
+		timep = utc_to_pacific_time(utc_time, gPacificDaylightTime);
 	}
+
+	static const LLCachedControl<bool> show_seconds("SecondsInChatAndIMs");
+	static const LLCachedControl<std::string> format_long("LongTimeFormat");
+	static const LLCachedControl<std::string> format_short("ShortTimeFormat");
+	std::string format = show_seconds ? format_long : format_short;
+
 	std::string text;
 	timeStructToFormattedString(timep, format, text);
 	text = "[" + text + "]  ";

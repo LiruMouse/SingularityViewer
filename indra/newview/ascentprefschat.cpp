@@ -48,6 +48,10 @@
 #include "llstartup.h"
 
 
+// This should be declared somewhere else.
+extern void xantispam_buttons(const int);
+
+
 LLPrefsAscentChat::LLPrefsAscentChat()
 {
     LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_chat.xml");
@@ -90,6 +94,14 @@ LLPrefsAscentChat::LLPrefsAscentChat()
 
 	childSetEnabled("reset_antispam", started);
 	getChild<LLUICtrl>("reset_antispam")->setCommitCallback(boost::bind(NACLAntiSpamRegistry::purgeAllQueues));
+
+	// xantispam buttons --- associated numbers see llviewermessage.cpp
+	getChild<LLUICtrl>("xantispam_BtnClrCachesP")->setCommitCallback(boost::bind(xantispam_buttons, 20));
+	getChild<LLUICtrl>("xantispam_BtnClrCachesV")->setCommitCallback(boost::bind(xantispam_buttons, 21));
+	getChild<LLUICtrl>("xantispam_BtnEditBlack")->setCommitCallback(boost::bind(xantispam_buttons, 22));
+	getChild<LLUICtrl>("xantispam_BtnEditWhite")->setCommitCallback(boost::bind(xantispam_buttons, 23));
+	getChild<LLUICtrl>("xantispam_BtnEnable")->setCommitCallback(boost::bind(xantispam_buttons, 6));
+        //
 
 	getChild<LLUICtrl>("autoreplace")->setCommitCallback(boost::bind(LLFloaterAutoReplaceSettings::showInstance, LLSD()));
 	getChild<LLUICtrl>("KeywordsOn")->setCommitCallback(boost::bind(&LLPrefsAscentChat::onCommitKeywords, this, _1));

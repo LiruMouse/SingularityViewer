@@ -1727,46 +1727,1778 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 	return false;
 }
 
-void script_msg_api(const std::string& msg);
-bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_owned_by_me)
+
+// xantispam
+// (Start reading below, at xantispam_check().)
+
+#include <llprocesslauncher.h>
+#include <boost/algorithm/string.hpp>
+
+
+#define XANTISPAM_QUERYUSER 10
+#define XANTISPAM_PERMBLACK  0
+#define XANTISPAM_PERMWHITE  1
+#define XANTISPAM_NOP	     2
+#define XANTISPAM_TEMPBLACK  3
+#define XANTISPAM_TEMPWHITE  4
+#define XANTISPAM_CLEARCACHE 5
+#define XANTISPAM_ENABLE     6
+#define XANTISPAM_DISABLE_QUERIES 7
+#define XANTISPAM_UNNOTIFY   8
+// these are for cache control in xantispam_check()
+#define XANTISPAM_ADDBLACK	     "XAAdd2Black:"
+#define XANTISPAM_ADDWHITE	     "XAAdd2White:"
+
+// filename is configurable
+#define XANTISPAM_WHITELISTFILE	     "xantispam-whitelist.org"
+#define XANTISPAM_BLACKLISTFILE	     "xantispam-blacklist.org"
+
+// Max number of entries each cache can hold.  Caches are handled
+// FILO, with most recent entries at the end.  Most recent entries are
+// assumed to be the most likely ones to be looked up (again), so
+// cache lookups start at the end of the caches.
+//
+#define XANTISPAM_CACHE_CAPACITY 65535
+// XANTISPAM_THRESHOLD defines how many entries to remove when the
+// cache flows over
+#define XANTISPAM_THRESHOLD 600
+//
+#define XANTISPAM_CLEARCACHE_RQSTRING "XAClearCache"
+#define XANTISPAM_SPECIAL_ADDBLACK     32
+#define XANTISPAM_SPECIAL_ADDWHITE     33
+#define XANTISPAM_SPECIAL_CLEARCACHE   34
+#define XANTISPAM_SPECIAL_INVALID      30
+
+// When changing these defines, change numbers in ascentprefschat.cpp
+// accordingly (or better, use same defines there).
+#define XANTISPAM_CLEARCACHE_PERSISTENT 20
+#define XANTISPAM_CLEARCACHE_VOLATILE	21
+#define XANTISPAM_EDIT_BLACKLIST	22
+#define XANTISPAM_EDIT_WHITELIST	23
+
+
+// structure to help decision making when queries are generated
+typedef struct
 {
+	bool isblacklisted;
+	bool iswhitelisted;
+} xantispam_blackwhite;
+
+
+// structure to store a request
+typedef struct
+{
+	std::string from;
+	std::string type;
+} xantispam_request;
+
+
+static xantispam_blackwhite xantispam_notify(const xantispam_request *, const int, const std::string&);
+bool xantispam_check(const std::string&, const std::string&, const std::string&);
+void xantispam_buttons(const int);
+
+
+// read from a file until either the buffer is full, the line ends
+// with '\n', or the whole file has been read
+//
+static int xantispam_read_line(LLFILE *src, std::string& line, std::size_t max)
+{
+	// reserve line to max before calling and clear for each line
+	int c;
+	std::size_t offset = 0;
+	while(((c = fgetc(src)) != EOF) && (c != '\n') && (offset < max))
+	{
+		line.push_back(c);
+		offset++;
+	}
+	LL_DEBUGS("xantispam") << "returning" << LL_ENDL;
+	return ((c == EOF) || (c != '\n'));
+}
+
+
+// requests fed to xantispam_check() must go to through this syntax
+// transformation
+//
+void xantispam_apply_syntax(xantispam_request *rq)
+{
+	// strip whitespace
+	rq->from.erase(std::remove_if(rq->from.begin(), rq->from.end(), isspace), rq->from.end());
+
+	// replace ":" with ";"
+	boost::algorithm::replace_all(rq->from, ":", ";");
+
+	// same for request type
+	rq->type.erase(std::remove_if(rq->type.begin(), rq->type.end(), isspace), rq->type.end());
+	boost::algorithm::replace_all(rq->type, ":", ";");
+}
+
+
+// Convert a line read from a blacklist or whitelist file into a
+// request.  This request is called a rule (because it's in a file);
+// requests are matched against the rule.  The data type is the same
+// as for requests.
+//
+// Returns false on success.
+//
+// First a helper function, returning true on error:
+static bool xantispam_syntaxofline(const std::string& line)
+{
+	if(line.empty())
+	{
+		return true;
+	}
+
+	if(line.find(':') != std::string::npos)
+	{
+		if(line.find_first_not_of(":") != std::string::npos)
+		{
+			llinfos << "rule syntax error: wildcards are not allowed amongst other characters in '" << line << "'" << llendl;
+			return true;
+		}
+	}
+	return false;
+}
+//
+// This transforms a line from an emacs org-mode table into an
+// xantispam_request structure.  Whitespace is stripped, lines
+// starting with "|-" and not with '|' are skipped, comments are
+// removed and the syntax is checked.
+//
+static bool xantispam_line2request(std::string& line, xantispam_request *request)
+{
+	// ignore emtpy lines and comments
+	if(line.empty())
+	{
+		LL_DEBUGS("xantispam") << "skipping empty line: " << line << LL_ENDL;
+		return true;
+	}
+	if((line.at(0) != '|') || !line.find("|-"))
+	{
+		LL_DEBUGS("xantispam") << "skipping comment: " << line << LL_ENDL;
+		return true;
+	}
+
+	// truncate inlined comments
+	std::size_t comment = line.find_first_of("#[");
+	if(comment != std::string::npos) line = line.substr(0, comment - 1);
+
+	// strip whitespace
+	line.erase(std::remove_if(line.begin(), line.end(), isspace), line.end());
+
+	// split the line
+	std::vector<std::string> elements;
+	boost::algorithm::split(elements, line, boost::algorithm::is_any_of("|"));
+
+	// transform into an xantispam_request
+	if(elements.size() > 2)
+	{
+		// elements[0] is empty because lines start with '|'
+		request->from = elements[1];
+		request->type = elements[2];
+		// check syntax
+		LL_DEBUGS("xantispam") << "syntax check on: '" << line << "' --> [" << request->from << "]{" << request->type << "}" << LL_ENDL;
+		return (xantispam_syntaxofline(request->from) || xantispam_syntaxofline(request->type));
+	}
+
+	return true;
+}
+
+
+// See if a rule matches a request and return true when they match.
+//
+// Order does matter because the rule must be searched within the
+// request rather than the request within the rule: Requests can have
+// additional data appended to the type, like the name of an object.
+// This allows rules using the additional information, for example for
+// the rule "::greeter", to block dialogs from anything that has
+// 'greeter' somewhere in its name.
+//
+// The colon is used for a wildcard that matches anything.  This is
+// especially useful for blocking requests with particular filter
+// types from any source and for the formation of rules using the
+// additional data.
+//
+static bool xantispam_wildcardmatch(const std::string& a, const std::string& b, const bool by_find)
+{
+	if((a == ":") || (b == ":"))
+	{
+		return true;
+	}
+	if(by_find)
+	{
+		return (b.find(a) !=  std::string::npos);
+	}
+	return (a == b);
+}
+static bool xantispam_compare_requests(const xantispam_request *rule, const xantispam_request *request)
+{
+	LL_DEBUGS("xantispam") << "comparing rule [" << rule->from << "]{" << rule->type << "} with [" << request->from << "]{" << request->type << "}" << LL_ENDL;
+
+	if(!xantispam_wildcardmatch(rule->from, request->from, false))
+	{
+		return false;
+	}
+	return xantispam_wildcardmatch(rule->type, request->type, true);
+}
+
+
+// Look up a rule in a whitelist or blacklist file and fill the
+// corresponding cache while reading.  Return false when a rule
+// matching the request which is looked up is found.
+//
+static bool xantispam_filelookup(bool type, const bool prefill, const xantispam_request *request, std::vector<xantispam_request>& cache)
+{
+	bool ret = true;
+	bool isdecided = false;
+	bool full = false;
+	LLFILE *f = LLFile::fopen(gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + (type ? XANTISPAM_WHITELISTFILE : XANTISPAM_BLACKLISTFILE), "r");
+	if(f)
+	{
+		std::string line;
+		line.reserve(1024);
+		xantispam_request lookat;
+		lookat.from.reserve(36);
+		lookat.type.reserve(1024 - 36);
+		LL_DEBUGS("xantispam") << "starting readline() on " << gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + (type ? XANTISPAM_WHITELISTFILE : XANTISPAM_BLACKLISTFILE) << LL_ENDL;
+		while(!xantispam_read_line(f, line, 1024))
+		{
+			if(!xantispam_line2request(line, &lookat))
+			{
+				if(prefill)
+				{
+					// If this rule from the file was already cached, it wouldn't be
+					// looked up here with pre-filling enabled unless there are more
+					// rules in the file than the cache can hold.
+					if(cache.size() > XANTISPAM_CACHE_CAPACITY)
+					{
+						// cut 1/2 of the entries off at the end
+						// Perhaps 1/3 is better; can be even less when
+						// memory isn't freed and re-allocated but re-used.
+						cache.resize((XANTISPAM_CACHE_CAPACITY >> 1));
+						full = true;
+					}
+					cache.push_back(lookat);
+				}
+				if(!isdecided)
+				{
+					if(xantispam_compare_requests(&lookat, request)) // order does matter
+					{
+						ret = false;
+						isdecided = true;
+						LL_DEBUGS("xantispam") << "decided: [" << request->from << "]{" << request->type << "} by [" << lookat.from << "]{" << lookat.type << "}" << LL_ENDL;
+					}
+				}
+				else
+				{
+					if(!prefill)
+					{
+						break;
+					}
+				}
+			}
+			line.clear();
+		}
+		fclose(f);
+	}
+	else
+	{
+		llinfos << "cannot open " << gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + (type ? XANTISPAM_WHITELISTFILE : XANTISPAM_BLACKLISTFILE) << " for reading" << llendl;
+	}
+
+	if(full)
+	{
+		LLSD args;
+		args["TYPE"] = (type ? "Whitelist" : "Blacklist");
+		LLNotificationsUtil::add("xantispamNadvfull", args);
+	}
+
+	return ret;
+}
+
+// cache lookup functions: two different functions here rather than
+// one that does both depending on a flag, for better performance
+//
+// Look up a request in a blacklist or whitelist cache, return false
+// if the request is on cache, else return true --- searches backwards
+// because most recent elements are expected to be at end of cache.
+//
+// Compares "normal" (forward): search rule within request.
+//
+static bool xantispam_cachelookup(const std::vector<xantispam_request>& cache, const xantispam_request *data)
+{
+	std::vector<xantispam_request>::const_iterator it = cache.end();
+	while(it != cache.begin() )
+	{
+		--it;
+		if(xantispam_compare_requests(&(*it), data)) // order does matter
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+// Look up a request in a blacklist or whitelist cache, return false
+// if the request is on cache, else return true --- searches backwards
+// because most recent elements are expected to be at end of cache.
+//
+// Compares inversed (backward): search request within the rule.
+//
+static xantispam_request xantispam_inverse_cachelookup(const std::vector<xantispam_request>& cache, const xantispam_request *data, bool *found)
+{
+	std::vector<xantispam_request>::const_iterator it = cache.end();
+	while(it != cache.begin() )
+	{
+		--it;
+		if(it->type.find(':') == std::string::npos) // rule must not be wildcard
+		{
+			if(xantispam_compare_requests(data, &(*it))) // order does matter, is inversed!
+			{
+				*found = false;
+				return *it;
+			}
+		}
+	}
+	*found = true;
+	return *data;
+}
+
+
+// handle lookups and cache pre-filling transparently
+//
+// "Transparently" means that when a rule is not found on cache, it is
+// looked up in the corresponding file without making a difference for
+// the calling function.  Lookups on background and silent requests
+// should not use this because for every rule that isn't cached, a
+// file lookup is performed (and a stupid number of file lookups can
+// result).
+//
+// This is a bit awkward considering xantispam_lookup_selectively()
+// which prefills the caches once.  Yet the file lookup is only
+// performed when the rule is not found on cache, and when the cache
+// already has been prefilled, it shall be found and a file lookup is
+// averted.
+//
+static bool xantispam_transparentlookup(std::vector<xantispam_request>& cache, const xantispam_request *search, const bool type)
+{
+	static bool black = true;
+	static bool white = true;
+
+	LL_DEBUGS("xantispam") << "lookup type: " << (type ? "white" : "black") << LL_ENDL;
+
+	// This greatly simplifies the logic in xantispam_check(), plus it
+	// makes it possible to prefill caches on demand while already
+	// searching through the files anyway.
+	bool ret = xantispam_cachelookup(cache, search);
+	if(ret)
+	{
+		ret = xantispam_filelookup(type, (type ? white : black), search, cache);
+		LL_DEBUGS("xantispam") << "filelookup done" << LL_ENDL;
+		if(!ret)
+		{
+			// make sure the request found in file is on cache
+			if(xantispam_cachelookup(cache, search))
+			{
+				if(cache.size() > XANTISPAM_CACHE_CAPACITY)
+				{
+					// take off not so many to keep the cache full so it doesn't get
+					// prefilled again from top of file during file lookups
+					cache.erase(cache.begin(), cache.begin() + XANTISPAM_CACHE_CAPACITY / XANTISPAM_THRESHOLD / 2 + 1);
+				}
+				cache.push_back(*search);
+				LL_DEBUGS("xantispam") << "rule put back on " << (type ? "white" : "black") << "cache: [" << search->from << "]{" << search->type << "}" << LL_ENDL;
+
+			}
+		}
+		// Prefilling is needed only once because when caches are emptied by
+		// the user, they are prefilled otherwise.  New rules are put onto
+		// the caches right away.
+		if(type)
+		{
+			white = false;
+		}
+		else
+		{
+			black = false;
+		}
+	}
+	return ret;
+}
+
+
+// prefill a cache
+//
+// This is different from prefilling on demand through
+// xantispam_filelookup() in that it makes an estimation about where
+// to actually start reading depending on the number of lines in the
+// file.  This is so as to put only the (supposedly) most recent rules
+// into the cache, i. e. the ones at the end of the file.
+//
+// This should only be called once, after that only on user demand.
+// Clear the cache before calling this to avoid dupes!
+//
+static void xantispam_prefill_cache(std::vector<xantispam_request>& cache, const bool type)
+{
+	// figure out which file to read from
+	std::string fn(gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + (type ? XANTISPAM_WHITELISTFILE : XANTISPAM_BLACKLISTFILE));
+
+	LLFILE *f = LLFile::fopen(fn, "r");
+	if(f)
+	{
+		// I refuse to read the file backwards, so find a file position
+		// to start reading at.
+		std::size_t lines = 0;
+		char c;
+		while((c = fgetc(f)) != EOF)
+		{
+			if(c == '\n')
+			{
+				lines++;
+			}
+		}
+		rewind(f);
+		if(lines > XANTISPAM_CACHE_CAPACITY - XANTISPAM_CACHE_CAPACITY / XANTISPAM_THRESHOLD)
+		{
+			std::size_t start = lines - XANTISPAM_CACHE_CAPACITY + XANTISPAM_CACHE_CAPACITY / XANTISPAM_THRESHOLD;
+			lines = 0;
+			while((lines < start) && ((c = fgetc(f)) != EOF))
+			{
+				if(c == '\n')
+				{
+					lines++;
+				}
+			}
+			LL_DEBUGS("xantispam") << fn << " might have a greater number of rules than the maximum number of cache entries: skipped to line " << lines << LL_ENDL;
+			cache.reserve(XANTISPAM_CACHE_CAPACITY);
+		}
+		// start filling
+		std::string agentuuid(gAgentID.asString());
+		std::string line;
+		line.reserve(1024);
+		xantispam_request add;
+		add.from.reserve(36);
+		add.type.reserve(1024 - 36);
+		while(!xantispam_read_line(f, line, 1024))
+		{
+			if(!xantispam_line2request(line, &add) )
+			{
+				// Not checking for dupes here because it's about 120+ times as fast
+				// without.  Still checking for overflow since someone might manage to
+				// append another 5 billion entries to the file while the cache is
+				// still being filled :)
+				if(cache.size() > XANTISPAM_CACHE_CAPACITY)
+				{
+					llwarns << "an attempt to overfill the cache has been defeated, aborting pre-fill" << llendl;
+					break;
+				}
+				cache.push_back(add);
+			}
+			line.clear();
+		}
+		fclose(f);
+	}
+
+	if(gSavedSettings.getBOOL("AntiSpamNotify"))
+	{
+		LLSD args;
+		args["TYPE"] = (type ? "Whitelist" : "Blacklist");
+		args["ENTRIES"] = boost::lexical_cast<std::string>(cache.size());
+		args["PERCENTAGE"] = boost::lexical_cast<std::string>(cache.size() * 100 / XANTISPAM_CACHE_CAPACITY);
+		LLNotificationsUtil::add("xantispamNfillcache", args);
+	}
+}
+
+// make a cute timestamp
+//
+static std::string xantispam_get_timestamp(void)
+{
+	char timestamp[32];
+	timestamp[0] = '\0';
+	time_t t;
+	if(time(&t) != -1)
+	{
+		if(!strftime(timestamp, 31, "[%F %H:%M:%S]", localtime(&t)))
+		{
+			timestamp[0] = '\0';
+		}
+	}
+	std::string ts(timestamp);
+	return ts;
+}
+
+
+// When the white or blacklist doesn't exist yet, create a header with
+// some information for users who edit it.
+//
+// There must be a better way to do this.  There should be more
+// information in the header.
+//
+static void xantispam_make_listheader(const std::string& filename)
+{
+	if(LLFile::isfile(filename) || LLFile::isdir(filename))
+	{
+		// what about links?
+		return;
+	}
+
+	LLFILE *f = LLFile::fopen(filename, "a");
+	if(f) {
+		const std::string header = filename + "    -*- mode: org; -*-" + "\n\n* Created\n\n" + xantispam_get_timestamp() +  "\nRules must be in an emacs org-mode table like below.\n\n* Rules\n|---------------------+-------------------+-------------+-----------|\n|[ <Origin of Request> | <Type of Request> | [Timestamp] | [Comment] ]|\n|---------------------+-------------------+-------------+-----------|\n";
+
+		if(fwrite(header.c_str(), header.length(), 1, f) != 1)
+		{
+			llwarns << "fwrite() failed to append header to " << filename << llendl;
+			if(ferror(f))
+			{
+				clearerr(f);
+			}
+		}
+		fclose(f);
+	}
+}
+
+
+// Append a new rule entry to a whitelist or blacklist file.  Each
+// entry in the lists has a timestamp to allow cleanups.  Hopefully,
+// cleanups won't be neeeded because with black- and whitelisting and
+// by making use of wildcards and object names in rules, the number of
+// required rules can be kept small.
+//
+static void xantispam_make_listentry(const bool type, const xantispam_request *data, const std::string& from_name)
+{
+	// No dupes should get entered into the lists.	This sometimes
+	// requires another file lookup to verify that the entry
+	// doesn't already exist.  This may change.
+
+	static xantispam_request lastrq;
+	static bool lasttype;
+
+	// Order basically does matter for comparison, but since this deals
+	// with requests that have been formed internally and not with rules
+	// from files, it doesn't matter.
+	if(xantispam_compare_requests(&lastrq, data))
+	{
+		LL_DEBUGS("xantispam") << "rule entry denied: previous rule for " << (lasttype ? XANTISPAM_WHITELISTFILE : XANTISPAM_BLACKLISTFILE) << " matches current rule: [" << lastrq.from << "]{" << lastrq.type << "}" << LL_ENDL;
+		return;
+	}
+	lastrq.from = data->from;
+	lastrq.type = data->type;
+	lasttype = type;
+
+	std::string whichlist(gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + (type ? XANTISPAM_WHITELISTFILE : XANTISPAM_BLACKLISTFILE));
+
+	// write user-friendly header to list if it doesn't exist
+	xantispam_make_listheader(whichlist);
+
+	std::vector<xantispam_request> foo;
+	if(xantispam_filelookup(type, false, data, foo))
+	{
+		LL_DEBUGS("xantispam") << "rule [" << data->from << "]{" << data->type << "} shall enter " << (type ? XANTISPAM_WHITELISTFILE : XANTISPAM_BLACKLISTFILE) << LL_ENDL;
+		LLFILE *f = LLFile::fopen(whichlist, "a");
+		if(f)
+		{
+			std::string listentry("| " + data->from + " | " + data->type + " | " + xantispam_get_timestamp() + " | " + from_name + " |\n");
+			if(fwrite(listentry.c_str(), listentry.length(), 1, f) != 1)
+			{
+				llwarns << "fwrite() failed to write rule to file '" << listentry << "' to " << whichlist << llendl;
+				if(ferror(f))
+				{
+					clearerr(f);
+				}
+			}
+			fclose(f);
+		}
+		else
+		{
+			llinfos << "cannot open " << whichlist << " for appending" << llendl;
+		}
+	}
+	else
+	{
+		llinfos << "rule entry denied: rule '" << lastrq.from << "', '" << lastrq.type << "' is already in " << whichlist << llendl;
+	}
+}
+
+
+// split a special request to xantispam_check() into something useable
+//
+static int xantispam_split_special(const std::string special, xantispam_request *request)
+{
+	std::size_t where = special.find(":");
+	if(where != std::string::npos)
+	{
+		where++;
+		std::size_t wend = special.find(":", where);
+		if(wend != std::string::npos)
+		{
+			request->from = special.substr(where, wend - where);
+			request->type = special.substr(wend + 1);
+		}
+	}
+
+	where = special.find(XANTISPAM_ADDBLACK);
+	if(where != std::string::npos) {
+		return XANTISPAM_SPECIAL_ADDBLACK;
+	}
+	where = special.find(XANTISPAM_ADDWHITE);
+	if(where != std::string::npos) {
+		return XANTISPAM_SPECIAL_ADDWHITE;
+	}
+	where = special.find(XANTISPAM_CLEARCACHE_RQSTRING);
+	if(where != std::string::npos) {
+		return XANTISPAM_SPECIAL_CLEARCACHE;
+	}
+	return XANTISPAM_SPECIAL_INVALID;
+}
+
+
+// callback for xantispam_check() --- act upon buttons clicked by the
+// user when they received a notification
+//
+static void xantispam_notify_cb(const LLSD& notification, const LLSD& response, const xantispam_request data, const std::string from_name)
+{
+	int action = LLNotificationsUtil::getSelectedOption(notification, response);
+
+	switch(action)
+	{
+	case XANTISPAM_PERMBLACK:
+		// Permanently Blacklist
+		xantispam_make_listentry(false, &data, from_name);
+		// save another file lookup by adding request to cache right away
+		xantispam_check(gAgentID.asString(), XANTISPAM_ADDBLACK + data.from + ":" + data.type, "");
+		break;
+	case XANTISPAM_PERMWHITE:
+		// Permanently Whitelist
+		xantispam_make_listentry(true, &data, from_name);
+		// save another file lookup by adding request to cache right away
+		xantispam_check(gAgentID.asString(), XANTISPAM_ADDWHITE + data.from + ":" + data.type, "");
+		break;
+	case XANTISPAM_NOP:
+		// do nothing
+		break;
+	case XANTISPAM_TEMPBLACK:
+		// Temporarily Blacklist
+		xantispam_notify(&data, XANTISPAM_TEMPBLACK, from_name);
+		break;
+	case XANTISPAM_TEMPWHITE:
+		// Temporarily Whitelist
+		xantispam_notify(&data, XANTISPAM_TEMPWHITE, from_name);
+		break;
+	case XANTISPAM_ENABLE:
+		xantispam_buttons(XANTISPAM_ENABLE);
+		break;
+	case XANTISPAM_DISABLE_QUERIES:
+		gSavedSettings.setBOOL("AntiSpamXtendedQueries", 0);
+		LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "Queries have been disabled. You can change the settings in the preferences floater, Adv. Chat-->Spam."));
+	default:
+		llwarns << "unknown case" << llendl;
+	}
+	xantispam_notify(&data, XANTISPAM_UNNOTIFY, from_name);
+}
+
+// Deal with volatiles rules: When persistent rules didn't lead to a
+// decision, examine the volatile rules.  In case they don't render a
+// decision, query the user.
+//
+static xantispam_blackwhite xantispam_notify(const xantispam_request *data, const int action, const std::string& from_name)
+{
+	// cache these for better performance
+	static LLCachedControl<bool> use_notify(gSavedSettings, "AntiSpamNotify");
+	static LLCachedControl<bool> use_queries(gSavedSettings, "AntiSpamXtendedQueries");
+
+	// volatile request caches here, filled from answers to user requests
+	static std::vector<xantispam_request> whitecache;
+	static std::vector<xantispam_request> blackcache;
+
+	// keep track of what has been queried about to avoid duplicate queries
+	static std::vector<xantispam_request> notificationcache;
+
+	xantispam_blackwhite ret;
+	ret.isblacklisted = ret.iswhitelisted = false;
+
+	switch(action)
+	{
+	case XANTISPAM_QUERYUSER:
+		// Order is "deny", "allow", same as persistent rules.
+		if(!xantispam_cachelookup(blackcache, data))
+		{
+			// deny when blacklisted
+			ret.isblacklisted = true;
+			return ret;
+		}
+
+		// check cache if whitelisted
+		ret.iswhitelisted = !xantispam_cachelookup(whitecache, data);
+		if(!ret.iswhitelisted && use_queries)
+		{
+			if(xantispam_cachelookup(notificationcache, data))
+			{
+				// ask when undecided
+				LL_DEBUGS("xantispam") << "adding notification" << LL_ENDL;
+				LLSD args;
+				args["FROM"] = data->from + " (" + from_name + ")";
+				args["TYPE"] = data->type;
+				LLNotificationsUtil::add("xantispamVolatilePersistent", args, LLSD(), boost::bind(&xantispam_notify_cb, _1, _2, *data, from_name));
+				LL_DEBUGS("xantispam") << "done adding notification" << LL_ENDL;
+
+				// keep track of what was notified about
+				if(notificationcache.size() > XANTISPAM_CACHE_CAPACITY)
+				{
+					notificationcache.erase(notificationcache.begin(), notificationcache.begin() + XANTISPAM_CACHE_CAPACITY / XANTISPAM_THRESHOLD + 1);
+				}
+				notificationcache.push_back(*data);
+			}
+			else
+			{
+				// default to blacklist a repeated request
+				ret.isblacklisted = true;
+			}
+		}
+		break;
+	case XANTISPAM_TEMPWHITE:
+		// put request on temp whitecache unless already there
+		if(xantispam_cachelookup(whitecache, data))
+		{
+			if(whitecache.size() > XANTISPAM_CACHE_CAPACITY)
+			{
+				whitecache.erase(whitecache.begin(), whitecache.begin() + XANTISPAM_CACHE_CAPACITY / XANTISPAM_THRESHOLD + 1);
+			}
+			whitecache.push_back(*data);
+		}
+		ret.iswhitelisted = true;
+		break;
+	case XANTISPAM_TEMPBLACK:
+		// put request on temp blackcache unless already there
+		if(xantispam_cachelookup(blackcache, data))
+		{
+			if(blackcache.size() > XANTISPAM_CACHE_CAPACITY)
+			{
+				blackcache.erase(blackcache.begin(), blackcache.begin() + XANTISPAM_CACHE_CAPACITY / XANTISPAM_THRESHOLD + 1);
+			}
+			blackcache.push_back(*data);
+		}
+		ret.isblacklisted = true;
+		break;
+	case XANTISPAM_CLEARCACHE:
+		llinfos << "clearing entries from volatile blackcache: " << blackcache.size() << llendl;
+		llinfos << "clearing entries from volatile whitecache: " << whitecache.size() << llendl;
+		llinfos << "clearing entries from notifications cache: " << notificationcache.size() << llendl;
+		whitecache.clear();
+		blackcache.clear();
+		notificationcache.clear();
+		if(use_notify)
+		{
+			LLSD args;
+			args["TYPE"] = "Volatile";
+			LLNotificationsUtil::add("xantispamNclrcache", args);
+		}
+		break;
+	case XANTISPAM_UNNOTIFY:
+	{
+		std::vector<xantispam_request>::iterator it = notificationcache.end();
+		while(it != notificationcache.begin() )
+		{
+			--it;
+			if(xantispam_compare_requests(&(*it), data))
+			{
+				notificationcache.erase(it);
+				LL_DEBUGS("xantispam") << "Request removed from notifications cache: [" << data->from << "]{" << data->type << "}" << LL_ENDL;
+			}
+		}
+	}
+	}
+	return ret;
+}
+
+
+// For instances of extreme spamming just block.  This is decided by
+// how many calls there have been over a period of time (calls per 10
+// seconds).
+//
+static bool xantispam_callspersec(void)
+{
+	static LLCachedControl<U32> max_calls_per_10sec(gSavedSettings, "AntiSpamXtendedMaxCallsPer10Sec");
+	if(max_calls_per_10sec > 20000)
+	{
+		gSavedSettings.setU32("AntiSpamXtendedMaxCallsPer10Sec", static_cast<U32>(20000));
+		LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "AntiSpamXtendedMaxCallsPer10Sec reset to maximum of 90."));
+	}
+	if(max_calls_per_10sec < 150)
+	{
+		gSavedSettings.setU32("AntiSpamXtendedMaxCallsPer10Sec", static_cast<U32>(150));
+		LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "AntiSpamXtendedMaxCallsPer10Sec reset to minimum of 5."));
+	}
+	static time_t lastcall = (time_t)0;
+	static unsigned long long calls_total = 0;
+	static unsigned long long calls_last = 0;
+	static bool status = false;
+
+	calls_total++;
+
+	// how long ago was the last call?
+	time_t now;
+	if(time(&now) != -1)
+	{
+		int delta = (int)difftime(now, lastcall);
+		lastcall = now;
+
+		// too many calls since then?
+		if((delta < 10) && (calls_total - calls_last > max_calls_per_10sec))
+		{
+			if(!status)
+			{
+				status = true;
+
+				LLSD args;
+				args["CALLS"] = boost::lexical_cast<std::string>((calls_total - calls_last));
+				args["MAXCALLS"] = boost::lexical_cast<std::string>(max_calls_per_10sec);
+				LLNotificationsUtil::add("xantispamNtimeout", args);
+			}
+		}
+		else
+		{
+			// not too many calls anymore
+			if(delta > 9)
+			{
+				calls_last = calls_total;
+				status = false;
+			}
+		}
+	}
+	else
+	{
+		LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "Calling the time() function has failed. This can break the XAntiSpam flood protection, and all incoming dialogs may be denied without applying rules."));
+		llwarns << "call to time() failed!" << llendl;
+		return true;
+	}
+	return status;
+}
+
+
+// a process launcher that picks what to launch from a rule
+// Return false on error, otherwise true, even on dryrun.
+//
+// A dryrun sets up to start the external process and informs the user
+// what would be run without actually running it.
+//
+static bool xantispam_process_launcher(const std::string& rule, const std::string& info)
+{
+	// Limit what can be executed --- some security is advisable
+	// here since users may mistype their rules.  Only what is
+	// explicitly allowed in this setting may be executed.  The
+	// setting is a list of allowed executables, entries delimited
+	// by exclamation marks ('!').
+	static LLCachedControl<std::string> allowed_executables(gSavedSettings, "AntiSpamXtendedAllowedExecutables");
+
+	std::vector<std::string> command;
+	boost::algorithm::split(command, rule, boost::algorithm::is_any_of("!"));
+	if(command.size() < 2)
+	{
+		LLSD args;
+		args["RULE"] = "{" + rule + "}";
+		LLNotificationsUtil::add("xantispamNexecMissing", args);
+		llinfos << "missing executable in rule: {" << rule << "}" << llendl;
+		return false;
+	}
+	std::vector<std::string>::iterator it = command.begin();
+	it++; // skip "&-ExecOnEachIM"
+	std::string executable = *it;
+	if(executable.empty())
+	{
+		LLSD args;
+		args["RULE"] = "{" + rule + "}";
+		LLNotificationsUtil::add("xantispamNexecMissing", args);
+		llinfos << "denying to execute an empty command in rule: {" << rule << "}" << llendl;
+		return false;
+	}
+
+	bool dryrun = (executable == "DryRun");
+	if(dryrun)
+	{
+		llinfos << "preparing for a dry run" << llendl;
+		it++;
+		executable = *it;
+		if(executable.empty())
+		{
+			LLSD args;
+			args["RULE"] = "{" + rule + "}";
+			LLNotificationsUtil::add("xantispamNexecMissing", args);
+			llinfos << "denying to execute an empty command in rule: {" << rule << "}" << llendl;
+			return false;
+		}
+	}
+
+	// see if this executable is in the list of allowed ones
+	std::vector<std::string> split_allowed_executables;
+	std::string these_executables = allowed_executables;
+	boost::algorithm::split(split_allowed_executables, these_executables, boost::algorithm::is_any_of("!")); // string.find() instead would be insecure
+	bool allowed = false;
+	std::vector<std::string>::iterator ti = split_allowed_executables.begin();
+	while(ti != split_allowed_executables.end())
+	{
+		if(*ti == executable)
+		{
+			allowed = true;
+			break;
+		}
+		ti++;
+	}
+
+	if(!allowed)
+	{
+		LLSD args;
+		args["EXECUTABLE"] = executable;
+		LLNotificationsUtil::add("xantispamNexecIllegal", args);
+		llinfos << "No other executables than listed in AntiSpamXtendedAllowedExecutables are allowed to be run via XAntiSpam rules, and '" << executable << "' is not listed." << llendl;
+		return false;
+	}
+
+	LLProcessLauncher launcher;
+
+	if(!dryrun)
+	{
+		launcher.clearArguments();
+		launcher.setExecutable(executable);
+		launcher.setWorkingDirectory(LLFile::tmpdir());
+	}
+	std::string parameters("");
+	it++;
+	while(it != command.end()) // add arguments
+	{
+		if(*it == "%s")
+		{
+			if(!info.empty())
+			{
+				parameters += info + " ";
+				if(!dryrun)
+				{
+					launcher.addArgument(info);
+				}
+			}
+		}
+		else
+		{
+			parameters += *it + " ";
+			if(!dryrun)
+			{
+				launcher.addArgument(*it);
+			}
+		}
+		it++;
+	}
+
+	if(dryrun)
+	{
+		LLSD args;
+		args["RUNTYPE"] = "Dry run";
+		args["EXECUTABLE"] = executable;
+		args["OPTIONS"] = parameters;
+		args["STATUS"] = "dry";
+		LLNotificationsUtil::add("xantispamNexecRun", args);
+		llinfos << "dryrun: " << executable << " '" << parameters << "'" << llendl;
+		return true;
+	}
+
+	LL_DEBUGS("xantispam") << "running: " << executable << " '" << parameters << "'" << LL_ENDL;
+	int result = launcher.launch();
+	launcher.orphan(); // don't kill process on return
+
+	if(result)
+	{
+		LLSD args;
+		args["RUNTYPE"] = "Running";
+		args["EXECUTABLE"] = executable;
+		args["OPTIONS"] = parameters;
+		args["STATUS"] = "ERROR";
+		LLNotificationsUtil::add("xantispamNexecRun", args);
+	}
+	return (result == 0 ? true : false);
+}
+
+
+static bool xantispam_lookup_selectively(std::vector<xantispam_request>& blackcache, std::vector<xantispam_request>& whitecache, const xantispam_request *request, const bool which)
+{
+	// Transparent lookups do file lookups when a rule isn't found in the cache
+	// There isn't too much point in repeating file lookups for rules that
+	// aren't there anyway, and it can become a bad idea performance wise.
+	//
+	// The disadvantage of doing transpartent lookup only once is that the rules
+	// can be dropped from the cache when it flows over.  This may yield
+	// apparently inconsistent behaviour.  I'd rather crank the cache capacity
+	// up if that happens.
+	//
+	// So let's prefill the caches when they aren't yet.  This may yield
+	// interesting results and probably needs to be changed.
+
+	static bool cache_only = FALSE;
+
+	if(!cache_only)
+	{
+		// clear caches first because they can be prefilled on demand through
+		// transparent lookups, depending on what requests have been processed
+		// before ending up here
+		blackcache.clear();
+		whitecache.clear();
+		xantispam_prefill_cache(blackcache, false);
+		xantispam_prefill_cache(whitecache, true);
+		cache_only = true;
+	}
+
+	if(which)
+	{
+		return xantispam_cachelookup(whitecache, request);
+	}
+	return xantispam_cachelookup(blackcache, request);
+}
+
+
+//
+// search a message for regular expressions and return a score
+//
+// The message to search through is in the 'from' part of the
+// request. The regular expression is in the 'from' part of a rule.
+// That rule gives the score to use if the regex matches the message
+// as a parameter.  All such rules in the cache are checked to compute
+// a total score from all the matches.
+//
+int xantispam_matching(const std::string haystack, std::vector<xantispam_request>& cache)
+{
+	static LLCachedControl<U32> minlength(gSavedSettings, "AntiSpamXtendedRxMinLength");
+
+	if(haystack.length() < minlength)
+	{
+		return 0;
+	}
+
+	static LLCachedControl<U32> threshold(gSavedSettings, "AntiSpamXtendedRxScoreThreshold");
+
+	int score = 0;
+	std::vector<xantispam_request>::const_iterator it = cache.end();
+	while(it != cache.begin())
+	{
+		--it;
+
+		if(it->type.length() < 10)
+		{
+			continue;
+		}
+
+		if(!it->type.find("&-RxScore!"))
+		{
+			int thisscore = boost::lexical_cast<int>(it->type.substr(10, std::string::npos));
+			boost::regex needle(it->from, boost::regex::icase);
+
+			if(boost::regex_search(haystack, needle))
+			{
+				score += thisscore;
+
+				if(threshold < score)
+				{
+					return true;
+				}
+			}
+		}
+	}
+
+	return (threshold < score);
+}
+
+
+// handle the "&-" background requests
+//
+// These may generate notifications which should be limited to show
+// errors and must not generate queries.
+//
+static bool xantispam_backgnd(const xantispam_request *request, std::vector<xantispam_request>& whitecache, std::vector<xantispam_request>& blackcache, const std::string& info)
+{
+	// info may be used to transfer further information if needed
+	// to process a request
+	//
+	// Types:
+	//
+	// # &-ConfigInverseOrderForAcceptInventory (internal, generated here)
+	// # &-ConfigInverseOrderForSilent
+	// # REMOVED due to changes in media filter: &-DomainHandleMediaURLs, PlayFromMediaURL
+	// # &-ExecFriendIsOffline!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
+	// # &-ExecFriendIsOnline!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
+	// # &-ExecOnEachGS!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
+	// # &-ExecOnEachIM!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
+	// # &-ExecOnNewGRSession!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
+	// # &-ExecOnNewIMSession!<executable>[!parameter_1!parameter_2!...!parameter_N][!%s]
+	// # &-GRNewSessionNoSnd
+	// # &-IM/GRLogFullHistory
+	// # &-IMLogHistoryExternal
+	// # &-IMLogHistoryExternal![parameter_1!parameter_2!...!parameter_N][!%s]
+	// # &-IMLongOrShortTab (merges &-IMLongTab and &-IMShortTab into a single request)
+	// # &-IMLongOrShortTabOrder?Short
+	// # &-IMNewSessionNoSnd
+	// # &-IMSendNoAutoresponses
+	// # &-InventoryHandleAccept?AcceptInventory?[type]
+	// # &-StatusFriendIsOffline
+	// # &-StatusFriendIsOnline
+	//
+	//
+	// regular expression matching for filtering the content of
+	// messages (IMs/group msgs):
+	//
+	// # &-RxScore!<integer>
+	//
+	// The 'from' part of such a rule specifies a regular
+	// expression to match a message with; the <integer> is the
+	// score which will be added to a total score for the message.
+	// When the message gets a score above a threshold, the
+	// message is classified as spam.
+	//
+	// # // &-IMLogDistinct DISABLED
+
+	if(!request->type.find("&-regex"))
+	{
+		return xantispam_matching(request->from, blackcache);
+	}
+
+	if(!request->type.find("&-ExecFriendIsOnline!") || !request->type.find("&-ExecFriendIsOffline!") || !request->type.find("&-ExecOnEachIM!") || !request->type.find("&-ExecOnEachGS!") || !request->type.find("&-ExecOnNewIMSession!") || !request->type.find("&-ExecOnNewGRSession!") || !request->type.find("&-IMLogHistoryExternal!"))
+	{
+		// this requires an inverse lookup because the request must be found
+		// within the rule
+		bool result_invalid;
+		xantispam_request result = xantispam_inverse_cachelookup(whitecache, request, &result_invalid);
+		if(!result_invalid)
+		{
+			// llinfos << "rule found on inverse lookup: [" << result.from << "]{" << result.type << "}" << llendl;
+			return !xantispam_process_launcher(result.type, info);
+		}
+		return true;
+	}
+
+	// second case of hybrid "&-IMLogHistoryExternal": use default editor to show history
+	if(!request->type.find("&-IMLogHistoryExternal"))
+	{
+		std::string rule = "echo!" + gSavedSettings.getString("ExternalEditor");
+		// assuming that ExternalEditor is something like 'emacsclient "%s"'
+		boost::algorithm::erase_all(rule, "\"");
+		boost::algorithm::replace_all(rule, " ", "!");
+
+		return !xantispam_process_launcher(rule, info);
+	}
+
+	// wrapper for distinct inventory offer handling
+	if(!request->type.find("&-InventoryHandleAccept?AcceptInventory?"))
+	{
+		// no need to go through checking when the origin is the user
+		if(request->from == gAgentID.asString())
+		{
+			return false;  // policy: don't block yourself
+		}
+		// transform into an ordinary request
+		std::vector<std::string> elements;
+		boost::algorithm::split(elements, request->type, boost::algorithm::is_any_of("?"));
+		if(elements.size() == 3)
+		{
+			if(elements[2].empty())
+			{
+				llwarns << "syntax error (undefined inventory type) in request: [" << request->from << "]{" << request->type << "}" << llendl;
+				return false;  // probably better accept in this case
+			}
+			if(elements[1] == "AcceptInventory")
+			{
+				// the order might have been changed to "deny all, except for whitelisted"
+				xantispam_request bw;
+				bw.from = request->from;
+				bw.type = "&-ConfigInverseOrderForAcceptInventory";
+				bool order_inversed = !xantispam_cachelookup(whitecache, &bw);
+
+				// allow wildcard for type of inventory item
+				bw.type = "AcceptInventory?ANY";
+
+				if(order_inversed)
+				{
+					// when the order is inversed, accept if whitelisted, otherwise deny
+					// first look up with wildcarded inventory type ...
+					if(!xantispam_cachelookup(whitecache, &bw))
+					{
+						return false;  // accept inventory item if all types are whitelisted
+					}
+					// ... and if that didn't render a decision, look up whith the particular type
+					bw.type = "AcceptInventory?" + elements[2];
+					return xantispam_transparentlookup(whitecache, &bw, true);  // this breaks policy
+				}
+				else
+				{
+					// first look up with wildcarded inventory type ...
+					if(!xantispam_cachelookup(blackcache, &bw))
+					{
+						return true;  // deny inventory item if all types are blacklisted
+					}
+					if(!xantispam_cachelookup(whitecache, &bw))
+					{
+						return false;  // accept inventory item if all types are whitelisted
+					}
+					// ... and if that didn't render a decision, look up whith the particular type
+					return xantispam_check(request->from, "AcceptInventory?" + elements[2], info);
+				}
+			}
+			else
+			{
+				llwarns << "syntax error (unexpected argument '" << elements[1] << "') in request: [" << request->from << "]{" << request->type << "}" << llendl;
+				return false;  // probably better accept in this case
+			}
+		}
+		else
+		{
+			llwarns << "syntax error (unexpected number of arguments) in request: [" << request->from << "]{" << request->type << "}" << llendl;
+			return false;  // probably better accept in this case
+		}
+	}
+
+	// wrapper for merged request: The request is merged in that it avoids
+	// having to make two calls to xantispam_check() to get a result
+	// Return false when a short tab is wanted.
+	if(request->type == "&-IMLongOrShortTab")
+	{
+		xantispam_request longtab;
+		longtab.from = request->from;
+		longtab.type = "&-IMShortTab";
+
+		// Is a short tab wanted?
+		bool want_short = !xantispam_lookup_selectively(blackcache, whitecache, &longtab, true);
+		if(!want_short)
+		{
+			// The default behaviour is long tabs, and no further ado is needed
+			// when a short tab isn't wanted anyway.
+			return true;
+		}
+
+		// A short tab is MAYBE wanted.  Is there a rule demanding long tabs?
+		longtab.type = "&-IMLongTab";
+		bool want_long = !xantispam_lookup_selectively(blackcache, whitecache, &longtab, true);
+		if(!want_long)
+		{
+			// nothing demands long tabs
+			return false;
+		}
+
+		// Now both long and short tabs are demanded.  Which shall win?
+		longtab.type = "&-IMLongOrShortTabOrder?Short";
+		bool short_tabs_lose = xantispam_lookup_selectively(blackcache, whitecache, &longtab, true);
+		return short_tabs_lose;
+
+		// After all, this is probably what users want when they wildcard all
+		// tabs to short and excempt someone from this rule.  Should they want
+		// it the other way round, they can still change order.
+	}
+
+	// For the rules that don't do something special, return the result of the lookup.
+	return xantispam_lookup_selectively(blackcache, whitecache, request, true);
+}
+
+
+// handle silent requests
+//
+// The main reason to handle them here is that it is not reasonably
+// possible to allow only some online status notifications to be shown
+// in non-relaxed mode.
+//
+static bool xantispam_silent(const xantispam_request *request, std::vector<xantispam_request>& whitecache, std::vector<xantispam_request>& blackcache, const std::string& info)
+{
+	if((request->type == "!StatusFriendIsOffline") || (request->type == "!StatusFriendIsOnline"))
+	{
+		// The request is undecided. Is it blacklisted?
+		bool isblack = !xantispam_lookup_selectively(blackcache, whitecache, request, false);
+
+		xantispam_request config;
+		config.from = request->from;
+		config.type = "&-ConfigInverseOrderForSilent";
+		if(xantispam_backgnd(&config, whitecache, blackcache, "[config]"))  // policy: requests are looked up by the appropriate function
+		{
+			// order is not inversed
+			if(isblack)
+			{
+				return true;
+			}
+
+			// The request is not blacklisted.  Is it whitelisted?
+			if(!xantispam_lookup_selectively(blackcache, whitecache, request, true))
+			{
+				return false;
+			}
+		}
+		// order is inversed: deny if blacklisted, otherwise decide by whitelist only
+		bool iswhite = !xantispam_lookup_selectively(blackcache, whitecache, request, true);
+		return isblack ? !isblack : !iswhite;
+	}
+
+	llwarns << "denying unprocessable silent request: [" << request->from << "]{" << request->type << "}" << llendl;
+	return true;
+}
+
+
+// (Start reading from here.)
+//
+// + chat logging can be distinguished by resident/friend/group
+// + chat logging can be disabled selectively
+// + media filtering can consider full URLs including the port
+// + external programs can be started for a number of events
+// + friend online notifications can be shown selectively
+// + sound for new chat sessions can be suppressed selectively
+// + chat history can be displayed in external editor or any program
+// + autoresponses can be sent/disabled distinctively
+// + automatically accepting inventory items can be selective
+// + various dialogs can be suppressed selectively
+// + internal text editor can import and export files
+// + the external editor can be started from the internal one
+// + and some more ...
+//
+// These features are implemented by intercepting requests and making
+// decisions about what to do by checking volatile and persistent
+// rules, each of which are optionally used or not.  In case a
+// decision cannot be made from existing rules, the user is queried
+// for a decision unless queries are disabled.
+//
+// Persistent rules are stored in tables in emacs org-mode files.  A
+// blacklist and a whitelist is being used.  The design allows for a
+// virtually unlimited number of persistent rules and employs
+// overenginered caching of the rules to avoid performance issues.
+//
+// However, different types of rules are used for different types of
+// requests: ordinary requests, background requests and silent
+// requests.  Since background and silent rules can be looked up
+// rather frequently, they are looked up in files only once and from
+// thereon, in the caches.  In case a user has a great number of
+// rules, they may have a problem with some background and silent
+// rules being dropped from the caches.  There are some ways to solve
+// this problem if that becomes necessary.
+//
+// policy: requests pass when rules and queries are disabled or when a
+//         decision making logic is disabled
+//
+// Please direct questions and suggestions about xantispam to
+// lee@yun.yagibdah.de.
+//
+bool xantispam_check(const std::string& fromstr, const std::string& filtertype, const std::string& from_name)
+{
+	// is xantispam enabled?
+	static LLCachedControl<bool> use_xantispam(gSavedSettings,"AntiSpamXtendedEnabled");
+	if(!use_xantispam)
+	{
+		// consistently return true when xantispam is disabled
+		return true;
+	}
+
+	// cache these for better performance
+	static LLCachedControl<bool> use_notify(gSavedSettings, "AntiSpamNotify");
+	static LLCachedControl<bool> use_queries(gSavedSettings, "AntiSpamXtendedQueries");
+	static LLCachedControl<bool> use_relaxed(gSavedSettings, "AntiSpamXtendedRelaxed");
+	static LLCachedControl<bool> use_debug(gSavedSettings, "AntiSpamXtendedDebug");
+
+	// persistent caches here, filled from rules files
+	static std::vector<xantispam_request> blackcache;
+	static std::vector<xantispam_request> whitecache;
+	// Use a volatile cache for undecided requests.	 This saves both cache
+	// and file lookups when it is already known that a request is
+	// undecided.  It is filled from decisions made by the user.
+	static std::vector<xantispam_request> undeccache;
+
+	// llinfos << "XA-RQ-log: [" << fromstr << "]{" << filtertype << "}'" << from_name << "', backgnd: " << (request_is_backgnd ? "Yes" : "No") << llendl;
+
+	// background and silent requests have their own handlers
+	bool request_is_backgnd = (filtertype.find("&-") == 0);
+	bool request_is_silent = (filtertype.at(0) == '!');
+
+	// handle special cases here
+	if(!request_is_silent && !request_is_backgnd && (fromstr == gAgentID.asString()))
+	{
+		// handle special calls
+		xantispam_request clean;
+		int action = xantispam_split_special(filtertype, &clean);
+		// strip whitespace and replace ":" with ";"
+		xantispam_apply_syntax(&clean);
+
+		switch(action)
+		{
+		case XANTISPAM_SPECIAL_ADDBLACK:
+			if(xantispam_cachelookup(blackcache, &clean) ) {
+				if(blackcache.size() > XANTISPAM_CACHE_CAPACITY)
+				{
+					blackcache.erase(blackcache.begin(), blackcache.begin() + XANTISPAM_CACHE_CAPACITY / XANTISPAM_THRESHOLD + 1);
+				}
+				blackcache.push_back(clean);
+				LL_DEBUGS("xantispam") << "Request put on blacklist cache directly: [" << clean.from << "]{" << clean.type << "}" << LL_ENDL;
+			}
+			break;
+		case XANTISPAM_SPECIAL_ADDWHITE:
+			if(xantispam_cachelookup(whitecache, &clean) ) {
+				if(whitecache.size() > XANTISPAM_CACHE_CAPACITY)
+				{
+					whitecache.erase(whitecache.begin(), whitecache.begin() + XANTISPAM_CACHE_CAPACITY / XANTISPAM_THRESHOLD + 1);
+				}
+				whitecache.push_back(clean);
+				LL_DEBUGS("xantispam") << "Request put on whitelist cache directly: [" << clean.from << "]{" << clean.type << "}" << LL_ENDL;
+			}
+			break;
+		case XANTISPAM_SPECIAL_CLEARCACHE:
+			// special call to clear the persistent caches
+			llinfos << "clearing entries from blackcache: " << blackcache.size() << llendl;
+			llinfos << "clearing entries from whitecache: " << whitecache.size() << llendl;
+			blackcache.clear();
+			whitecache.clear();
+			// the undecided cache must be cleared as well because there could be
+			// requests on it that have become decided through changes to the
+			// files
+			llinfos << "clearing entries from undeccache: " << undeccache.size() << llendl;
+			undeccache.clear();
+			if(use_notify)
+			{
+				LLSD args;
+				args["TYPE"] = "Persistent and Volatile-Undecided";
+				LLNotificationsUtil::add("xantispamNclrcache", args);
+			}
+			xantispam_prefill_cache(blackcache, false);
+			xantispam_prefill_cache(whitecache, true);
+			llinfos << "persistent caches prefilled" << llendl;
+			return false;
+			break;
+		case XANTISPAM_SPECIAL_INVALID:
+		{
+			// Users may wonder why some requests always pass.  policy: They cannot block themselves.
+			LLSD args;
+			args["UUID"] = fromstr + " (" + from_name + ")";
+			LLNotificationsUtil::add("xantispamNselfblk", args);
+			return false;
+		}
+		break;
+		default:
+			llwarns << "Control: Unknown special-request type may yield unexpected decisions: " << filtertype << llendl;
+			return false;
+		}
+		// Requests are left on the undecided cache unless they are persistently decided.
+		// File lookups to find out about a request are pointless when it is already
+		// known that there is nothing in the files about the request.	This also saves
+		// searching through the persistent caches: since they have the same information
+		// the files have, it's as pointless to seach them as it is to search the files.
+		// The persistent caches likely hold many more rules than the undecided cache, so
+		// this will be faster in any case.
+		std::vector<xantispam_request>::iterator it = undeccache.end();
+		while(it != undeccache.begin() )
+		{
+			--it;
+
+			// Order basically does matter for comparison, but since this deals
+			// with requests that have been formed internally and not with rules
+			// from files, it doesn't matter.
+			if(xantispam_compare_requests(&(*it), &clean))
+			{
+				undeccache.erase(it);
+				LL_DEBUGS("xantispam") << "Request removed from undecided cache: [" << clean.from << "]{" << clean.type << "}" << LL_ENDL;
+			}
+		}
+		return false;
+	}  // special requests
+
+	// prevent flooding --- blocking the request may not be the right
+	// thing in all cases, but it is the most secure thing to do
+	if(xantispam_callspersec())
+	{
+		return true;
+	}
+
+	// finally, handle a request
+	xantispam_request request;
+	request.from = fromstr;
+	request.type = filtertype;
+	// strip whitespace and replace ":" with ";"
+	xantispam_apply_syntax(&request);
+
+	// show a debug notification if wanted
+	if(use_debug)
+	{
+		LLSD args;
+		args["FROM"] = request.from;
+		args["TYPE"] = request.type;
+		args["INFO"] = from_name;
+		LLNotificationsUtil::add("xantispamNdebug", args);
+	}
+
+	// policy: background requests do not generate queries
+	// policy: handle background requests always by rules
+	//         Without exisiting rules, this results in
+	//         background requests being denied, which
+	//         effictively results in the same behaviour
+	//         as would result without xantispam.
+	if(request_is_backgnd)
+	{
+		return xantispam_backgnd(&request, whitecache, blackcache, from_name);
+	}
+
+	// policy: silent requests do not generate notifications
+	// policy: handle silent requests always by rules
+	//         Without exisiting rules, this results in
+	//         silent requests being denied, which
+	//         effictively results in the same behaviour
+	//         as would result without xantispam.
+	if(request_is_silent)
+	{
+		return xantispam_silent(&request, whitecache, blackcache, from_name);
+	}
+
+	// long_request provides using rules like ":: greeter"
+	std::string stripped_name = from_name;
+	std::transform(stripped_name.begin(), stripped_name.end(), stripped_name.begin(), ::tolower);
+	xantispam_request long_request;
+	long_request.from = request.from;
+	long_request.type = request.type + stripped_name;
+	// strip whitespace and replace ":" with ";"
+	xantispam_apply_syntax(&long_request);
+
+	if(xantispam_cachelookup(undeccache, &request) )
+	{
+		// The request undecided. Is it blacklisted?
+		if(!xantispam_transparentlookup(blackcache, &long_request, false))
+		{
+			LL_DEBUGS("xantispam") << "is blacklisted" << LL_ENDL;
+			// yes, notify about what happened
+			if(use_notify)
+			{
+				LLSD args;
+				args["SOURCE"] = long_request.from + " (" + from_name + ")";
+				args["TYPE"] = long_request.type;
+				LLNotificationsUtil::add("xantispamNblk", args);
+			}
+			return true;
+		}
+
+		LL_DEBUGS("xantispam") << "is not blacklisted" << LL_ENDL;
+		// The request is not blacklisted.  Is it whitelisted?
+		if(!xantispam_transparentlookup(whitecache, &long_request, true))
+		{
+			LL_DEBUGS("xantispam") << "filelookup whitelist returned" << LL_ENDL;
+			return false;
+		}
+
+		LL_DEBUGS("xantispam") << "is not whitelisted" << LL_ENDL;
+		// the request is still undecided, so put it on the undecided cache
+		if(undeccache.size() > XANTISPAM_CACHE_CAPACITY)
+		{
+			undeccache.erase(undeccache.begin(), undeccache.begin() + XANTISPAM_CACHE_CAPACITY / XANTISPAM_THRESHOLD + 1);
+		}
+		undeccache.push_back(request);
+		LL_DEBUGS("xantispam") << "Request put on undecided cache directly: [" << request.from << "]{" << request.type << "}" << LL_ENDL;
+	}
+
+	// handle busy and afk situations gracefully
+	bool reenable_queries_busy = false;
+	if(gAgent.isDoNotDisturb())
+	{
+		xantispam_request config;
+		config.from = gAgentID.asString();
+		config.type = "&-ConfigQueriesWhenBUSY";  // the default is: no queries when busy
+		if(!xantispam_backgnd(&config, whitecache, blackcache, "[config]"))
+		{
+			gSavedSettings.setBOOL("AntiSpamXtendedQueries", false);
+			reenable_queries_busy = true;
+		}
+	}
+	else
+	{
+		if(reenable_queries_busy)
+		{
+			gSavedSettings.setBOOL("AntiSpamXtendedQueries", true);
+			reenable_queries_busy = false;
+		}
+	}
+
+	static bool reenable_queries_afk = false;
+	if(!reenable_queries_busy)
+	{
+		if(gAgent.getAFK())
+		{
+			xantispam_request config;
+			config.from = gAgentID.asString();
+			config.type = "&-ConfigNoQueriesWhenAFK";
+			if(!xantispam_backgnd(&config, whitecache, blackcache, "[config]"))
+			{
+				gSavedSettings.setBOOL("AntiSpamXtendedQueries", false);
+				reenable_queries_afk = true;
+			}
+		}
+		else
+		{
+			if(reenable_queries_afk)
+			{
+				gSavedSettings.setBOOL("AntiSpamXtendedQueries", true);
+				reenable_queries_afk = false;
+			}
+		}
+	}
+
+	// either the voliatile caches or the user will decide this request
+	xantispam_blackwhite bw = xantispam_notify(&request, XANTISPAM_QUERYUSER, from_name);
+
+	if(bw.isblacklisted) {
+		// notify about what happened
+		if(use_notify)
+		{
+			LLSD args;
+			args["SOURCE"] = request.from + " (" + from_name + ")";
+			args["TYPE"] = request.type;
+			LLNotificationsUtil::add("xantispamNblk", args);
+		}
+		return true;
+	}
+
+	// When relaxed, only deny requests that are blacklisted:  This
+	// allows to accept requests first and decide whether to black- or
+	// to whitelist them later.
+	if(bw.iswhitelisted || use_relaxed) {
+		return false;
+	}
+
+	if(use_notify)
+	{
+		// notify about what happened
+		LLSD args;
+		args["SOURCE"] = request.from + " (" + from_name + ")";
+		args["TYPE"] = request.type;
+		LLNotificationsUtil::add("xantispamNblk", args);
+	}
+	return true;
+}
+
+
+#if 0
+// used to generate lots of rules for testing
+static void xantispam_generate_test_entries(void)
+{
+	int cnt = 0;
+	while(cnt < 300000) {
+		LLUUID uuid = LLUUID::generateNewID();
+		xantispam_request request;
+		request.from = uuid.asString();
+		request.type = "InvalidRequest";
+		xantispam_make_listentry(false, &request, "test entry");
+		cnt++;
+	}
+}
+#endif
+
+
+// act on some button presses (preferences floater)
+// see ascentprefschat.cpp
+//
+void xantispam_buttons(const int action)
+{
+	xantispam_request request;
+	request.from = gAgentID.asString();
+	request.type = XANTISPAM_CLEARCACHE_RQSTRING;
+
+	// caches can not be cleared when not in use
+	switch(action)
+	{
+	case XANTISPAM_CLEARCACHE_PERSISTENT:
+		// xantispam_generate_test_entries();
+		xantispam_check(request.from, request.type + ":Clear:Cache", "");
+		break;
+	case XANTISPAM_CLEARCACHE_VOLATILE:
+	{
+		xantispam_notify(&request, XANTISPAM_CLEARCACHE, request.from);
+	}
+		break;
+	case XANTISPAM_EDIT_BLACKLIST:
+	{
+		std::string rule = "echo!" + gSavedSettings.getString("ExternalEditor");
+		boost::algorithm::erase_all(rule, "\"");
+		boost::algorithm::replace_all(rule, " ", "!");
+		xantispam_process_launcher(rule, gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + XANTISPAM_BLACKLISTFILE);
+	}
+		break;
+	case XANTISPAM_EDIT_WHITELIST:
+	{
+		std::string rule = "echo!" + gSavedSettings.getString("ExternalEditor");
+		boost::algorithm::erase_all(rule, "\"");
+		boost::algorithm::replace_all(rule, " ", "!");
+		xantispam_process_launcher(rule, gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + XANTISPAM_WHITELISTFILE);
+	}
+		break;
+	case XANTISPAM_ENABLE:
+		// enable xantispam with default settings
+		gSavedSettings.setBOOL("_NACL_Antispam", 0);
+		gSavedSettings.setBOOL("AntiSpamNotify", 1);
+		gSavedSettings.setBOOL("AntiSpamAlerts", 1);
+		gSavedSettings.setBOOL("AntiSpamFriendshipOffers", 1);
+		// depend
+		gSavedSettings.setBOOL("AntiSpamGroupInvites", 1);
+		gSavedSettings.setBOOL("AntiSpamGroupFeeInvites", 0);
+		// /depend
+		gSavedSettings.setBOOL("AntiSpamItemOffers", 1);
+		gSavedSettings.setBOOL("AntiSpamScripts", 1);
+		gSavedSettings.setBOOL("AntiSpamTeleports", 1);
+		gSavedSettings.setBOOL("AntiSpamGroupNotices", 1);
+		gSavedSettings.setBOOL("AntiSpamTeleportRequests", 1);
+		gSavedSettings.setBOOL("AntiSpamNotMine", 1);
+		gSavedSettings.setBOOL("AntiSpamNotFriend", 0);
+		gSavedSettings.setBOOL("AntiSpamEnabled", 1);
+		gSavedSettings.setBOOL("EnableGestureSounds", 0);
+
+		gSavedSettings.setBOOL("AntiSpamXtendedEnabled", 1);
+
+		gSavedSettings.setBOOL("AntiSpamXtendedPersistent", 1);
+		gSavedSettings.setBOOL("AntiSpamXtendedQueries", 1);
+		gSavedSettings.setBOOL("AntiSpamXtendedVolatile", 1);
+		gSavedSettings.setBOOL("AntiSpamXtendedRelaxed", 1);
+		gSavedSettings.setBOOL("NotifyRecievesFocus", 0);
+
+		xantispam_make_listheader(gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + XANTISPAM_WHITELISTFILE);
+		xantispam_make_listheader(gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + XANTISPAM_BLACKLISTFILE);
+
+		LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "XAntiSpam has been enabled with default settings. You can change the settings in the preferences floater."));
+		//
+		// Note: This is a crazy amount of settings.
+		// It would be simpler to just run everyting through xantispam.
+		//
+	default:
+		// just in case ...
+		llwarns << "The parameter speficying which action to take is out of bounds." << llendl;
+	}
+}
+
+
+#undef XANTISPAM_ADDBLACK
+#undef XANTISPAM_ADDWHITE
+#undef XANTISPAM_BLACKLISTFILE
+#undef XANTISPAM_CACHE_CAPACITY
+#undef XANTISPAM_CLEARCACHE
+#undef XANTISPAM_CLEARCACHE_PERSISTENT
+#undef XANTISPAM_CLEARCACHE_RQSTRING
+#undef XANTISPAM_CLEARCACHE_VOLATILE
+#undef XANTISPAM_EDIT_BLACKLIST
+#undef XANTISPAM_EDIT_WHITELIST
+#undef XANTISPAM_ENABLE
+#undef XANTISPAM_NOP
+#undef XANTISPAM_PERMBLACK
+#undef XANTISPAM_PERMWHITE
+#undef XANTISPAM_QUERYUSER
+#undef XANTISPAM_SPECIAL_ADDBLACK
+#undef XANTISPAM_SPECIAL_ADDWHITE
+#undef XANTISPAM_SPECIAL_CLEARCACHE
+#undef XANTISPAM_SPECIAL_INVALID
+#undef XANTISPAM_TEMPBLACK
+#undef XANTISPAM_TEMPWHITE
+#undef XANTISPAM_THRESHOLD
+#undef XANTISPAM_UNNOTIFY
+#undef XANTISPAM_WHITELISTFILE
+
+
+bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_owned_by_me, std::string from_id, const std::string from_name)
+{
+  // Ratany: Lirusaito: Checking the bypasses after the filters may have
+  // returned false seems to potentially disable the bypasses?  In
+  // case of IM_INVENTORY_OFFERED | IM_TASK_INVENTORY_OFFERED,
+  // is_owned_by_me can apparently be false even when I own the object
+  // that is gving me a dialog.  I've added a check in
+  // xantispam_check() so users cannot blacklist themselves. /Ratany
+
 	// First, check the master filter
 	static LLCachedControl<bool> antispam(gSavedSettings,"_NACL_Antispam");
 	if (antispam) return true;
-
-	// Second, check if this dialog type is even being filtered
-	switch(dialog)
-	{
-	case IM_GROUP_NOTICE:
-	case IM_GROUP_NOTICE_REQUESTED:
-		if (!gSavedSettings.getBOOL("AntiSpamGroupNotices")) return false;
-		break;
-	case IM_GROUP_INVITATION:
-		if (!gSavedSettings.getBOOL("AntiSpamGroupInvites")) return false;
-		break;
-	case IM_INVENTORY_OFFERED:
-	case IM_TASK_INVENTORY_OFFERED:
-		if (!gSavedSettings.getBOOL("AntiSpamItemOffers")) return false;
-		break;
-	case IM_FROM_TASK_AS_ALERT:
-		if (!gSavedSettings.getBOOL("AntiSpamAlerts")) return false;
-		break;
-	case IM_LURE_USER:
-		if (!gSavedSettings.getBOOL("AntiSpamTeleports")) return false;
-		break;
-	case IM_TELEPORT_REQUEST:
-		if (!gSavedSettings.getBOOL("AntiSpamTeleportRequests")) return false;
-		break;
-	case IM_FRIENDSHIP_OFFERED:
-		if (!gSavedSettings.getBOOL("AntiSpamFriendshipOffers")) return false;
-		break;
-	case IM_COUNT:
-		// Bit of a hack, we should never get here unless we did this on purpose, though, doesn't matter because we'd do nothing anyway
-		if (!gSavedSettings.getBOOL("AntiSpamScripts")) return false;
-		break;
-	default:
-		return false;
-	}
 
 	// Third, possibly filtered, check the filter bypasses
 	static LLCachedControl<bool> antispam_not_mine(gSavedSettings,"AntiSpamNotMine");
@@ -1777,24 +3509,178 @@ bool is_spam_filtered(const EInstantMessage& dialog, bool is_friend, bool is_own
 	if (antispam_not_friend && is_friend)
 		return false;
 
+	static LLCachedControl<bool> alerts(gSavedSettings, "AntiSpamAlerts");
+	static LLCachedControl<bool> friendship_offers(gSavedSettings, "AntiSpamFriendshipOffers");
+	static LLCachedControl<bool> group_invites(gSavedSettings, "AntiSpamGroupInvites");
+	static LLCachedControl<bool> group_notices(gSavedSettings, "AntiSpamGroupNotices");
+	static LLCachedControl<bool> item_offers(gSavedSettings, "AntiSpamItemOffers");
+	static LLCachedControl<bool> scripts(gSavedSettings, "AntiSpamScripts");
+	static LLCachedControl<bool> teleport_offers(gSavedSettings, "AntiSpamTeleports");
+	static LLCachedControl<bool> teleport_requests(gSavedSettings, "AntiSpamTeleportRequests");
+
+	// allow to en-/disable xantispam
+	// Without this, xantispam would pass the requests in case there aren't any rules,
+	// effectively disabling these checks.
+	static LLCachedControl<bool> use_xantispam(gSavedSettings,"AntiSpamXtendedEnabled");
+
+	// Second, check if this dialog type is even being filtered
+	switch(dialog)
+	{
+	case IM_GROUP_NOTICE:
+		if (!group_notices)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "GroupNoticesNonRequested", from_name);
+		}
+		break;
+	case IM_BUSY_AUTO_RESPONSE:
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "AutoResponseIsBusy", from_name);
+		}
+		return false;
+		break;
+	case IM_GROUP_NOTICE_REQUESTED:
+	        if (!group_notices)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "GroupNoticesRequested", from_name);
+		}
+		break;
+	case IM_GROUP_INVITATION:
+	        if (!group_invites)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "GroupInvites", from_name);
+		}
+		break;
+	case IM_INVENTORY_OFFERED:
+		if (!item_offers)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			if(!xantispam_check(from_id, "&-InventoryHandleDistinctly", from_name))
+			{
+				return false; // filter by type of item in inventory_offer_handler()
+			}
+			return xantispam_check(from_id, "ItemOffersNonTask", from_name);
+		}
+		break;
+	case IM_TASK_INVENTORY_OFFERED:
+		if (!item_offers)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			if(!xantispam_check(from_id, "&-InventoryHandleDistinctly", from_name))
+			{
+				return false; // filter by type of item in inventory_offer_handler()
+			}
+			return xantispam_check(from_id, "ItemOffersFromTask", from_name);
+		}
+		break;
+	case IM_FROM_TASK_AS_ALERT:
+		if (!alerts)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "Alerts", from_name);
+		}
+		break;
+	case IM_LURE_USER:
+		if (!teleport_offers)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "TeleportOffers", from_name);
+		}
+		break;
+	case IM_TELEPORT_REQUEST:
+		if (!teleport_requests)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "TeleportRequests", from_name);
+		}
+		break;
+	case IM_FRIENDSHIP_OFFERED:
+		if (!friendship_offers)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "FriendshipOffers", from_name);
+		}
+		break;
+	case IM_COUNT:
+		// Bit of a hack, we should never get here unless we
+		// did this on purpose, though, doesn't matter because
+		// we'd do nothing anyway
+		//
+		// Ratany: Receiving a script dialog gets here. When
+		// an object tries to open the world map, there is an
+		// "ERROR: getData: Variable ObjectID not in message
+		// ScriptTeleportRequest block Data".  There is no
+		// OwnerID, either.  I kinda worked around that, but
+		// it needs to be changed.
+		//
+		// This case should not be so generic, but I didn't
+		// want to just add more entries to EInstantMessage in
+		// llinstantmessage.h.
+		//
+		// /Ratany
+		if (!scripts)
+		{
+			return false;
+		}
+		if(use_xantispam)
+		{
+			return xantispam_check(from_id, "DialogsFromTask", from_name);
+		}
+		break;
+	default:
+		// LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", "Something has passed filtering without your knowledge."));
+		return false;
+	}
+
 	// Last, definitely filter
 	return true;
 }
 
-void inventory_offer_handler(LLOfferInfo* info)
+
+void script_msg_api(const std::string& msg);
+bool inventory_offer_handler_answer_available(LLOfferInfo *info)
 {
 	// NaCl - Antispam Registry
 	if (NACLAntiSpamRegistry::checkQueue((U32)NACLAntiSpamRegistry::QUEUE_INVENTORY,info->mFromID))
 	{
 		delete info;
-		return;
-	}
-	// NaCl End
-	//If muted, don't even go through the messaging stuff.  Just curtail the offer here.
+		return true;
+	}  // NaCl End
+	// If muted, don't even go through the messaging stuff.  Just curtail the offer here.
 	if (LLMuteList::getInstance()->isMuted(info->mFromID, info->mFromName))
 	{
 		info->forceResponse(IOR_MUTE);
-		return;
+		return true;
 	}
 
 	if (!info->mFromGroup) script_msg_api(info->mFromID.asString() + ", 1");
@@ -1803,32 +3689,31 @@ void inventory_offer_handler(LLOfferInfo* info)
 	if (gSavedSettings.getBOOL("AutoAcceptAllNewInventory"))
 	{
 		info->forceResponse(IOR_ACCEPT);
-		return;
+		return true;
 	}
 
 	// Avoid the Accept/Discard dialog if the user so desires. JC
-	if (gSavedSettings.getBOOL("AutoAcceptNewInventory")
-		&& (info->mType == LLAssetType::AT_NOTECARD
-			|| info->mType == LLAssetType::AT_LANDMARK
-			|| info->mType == LLAssetType::AT_TEXTURE))
+	if (gSavedSettings.getBOOL("AutoAcceptNewInventory") && (info->mType == LLAssetType::AT_NOTECARD || info->mType == LLAssetType::AT_LANDMARK || info->mType == LLAssetType::AT_TEXTURE))
 	{
-		// For certain types, just accept the items into the inventory,
-		// and possibly open them on receipt depending upon "ShowNewInventory".
 		info->forceResponse(IOR_ACCEPT);
-		return;
+		return true;
 	}
 
 	if (gAgent.isDoNotDisturb() && info->mIM != IM_TASK_INVENTORY_OFFERED) // busy mode must not affect interaction with objects (STORM-565)
 	{
-		// Until throttling is implemented, busy mode should reject inventory instead of silently
-		// accepting it.  SEE SL-39554
 		info->forceResponse(IOR_DECLINE);
-		return;
+		return true;
 	}
 
+	return false;
+}
+
+
+std::string inventory_offer_handler_strip_url(const LLOfferInfo *info)
+{
 	// Strip any SLURL from the message display. (DEV-2754)
 	std::string msg = info->mDesc;
-	int indx = msg.find(" ( http://slurl.com/secondlife/");
+	std::size_t indx = msg.find(" ( http://slurl.com/secondlife/");
 	if(indx == std::string::npos)
 	{
 		// try to find new slurl host
@@ -1838,86 +3723,131 @@ void inventory_offer_handler(LLOfferInfo* info)
 	{
 		LLStringUtil::truncate(msg, indx);
 	}
+	return msg;
+}
 
-	LLSD args;
-	args["[OBJECTNAME]"] = msg;
 
-	LLSD payload;
-
+bool inventory_offer_handler_get_asset_type(const LLOfferInfo *info, std::string& assettype)
+{
 	// must protect against a NULL return from lookupHumanReadable()
-	std::string typestr = ll_safe_string(LLAssetType::lookupHumanReadable(info->mType));
-	if (!typestr.empty())
+	assettype = ll_safe_string(LLAssetType::lookupHumanReadable(info->mType));
+	if (!assettype.empty())
 	{
 		// human readable matches string name from strings.xml
 		// lets get asset type localized name
-		args["OBJECTTYPE"] = LLTrans::getString(typestr);
+		assettype = LLTrans::getString(assettype);
+		return false;
 	}
-	else
-	{
-		LL_WARNS("Messaging") << "LLAssetType::lookupHumanReadable() returned NULL - probably bad asset type: " << info->mType << LL_ENDL;
-		args["OBJECTTYPE"] = "";
 
-		// This seems safest, rather than propagating bogosity
-		LL_WARNS("Messaging") << "Forcing an inventory-decline for probably-bad asset type." << LL_ENDL;
+	LL_WARNS("Messaging") << "LLAssetType::lookupHumanReadable() returned NULL - probably bad asset type: " << info->mType << LL_ENDL;
+	// This seems safest, rather than propagating bogosity
+	LL_WARNS("Messaging") << "Forcing an inventory-decline for probably-bad asset type." << LL_ENDL;
+	return true;
+}
+
+
+void inventory_offer_handler(LLOfferInfo* info)
+{
+	// see if current settings provide a response
+	if(inventory_offer_handler_answer_available(info))
+	{
+		return;
+	}
+
+	// get name of asset given
+	std::string asset_name = inventory_offer_handler_strip_url(info);
+
+	// get type of asset
+	std::string assettype;
+	if(inventory_offer_handler_get_asset_type(info, assettype))
+	{
+		// return on bogus asset type
 		info->forceResponse(IOR_DECLINE);
 		return;
 	}
 
-	// Name cache callbacks don't store userdata, so can't save
-	// off the LLOfferInfo.  Argh.
-	BOOL name_found = FALSE;
-	payload["from_id"] = info->mFromID;
-	args["OBJECTFROMNAME"] = info->mFromName;
-	args["NAME"] = info->mFromName;
-	if (info->mFromGroup)
+	// figure out the origin of the offer
+	enum org {
+		GROUP,
+		AGENT,
+		TASK
+	} origin;
+	if(info->mFromObject)
 	{
-		std::string group_name;
-		if (gCacheName->getGroupName(info->mFromID, group_name))
-		{
-			args["NAME"] = group_name;
-			name_found = TRUE;
-		}
+		origin = TASK;
 	}
 	else
 	{
-		std::string full_name;
-		if (gCacheName->getFullName(info->mFromID, full_name))
+		origin = info->mFromGroup ? GROUP : AGENT;
+	}
+
+	// find the name of the origin
+	std::string origin_name;
+	bool origin_name_found = false;
+	switch(origin)
+	{
+	case GROUP:
+		if(gCacheName->getGroupName(info->mFromID, origin_name))
+		{
+			origin_name_found = true;
+		}
+		break;
+	case AGENT:
+		if (gCacheName->getFullName(info->mFromID, origin_name))
 		{
 // [RLVa:KB] - Checked: 2010-11-02 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
-		// Only filter if the object owner is a nearby agent
+			// Only filter if the object owner is a nearby agent
 			if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(info->mFromID)) )
 			{
-				full_name = RlvStrings::getAnonym(full_name);
+				origin_name = RlvStrings::getAnonym(origin_name);
 			}
 // [/RLVa:KB]
-			args["NAME"] = full_name;
-			name_found = TRUE;
+			origin_name_found = TRUE;
 		}
+		break;
+	case TASK:
+		break;
 	}
 
+	// xantispam ...
+	std::string xa_origin_string = (origin == AGENT) ? info->mFromID.asString() : (origin_name_found ? origin_name : (origin == GROUP) ? "<apparently-originating-from-groupID(" + info->mFromID.asString() + ")>" : "<apparently-originating-from-object-owned-by-agentID(" + info->mFromID.asString() + ")>");
+	xa_origin_string.erase(std::remove_if(xa_origin_string.begin(), xa_origin_string.end(), boost::algorithm::is_any_of("?:")), xa_origin_string.end());
 
-	LLNotification::Params p("ObjectGiveItem");
-	p.substitutions(args).payload(payload).functor(boost::bind(&LLOfferInfo::inventory_offer_callback, info, _1, _2));
+	if(xantispam_check(xa_origin_string, "&-InventoryHandleDistinctly", assettype))
+	{  // not handled by xa, do as usual
+		// set up a notification
+		LLSD args;
+		args["OBJECTFROMNAME"] = info->mFromName;
+		args["OBJECTTYPE"] = assettype;
+		args["[OBJECTNAME]"] = asset_name;
+		args["NAME"] = origin_name_found ? origin_name : info->mFromName;
 
-	// Object -> Agent Inventory Offer
-	if (info->mFromObject)
-	{
-		p.name = name_found ? "ObjectGiveItem" : "ObjectGiveItemUnknownUser";
+		LLSD payload;
+		payload["from_id"] = info->mFromID;
+
+		LLNotification::Params p("ObjectGiveItem");
+		p.substitutions(args).payload(payload).functor(boost::bind(&LLOfferInfo::inventory_offer_callback, info, _1, _2));
+		p.name = (origin == AGENT) ? "UserGiveItem" : (origin_name_found ? "ObjectGiveItem" : "ObjectGiveItemUnknownUser");
+
+		// fire the notification
+		LLNotifications::instance().add(p);
 	}
-	else // Agent -> Agent Inventory Offer
-	{
-// [RLVa:KB] - Checked: 2010-11-02 (RLVa-1.2.2a) | Modified: RLVa-1.2.2a
-		// Only filter if the offer is from a nearby agent and if there's no open IM session (doesn't necessarily have to be focused)
-		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(info->mFromID)) &&
-			 (!RlvUIEnabler::hasOpenIM(info->mFromID)) )
+	else
+	{  // handled by xa
+		// ... so check for particular rule
+		std::string xa_asset_type = assettype;
+		xa_asset_type.erase(std::remove_if(xa_asset_type.begin(), xa_asset_type.end(), isspace), xa_asset_type.end());
+		xa_asset_type.erase(std::remove_if(xa_asset_type.begin(), xa_asset_type.end(), boost::algorithm::is_any_of("?:")), xa_asset_type.end());
+
+		if(xantispam_check(xa_origin_string, "&-InventoryHandleAccept?AcceptInventory?" + xa_asset_type, asset_name))
 		{
-			args["NAME"] = RlvStrings::getAnonym(info->mFromName);
+			info->forceResponse(IOR_DECLINE);
 		}
-// [/RLVa:KB]
-		p.name = "UserGiveItem";
+		else
+		{
+			info->forceResponse(IOR_ACCEPT);
+		}
 	}
-
-	LLNotifications::instance().add(p);
 }
 
 
@@ -2304,12 +4234,13 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	chat.mFromID = from_id;
 	chat.mFromName = name;
 	chat.mSourceType = (from_id.isNull() || (name == std::string(SYSTEM_FROM))) ? CHAT_SOURCE_SYSTEM : CHAT_SOURCE_AGENT;
-	
-	if(chat.mSourceType == CHAT_SOURCE_AGENT)
-	{
-		LLSD args;
-		args["NAME"] = name;
-	}
+
+// Ratany: This does nothing? /Ratany
+//	if(chat.mSourceType == CHAT_SOURCE_AGENT)
+//	{
+//		LLSD args;
+//		args["NAME"] = name;
+//	}
 
 	LLViewerObject *source = gObjectList.findObject(session_id); //Session ID is probably the wrong thing.
 	if (source || (source = gObjectList.findObject(from_id)))
@@ -2318,7 +4249,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	}
 
 	// NaCl - Antispam
-	if (is_spam_filtered(dialog, is_friend, is_owned_by_me)) return;
+	if (is_spam_filtered(dialog, is_friend, is_owned_by_me, from_id.asString(), original_name)) return;
 	// NaCl End
 
 	std::string separator_string(": ");
@@ -2447,7 +4378,9 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 
 			// return a standard "busy" message, but only do it to online IM
 			// (i.e. not other auto responses and not store-and-forward IM)
-			if (send_autoresponse)
+			// [Ratany:] excempt a particular resident from being sent
+			// autoresponses, according to rules [/Ratany]
+			if (send_autoresponse && xantispam_check(from_id.asString(), "&-IMSendNoAutoresponses", name))
 			{
 				// if there is not a panel for this conversation (i.e. it is a new IM conversation
 				// initiated by the other party) then...
@@ -3432,6 +5365,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 					args["[MESSAGE]"] = message;
 				    LLNotificationsUtil::add("OfferFriendship", args, payload);
 				}
+				make_ui_sound("UISndRtyFriendOffer");
 			}
 		}
 		break;
@@ -3451,6 +5385,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			LLSD payload;
 			payload["from_id"] = from_id;
 			LLAvatarNameCache::get(from_id, boost::bind(&notification_display_name_callback, _1, _2, "FriendshipAccepted", args, payload));
+			make_ui_sound("UISndRtyFriendOffer");
 		}
 		break;
 
@@ -3550,10 +5485,6 @@ static LLNotificationFunctorRegistration callingcard_offer_cb_reg("OfferCallingC
 
 void process_offer_callingcard(LLMessageSystem* msg, void**)
 {
-	// NaCl - Antispam
-	if (is_spam_filtered(IM_FRIENDSHIP_OFFERED, false, false))
-		return;
-	// NaCl End
 	// someone has offered to form a friendship
 	LL_DEBUGS("Messaging") << "callingcard offer" << LL_ENDL;
 
@@ -3586,6 +5517,11 @@ void process_offer_callingcard(LLMessageSystem* msg, void**)
 				nvfirst->getString(), nvlast->getString());
 		}
 	}
+
+	// NaCl - Antispam
+	if (is_spam_filtered(IM_FRIENDSHIP_OFFERED, false, false, source_id.asString(), source_name))
+		return;
+	// NaCl End
 
 	if(!source_name.empty())
 	{
@@ -4314,7 +6250,10 @@ void process_teleport_start(LLMessageSystem *msg, void**)
 	{
 		gTeleportDisplay = TRUE;
 		gAgent.setTeleportState( LLAgent::TELEPORT_START );
-		make_ui_sound("UISndTeleportOut");
+		if(gSavedSettings.getBOOL("OptionPlayTpSound"))
+		{
+			make_ui_sound("UISndTeleportOut");
+		}
 		
 		LL_INFOS("Messaging") << "Teleport initiated by remote TeleportStart message with TeleportFlags: " <<  teleport_flags << LL_ENDL;
 
@@ -4946,10 +6885,10 @@ void send_agent_update(BOOL force_send, BOOL send_reliable)
 	U32 control_flags = gAgent.getControlFlags();
 
 	// <edit>
-	if(gSavedSettings.getBOOL("Nimble"))
-	{
+	// if(gSavedSettings.getBOOL("Nimble"))
+	// {
 		control_flags |= AGENT_CONTROL_FINISH_ANIM;
-	}
+	// }
 	// </edit>
 
 	MASK	key_mask = gKeyboard->currentMask(TRUE);
@@ -7299,7 +9238,7 @@ void process_script_question(LLMessageSystem *msg, void **user_data)
 	std::string self_name;
 	LLAgentUI::buildFullname( self_name );
 	// NaCl - Antispam
-	if (is_spam_filtered(IM_COUNT, false, owner_name == self_name)) return;
+	if (is_spam_filtered(IM_COUNT, false, owner_name == self_name, taskid.asString(), object_name)) return;
 	// NaCl End
 	if( owner_name == self_name )
 	{
@@ -7689,6 +9628,27 @@ void send_simple_im(const LLUUID& to_id,
 					 (U8*)EMPTY_BINARY_BUCKET,
 					 EMPTY_BINARY_BUCKET_SIZE);
 }
+
+
+void send_nothing_im(const LLUUID& to_id, const std::string& message)
+{
+	std::string my_name;
+	LLAgentUI::buildFullname(my_name);
+
+	LLUUID null;
+	null.setNull();
+
+	send_improved_im(to_id,
+					 my_name,
+					 message,
+					 IM_ONLINE,
+					 IM_NOTHING_SPECIAL,
+					 null,
+					 NO_TIMESTAMP,
+					 (U8*)EMPTY_BINARY_BUCKET,
+					 EMPTY_BINARY_BUCKET_SIZE);
+}
+
 
 void send_group_notice(const LLUUID& group_id,
 					   const std::string& subject,
@@ -8083,6 +10043,7 @@ void process_script_dialog(LLMessageSystem* msg, void**)
 	LLSD payload;
 
 	LLUUID object_id;
+
 	msg->getUUID("Data", "ObjectID", object_id);
 
 	// NaCl - Antispam Registry
@@ -8102,10 +10063,6 @@ void process_script_dialog(LLMessageSystem* msg, void**)
 	// NaCl End
 	}
 
-	// NaCl - Antispam
-	if (owner_id.isNull() ? is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(object_id), object_id == gAgentID) : is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(owner_id), owner_id == gAgentID)) return;
-	// NaCl End
-
 	if (LLMuteList::getInstance()->isMuted(object_id) || LLMuteList::getInstance()->isMuted(owner_id))
 	{
 		return;
@@ -8120,6 +10077,12 @@ void process_script_dialog(LLMessageSystem* msg, void**)
 	msg->getString("Data", "FirstName", first_name);
 	msg->getString("Data", "LastName", last_name);
 	msg->getString("Data", "ObjectName", object_name);
+
+	// NaCl - Antispam
+	// Lirusaito: Objects can be friends? Should be 'false' instead of 'LLAvatarActions::isFriend(object_id)'?
+	if (owner_id.isNull() ? is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(object_id), object_id == gAgentID, object_id.asString(), object_name + " (owned by " + first_name + " " + last_name + ")") : is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(owner_id), owner_id == gAgentID, object_id.asString(), object_name + " (owned by " + first_name + " " + last_name + ")")) return;
+	// NaCl End
+
 	msg->getString("Data", "Message", message);
 	msg->getS32("Data", "ChatChannel", chat_channel);
 
@@ -8266,7 +10229,7 @@ void process_load_url(LLMessageSystem* msg, void**)
 	msg->getUUID(  "Data", "OwnerID", owner_id);
 
 	// NaCl - Antispam
-	if (owner_id.isNull() ? is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(object_id), object_id == gAgentID) : is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(owner_id), owner_id == gAgentID)) return;
+	if (owner_id.isNull() ? is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(object_id), object_id == gAgentID, object_id.asString(), object_name) : is_spam_filtered(IM_COUNT, LLAvatarActions::isFriend(owner_id), owner_id == gAgentID, owner_id.asString(), object_name)) return;
 	// NaCl End
 
 	// NaCl - Antispam Registry
@@ -8349,10 +10312,6 @@ void process_initiate_download(LLMessageSystem* msg, void**)
 void process_script_teleport_request(LLMessageSystem* msg, void**)
 {
 	if (!gSavedSettings.getBOOL("ScriptsCanShowUI")) return;
-	
-	// NaCl - Antispam
-	if (is_spam_filtered(IM_COUNT, false, false)) return;
-	// NaCl End
 
 	std::string object_name;
 	std::string sim_name;
@@ -8362,6 +10321,17 @@ void process_script_teleport_request(LLMessageSystem* msg, void**)
 	msg->getString("Data", "ObjectName", object_name);
 	msg->getString("Data", "SimName", sim_name);
 	msg->getVector3("Data", "SimPosition", pos);
+
+	// NaCl - Antispam
+	{
+		LLUUID null;
+		null.setNull();
+		std::string info = ": Script teleport request to " + sim_name + " (" + boost::lexical_cast<std::string>(pos.mV[VX]) + ", " + boost::lexical_cast<std::string>(pos.mV[VY]) + ", " + boost::lexical_cast<std::string>(pos.mV[VZ]) + ")";
+		if (is_spam_filtered(IM_COUNT, false, false, null.asString(), object_name + info)) return;
+	}
+	// NaCl End
+
+
 	msg->getVector3("Data", "LookAt", look_at);
 
 	gFloaterWorldMap->trackURL(sim_name, (S32)pos.mV[VX], (S32)pos.mV[VY], (S32)pos.mV[VZ]);
@@ -8370,7 +10340,6 @@ void process_script_teleport_request(LLMessageSystem* msg, void**)
 	// remove above two lines and replace with below line
 	// to re-enable parcel browser for llMapDestination()
 	// LLURLDispatcher::dispatch(LLSLURL::buildSLURL(sim_name, (S32)pos.mV[VX], (S32)pos.mV[VY], (S32)pos.mV[VZ]), FALSE);
-	
 }
 
 void process_covenant_reply(LLMessageSystem* msg, void**)

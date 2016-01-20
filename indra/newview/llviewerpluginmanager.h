@@ -39,7 +39,10 @@
 #include "lldir.h"
 #include "llfile.h"
 #include "llviewercontrol.h"
+#ifndef LL_LLPLUGINCLASSBASIC_H
 #include "llpluginclassbasic.h"
+#endif
+
 
 class LLViewerPluginManager : public LLRefCount
 {

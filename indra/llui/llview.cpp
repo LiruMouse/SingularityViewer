@@ -1390,15 +1390,15 @@ void LLView::reshape(S32 width, S32 height, BOOL called_from_parent)
 				child_rect.mLeft += delta_width;
 				child_rect.mRight += delta_width;
 			}
-			else if (viewp->followsLeft())
-			{
-				// left is 0, don't need to adjust coords
-			}
-			else
-			{
-				// BUG what to do when we don't follow anyone?
-				// for now, same as followsLeft
-			}
+			// else if (viewp->followsLeft())
+			// {
+			// 	// left is 0, don't need to adjust coords
+			// }
+			// else
+			// {
+			// 	// BUG what to do when we don't follow anyone?
+			// 	// for now, same as followsLeft
+			// }
 
 			if (viewp->followsTop() && viewp->followsBottom())
 			{
@@ -1885,6 +1885,16 @@ void LLView::centerWithin(const LLRect& bounds)
 
 	translate( left - getRect().mLeft, bottom - getRect().mBottom );
 }
+
+
+void LLView::centerRight(const LLRect& bounds)
+{
+	S32 left   = bounds.mLeft + (bounds.getWidth() - getRect().getWidth());
+	S32 bottom = bounds.mBottom + (bounds.getHeight() - getRect().getHeight()) / 2;
+
+	translate( left - getRect().mLeft, bottom - getRect().mBottom );
+}
+
 
 BOOL LLView::localPointToOtherView( S32 x, S32 y, S32 *other_x, S32 *other_y, LLView* other_view) const
 {
