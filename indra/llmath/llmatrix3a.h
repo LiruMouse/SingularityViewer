@@ -127,6 +127,6 @@ public:
 	inline bool isOkRotation() const;		
 } LL_ALIGN_POSTFIX(16);
 
-static_assert(std::is_trivially_copyable<LLMatrix3a>{}, "LLMatrix3a must be a trivially copyable type");
-static_assert(std::is_trivially_copyable<LLRotation>{}, "LLRotation must be a trivially copyable type");
+static_assert(std::is_trivially_copyable<LLMatrix3a>::value, "LLMatrix3a must be a trivially copyable type");
+static_assert(std::is_trivially_copyable<LLRotation>::value, "LLRotation must be a trivially copyable type");
 #endif

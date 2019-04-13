@@ -1368,7 +1368,7 @@ void LLFloaterIMPanel::onSendMsg()
 
 			if (mSessionType == SUPPORT_SESSION && getChildView("Support Check")->getValue())
 			{
-				utf8_text.insert(action ? 3 : 0, llformat(action ? " (%d%s)" : "(%d%s): ", LL_VIEWER_VERSION_BUILD, wstring_to_utf8str(LL_VIEWER_CHANNEL_GRK)));
+				utf8_text.insert(action ? 3 : 0, llformat(action ? " (%d%s)" : "(%d%s): ", LL_VIEWER_VERSION_BUILD, wstring_to_utf8str(LL_VIEWER_CHANNEL_GRK).data()));
 			}
 
 			if ( mSessionInitialized )
