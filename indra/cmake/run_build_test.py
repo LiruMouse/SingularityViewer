@@ -192,7 +192,7 @@ def translate_rc(rc):
         return "terminated by signal %s" % strc
 
 
-class TableParser(HTMLParser.HTMLParser):
+class TableParser(HTMLParser):
     """
     This HTMLParser subclass is designed to parse the table we know exists
     in windows-rcs.html, hopefully without building in too much knowledge of
@@ -202,9 +202,7 @@ class TableParser(HTMLParser.HTMLParser):
     whitespace = re.compile(r'\s*$')
 
     def __init__(self):
-        # Because Python 2.x's HTMLParser is an old-style class, we must use
-        # old-style syntax to forward the __init__() call -- not super().
-        HTMLParser.HTMLParser.__init__(self)
+        super().__init__()
         # this will collect all the data, eventually
         self.table = []
         # Stack whose top (last item) indicates where to append current
